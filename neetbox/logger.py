@@ -1,15 +1,25 @@
 # -*- coding: UTF-8 -*
 import getpass
-import platform
-from datetime import datetime, date
-from termcolor import colored
-from enum import Enum
-import traceback
-import six
-import re
 import inspect
-import os
+import os, re
+import platform
+import warnings
+from datetime import date, datetime
+from enum import Enum
 
+import six
+from colorama import Fore
+
+
+def colored(text, color):
+    if "ANSI_COLORS_DISABLED" in os.environ or "NO_COLOR" in os.environ:
+        warnings.warn("Current environment not supported colored text, please notice that! ")
+
+    if hasattr(Fore, color.upper()):
+        text = getattr(Fore, color.upper()) + text + Fore.RESET
+    else:
+        raise ValueError("Wrong color was inputed in colored func.")
+    return text
 
 class Logger:
     def __init__(self, whom = None, ic=None, color=None):
