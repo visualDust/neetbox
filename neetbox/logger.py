@@ -171,7 +171,7 @@ class Logger:
         return self
 
     def log_txt_file(self, file):
-        if isinstance(file, six.string_types):
+        if type(file) is str:
             file = open(file)
         str = ""
         for line in file.readlines():
