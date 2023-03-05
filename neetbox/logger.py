@@ -4,26 +4,37 @@ import platform
 from datetime import datetime, date
 from termcolor import colored
 from enum import Enum
+import traceback
 import six
 import re
+import inspect
 import os
 
 
 class Logger:
-    def __init__(this, whom, ic=None, color=None):
-        this.ic = ""
-        this.color = color
-        this.ic = ic
-        this.whom = whom
-        this.log_writer = None
-        this.__conditions__ = []
+    def __init__(self, whom = None, ic=None, color=None):
+        if whom is not None:
+            self.whom = whom
+        else:
+            stack = inspect.stack()[1][0]
+            if "self" in stack.f_locals:
+                the_class = stack.f_locals["self"].__class__.__name__
+                self.whom = str(the_class)
+            else:
+                the_method = stack.f_code.co_name
+                self.whom = str(the_method)
+        self.ic = ""
+        self.color = color
+        self.ic = ic
+        self.log_writer = None
+        self.__conditions__ = []
 
-    def add_condition_check(this, callback: bool):
-        this.__conditions__.append(callback)
-        return this
+    def add_condition_check(self, callback: bool):
+        self.__conditions__.append(callback)
+        return self
 
     def log(
-        this,
+        self,
         message,
         flag=None,
         with_ic=True,
@@ -32,7 +43,7 @@ class Logger:
         into_file=True,
         into_stdout=True,
     ):
-        for cond in this.__conditions__:
+        for cond in self.__conditions__:
             if not cond:
                 return
             
@@ -47,51 +58,51 @@ class Logger:
         pre_text_txt = ""
         pre_text_txt += flag if flag is not None else ""
         pre_text_txt += str(datetime.now()) + " > " if with_datetime else ""
-        icon_str = this.ic.value if type(this.ic) is IconMode else this.ic
-        color_str = this.color.value if type(this.color) is ColorMode else this.color
-        if with_ic and this.ic is not None:
+        icon_str = self.ic.value if type(self.ic) is IconMode else self.ic
+        color_str = self.color.value if type(self.color) is ColorMode else self.color
+        if with_ic and self.ic is not None:
             if into_stdout:
                 pre_text_cmd += (
                     colored(icon_str, color=color_str)
-                    if this.color is not None
+                    if self.color is not None
                     else icon_str
                 )
-            # if into_file and this.log_writer is not None:
+            # if into_file and self.log_writer is not None:
             # pre_text_txt += icon_str
         if with_identifier:
             if into_stdout:
                 pre_text_cmd += (
-                    colored(str(this.whom) + " > ", color=color_str)
-                    if this.color is not None
-                    else str(this.whom) + " > "
+                    colored(str(self.whom) + " > ", color=color_str)
+                    if self.color is not None
+                    else str(self.whom) + " > "
                 )
-            if into_file and this.log_writer is not None:
-                pre_text_txt += str(this.whom) + " > "
+            if into_file and self.log_writer is not None:
+                pre_text_txt += str(self.whom) + " > "
         if into_stdout:
             print(pre_text_cmd + message)
-        if into_file and this.log_writer is not None:
-            this.log_writer.write(pre_text_txt + message + "\n")
-        return this
+        if into_file and self.log_writer is not None:
+            self.log_writer.write(pre_text_txt + message + "\n")
+        return self
 
-    def debug(this, info, flag=f"[{colored('δ', 'cyan')}]"):
-        this.log(info, flag, into_file=False)
-        this.log(info, into_stdout=False)
+    def debug(self, info, flag=f"[{colored('δ', 'cyan')}]"):
+        self.log(info, flag, into_file=False)
+        self.log(info, into_stdout=False)
 
-    def err(this, err, flag=f"[{colored('×', 'red')}]"):
-        this.log(err, flag, into_file=False)
-        this.log(err, into_stdout=False)
+    def err(self, err, flag=f"[{colored('×', 'red')}]"):
+        self.log(err, flag, into_file=False)
+        self.log(err, into_stdout=False)
 
-    def banner(this, ch="=", length=80):
-        this.log(
+    def banner(self, ch="=", length=80):
+        self.log(
             ch * length,
             flag=None,
             with_ic=False,
             with_datetime=False,
             with_identifier=False,
         )
-        return this
+        return self
 
-    def log_os_info(this):
+    def log_os_info(self):
         message = (
             f"whom\t\t|\t" + getpass.getuser() + " using " + str(platform.node()) + "\n"
         )
@@ -112,41 +123,41 @@ class Logger:
             + platform.python_version()
             + "\n"
         )
-        this.log(
+        self.log(
             message=message,
             flag=None,
             with_ic=False,
             with_datetime=False,
             with_identifier=False,
         )
-        return this
+        return self
 
-    def log_empty_line(this, line_cnt=1):
-        this.log(
+    def log_empty_line(self, line_cnt=1):
+        self.log(
             message="\n" * line_cnt,
             flag=None,
             with_ic=False,
             with_datetime=False,
             with_identifier=False,
         )
-        return this
+        return self
 
-    def log_txt_file(this, file):
+    def log_txt_file(self, file):
         if isinstance(file, six.string_types):
             file = open(file)
         str = ""
         for line in file.readlines():
             str += line
-        this.log(
+        self.log(
             message=str,
             flag=None,
             with_ic=False,
             with_datetime=False,
             with_identifier=False,
         )
-        return this
+        return self
 
-    def set_log_dir(this, path, independent=False):
+    def set_log_dir(self, path, independent=False):
         if os.path.isfile(path):
             raise "Target path is not a directory."
         if not os.path.exists(path):
@@ -154,12 +165,12 @@ class Logger:
             os.makedirs(path)
         log_file_name = ""
         if independent:
-            log_file_name += this.whom
+            log_file_name += self.whom
         log_file_name += str(date.today())
-        this.bind_file(os.path.join(path, log_file_name))
-        return this
+        self.bind_file(os.path.join(path, log_file_name))
+        return self
 
-    def bind_file(this, path):
+    def bind_file(self, path):
         log_file_identity = os.path.abspath(path)
         if os.path.isdir(log_file_identity):
             raise Exception("Target path is not a file.")
@@ -170,24 +181,31 @@ class Logger:
         real_path = os.path.join(dirname, filename)
         if log_file_identity not in writers_dict:
             writers_dict[log_file_identity] = open(real_path, "a", buffering=1)
-        this.log_writer = writers_dict[log_file_identity]
-        return this
+        self.log_writer = writers_dict[log_file_identity]
+        return self
 
-    def file_bend(this) -> bool:
-        return this.log_writer == None
+    def file_bend(self) -> bool:
+        return self.log_writer == None
 
 
 writers_dict = {}
 loggers_dict = {}
-static_logger = Logger("TheLoggerRoot                ")
+static_logger = Logger("TheLoggerRoot")
 
 
-def get_logger(whom, ic=None, color=None) -> Logger:
+def get_logger(whom = None, ic=None, color=None) -> Logger:
+    if whom is None:
+        stack = inspect.stack()[1][0]
+        if "self" in stack.f_locals:
+            the_class = stack.f_locals["self"].__class__.__name__
+            whom = str(the_class)
+        else:
+            the_method = stack.f_code.co_name
+            whom = str(the_method)
     if whom in loggers_dict:
         return loggers_dict[whom]
     loggers_dict[whom] = Logger(whom, ic, color)
     return loggers_dict[whom]
-
 
 def validateTitle(title):
     if platform.system().lower() == "windows":
