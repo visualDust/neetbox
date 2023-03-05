@@ -32,10 +32,10 @@ classifiers = [
 #     { include = "models" },
 # ]
 
-[[tool.poetry.source]]
-name = "tsinghua-pypi"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-default = true
+# [[tool.poetry.source]]
+# name = "tsinghua-pypi"
+# url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+# default = true
 
 [tool.poetry.dependencies]
 python = "^3.8"
