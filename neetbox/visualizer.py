@@ -22,7 +22,7 @@ def visualize_cluster(feat, cluster):
         cluster (sklearn.cluster.KMeans): _description_
 
     Returns:
-        _type_: _description_
+        fig, ax: figure object and ax object
     """
     centroid = cluster.cluster_centers_
     y_predict = cluster.labels_
