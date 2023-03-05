@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "neetbox"
+version = "0.0.3"
+description = "NEETBox contains useless CV code snippets."
+license = "MIT"
+authors = [
+    "VisualDust <gavin@gong.host>",
+]
+maintainers = [
+    "VisualDust <gavin@gong.host>",
+    "PommesPeter <me@pommespeter.space>",
+]
+
+
+readme = "README.md"
+homepage = "https://github.com/neet-cv"
+repository = "https://github.com/visualDust/neetbox"
+keywords = ["computer vision", "tools", "logging"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Environment :: Console",
+    "Framework :: Matplotlib",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Logging",
+    "Topic :: Utilities"
+]
+
+# packages = [
+#     { include = "useless" },
+#     { include = "models" },
+# ]
+
+[[tool.poetry.source]]
+name = "tsinghua-pypi"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true
+
+[tool.poetry.dependencies]
+python = "^3.8"
+torch = {version = "^1.13.1", optional = true}
+torchvision = {version = "^0.14.1", optional = true}
+numpy = "^1.24.2"
+pillow = "^9.4.0"
+opencv-python = "^4.7.0.72"
+pandas = "^1.5.3"
+tqdm = "^4.65.0"
+
+
+[tool.poetry.group.dev.dependencies]
+torch = {version = "^1.13.1"}
+torchvision = {version = "^0.14.1"}
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
