@@ -39,8 +39,8 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-torch = {version = "^1.13.1", optional = true}
-torchvision = {version = "^0.14.1", optional = true}
+# torch = {version = "^1.13.1", optional = true}
+# torchvision = {version = "^0.14.1", optional = true}
 numpy = "^1.24.2"
 pillow = "^9.4.0"
 opencv-python = "^4.7.0.72"
