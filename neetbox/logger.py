@@ -75,10 +75,11 @@ class Logger:
 
     def debug(this, info, flag=f"[{colored('δ', 'cyan')}]"):
         this.log(info, flag, into_file=False)
+        this.log(info, into_stdout=False)
 
     def err(this, err, flag=f"[{colored('×', 'red')}]"):
         this.log(err, flag, into_file=False)
-        this.log(err, flag, into_stdout=False)
+        this.log(err, into_stdout=False)
 
     def banner(this, ch="=", length=80):
         this.log(
