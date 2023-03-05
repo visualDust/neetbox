@@ -27,10 +27,10 @@ classifiers = [
     "Topic :: Utilities"
 ]
 
-[[tool.poetry.source]]
-name = "pypi"
-url = "https://pypi.org/simple"
-default = true
+# [[tool.poetry.source]]
+# name = "pypi"
+# url = "https://pypi.org/simple"
+# default = true
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -40,9 +40,9 @@ opencv-python = "^4.7.0.72"
 pandas = "^1.5.3"
 tqdm = "^4.65.0"
 
-[tool.poetry.group.dev.dependencies]
-torch = {version = "^1.13.1"}
-torchvision = {version = "^0.14.1"}
+# [tool.poetry.group.dev.dependencies]
+# torch = {version = "^1.13.1"}
+# torchvision = {version = "^0.14.1"}
 
 [build-system]
 requires = ["poetry>=0.12"]
