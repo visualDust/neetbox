@@ -12,7 +12,8 @@ import os
 
 
 class Logger:
-    def __init__(self, whom = None, ic=None, color=None):
+    def __init__(self, whom=None, method_level=True, ic=None, color=None):
+        self.method_level = method_level
         if whom is not None:
             self.whom = whom
         else:
@@ -21,8 +22,10 @@ class Logger:
                 the_class = stack.f_locals["self"].__class__.__name__
                 self.whom = str(the_class)
             else:
+                self.method_level = False
                 the_method = stack.f_code.co_name
                 self.whom = str(the_method)
+
         self.ic = ""
         self.color = color
         self.ic = ic
@@ -39,14 +42,14 @@ class Logger:
         flag=None,
         with_ic=True,
         with_datetime=True,
-        with_identifier=True,
+        with_caller_name=True,
         into_file=True,
         into_stdout=True,
     ):
         for cond in self.__conditions__:
             if not cond:
                 return
-            
+
         if type(message) is not str:
             message = str(message)
 
@@ -69,15 +72,24 @@ class Logger:
                 )
             # if into_file and self.log_writer is not None:
             # pre_text_txt += icon_str
-        if with_identifier:
+        method_name = ""
+        if self.method_level:
+            curframe = inspect.currentframe()
+            calframe = inspect.getouterframes(curframe, 2)
+            method_name = str(calframe[1][3])
+
+
+        if with_caller_name:
             if into_stdout:
+                whom_str = str(self.whom) + " > " + method_name + " > " * (len(method_name)>0)
                 pre_text_cmd += (
-                    colored(str(self.whom) + " > ", color=color_str)
+                    colored(text = whom_str, color=color_str)
                     if self.color is not None
-                    else str(self.whom) + " > "
+                    else whom_str
                 )
             if into_file and self.log_writer is not None:
-                pre_text_txt += str(self.whom) + " > "
+                pre_text_txt += whom_str
+
         if into_stdout:
             print(pre_text_cmd + message)
         if into_file and self.log_writer is not None:
@@ -98,7 +110,7 @@ class Logger:
             flag=None,
             with_ic=False,
             with_datetime=False,
-            with_identifier=False,
+            with_caller_name=False,
         )
         return self
 
@@ -128,7 +140,7 @@ class Logger:
             flag=None,
             with_ic=False,
             with_datetime=False,
-            with_identifier=False,
+            with_caller_name=False,
         )
         return self
 
@@ -138,7 +150,7 @@ class Logger:
             flag=None,
             with_ic=False,
             with_datetime=False,
-            with_identifier=False,
+            with_caller_name=False,
         )
         return self
 
@@ -153,7 +165,7 @@ class Logger:
             flag=None,
             with_ic=False,
             with_datetime=False,
-            with_identifier=False,
+            with_caller_name=False,
         )
         return self
 
@@ -193,7 +205,7 @@ loggers_dict = {}
 static_logger = Logger("TheLoggerRoot")
 
 
-def get_logger(whom = None, ic=None, color=None) -> Logger:
+def get_logger(whom=None, method_level = True, ic=None, color=None) -> Logger:
     if whom is None:
         stack = inspect.stack()[1][0]
         if "self" in stack.f_locals:
@@ -204,8 +216,9 @@ def get_logger(whom = None, ic=None, color=None) -> Logger:
             whom = str(the_method)
     if whom in loggers_dict:
         return loggers_dict[whom]
-    loggers_dict[whom] = Logger(whom, ic, color)
+    loggers_dict[whom] = Logger(whom=whom, method_level=method_level, ic = ic, color=color)
     return loggers_dict[whom]
+
 
 def validateTitle(title):
     if platform.system().lower() == "windows":
