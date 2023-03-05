@@ -27,26 +27,18 @@ classifiers = [
     "Topic :: Utilities"
 ]
 
-# packages = [
-#     { include = "useless" },
-#     { include = "models" },
-# ]
-
-# [[tool.poetry.source]]
-# name = "tsinghua-pypi"
-# url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-# default = true
+[[tool.poetry.source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
 
 [tool.poetry.dependencies]
 python = "^3.8"
-# torch = {version = "^1.13.1", optional = true}
-# torchvision = {version = "^0.14.1", optional = true}
 numpy = "^1.24.2"
 pillow = "^9.4.0"
 opencv-python = "^4.7.0.72"
 pandas = "^1.5.3"
 tqdm = "^4.65.0"
-
 
 [tool.poetry.group.dev.dependencies]
 torch = {version = "^1.13.1"}
