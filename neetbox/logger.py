@@ -6,20 +6,22 @@ import platform
 import warnings
 from datetime import date, datetime
 from enum import Enum
-
 import six
 from colorama import Fore
 
 
 def colored(text, color):
     if "ANSI_COLORS_DISABLED" in os.environ or "NO_COLOR" in os.environ:
-        warnings.warn("Current environment not supported colored text, please notice that! ")
+        warnings.warn(
+            "Current environment not supported colored text, please notice that! "
+        )
 
     if hasattr(Fore, color.upper()):
         text = getattr(Fore, color.upper()) + text + Fore.RESET
     else:
         raise ValueError("Wrong color was inputed in colored func.")
     return text
+
 
 class Logger:
     def __init__(self, whom=None, method_level=True, ic=None, color=None):
@@ -88,12 +90,16 @@ class Logger:
             calframe = inspect.getouterframes(curframe, 2)
             method_name = str(calframe[1][3])
 
-
         if with_caller_name:
             if into_stdout:
-                whom_str = str(self.whom) + " > " + method_name + " > " * (len(method_name)>0)
+                whom_str = (
+                    str(self.whom)
+                    + " > "
+                    + method_name
+                    + " > " * (len(method_name) > 0)
+                )
                 pre_text_cmd += (
-                    colored(text = whom_str, color=color_str)
+                    colored(text=whom_str, color=color_str)
                     if self.color is not None
                     else whom_str
                 )
@@ -215,7 +221,7 @@ loggers_dict = {}
 static_logger = Logger("TheLoggerRoot")
 
 
-def get_logger(whom=None, method_level = True, ic=None, color=None) -> Logger:
+def get_logger(whom=None, method_level=True, ic=None, color=None) -> Logger:
     if whom is None:
         stack = inspect.stack()[1][0]
         if "self" in stack.f_locals:
@@ -224,9 +230,12 @@ def get_logger(whom=None, method_level = True, ic=None, color=None) -> Logger:
         else:
             the_method = stack.f_code.co_name
             whom = str(the_method)
+            method_level = False
     if whom in loggers_dict:
         return loggers_dict[whom]
-    loggers_dict[whom] = Logger(whom=whom, method_level=method_level, ic = ic, color=color)
+    loggers_dict[whom] = Logger(
+        whom=whom, method_level=method_level, ic=ic, color=color
+    )
     return loggers_dict[whom]
 
 
