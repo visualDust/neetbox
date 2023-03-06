@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'NEETBox',
   tagline: 'Deeplearning researchers\' code snippets',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.png',
 
   // Set the production url of your site here
   url: 'https://neetbox.550w.host',
@@ -42,14 +42,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-        },
-        blog: {
-          showReadingTime: true,
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://dev.github.com/visualdust/neetbox/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
