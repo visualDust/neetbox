@@ -88,9 +88,10 @@ class Logger:
                 if method_name == "<module>":
                     method_name = ""
             if whom_str.endswith('.py'):
-                whom_str += " > " + _get_caller_identity_()
-                whom_str += " > " + method_name + " > " * (len(method_name) > 0)
-            
+                whom_str += " > " + _get_caller_identity_() + " > " + method_name + " > " * (len(method_name) > 0)
+            else:
+                whom_str += " > "
+
             if into_stdout:
                 pre_text_cmd += (
                     colored(text=whom_str, color=color_str)
