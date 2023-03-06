@@ -27,7 +27,7 @@ class Logger:
     def __init__(self, whom=None, method_level=True, ic=None, color=None):
         self.method_level = method_level
         if whom is not None:
-            self.whom = whom
+            self.whom = str(whom)
         else:
             self.whom = _get_caller_identity_()
 
@@ -87,12 +87,10 @@ class Logger:
 
         if method_level:
             if into_stdout:
-                whom_str = (
-                    str(self.whom)
-                    + " > "
-                    + method_name
-                    + " > " * (len(method_name) > 0)
-                )
+                whom_str = self.whom
+                if whom_str.endswith('.py'):
+                    whom_str += " > " + _get_caller_identity_()
+                whom_str += " > " + method_name + " > " * (len(method_name) > 0)
                 pre_text_cmd += (
                     colored(text=whom_str, color=color_str)
                     if self.color is not None
@@ -230,9 +228,7 @@ def get_logger(whom=None, method_level=True, ic=None, color=None) -> Logger:
         whom = _get_caller_identity_()
     if whom in loggers_dict:
         return loggers_dict[whom]
-    loggers_dict[whom] = Logger(
-        whom=whom, method_level=method_level, ic=ic, color=color
-    )
+    loggers_dict[whom] = Logger(whom=whom, method_level=method_level, ic=ic, color=color)
     return loggers_dict[whom]
 
 
