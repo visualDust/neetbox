@@ -24,8 +24,7 @@ def colored(text, color):
 
 
 class Logger:
-    def __init__(self, whom=None, method_level=True, ic=None, color=None):
-        self.method_level = method_level
+    def __init__(self, whom=None, ic=None, color=None):
         if whom is not None:
             self.whom = str(whom)
         else:
@@ -47,6 +46,7 @@ class Logger:
         flag=None,
         with_ic=True,
         with_datetime=True,
+        with_identifier = True,
         method_level=True,
         into_file=True,
         into_stdout=True,
@@ -77,20 +77,21 @@ class Logger:
                 )
             # if into_file and self.log_writer is not None:
             # pre_text_txt += icon_str
-        method_name = ""
-        if self.method_level:
-            curframe = inspect.currentframe()
-            calframe = inspect.getouterframes(curframe, 2)
-            method_name = str(calframe[1][3])
-            if method_name == "<module>":
-                method_name = ""
-
-        if method_level:
-            if into_stdout:
-                whom_str = self.whom
-                if whom_str.endswith('.py'):
-                    whom_str += " > " + _get_caller_identity_()
+        
+        if with_identifier:
+            whom_str = self.whom
+            method_name = ""
+            if method_level:
+                curframe = inspect.currentframe()
+                calframe = inspect.getouterframes(curframe, 2)
+                method_name = str(calframe[1][3])
+                if method_name == "<module>":
+                    method_name = ""
+            if whom_str.endswith('.py'):
+                whom_str += " > " + _get_caller_identity_()
                 whom_str += " > " + method_name + " > " * (len(method_name) > 0)
+            
+            if into_stdout:
                 pre_text_cmd += (
                     colored(text=whom_str, color=color_str)
                     if self.color is not None
@@ -154,13 +155,13 @@ class Logger:
         return self
 
     def log_txt_file(self, file):
-        if type(file) is str:
+        if isinstance(file, str):
             file = open(file)
-        str = ""
+        context = ""
         for line in file.readlines():
-            str += line
+            context += line
         self.log(
-            message=str,
+            message=context,
             flag=None,
             with_ic=False,
             with_datetime=False,
@@ -223,12 +224,12 @@ def _get_caller_identity_(traceback=1):
     return whom
 
 
-def get_logger(whom=None, method_level=True, ic=None, color=None) -> Logger:
+def get_logger(whom=None, ic=None, color=None) -> Logger:
     if whom is None:
         whom = _get_caller_identity_()
     if whom in loggers_dict:
         return loggers_dict[whom]
-    loggers_dict[whom] = Logger(whom=whom, method_level=method_level, ic=ic, color=color)
+    loggers_dict[whom] = Logger(whom=whom, ic=ic, color=color)
     return loggers_dict[whom]
 
 
