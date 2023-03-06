@@ -88,7 +88,12 @@ class Logger:
                 if method_name == "<module>":
                     method_name = ""
             if whom_str.endswith('.py'):
-                whom_str += " > " + _get_caller_identity_() + " > " + method_name + " > " * (len(method_name) > 0)
+                sub_caller = _get_caller_identity_()
+                if sub_caller == whom_str:
+                    sub_caller = ""
+                else: sub_caller += " > "
+                whom_str += " > " + method_name + " > " * (len(method_name) > 0)
+                print(_get_caller_identity_())
             else:
                 whom_str += " > "
 
