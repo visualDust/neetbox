@@ -29,14 +29,7 @@ class Logger:
         if whom is not None:
             self.whom = whom
         else:
-            stack = inspect.stack()[1][0]
-            if "self" in stack.f_locals:
-                the_class = stack.f_locals["self"].__class__.__name__
-                self.whom = str(the_class)
-            else:
-                self.method_level = False
-                the_method = stack.f_code.co_name
-                self.whom = str(the_method)
+            self.whom = _get_caller_identity_()
 
         self.ic = ""
         self.color = color
@@ -54,7 +47,7 @@ class Logger:
         flag=None,
         with_ic=True,
         with_datetime=True,
-        with_caller_name=True,
+        method_level=True,
         into_file=True,
         into_stdout=True,
     ):
@@ -89,8 +82,10 @@ class Logger:
             curframe = inspect.currentframe()
             calframe = inspect.getouterframes(curframe, 2)
             method_name = str(calframe[1][3])
+            if method_name == "<module>":
+                method_name = ""
 
-        if with_caller_name:
+        if method_level:
             if into_stdout:
                 whom_str = (
                     str(self.whom)
@@ -114,21 +109,11 @@ class Logger:
 
     def debug(self, info, flag=f"[{colored('δ', 'cyan')}]"):
         self.log(info, flag, into_file=False)
-        self.log(info, into_stdout=False)
+        self.log(info, flag="DEBUG", into_stdout=False)
 
     def err(self, err, flag=f"[{colored('×', 'red')}]"):
         self.log(err, flag, into_file=False)
-        self.log(err, into_stdout=False)
-
-    def banner(self, ch="=", length=80):
-        self.log(
-            ch * length,
-            flag=None,
-            with_ic=False,
-            with_datetime=False,
-            with_caller_name=False,
-        )
-        return self
+        self.log(err, flag="ERROR", into_stdout=False)
 
     def log_os_info(self):
         message = (
@@ -156,7 +141,7 @@ class Logger:
             flag=None,
             with_ic=False,
             with_datetime=False,
-            with_caller_name=False,
+            method_level=False,
         )
         return self
 
@@ -166,7 +151,7 @@ class Logger:
             flag=None,
             with_ic=False,
             with_datetime=False,
-            with_caller_name=False,
+            method_level=False,
         )
         return self
 
@@ -181,7 +166,7 @@ class Logger:
             flag=None,
             with_ic=False,
             with_datetime=False,
-            with_caller_name=False,
+            method_level=False,
         )
         return self
 
@@ -218,19 +203,31 @@ class Logger:
 
 writers_dict = {}
 loggers_dict = {}
-static_logger = Logger("TheLoggerRoot")
+static_logger = Logger(whom="LOGGER")
+
+
+def _get_caller_identity_(traceback=1):
+    whom = None
+    stack = inspect.stack()[2][0]
+    if "self" in stack.f_locals:
+        the_class = stack.f_locals["self"].__class__.__name__
+        whom = str(the_class)
+    else:
+        the_method = stack.f_code.co_name
+        previous_frame = inspect.currentframe()
+        for i in range(traceback + 1):
+            previous_frame = previous_frame.f_back
+        (filename, line_number, function_name, lines, index) = inspect.getframeinfo(
+            previous_frame
+        )
+        the_method = filename.split("\\")[-1].split("/")[-1]
+        whom = str(the_method)
+    return whom
 
 
 def get_logger(whom=None, method_level=True, ic=None, color=None) -> Logger:
     if whom is None:
-        stack = inspect.stack()[1][0]
-        if "self" in stack.f_locals:
-            the_class = stack.f_locals["self"].__class__.__name__
-            whom = str(the_class)
-        else:
-            the_method = stack.f_code.co_name
-            whom = str(the_method)
-            method_level = False
+        whom = _get_caller_identity_()
     if whom in loggers_dict:
         return loggers_dict[whom]
     loggers_dict[whom] = Logger(
