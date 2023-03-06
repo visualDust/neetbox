@@ -93,7 +93,6 @@ class Logger:
                     sub_caller = ""
                 else: sub_caller += " > "
                 whom_str += " > " + method_name + " > " * (len(method_name) > 0)
-                print(_get_caller_identity_())
             else:
                 whom_str += " > "
 
