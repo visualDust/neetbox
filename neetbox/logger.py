@@ -66,8 +66,8 @@ class Logger:
         pre_text_txt = ""
         pre_text_txt += flag if flag is not None else ""
         pre_text_txt += str(datetime.now()) + " > " if with_datetime else ""
-        icon_str = self.ic.value if isinstance(self.ic, IconMode) else self.ic
-        color_str = self.color.value if isinstance(self.color, ColorMode) else self.color
+        icon_str = self.ic.value if type(self.ic) is IconMode else self.ic
+        color_str = self.color.value if type(self.color) is ColorMode else self.color
         if with_ic and self.ic is not None:
             if into_stdout:
                 pre_text_cmd += (
