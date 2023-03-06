@@ -8,12 +8,14 @@ from datetime import date, datetime
 from enum import Enum
 
 import six
-from colorama import Fore
+from colorama import Fore, just_fix_windows_console
 
 
 def colored(text, color):
     if "ANSI_COLORS_DISABLED" in os.environ or "NO_COLOR" in os.environ:
         warnings.warn("Current environment not supported colored text, please notice that! ")
+    if platform.system().lower() == "windows":
+        just_fix_windows_console()
 
     if hasattr(Fore, color.upper()):
         text = getattr(Fore, color.upper()) + text + Fore.RESET
