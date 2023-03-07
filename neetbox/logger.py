@@ -8,6 +8,7 @@ from datetime import date, datetime
 from enum import Enum
 import six
 from colorama import Fore
+from random import random
 
 
 def colored(text, color):
@@ -29,8 +30,10 @@ class Logger:
             self.whom = str(whom)
         else:
             self.whom = _get_caller_identity_()
-
         self.ic = ""
+        if not color:
+            color_builtin = ["red", "blue", "yellow", "cyan", "magenta"]
+            color = color_builtin[int(random(len(color_builtin)))]
         self.color = color
         self.ic = ic
         self.log_writer = None
@@ -46,7 +49,7 @@ class Logger:
         flag=None,
         with_ic=True,
         with_datetime=True,
-        with_identifier = True,
+        with_identifier=True,
         method_level=True,
         into_file=True,
         into_stdout=True,
@@ -67,7 +70,9 @@ class Logger:
         pre_text_txt += flag if flag is not None else ""
         pre_text_txt += str(datetime.now()) + " > " if with_datetime else ""
         icon_str = self.ic.value if isinstance(self.ic, IconMode) else self.ic
-        color_str = self.color.value if isinstance(self.color, ColorMode) else self.color
+        color_str = (
+            self.color.value if isinstance(self.color, ColorMode) else self.color
+        )
         if with_ic and self.ic is not None:
             if into_stdout:
                 pre_text_cmd += (
@@ -77,7 +82,7 @@ class Logger:
                 )
             # if into_file and self.log_writer is not None:
             # pre_text_txt += icon_str
-        
+
         if with_identifier:
             whom_str = self.whom
             method_name = ""
@@ -87,11 +92,12 @@ class Logger:
                 method_name = str(calframe[1][3])
                 if method_name == "<module>":
                     method_name = ""
-            if whom_str.endswith('.py'):
+            if whom_str.endswith(".py"):
                 sub_caller = _get_caller_identity_()
                 if sub_caller == whom_str:
                     sub_caller = ""
-                else: sub_caller += " > "
+                else:
+                    sub_caller += " > "
                 whom_str += " > " + method_name + " > " * (len(method_name) > 0)
             else:
                 whom_str += " > "
