@@ -33,7 +33,7 @@ class Logger:
         self.ic = ""
         if not color:
             color_builtin = ["red", "blue", "yellow", "cyan", "magenta"]
-            color = color_builtin[int(random(len(color_builtin)))]
+            color = color_builtin[int(random() * len(color_builtin))]
         self.color = color
         self.ic = ic
         self.log_writer = None
