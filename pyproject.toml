@@ -41,12 +41,13 @@ pandas = "^1.5.3"
 tqdm = "^4.65.0"
 colorama = "^0.4.6"
 thop = "^0.1.1.post2209072238"
-
+scikit-learn = "^1.2.1"
 
 
 # [tool.poetry.group.dev.dependencies]
 # torch = {version = "^1.13.1"}
 # torchvision = {version = "^0.14.1"}
+
 
 
 
