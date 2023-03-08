@@ -40,12 +40,14 @@ opencv-python = "^4.7.0.72"
 pandas = "^1.5.3"
 tqdm = "^4.65.0"
 colorama = "^0.4.6"
+thop = "^0.1.1.post2209072238"
 
 
 
 # [tool.poetry.group.dev.dependencies]
 # torch = {version = "^1.13.1"}
 # torchvision = {version = "^0.14.1"}
+
 
 
 [build-system]
