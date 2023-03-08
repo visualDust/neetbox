@@ -5,11 +5,6 @@ from models.kernels import *
 
 
 class CannyFilter(nn.Module):
-    """
-    from cannytorch import CannyFilter
-    cf = CannyFilter()
-    print(cf)
-    """
     def __init__(self, k_gaussian=3, mu=0, sigma=1, k_sobel=3, padding=True, use_cuda=False,):
         super(CannyFilter, self).__init__()
         # device

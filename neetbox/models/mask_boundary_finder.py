@@ -29,7 +29,6 @@ class MaskEdgeDetecter(torch.nn.Module):
         kernel[0, 0, kernel_size // 2: kernel_size//2+1, :] = 1
         kernel[0, 0, :,  kernel_size // 2: kernel_size//2+1] = 1
         kernel = kernel.float()
-        # print(kernel)
         res = F.conv2d(image, kernel.view([1,1,kernel_size, kernel_size]),stride=1, padding = kernel_size // 2)
         return (res > 0) * 1.0
 

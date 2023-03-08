@@ -2,6 +2,9 @@ from PIL import Image
 from random import random
 import os
 import numpy as np
+from neetbox.core import *
+
+logger = get_static_logger()
 
 class ImageFolder:
     def __init__(this, folder, sub_dirs=False, async_scan = False):
@@ -33,7 +36,7 @@ class ImageFolder:
             this._ready = True
             if not this._initialized:
                 this._initialized = True
-            print('Folder Ready.')
+            logger.log(f'Folder ready with {len(image_path_list)} images.')
         if this._async_scan:
             import threading
             threading.Thread(target=perform_scan).start()

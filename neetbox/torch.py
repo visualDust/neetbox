@@ -1,20 +1,13 @@
 from thop import profile as _profile
 from neetbox.logger import get_logger
+from neetbox.core import *
 import time
 from tqdm import tqdm
 import torch
 
-logger = get_logger(whom="NEETBOX")
+logger = get_static_logger()
 
 def profile(model, input_shape=(1,3,2048,1024), profiling = True, calc_fps = 1000, speedtest = 1):
-    if profiling:
-        logger.log("Model profiling...")
-        tensor = torch.rand(input_shape)
-        if next(model.parameters()).is_cuda:
-            tensor = tensor.cuda()
-        tensor = (tensor,)
-        flops, params = _profile(model, inputs=tensor)
-        logger.log(f"Model FLOPs = {flops/1e9}, params = {params/1e6}")
     if calc_fps:
         model.eval()
         with torch.no_grad():
@@ -46,3 +39,11 @@ def profile(model, input_shape=(1,3,2048,1024), profiling = True, calc_fps = 100
             aver = (sum(counter) - _min - _max) / (len(counter) - 2)
             logger.log(f"SpeedTest: average {aver}s per run with input size {input_shape}")
             logger.log(f"Min inference time: {_min}s, Max inference time:{_max}")
+    if profiling:
+        logger.log("Model profiling...")
+        tensor = torch.rand(input_shape)
+        if next(model.parameters()).is_cuda:
+            tensor = tensor.cuda()
+        tensor = (tensor,)
+        flops, params = _profile(model, inputs=tensor)
+        logger.log(f"Model FLOPs = {flops/1e9}, params = {params/1e6}")
