@@ -6,10 +6,10 @@ import torch
 
 logger = get_logger(whom="NEETBOX")
 
-def profile(model, input_resolution=(2048,1024), profiling = True, calc_fps = 1000, speedtest = 1):
+def profile(model, input_shape=(1,3,2048,1024), profiling = True, calc_fps = 1000, speedtest = 1):
     if profiling:
         logger.log("Model profiling...")
-        tensor = torch.rand(1, 3, input_resolution[1], input_resolution[0])
+        tensor = torch.rand(input_shape)
         if next(model.parameters()).is_cuda:
             tensor = tensor.cuda()
         tensor = (tensor,)
@@ -18,7 +18,7 @@ def profile(model, input_resolution=(2048,1024), profiling = True, calc_fps = 10
     if calc_fps:
         model.eval()
         with torch.no_grad():
-            tensor = torch.rand(1, 3, input_resolution[1], input_resolution[0])
+            tensor = torch.rand(input_shape)
             if next(model.parameters()).is_cuda:
                 tensor = tensor.cuda()
             logger.log("Calculating FPS...")
@@ -31,7 +31,7 @@ def profile(model, input_resolution=(2048,1024), profiling = True, calc_fps = 10
         logger.log("Running SpeedTest...")
         logger.log("Attention that model speedtest results are different on different devices or under different circumstances.")
         model.eval()
-        tensor = torch.rand(1, 3, input_resolution[1], input_resolution[0])
+        tensor = torch.rand(input_shape)
         if next(model.parameters()).is_cuda:
             tensor = tensor.cuda()
         _ = model(tensor)
@@ -44,5 +44,5 @@ def profile(model, input_resolution=(2048,1024), profiling = True, calc_fps = 10
         if len(counter):
             _min, _max = min(counter), max(counter)
             aver = (sum(counter) - _min - _max) / (len(counter) - 2)
-            logger.log(f"SpeedTest: average {aver}s per run with input size {input_resolution}")
+            logger.log(f"SpeedTest: average {aver}s per run with input size {input_shape}")
             logger.log(f"Min inference time: {_min}s, Max inference time:{_max}")
