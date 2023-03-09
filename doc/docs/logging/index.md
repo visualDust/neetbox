@@ -130,7 +130,7 @@ output:
 ```python
 logger.log(
     "raw message without icon and datetime",
-    with_datetime=False,
+    date_time_fmt=None,
     with_ic=False,
     with_identifier=False,
 )
