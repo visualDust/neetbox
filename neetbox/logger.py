@@ -48,7 +48,7 @@ class Logger:
         message,
         flag=None,
         with_ic=True,
-        with_datetime=True,
+        date_time_fmt="%Y-%m-%d-%H:%M:%S",
         with_identifier=True,
         method_level=True,
         into_file=True,
@@ -64,11 +64,12 @@ class Logger:
         if into_stdout:
             pre_text_cmd = ""
             pre_text_cmd += flag if flag is not None else ""
-            pre_text_cmd += str(datetime.now()) + " > " if with_datetime else ""
+            pre_text_cmd += str(datetime.now()) + " > " if date_time_fmt else ""
 
         pre_text_txt = ""
         pre_text_txt += flag if flag is not None else ""
-        pre_text_txt += str(datetime.now()) + " > " if with_datetime else ""
+        if date_time_fmt:
+            pre_text_txt += str(datetime.now().strftime(date_time_fmt)) + " > "
         icon_str = self.ic.value if isinstance(self.ic, IconMode) else self.ic
         color_str = (
             self.color.value if isinstance(self.color, ColorMode) else self.color
@@ -150,7 +151,7 @@ class Logger:
             message=message,
             flag=None,
             with_ic=False,
-            with_datetime=False,
+            date_time_fmt=False,
             method_level=False,
         )
         return self
@@ -160,7 +161,7 @@ class Logger:
             message="\n" * line_cnt,
             flag=None,
             with_ic=False,
-            with_datetime=False,
+            date_time_fmt=False,
             method_level=False,
         )
         return self
@@ -175,7 +176,7 @@ class Logger:
             message=context,
             flag=None,
             with_ic=False,
-            with_datetime=False,
+            date_time_fmt=False,
             method_level=False,
         )
         return self
