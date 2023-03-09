@@ -1,4 +1,4 @@
-from neetbox.logging.logger import get_logger
+from neetbox.logging import get_logger
 
 _static_logger = get_logger(whom="NEETBOX")
 def get_static_logger():

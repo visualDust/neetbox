@@ -232,13 +232,13 @@ class _Logger:
             static_logger.log(f"Directory {path} not found, trying to create.")
             try:
                 os.makedirs(path)
-            finally:
+            except:
                 static_logger.log(f"Failed when trying to create directory {path}")
                 raise Exception(f"Failed when trying to create directory {path}")
         log_file_name = ""
         if independent:
             log_file_name += self.whom
-        log_file_name += str(date.today())
+        log_file_name += str(date.today()) + ".log"
         self.bind_file(os.path.join(path, log_file_name))
         return self
 
@@ -265,7 +265,7 @@ loggers_dict = {}
 static_logger = _Logger(whom="LOGGER")
 
 
-def get_logger(whom=None, ic=None, color=None, traceback=1) -> _Logger:
+def get_logger(whom=None, icon=None, color=None, traceback=1) -> _Logger:
     """Get a Logger instance
 
     Args:
@@ -280,7 +280,7 @@ def get_logger(whom=None, ic=None, color=None, traceback=1) -> _Logger:
         whom = _get_caller_identity_(traceback)
     if whom in loggers_dict:
         return loggers_dict[whom]
-    loggers_dict[whom] = _Logger(whom=whom, icon=ic, color=color)
+    loggers_dict[whom] = _Logger(whom=whom, icon=icon, color=color)
     return loggers_dict[whom]
 
 

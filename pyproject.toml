@@ -13,7 +13,7 @@ maintainers = [
 
 
 readme = "README.md"
-homepage = "https://github.com/neet-cv"
+homepage = "https://neetbox.550w.host"
 repository = "https://github.com/visualDust/neetbox"
 keywords = ["computer vision", "tools", "logging"]
 classifiers = [
