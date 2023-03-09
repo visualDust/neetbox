@@ -1,5 +1,5 @@
 from thop import profile as _profile
-from neetbox.logger import get_logger
+from neetbox.logger.logger import get_logger
 from neetbox.core import *
 import time
 from tqdm import tqdm

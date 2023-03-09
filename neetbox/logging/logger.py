@@ -6,12 +6,22 @@ import platform
 import warnings
 from datetime import date, datetime
 from enum import Enum
-import six
 from colorama import Fore
 from random import random
 
 
-def colored(text, color):
+def _colored(text, color):
+    """_summary_
+
+    Args:
+        text (str): original raw string
+        color (str | ColorMode): which color
+
+    Raises: Nothing
+
+    Returns:
+        str: colored string
+    """
     if "ANSI_COLORS_DISABLED" in os.environ or "NO_COLOR" in os.environ:
         warnings.warn(
             "Current environment not supported colored text, please notice that! "
@@ -24,22 +34,35 @@ def colored(text, color):
     return text
 
 
-class Logger:
-    def __init__(self, whom=None, ic=None, color=None):
+class _Logger:
+    def __init__(self, whom=None, icon=None, color=None):
+        """Not for ordinary users. Use neetbox.logger.get_logger instead.
+
+        Args:
+            whom (any, optional): who owns the logger. Keep it None if you want the logger to auto trace the owner. Defaults to None.
+            icon (str, optional): Post a useless icon ahead. Defaults to None.
+            color (_type_, optional): Set a color, keep it None to get a random color. Defaults to None.
+        """
         if whom is not None:
             self.whom = str(whom)
         else:
             self.whom = _get_caller_identity_()
-        self.ic = ""
         if not color:
             color_builtin = ["red", "blue", "yellow", "cyan", "magenta"]
             color = color_builtin[int(random() * len(color_builtin))]
         self.color = color
-        self.ic = ic
+        self.icon = icon
         self.log_writer = None
         self.__conditions__ = []
 
-    def add_condition_check(self, callback: bool):
+    def add_condition_check(self, callback: bool) -> None:
+        """Add a condition that logger should check before performing a log
+
+        Args:
+            callback (bool): A callback that returns a bool
+
+        Returns: Nothing
+        """
         self.__conditions__.append(callback)
         return self
 
@@ -64,26 +87,33 @@ class Logger:
         if into_stdout:
             pre_text_cmd = ""
             pre_text_cmd += flag if flag is not None else ""
-            pre_text_cmd += str(datetime.now()) + " > " if date_time_fmt else ""
+            pre_text_cmd += (
+                str(datetime.now().strftime(date_time_fmt)) + " > "
+                if date_time_fmt
+                else ""
+            )
 
         pre_text_txt = ""
         pre_text_txt += flag if flag is not None else ""
         if date_time_fmt:
             pre_text_txt += str(datetime.now().strftime(date_time_fmt)) + " > "
-        icon_str = self.ic.value if isinstance(self.ic, IconMode) else self.ic
+        icon_str = self.icon
         color_str = (
             self.color.value if isinstance(self.color, ColorMode) else self.color
         )
-        if with_ic and self.ic is not None:
+        if with_ic and self.icon is not None:
             if into_stdout:
                 pre_text_cmd += (
-                    colored(icon_str, color=color_str)
+                    _colored(icon_str, color=color_str)
                     if self.color is not None
                     else icon_str
                 )
             # if into_file and self.log_writer is not None:
             # pre_text_txt += icon_str
 
+        """
+        Tracing identifier
+        """
         if with_identifier:
             whom_str = self.whom
             method_name = ""
@@ -105,7 +135,7 @@ class Logger:
 
             if into_stdout:
                 pre_text_cmd += (
-                    colored(text=whom_str, color=color_str)
+                    _colored(text=whom_str, color=color_str)
                     if self.color is not None
                     else whom_str
                 )
@@ -118,15 +148,20 @@ class Logger:
             self.log_writer.write(pre_text_txt + message + "\n")
         return self
 
-    def debug(self, info, flag=f"[{colored('δ', 'cyan')}]"):
+    def debug(self, info, flag=f"[{_colored('δ', 'cyan')}]"):
         self.log(info, flag, into_file=False)
         self.log(info, flag="DEBUG", into_stdout=False)
 
-    def err(self, err, flag=f"[{colored('×', 'red')}]"):
+    def err(self, err, flag=f"[{_colored('×', 'red')}]"):
         self.log(err, flag, into_file=False)
         self.log(err, flag="ERROR", into_stdout=False)
 
     def log_os_info(self):
+        """Log some maybe-useful os info
+
+        Returns:
+            _Logger : the logger instance itself
+        """
         message = (
             f"whom\t\t|\t" + getpass.getuser() + " using " + str(platform.node()) + "\n"
         )
@@ -149,6 +184,7 @@ class Logger:
         )
         self.log(
             message=message,
+            with_identifier=False,
             flag=None,
             with_ic=False,
             date_time_fmt=False,
@@ -156,7 +192,15 @@ class Logger:
         )
         return self
 
-    def log_empty_line(self, line_cnt=1):
+    def skip_lines(self, line_cnt=1):
+        """Let the logger log some empty lines
+
+        Args:
+            line_cnt (int, optional): how many empty line. Defaults to 1.
+
+        Returns:
+            _Logger : the logger instance itself
+        """
         self.log(
             message="\n" * line_cnt,
             flag=None,
@@ -185,8 +229,12 @@ class Logger:
         if os.path.isfile(path):
             raise "Target path is not a directory."
         if not os.path.exists(path):
-            static_logger.log("Directory not found, trying to create.")
-            os.makedirs(path)
+            static_logger.log(f"Directory {path} not found, trying to create.")
+            try:
+                os.makedirs(path)
+            finally:
+                static_logger.log(f"Failed when trying to create directory {path}")
+                raise Exception(f"Failed when trying to create directory {path}")
         log_file_name = ""
         if independent:
             log_file_name += self.whom
@@ -214,7 +262,26 @@ class Logger:
 
 writers_dict = {}
 loggers_dict = {}
-static_logger = Logger(whom="LOGGER")
+static_logger = _Logger(whom="LOGGER")
+
+
+def get_logger(whom=None, ic=None, color=None, traceback=1) -> _Logger:
+    """Get a Logger instance
+
+    Args:
+        whom (any, optional): who owns the logger. Keep it None if you want the logger to auto trace the owner. Defaults to None.
+        icon (str, optional): Post a useless icon ahead. Defaults to None.
+        color (_type_, optional): Set a color, keep it None to get a random color. Defaults to None.
+
+    Returns:
+        _Logger: a logger instance
+    """
+    if whom is None:
+        whom = _get_caller_identity_(traceback)
+    if whom in loggers_dict:
+        return loggers_dict[whom]
+    loggers_dict[whom] = _Logger(whom=whom, icon=ic, color=color)
+    return loggers_dict[whom]
 
 
 def _get_caller_identity_(traceback=1):
@@ -236,44 +303,20 @@ def _get_caller_identity_(traceback=1):
     return whom
 
 
-def get_logger(whom=None, ic=None, color=None) -> Logger:
-    if whom is None:
-        whom = _get_caller_identity_()
-    if whom in loggers_dict:
-        return loggers_dict[whom]
-    loggers_dict[whom] = Logger(whom=whom, ic=ic, color=color)
-    return loggers_dict[whom]
+def validateTitle(text: str):
+    """Remove invalid characters for windows file systems
 
+    Args:
+        title (str): the given title
 
-def validateTitle(title):
+    Returns:
+        str: valid text
+    """
     if platform.system().lower() == "windows":
         rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/ \ : * ? " < > |'
-        new_title = re.sub(rstr, "_", title)  # replace with '_'
+        new_title = re.sub(rstr, "_", text)  # replace with '_'
         return new_title
-    return title
-
-
-class IconMode(Enum):
-    setting = "⚙"
-    star_filled = "★"
-    star = "☆"
-    circle = "○"
-    circle_filled = "●"
-    telephone_filled = "☎"
-    telephone = "☏"
-    smile = "☺"
-    smile_filled = "☻"
-    jap_no = "の"
-    sakura_filled = "✿"
-    sakura = "❀"
-    java = "♨"
-    music = "♪"
-    block = "▧"
-    left = "⇐"
-    up = "⇑"
-    right = "⇒"
-    down = "⇓"
-    left_right = "↹"
+    return text
 
 
 class ColorMode(Enum):
