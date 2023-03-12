@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neetbox"
-version = "0.1.4"
+version = "0.1.31"
 description = "NEETBox contains useless CV code snippets."
 license = "MIT"
 authors = [
