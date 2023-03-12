@@ -219,6 +219,7 @@ class _Logger:
         self.log(
             message=context,
             flag=None,
+            with_identifier=False,
             with_ic=False,
             date_time_fmt=False,
             method_level=False,
