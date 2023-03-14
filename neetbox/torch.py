@@ -6,6 +6,7 @@ import torch
 
 logger = get_static_logger()
 
+
 def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=1000):
     if speedtest:
         warmed = False
@@ -20,6 +21,7 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
             model.eval()
             with torch.no_grad():
                 logger.log("start warm up")
+                output = model(tensor)
                 for i in tqdm(range(10)):
                     model(tensor)
                 warmed = True
@@ -36,7 +38,12 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
                 time_counter.sum(),
             )
             _aver = (_sum - _min - _max) / speedtest
-            logger.log(f"average {_aver / 1000.}s per run with input size {input_shape}")
+            if type(output) is list:
+                output_shape = ''
+                for out in output:
+                    output_shape += f'{out.shape}, '
+            else: output_shape = output.shape
+            logger.log(f"average {_aver / 1000.}s per run with input size {input_shape}, out put size {output_shape}")
             logger.log(f"min inference time: {_min / 1000.}s, max inference time: {_max / 1000.}s")
             logger.log(f"That is {(1. / _aver) * 1000.} frames per second")
             logger.log("====================================================")
@@ -47,6 +54,7 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
         with torch.no_grad():
             if not warmed:
                 logger.log("start warm up")
+                output = model(tensor)
                 for i in tqdm(range(10)):
                     model(tensor)
                 logger.log("warm up done")
@@ -56,7 +64,12 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
                 counter.append(time.time() - t)
             _min, _max, _sum = min(counter), max(counter), sum(counter)
         _aver = (_sum - _min - _max) / speedtest
-        logger.log(f"average {_aver}s per run with input size {input_shape}")
+        if type(output) is list:
+                output_shape = ''
+                for out in output:
+                    output_shape += f'{out.shape}, '
+        else: output_shape = output.shape
+        logger.log(f"average {_aver}s per run with input size {input_shape}, out put size {output_shape}")
         logger.log(f"min inference time: {_min}s, Max inference time: {_max}s")
         logger.log(f"That is {1. / _aver} frames per second")
 

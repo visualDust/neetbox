@@ -52,6 +52,7 @@ class _Logger:
             color = color_builtin[int(random() * len(color_builtin))]
         self.color = color
         self.icon = icon
+        self.debug_enabled = True
         self.log_writer = None
         self.__conditions__ = []
 
@@ -149,12 +150,18 @@ class _Logger:
         return self
 
     def debug(self, info, flag=f"[{_colored('δ', 'cyan')}]"):
-        self.log(info, flag, into_file=False)
-        self.log(info, flag="DEBUG", into_stdout=False)
+        if self.debug_enabled:
+            self.log(info, flag, into_file=False)
+            self.log(info, flag="DEBUG", into_stdout=False)
+        return self
+        
+    def set_debug(self, b):
+        self.debug_enabled = b
 
     def err(self, err, flag=f"[{_colored('×', 'red')}]"):
         self.log(err, flag, into_file=False)
         self.log(err, flag="ERROR", into_stdout=False)
+        return self
 
     def log_os_info(self):
         """Log some maybe-useful os info
