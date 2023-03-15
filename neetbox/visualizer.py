@@ -2,12 +2,14 @@ import random
 import numpy as np
 
 import matplotlib.pyplot as plt
-
+from neetbox.core import *
 from tqdm import tqdm
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.metrics import calinski_harabasz_score
 
+
+logger = get_static_logger()
 
 class Visualizer:
     def __init__(self, seed) -> None:
@@ -27,8 +29,8 @@ def visualize_cluster(feat, cluster):
     centroid = cluster.cluster_centers_
     y_predict = cluster.labels_
     n_clusters = centroid.shape[0]
-    print(f"current n_clusters: {n_clusters}, centroid shape is: {centroid.shape}")
-    print(f"cluster score: ", calinski_harabasz_score(feat, y_predict))
+    logger.log(f"current n_clusters: {n_clusters}, centroid shape is: {centroid.shape}")
+    logger.log(f"cluster score: ", calinski_harabasz_score(feat, y_predict))
 
     colors = plt.cm.rainbow(np.linspace(0, 1, n_clusters))
     fig, ax = plt.subplots(1)
@@ -56,7 +58,7 @@ def find_best_n_clusters(feat, end_n=10):
             idx = i
         score_list.append(score)
     
-    print(f"max scores is: {max_score}, n_cluster is: {idx} from 2 to {end_n}.")
+    logger.log(f"max scores is: {max_score}, n_cluster is: {idx} from 2 to {end_n}.")
     fig, ax = plt.subplots(1)
     ax.plot(n_list, score_list)
 
