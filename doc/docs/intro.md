@@ -2,18 +2,23 @@
 sidebar_position: 1
 ---
 
-# Feel free at NEETBox
+# Useless yet NEETBox
 
 ## Installation
 
 ```bash
-pip install neetbox
+pip install neetbox --no-deps --force-reinstall
 ```
 if error occured, try:
 ```bash
-pip install neetbox --index-url https://pypi.org/simple
+pip install --index-url https://pypi.org/simple/ neetbox --no-deps --force-reinstall
 ```
 
-## If you want:
+:::note
+Why `--no-deps`? Because we had a hard time resolving the dependency :(
+:::
 
-- [x] Simple Logging Utility [DOC](./logging/)
+## If you want (Click to go):
+
+- [x] [Simple Logging Utility](./logging/)
+- [x] [Basic PyTorch Code Snippets](./torch-snippets/)
