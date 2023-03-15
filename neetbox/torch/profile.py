@@ -13,17 +13,16 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
         if next(model.parameters()).is_cuda:
             tensor = tensor.cuda()
         counter = []
-        logger.log("running python side speedtest...")
+        logger.log("running speedtest...")
         model.eval()
         with torch.no_grad():
             logger.log("start warm up")
-            output = model(tensor)
             for i in tqdm(range(10)):
                 model(tensor)
             logger.log("warm up done")
             for test_index in tqdm(range(speedtest + 2)):
                 t = time.time()
-                model(tensor)
+                output = model(tensor)
                 counter.append(time.time() - t)
             _min, _max, _sum = min(counter), max(counter), sum(counter)
         _aver = (_sum - _min - _max) / speedtest
@@ -49,15 +48,10 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
             )
             model.eval()
             with torch.no_grad():
-                logger.log("start warm up")
-                output = model(tensor)
-                for i in tqdm(range(10)):
-                    model(tensor)
-                logger.log("warm up done")
-                logger.log("running GPU side synchronized speedtest...")
+                logger.log("running CUDA side synchronous speedtest...")
                 for test_index in tqdm(range(speedtest + 2)):
                     time0.record()
-                    model(tensor)
+                    output = model(tensor)
                     time1.record()
                     torch.cuda.synchronize()
                     time_counter[test_index] = time0.elapsed_time(time1)
@@ -82,7 +76,7 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
                 logger.log(f"That is {(1. / _aver) * 1000.} frames per second")
                 if _fps_aver - (1. / _aver) * 1000. > 10.:
                     logger.warn(f"Seems your model has an imbalanced performance peek on cuda side test and python side test. Consider raising speedtest loop times (currently {speedtest} +2) to have a stable result.")
-
+                logger.debug(f"Note that the CUDA side synchronous speedtest is more reliable since you are using a GPU.")
     if profiling:
         logger.log("====================================================")
         logger.log("model profiling...")
