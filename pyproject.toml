@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neetbox"
-version = "0.1.4"
+version = "0.1.41"
 description = "NEETBox contains useless CV code snippets."
 license = "MIT"
 authors = [
@@ -33,7 +33,7 @@ classifiers = [
 # default = true
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.8"
 numpy = ">=1"
 pillow = ">=8"
 opencv-python = ">=3"
