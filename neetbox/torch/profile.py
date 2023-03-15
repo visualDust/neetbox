@@ -17,7 +17,6 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
             time0, time1 = torch.cuda.Event(enable_timing=True), torch.cuda.Event(
                 enable_timing=True
             )
-            logger.log("running GPU side synchronized speed test...")
             model.eval()
             with torch.no_grad():
                 logger.log("start warm up")
@@ -26,6 +25,7 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
                     model(tensor)
                 warmed = True
                 logger.log("warm up done")
+                logger.log("running GPU side synchronized speedtest...")
                 for test_index in tqdm(range(speedtest + 2)):
                     time0.record()
                     model(tensor)
@@ -49,7 +49,7 @@ def profile(model, input_shape=(1, 3, 2048, 1024), profiling=True, speedtest=100
             logger.log("====================================================")
 
         counter = []
-        logger.log("running Latency test...")
+        logger.log("running python side speedtest...")
         model.eval()
         with torch.no_grad():
             if not warmed:
