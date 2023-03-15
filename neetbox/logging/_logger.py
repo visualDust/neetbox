@@ -87,7 +87,7 @@ class _Logger:
 
         if into_stdout:
             pre_text_cmd = ""
-            pre_text_cmd += flag if flag is not None else ""
+            pre_text_cmd += f"{flag} " if flag is not None else ""
             pre_text_cmd += (
                 str(datetime.now().strftime(date_time_fmt)) + " > "
                 if date_time_fmt
@@ -95,7 +95,7 @@ class _Logger:
             )
 
         pre_text_txt = ""
-        pre_text_txt += flag if flag is not None else ""
+        pre_text_txt += f"{flag} | " if flag is not None else ""
         if date_time_fmt:
             pre_text_txt += str(datetime.now().strftime(date_time_fmt)) + " > "
         icon_str = self.icon
@@ -149,21 +149,21 @@ class _Logger:
             self.log_writer.write(pre_text_txt + message + "\n")
         return self
 
-    def debug(self, info, flag=f"[{_colored('δ', 'cyan')}]"):
+    def debug(self, info, flag=f"DEBUG"):
         if self.debug_enabled:
-            self.log(info, flag, into_file=False)
-            self.log(info, flag="DEBUG", into_stdout=False)
+            self.log(info, flag=f"[{_colored(flag, 'cyan')}]", into_file=False)
+            self.log(info, flag=flag, into_stdout=False)
         return self
-        
+
     def set_debug(self, b):
         self.debug_enabled = b
-        
-    def warn(self, message, flag = 'WARNING'):
-        self.log(message, flag=f"[{_colored(flag, 'red')}]", into_file=False)
+
+    def warn(self, message, flag="WARNING"):
+        self.log(message, flag=f"[{_colored(flag, 'yellow')}]", into_file=False)
         self.log(message, flag=flag, into_stdout=False)
         return self
 
-    def err(self, err, flag='ERROR'):
+    def err(self, err, flag="ERROR"):
         self.log(err, flag=f"[{_colored(flag, 'red')}]", into_file=False)
         self.log(err, flag=flag, into_stdout=False)
         return self
