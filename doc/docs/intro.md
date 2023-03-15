@@ -7,10 +7,6 @@ sidebar_position: 1
 ## Installation
 
 ```bash
-pip install neetbox --no-deps --force-reinstall
-```
-if error occured, try:
-```bash
 pip install --index-url https://pypi.org/simple/ neetbox --no-deps --force-reinstall
 ```
 
