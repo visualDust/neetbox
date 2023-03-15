@@ -33,7 +33,7 @@ classifiers = [
 # default = true
 
 [tool.poetry.dependencies]
-python = ">=3.6"
+python = ">=3.7"
 numpy = ">=1"
 pillow = ">=8"
 opencv-python = ">=3"
