@@ -7,11 +7,15 @@ sidebar_position: 1
 ## Installation
 
 ```bash
+pip install --index-url https://pypi.org/simple/ neetbox
+```
+If you got some dependency-issue, try:
+```bash
 pip install --index-url https://pypi.org/simple/ neetbox --no-deps --force-reinstall
 ```
-
 :::note
-Why `--no-deps`? Because we had a hard time resolving the dependency :(
+Why `--no-deps`? Because we had a hard time resolving the dependency :(  
+Please manually install dependencies after you got errors  
 :::
 
 ## If you want (Click to go):
