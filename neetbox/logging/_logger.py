@@ -157,10 +157,15 @@ class _Logger:
         
     def set_debug(self, b):
         self.debug_enabled = b
+        
+    def warn(self, message, flag = 'WARNING'):
+        self.log(message, flag=f"[{_colored(flag, 'red')}]", into_file=False)
+        self.log(message, flag=flag, into_stdout=False)
+        return self
 
-    def err(self, err, flag=f"[{_colored('×', 'red')}]"):
-        self.log(err, flag, into_file=False)
-        self.log(err, flag="ERROR", into_stdout=False)
+    def err(self, err, flag='ERROR'):
+        self.log(err, flag=f"[{_colored(flag, 'red')}]", into_file=False)
+        self.log(err, flag=flag, into_stdout=False)
         return self
 
     def log_os_info(self):
