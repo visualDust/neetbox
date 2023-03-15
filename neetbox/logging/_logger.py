@@ -1,4 +1,9 @@
-# -*- coding: UTF-8 -*
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# URL:    https://gong.host
+# Date:   20230315
+
 import getpass
 import inspect
 import os, re
