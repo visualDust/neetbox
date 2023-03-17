@@ -1,0 +1,13 @@
+.vscode
+tests/
+__pycache__/
+dist/
+poetry.lock
+
+#vd files
+./test.ipynb
+./test.py
+
+# log files
+logdir
+for_debug.txt
