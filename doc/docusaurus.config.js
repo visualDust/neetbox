@@ -63,6 +63,18 @@ const config = {
           src: 'img/logo.svg',
         },
         items: [
+          {
+            to: '/docs/guide',
+            activeBasePath: '/docs/guide',
+            label: 'Try NeetBox',
+            position: 'left'
+          },
+          {
+            to: '/docs/develop',
+            activeBasePath: '/docs/develop',
+            label: 'Develop',
+            position: 'left'
+          }
         ],
       },
       footer: {
