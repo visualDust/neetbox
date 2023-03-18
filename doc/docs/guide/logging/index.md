@@ -62,7 +62,7 @@ output:
 ```
 
 :::caution
-If you are creating a logger using `get_logger()`, notice that what you create is a new instance of the `Logger` class. It would not share attributes with the default `logger`. See [Who Is Logging?](/doc/docs/guide/logging/logger-instances) for more information.
+If you are creating a logger using `get_logger()`, notice that what you create is a new instance of the `Logger` class. It would not share attributes with the default `logger`. See [Who Is Logging?](/docs/guide/logging/logger-instances) for more information.
 :::
 
 ## Log into files
@@ -86,7 +86,7 @@ in `./logdir/2023-03-18.log`:
 ```
 
 :::caution
-Because someone does have the requirement of logging some messages into some specific files, different loggers hold different log writers. See [Who Is Logging?](/doc/docs/guide/logging/logger-instances) for more information.
+Because someone does have the requirement of logging some messages into some specific files, different loggers hold different log writers. See [Who Is Logging?](/docs/guide/logging/logger-instances.md) for more information.
 :::
 
 ## Options using `logger.log`
@@ -109,4 +109,4 @@ output:
 2023-03-18-14:44:22 > some message 
 ```
 
-Looking for advanced format control? See [advanced logging format](/doc/docs/guide/logging/advanced-logging-format)
+Looking for advanced format control? See [advanced logging format](/docs/guide/logging/advanced-logging-format.md)
