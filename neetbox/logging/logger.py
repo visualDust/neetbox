@@ -111,7 +111,7 @@ class Logger:
             _whom = str(self.whom)  # check identity
             _whom += _style.split_char_identity
             id_seq = []
-            if _whom is None:  # if using default logger, tracing back to the caller
+            if self.whom is None:  # if using default logger, tracing back to the caller
                 file_level = True
                 _whom = ""
                 if _caller_identity.module_name and _style.trace_level >= 2:
