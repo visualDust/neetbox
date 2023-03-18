@@ -5,7 +5,6 @@ from neetbox.core.framing import get_caller_identity_traceback
 
 logger = get_logger("NEETBOX")
 
-
 class Engine(Enum):
     Torch = "torch"
 
@@ -26,12 +25,12 @@ class _Environment:
 
     def get_installed_engines(self):
         if not self.installed_engines:
-            logger.debug("Scanning installed engines...")
+            logger.info("Scanning installed engines...")
             self.installed_engines = []
             for engine in self.get_supported_engines():
                 try:
                     importlib.import_module(engine.value)
-                    logger.ok(f"{engine} is installed and supported.")
+                    logger.info(f"{engine} is installed and supported.")
                     self.installed_engines.append(engine)
                 except:
                     logger.warn(f"{engine} is not installed.")
@@ -47,17 +46,17 @@ class _Environment:
             if package in  self.installed_packages:
                 return True
             try:
-                importlib.import_module(package.value)
+                importlib.import_module(package)
                 logger.debug(f"{package} is installed and supported.")
                 self.installed_packages.append(package)
                 return True
             except:
-                pass
-        if terminate:
-            caller_name = get_caller_identity_traceback().filename
-            logger.err(f"{caller_name} requires {package} which is not installed.")
-            raise ImportError(f"Package \'{package}\' not installed.")
-        return False
+                if terminate:
+                    caller_name = get_caller_identity_traceback().filename
+                    logger.err(f"{caller_name} requires {package} which is not installed.")
+                    raise ImportError(f"Package \'{package}\' not installed.")
+                return False
+        return True
 
 # singleton
 _Environment = _Environment()

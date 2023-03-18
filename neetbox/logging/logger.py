@@ -15,9 +15,10 @@ from neetbox.logging.formatting import *
 
 
 class LogLevel(Enum):
-    ALL = 3
-    WARNING = 2
-    DEBUG = 1
+    ALL = 4
+    INFO = 3
+    DEBUG = 2
+    WARNING = 1
     ERROR = 0
 
     def __lt__(self, other):
@@ -132,53 +133,59 @@ class Logger:
         # converting args into a single string
         _message = ""
         for msg in content:
-            _message += str(msg)
+            _message += str(msg) + " "
 
         # perform log
         if into_stdout:
             print(
                 _prefix
                 + _datetime
-                + _style.split_char_cmd
+                + _style.split_char_cmd * min(len(_datetime), 1)
                 + colored_by_style(_whom, style=_style)
                 + _style.split_char_cmd * min(len(_whom), 1)
                 + _message
             )
-        if into_file and self.file_writer is not None:
+        if into_file and self.file_writer:
             self.file_writer.write(
                 _prefix
                 + _datetime
-                + _style.split_char_txt
+                + _style.split_char_txt * min(len(_datetime), 1)
                 + _whom
                 + _style.split_char_txt * min(len(_whom), 1)
                 + _message
+                + '\n'
             )
         return self
 
     def debug(self, info, flag=f"DEBUG"):
-        if _global_log_level <= LogLevel.DEBUG.value:
+        if _global_log_level >= LogLevel.DEBUG:
             self.log(info, prefix=f"[{colored(flag, AnsiColor.CYAN)}]", into_file=False)
             self.log(info, prefix=flag, into_stdout=False)
         return self
 
-    def ok(self, message, flag="OK"):
-        self.log(message, prefix=f"[{colored(flag, AnsiColor.GREEN)}]", into_file=False)
-        self.log(message, prefix=flag, into_stdout=False)
+    def info(self, message, flag="INFO"):
+        if _global_log_level >= LogLevel.INFO:
+            self.log(
+                message, prefix=f"[{colored(flag, AnsiColor.GREEN)}]", into_file=False
+            )
+            self.log(message, prefix=flag, into_stdout=False)
         return self
 
     def warn(self, message, flag="WARNING"):
-        self.log(
-            message, prefix=f"[{colored(flag, AnsiColor.YELLOW)}]", into_file=False
-        )
-        self.log(message, prefix=flag, into_stdout=False)
+        if _global_log_level >= LogLevel.WARNING:
+            self.log(
+                message, prefix=f"[{colored(flag, AnsiColor.YELLOW)}]", into_file=False
+            )
+            self.log(message, prefix=flag, into_stdout=False)
         return self
 
     def err(self, err, flag="ERROR"):
-        self.log(err, prefix=f"[{colored(flag,AnsiColor.RED)}]", into_file=False)
-        self.log(err, prefix=flag, into_stdout=False)
+        if _global_log_level >= LogLevel.ERROR:
+            self.log(err, prefix=f"[{colored(flag,AnsiColor.RED)}]", into_file=False)
+            self.log(err, prefix=flag, into_stdout=False)
         return self
 
-    def log_os_info(self):
+    def os_info(self):
         """Log some maybe-useful os info
 
         Returns:
@@ -204,14 +211,7 @@ class Logger:
             + platform.python_version()
             + "\n"
         )
-        self.log(
-            message=message,
-            with_identifier=False,
-            prefix=None,
-            with_ic=False,
-            date_time_fmt=False,
-            method_level=False,
-        )
+        self.log(message, with_datetime=False, with_identifier=False)
         return self
 
     def skip_lines(self, line_cnt=1):
@@ -223,13 +223,7 @@ class Logger:
         Returns:
             _Logger : the logger instance itself
         """
-        self.log(
-            message="\n" * line_cnt,
-            prefix=None,
-            with_ic=False,
-            date_time_fmt=False,
-            method_level=False,
-        )
+        self.log("\n" * line_cnt, with_datetime=False, with_identifier=False)
         return self
 
     def log_txt_file(self, file):
@@ -238,34 +232,27 @@ class Logger:
         context = ""
         for line in file.readlines():
             context += line
-        self.log(
-            message=context,
-            prefix=None,
-            with_identifier=False,
-            with_ic=False,
-            date_time_fmt=False,
-            method_level=False,
-        )
+        self.log(context, with_datetime=False, with_identifier=False)
         return self
 
     def set_log_dir(self, path, independent=False):
         if os.path.isfile(path):
             raise "Target path is not a directory."
         if not os.path.exists(path):
-            DEFAULT_LOGGER.log(f"Directory {path} not found, trying to create.")
+            DEFAULT_LOGGER.info(f"Directory {path} not found, trying to create.")
             try:
                 os.makedirs(path)
             except:
-                DEFAULT_LOGGER.log(f"Failed when trying to create directory {path}")
+                DEFAULT_LOGGER.err(f"Failed when trying to create directory {path}")
                 raise Exception(f"Failed when trying to create directory {path}")
         log_file_name = ""
         if independent:
             log_file_name += self.whom
         log_file_name += str(date.today()) + ".log"
-        self.bind_file(os.path.join(path, log_file_name))
+        self._bind_file(os.path.join(path, log_file_name))
         return self
 
-    def bind_file(self, path):
+    def _bind_file(self, path):
         log_file_identity = os.path.abspath(path)
         if os.path.isdir(log_file_identity):
             raise Exception("Target path is not a file.")
@@ -275,7 +262,10 @@ class Logger:
             raise Exception(f"Could not find dictionary {dirname}")
         real_path = os.path.join(dirname, filename)
         if log_file_identity not in writers_dict:
-            writers_dict[log_file_identity] = open(real_path, "a", buffering=1)
+            # todo add fflush buffer size or time
+            writers_dict[log_file_identity] = open(
+                real_path, "a", encoding="utf-8", buffering=1
+            )
         self.file_writer = writers_dict[log_file_identity]
         return self
 
