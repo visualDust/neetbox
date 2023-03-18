@@ -24,8 +24,8 @@ Please manually install dependencies after you got errors
 
 ## If you want (Click to go):
 
-- [x] [Simple Logging Utility](./logging/)
-- [x] [Basic PyTorch Code Snippets](./torch-snippets/)
+- [x] [Simple Logging Utility](/docs/guide/logging/)
+- [x] [Basic PyTorch Code Snippets](/docs/guide/torch-snippets/)
 
 :::caution
 Another problem here is that since the repository is still under construction, most of the codes do not have related docs. Sorry that some of the codes are massed up without regular comments on them. The docs will appear soon. 
