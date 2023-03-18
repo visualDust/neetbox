@@ -1,6 +1,7 @@
 from enum import Enum
 import importlib
 from neetbox.logging import get_logger
+from neetbox.core.framing import get_caller_identity_traceback
 
 logger = get_logger("NEETBOX")
 
@@ -14,7 +15,8 @@ class _Environment:
         self.supported_engines = None
         self.installed_engines = None
         self.installed_packages = []
-
+        # todo migrate to python 3.9 after frameworks are supporting it
+        
     def get_supported_engines(self):
         if not self.supported_engines:
             self.supported_engines = []
@@ -52,6 +54,8 @@ class _Environment:
             except:
                 pass
         if terminate:
+            caller_name = get_caller_identity_traceback().filename
+            logger.err(f"{caller_name} requires {package} which is not installed.")
             raise ImportError(f"Package \'{package}\' not installed.")
         return False
 

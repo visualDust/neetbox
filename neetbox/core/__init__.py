@@ -1,4 +1,4 @@
-from .platform import _Environment, Engine
+from neetbox.core.environment import _Environment, Engine
 
 env = _Environment
 

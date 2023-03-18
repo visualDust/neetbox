@@ -39,6 +39,7 @@ pillow = ">=8"
 pandas = ">=1"
 tqdm = ">=4"
 colorama = ">=0.3"
+toml = "^0.10.2"
 
 [build-system]
 requires = ["poetry>=0.12"]
