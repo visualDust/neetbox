@@ -109,23 +109,25 @@ class Logger:
         if _with_identifier:
             _whom = self.whom  # check identity
             if _whom is None:  # if using default logger, tracing back to the caller
+                id_seq = []
+                file_level = True
+                if _caller_identity.module_name and _style.trace_level >= 2:
+                    id_seq.append(_caller_identity.module_name)  # trace as module level
+                    file_level = False
+                if _caller_identity.class_name and _style.trace_level >= 1:
+                    id_seq.append(_caller_identity.class_name)  # trace as class level
+                    file_level = False
+                if file_level and _style.trace_level >= 1:
+                    id_seq.append(
+                        _caller_identity.filename
+                    )  # not module level and class level
+                if _caller_identity.func_name != "<module>":
+                    id_seq.append(_caller_identity.func_name)  # skip for jupyters
                 _whom = ""
-                if (
-                    _caller_identity.module and _style.trace_level >= 2
-                ):  # trace as module level
-                    _whom += _caller_identity.module + _style.split_char_identity
-                if (
-                    _caller_identity.class_name and _style.trace_level >= 1
-                ):  # trace as class level
-                    _whom += (
-                        _caller_identity.class_name + _style.split_char_identity
-                    )
-                if (
-                    _whom is None and _style.trace_level >= 1
-                ):  # not module level and class level
-                    _whom = _caller_identity.filename + _style.split_char_identity
-                if _caller_identity.func_name != "<module>":  # skip for jupyters
-                    _whom += _caller_identity.func_name
+                for i in range(len(id_seq)):
+                    _whom += id_seq[i]
+                    if i < len(id_seq) - 1:
+                        _whom += _style.split_char_identity
 
         # converting args into a single string
         _message = ""
@@ -139,7 +141,7 @@ class Logger:
                 + _datetime
                 + _style.split_char_cmd
                 + colored_by_style(_whom, style=_style)
-                + _style.split_char_cmd
+                + _style.split_char_cmd * min(len(_whom), 1)
                 + _message
             )
         if into_file and self.file_writer is not None:
@@ -148,7 +150,7 @@ class Logger:
                 + _datetime
                 + _style.split_char_txt
                 + _whom
-                + _style.split_char_txt
+                + _style.split_char_txt * min(len(_whom), 1)
                 + _message
             )
         return self
@@ -250,11 +252,11 @@ class Logger:
         if os.path.isfile(path):
             raise "Target path is not a directory."
         if not os.path.exists(path):
-            static_logger.log(f"Directory {path} not found, trying to create.")
+            DEFAULT_LOGGER.log(f"Directory {path} not found, trying to create.")
             try:
                 os.makedirs(path)
             except:
-                static_logger.log(f"Failed when trying to create directory {path}")
+                DEFAULT_LOGGER.log(f"Failed when trying to create directory {path}")
                 raise Exception(f"Failed when trying to create directory {path}")
         log_file_name = ""
         if independent:

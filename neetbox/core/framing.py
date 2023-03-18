@@ -43,6 +43,7 @@ class TracedIdentity:
         self.class_obj = None
         self.class_name = None
         self.module = None
+        self.module_name = None
         self.filepath = None
         self.filename = None
         if frame:
@@ -59,6 +60,7 @@ class TracedIdentity:
         try:
             module = inspect.getmodule(frame[0])
             self.module =  module
+            self.module_name = module.__name__
         except:
             pass
         self.filepath = path.abspath(frame.filename)
@@ -66,7 +68,7 @@ class TracedIdentity:
         return self
     
     def __str__(self) -> str:
-        return str(self.func_name)+','+str(self.class_name)+','+str(self.module)+','+str(self.filepath)+','+str(self.filename)+','
+        return str(self.func_name)+','+str(self.class_name)+','+str(self.module_name)+','+str(self.filepath)+','
         
         
 
