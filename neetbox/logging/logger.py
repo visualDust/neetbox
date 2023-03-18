@@ -108,10 +108,12 @@ class Logger:
         ):  # if explicitly determined wether to log with identifier
             _with_identifier = with_identifier
         if _with_identifier:
-            _whom = self.whom  # check identity
+            _whom = str(self.whom)  # check identity
+            _whom += _style.split_char_identity
+            id_seq = []
             if _whom is None:  # if using default logger, tracing back to the caller
-                id_seq = []
                 file_level = True
+                _whom = ""
                 if _caller_identity.module_name and _style.trace_level >= 2:
                     id_seq.append(_caller_identity.module_name)  # trace as module level
                     file_level = False
@@ -122,13 +124,12 @@ class Logger:
                     id_seq.append(
                         _caller_identity.filename
                     )  # not module level and class level
-                if _caller_identity.func_name != "<module>":
-                    id_seq.append(_caller_identity.func_name)  # skip for jupyters
-                _whom = ""
-                for i in range(len(id_seq)):
-                    _whom += id_seq[i]
-                    if i < len(id_seq) - 1:
-                        _whom += _style.split_char_identity
+            if _caller_identity.func_name != "<module>":
+                id_seq.append(_caller_identity.func_name)  # skip for jupyters
+            for i in range(len(id_seq)):
+                _whom += id_seq[i]
+                if i < len(id_seq) - 1:
+                    _whom += _style.split_char_identity
 
         # converting args into a single string
         _message = ""
