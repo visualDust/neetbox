@@ -3,9 +3,7 @@ name = "neetbox"
 version = "0.1.411"
 description = "NEETBox contains useless CV code snippets."
 license = "MIT"
-authors = [
-    "VisualDust <gavin@gong.host>",
-]
+authors = ["VisualDust <gavin@gong.host>"]
 maintainers = [
     "VisualDust <gavin@gong.host>",
     "PommesPeter <me@pommespeter.space>",
@@ -24,7 +22,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Software Development :: Testing",
     "Topic :: System :: Logging",
-    "Topic :: Utilities"
+    "Topic :: Utilities",
 ]
 
 # [[tool.poetry.source]]
@@ -44,3 +42,6 @@ toml = "^0.10.2"
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+[tool.poetry.scripts]
+neetbox = 'neetbox.cli.parse:parse'
