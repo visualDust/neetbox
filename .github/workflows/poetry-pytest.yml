@@ -1,22 +1,21 @@
-name: CI
+name: Run pytest
 on: ["pull_request","push"]
+
 jobs:
-  ci:
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.8"]
-        poetry-version: ["1.0"]
-        os: [ubuntu-18.04, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+  pytest:
+    name: pytest
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Run image
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: ${{ matrix.poetry-version }}
-      - name: Run poetry pytest
-        run: poetry run pytest
+    - uses: actions/checkout@master
+    - name: Install
+      uses: abatilo/actions-poetry@v2
+      with:
+        python_version: 3.8
+        poetry_version: 1.0
+        args: install
+    - name: Run pytest
+      uses: abatilo/actions-poetry@v2
+      with:
+        python_version: 3.8
+        poetry_version: 1.0
+        args: poetry run pytest
