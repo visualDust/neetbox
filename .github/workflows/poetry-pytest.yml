@@ -1,6 +1,5 @@
 name: CI
 on: ["pull_request","push"]
-
 jobs:
   ci:
     strategy:
@@ -15,13 +14,9 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Setup poetry
+      - name: Run image
         uses: abatilo/actions-poetry@v2
         with:
           poetry-version: ${{ matrix.poetry-version }}
-      - name: Poetry install
-        run: | 
-          poetry install
-      - name: Run pytest
-        run: | 
-          poetry run pytest tests
+      - name: Run poetry pytest
+        run: poetry run pytest
