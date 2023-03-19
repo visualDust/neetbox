@@ -41,6 +41,9 @@ tqdm = ">=4"
 colorama = ">=0.3"
 toml = "^0.10.2"
 
+[tool.poetry.group.test.dependencies]
+pytest = "*"
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
