@@ -15,8 +15,8 @@ def test_default_logger():
     A().a()
 
 def test_logger_with_specific_identity():
-    from neetbox.logging.logger import get_logger
-    logger = get_logger("someone")
+    from neetbox.logging import logger
+    logger = logger("someone")
     logger.set_log_dir("./logdir")
     logger.log("someone said 1")
     def b():
@@ -29,7 +29,12 @@ def test_logger_with_specific_identity():
 
     class B:
         def b(self):
-            self.logger = get_logger(self)
+            self.logger = logger(self)
             self.logger.log("from class B")
 
     B().b()
+    
+def test_out_of_dated():
+    from neetbox.logging import get_logger
+    logger = get_logger("someone")
+    logger.log("someone said 1")

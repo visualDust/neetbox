@@ -50,10 +50,10 @@ output:
 2023-03-18-13:57:47 > AClass/post_processing > Running PostProcessing...
 ```
 
-if you want to specify the identity, try `get_logger`:
+if you want to specify the identity, try `logger(whom)`:
 ```python
-from neetbox.logging import get_logger
-logger = get_logger(whom="identity name")
+from neetbox.logging import logger
+logger = logger(whom="identity name")
 logger.log("some message")
 ```
 output:

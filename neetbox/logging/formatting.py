@@ -6,31 +6,9 @@
 
 import warnings
 import os
-from colorama import Fore, Back
-from enum import Enum
+from colorama import Fore, Back, Style
 from random import random
-
-
-class AnsiColor(Enum):
-    BLACK = "BLACK"
-    RED = "RED"
-    GREEN = "GREEN"
-    YELLOW = "YELLOW"
-    BLUE = "BLUE"
-    MAGENTA = "MAGENTA"
-    CYAN = "CYAN"
-    WHITE = "WHITE"
-    RESET = "RESET"
-    # These are fairly well supported, but not part of the standard.
-    LIGHT_BLACK = "LIGHTBLACK_EX"
-    LIGHT_RED = "LIGHTRED_EX"
-    LIGHT_GREEN = "LIGHTGREEN_EX"
-    LIGHT_YELLOW = "LIGHTYELLOW_EX"
-    LIGHT_BLUE = "LIGHTBLUE_EX"
-    LIGHT_MAGENTA = "LIGHTMAGENTA_EX"
-    LIGHT_CYAN = "LIGHTCYAN_EX"
-    LIGHT_WHITE = "LIGHTWHITE_EX"
-
+from ._colorama import *
 
 # todo use @cache when migrate to python 3.9
 def get_supported_colors():
@@ -39,12 +17,19 @@ def get_supported_colors():
         supported_colors.append(color)
     return supported_colors
 
+def get_supported_styles():
+    supported_styles = []
+    for style in AnsiStyle:
+        supported_styles.append(style)
+    return supported_styles
+
 
 class LogStyle:
     def __init__(self) -> None:
         self.fore: AnsiColor = None
         self.back: AnsiColor = None
         self.prefix: str = ""
+        self.pattern = ""  # todo default pattern
         self.datetime_format: str = "%Y-%m-%d-%H:%M:%S"
         self.with_identifier: bool = True
         self.trace_level = 3
@@ -52,6 +37,10 @@ class LogStyle:
         self.split_char_cmd = " > "
         self.split_char_identity = "/"
         self.split_char_txt = " | "
+        
+    def parse(pattern:str):
+        # todo
+        pass
 
     def set_foreground_color(self, color: AnsiColor):
         self.fore = color
@@ -83,7 +72,9 @@ class LogStyle:
 DEFAULT_STYLE = LogStyle()
 
 
-def colored(text, color_foreground: AnsiColor = None, color_background: AnsiColor = None):
+def colored(
+    text, color_foreground: AnsiColor = None, color_background: AnsiColor = None
+):
     """_summary_
 
     Args:

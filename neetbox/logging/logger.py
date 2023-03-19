@@ -60,6 +60,14 @@ class Logger:
         self.style: LogStyle = style
         self.file_writer = None
 
+    def __call__(self, whom: any = None, style: LogStyle = None) -> "Logger":
+        if whom is None:
+            return DEFAULT_LOGGER
+        if whom in loggers_dict:
+            return loggers_dict[whom]
+        loggers_dict[whom] = Logger(whom=whom, style=style)
+        return loggers_dict[whom]
+
     def log(
         self,
         *content,
@@ -157,6 +165,10 @@ class Logger:
                 + "\n"
             )
         return self
+
+    def ok(self):
+        # todo
+        pass
 
     def debug(self, info, flag=f"DEBUG"):
         if _global_log_level >= LogLevel.DEBUG:
@@ -292,8 +304,9 @@ class Logger:
 
 DEFAULT_LOGGER = Logger(None)
 
-
+# todo remove dedicated
 def get_logger(whom: any = None, style: LogStyle = None) -> Logger:
+    DEFAULT_LOGGER.warn("'get_logger(whom)' is outdated and will be removed in the near future. Use 'logger(whom)' instead.")
     if whom is None:
         return DEFAULT_LOGGER
     if whom in loggers_dict:

@@ -4,16 +4,16 @@ sidebar_position: 3
 
 # Who is logging?
 
-Basically the default `logger` located in `neetbox.logging` is enough. There is also another way to get a logger using `neetbox.logging.get_logger()`. This page is about the difference.
+Basically the default `logger` object located in `neetbox.logging` is enough. There is also another way to get a logger using `neetbox.logging.logger(whom)`. This page is about the difference.
 
 ## Caller identity
 
-the `logger` uses caller identity to identify who is calling it, the identity also helps the logger to decide which file to log in to or which color to paint on you console. You can specify the logger identity using `get_logger`:
+the `logger` uses caller identity to identify who is calling it, the identity also helps the logger to decide which file to log in to or which color to paint on you console. You can specify the logger identity using `logger(whom)`:
 
 ```python
-from neetbox.logging import get_logger
+from neetbox.logging import logger
 
-logger = get_logger("MyIdentity")
+logger = logger("MyIdentity")
 logger.log("something")
 ```
 output:
@@ -23,11 +23,11 @@ output:
 
 Obviously everything except `None` could be an identity:
 ```python
-from neetbox.logging import get_logger
+from neetbox.logging import logger
 
 class SomeClass:
     def __init__(self) -> None:
-        self.logger = get_logger(self)
+        self.logger = logger(self)
         self.logger.log("something")
         
 SomeClass()
@@ -37,15 +37,15 @@ output:
 2023-03-18-20:15:52 > <__main__.SomeClass object at 0x0000025AFB2C1790>/__init__ > something
 ```
 :::note
-Notice that since the logger identity you specified when getting the logger using `get_logger()` method will be printed into log message. So dont make it too long ; )
+Notice that since the logger identity you specified when getting the logger using `logger(whom)` method will be printed into log message. So dont make it too long ; )
 :::
 
 ## The default style
 
 If you are not passing a style for the logger, it automatically creates the style based on a "default" one and using different colors in console to let you easily distinguish between different caller identity. However, since someone may use an identity-specified logger in different functions, things about default created styles may be different from what you thought about colors. Consider the following example:
 ```python
-from neetbox.logging.logger import get_logger
-logger = get_logger("someone")
+from neetbox.logging.logger import logger
+logger = logger("someone")
 def a():
     logger.log("a")
 def b():
@@ -66,10 +66,10 @@ The auto-tracing features are kept to "method-level" in loggers with specific id
 
 ## Caller Identity "None"
 
-If you do not specific the identity while creating the logger or you just use `neetbox.logging.logger` as default, the logger never knows the identifier, so when you invoke `logger.log()` somewhere, it automatically traces back to the caller of `logger.log()`. To be specific, the default logger (neetbox.logging.logger) was initially created by get_logger(None).  So technically they are the same.
+If you do not specific the identity while creating the logger or you just use `neetbox.logging.logger` as default, the logger never knows the identifier, so when you invoke `logger.log()` somewhere, it automatically traces back to the caller of `logger.log()`. To be specific, the default logger object (`neetbox.logging.logger`) was initially created by something like `Logger(None)`.  So technically they are the same.
 ```python
-from neetbox.logging import get_logger, logger
-logger_another = get_logger()
+from neetbox.logging import logger
+logger_another = logger(None)
 logger.log("message from", logger)
 logger_another.log("message from", logger_another)
 ```
@@ -83,7 +83,7 @@ As you can see, they are the same object.
 
 ## Create logger manually
 
-We recommend you use `neetbox.logging.logger` or `neetbox.logging.get_logger()` to get the logger. However, if you want to create a logger instance manually anyway, you can create it from the constructor:
+We recommend you use `neetbox.logging.logger` or `neetbox.logging.logger(whom)` to get the logger. However, if you want to create a logger instance manually anyway, you can create it from the constructor:
 ```
 from neetbox.logging.logger import Logger
 
