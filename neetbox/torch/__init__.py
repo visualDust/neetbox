@@ -1,2 +1,3 @@
-from neetbox.core import env, Engine
-assert env.installed(Engine.Torch, terminate=True)
+from neetbox.core import env
+from neetbox.integrations import engine
+assert env.installed(engine.Torch, terminate=True)

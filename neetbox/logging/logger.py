@@ -5,12 +5,11 @@
 # Date:   20230315
 
 import getpass
-import inspect
 import os, re
 import platform
 from datetime import date, datetime
 from enum import Enum
-from neetbox.core.framing import *
+from neetbox.utils.framing import *
 from neetbox.logging.formatting import *
 
 
@@ -69,8 +68,9 @@ class Logger:
         with_datetime: bool = None,
         into_file: bool = True,
         into_stdout: bool = True,
+        traceback=2,
     ):
-        _caller_identity = get_caller_identity_traceback(traceback=2)
+        _caller_identity = get_caller_identity_traceback(traceback=traceback)
 
         # getting style
         _style = self.style
@@ -109,7 +109,6 @@ class Logger:
             _with_identifier = with_identifier
         if _with_identifier:
             _whom = str(self.whom)  # check identity
-            _whom += _style.split_char_identity
             id_seq = []
             if self.whom is None:  # if using default logger, tracing back to the caller
                 file_level = True
@@ -127,9 +126,9 @@ class Logger:
             if _caller_identity.func_name != "<module>":
                 id_seq.append(_caller_identity.func_name)  # skip for jupyters
             for i in range(len(id_seq)):
-                _whom += id_seq[i]
-                if i < len(id_seq) - 1:
+                if len(_whom) != 0:
                     _whom += _style.split_char_identity
+                _whom += id_seq[i]
 
         # converting args into a single string
         _message = ""
@@ -154,36 +153,52 @@ class Logger:
                 + _whom
                 + _style.split_char_txt * min(len(_whom), 1)
                 + _message
-                + '\n'
+                + "\n"
             )
         return self
 
     def debug(self, info, flag=f"DEBUG"):
         if _global_log_level >= LogLevel.DEBUG:
-            self.log(info, prefix=f"[{colored(flag, AnsiColor.CYAN)}]", into_file=False)
-            self.log(info, prefix=flag, into_stdout=False)
+            self.log(
+                info,
+                prefix=f"[{colored(flag, AnsiColor.CYAN)}]",
+                into_file=False,
+                traceback=3,
+            )
+            self.log(info, prefix=flag, into_stdout=False, traceback=3)
         return self
 
     def info(self, message, flag="INFO"):
         if _global_log_level >= LogLevel.INFO:
             self.log(
-                message, prefix=f"[{colored(flag, AnsiColor.GREEN)}]", into_file=False
+                message,
+                prefix=f"[{colored(flag, AnsiColor.GREEN)}]",
+                into_file=False,
+                traceback=3,
             )
-            self.log(message, prefix=flag, into_stdout=False)
+            self.log(message, prefix=flag, into_stdout=False, traceback=3)
         return self
 
     def warn(self, message, flag="WARNING"):
         if _global_log_level >= LogLevel.WARNING:
             self.log(
-                message, prefix=f"[{colored(flag, AnsiColor.YELLOW)}]", into_file=False
+                message,
+                prefix=f"[{colored(flag, AnsiColor.YELLOW)}]",
+                into_file=False,
+                traceback=3,
             )
-            self.log(message, prefix=flag, into_stdout=False)
+            self.log(message, prefix=flag, into_stdout=False, traceback=3)
         return self
 
     def err(self, err, flag="ERROR"):
         if _global_log_level >= LogLevel.ERROR:
-            self.log(err, prefix=f"[{colored(flag,AnsiColor.RED)}]", into_file=False)
-            self.log(err, prefix=flag, into_stdout=False)
+            self.log(
+                err,
+                prefix=f"[{colored(flag,AnsiColor.RED)}]",
+                into_file=False,
+                traceback=3,
+            )
+            self.log(err, prefix=flag, into_stdout=False, traceback=3)
         return self
 
     def os_info(self):

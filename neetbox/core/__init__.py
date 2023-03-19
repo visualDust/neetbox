@@ -1,5 +1,5 @@
-from neetbox.core.environment import _Environment, Engine
+from neetbox.core.environment import Environment
 
-env = _Environment
+env = Environment
 
-__all__ = ["env", "Engine"]
+__all__ = ["env"]

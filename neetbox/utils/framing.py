@@ -1,5 +1,9 @@
-import sys
-from sys import exc_info
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# URL:    https://gong.host
+# Date:   20230319
+
 from os import path
 import inspect
 

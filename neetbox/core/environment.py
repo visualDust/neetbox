@@ -1,56 +1,34 @@
-from enum import Enum
+from neetbox.utils.framing import get_caller_identity_traceback
+from neetbox.integrations import engine
+from neetbox.logging import get_logger
 import importlib
-from neetbox.core.framing import get_caller_identity_traceback
 
-class Engine(Enum):
-    Torch = "torch"
+logger = get_logger("NEETBOX")
 
-
-class _Environment:
+class Environment:
     def __init__(self) -> None:
-        self.supported_engines = None
-        self.installed_engines = None
-        self.installed_packages = []
-        # todo migrate to python 3.9 after frameworks are supporting it
-        
-    def get_supported_engines(self):
-        if not self.supported_engines:
-            self.supported_engines = []
-            for engine in Engine:
-                self.supported_engines.append(engine)
-        return self.supported_engines.copy()
+        self.installed_packages = None
 
-    def get_installed_engines(self):
-        if not self.installed_engines:
-            logger.info("Scanning installed engines...")
-            self.installed_engines = []
-            for engine in self.get_supported_engines():
-                try:
-                    importlib.import_module(engine.value)
-                    self.installed_engines.append(engine)
-                except:
-                    pass
-        return self.installed_engines.copy()
-    
-    def installed(self, package, terminate: bool = False):
-        if type(package) is Engine:  # asking if an engine installed
+    def installed(self, package: str, terminate: bool = False):
+        caller = get_caller_identity_traceback(2)
+        caller_name = caller.module_name if caller.module else caller.filename
+        if not self.installed_packages:
+            self.installed_packages = []
+        logger.log(f"{caller_name} searching for '{package}'...")
+        if type(package) is engine:
             package = package.value
-            for installed in self.get_installed_engines():
-                if package == installed.value:
-                    return True
-        elif type(package) is str:
-            if package in  self.installed_packages:
-                return True
-            try:
-                importlib.import_module(package)
-                self.installed_packages.append(package)
-                return True
-            except:
-                if terminate:
-                    caller_name = get_caller_identity_traceback().filename
-                    raise ImportError(f"{caller_name} requires \'{package}\' which is not installed.")
-                return False
-        return True
+        if package in self.installed_packages:
+            return True
+        try:
+            importlib.import_module(package)
+            self.installed_packages.append(package)
+            return True
+        except:
+            if terminate:
+                error_str = f"{caller_name} requires '{package}' which is not installed."
+                logger.err(error_str)
+                raise ImportError(error_str)
+            return False
 
 # singleton
-_Environment = _Environment()
+Environment = Environment()
