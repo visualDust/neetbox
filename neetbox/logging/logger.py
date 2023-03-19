@@ -10,6 +10,7 @@ import platform
 from datetime import date, datetime
 from enum import Enum
 from neetbox.utils.framing import *
+from neetbox.utils import utils
 from neetbox.logging.formatting import *
 
 
@@ -272,7 +273,7 @@ class Logger:
         log_file_identity = os.path.abspath(path)
         if os.path.isdir(log_file_identity):
             raise Exception("Target path is not a file.")
-        filename = validateTitle(os.path.basename(path))
+        filename = utils.legal_file_name_of(os.path.basename(path))
         dirname = os.path.dirname(path) if len(os.path.dirname(path)) != 0 else "."
         if not os.path.exists(dirname):
             raise Exception(f"Could not find dictionary {dirname}")
@@ -286,32 +287,16 @@ class Logger:
         return self
 
     def file_bend(self) -> bool:
-        return self.file_writer == None
+        return self.file_writer != None
 
 
 DEFAULT_LOGGER = Logger(None)
 
 
-def get_logger(whom: any = None, icon=None, style: LogStyle = None) -> Logger:
+def get_logger(whom: any = None, style: LogStyle = None) -> Logger:
     if whom is None:
         return DEFAULT_LOGGER
     if whom in loggers_dict:
         return loggers_dict[whom]
     loggers_dict[whom] = Logger(whom=whom, style=style)
     return loggers_dict[whom]
-
-
-def validateTitle(text: str):
-    """Remove invalid characters for windows file systems
-
-    Args:
-        title (str): the given title
-
-    Returns:
-        str: valid text
-    """
-    if platform.system().lower() == "windows":
-        rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/ \ : * ? " < > |'
-        new_title = re.sub(rstr, "_", text)  # replace with '_'
-        return new_title
-    return text
