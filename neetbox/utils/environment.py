@@ -3,7 +3,7 @@ from neetbox.integrations import engine
 import importlib
 
 
-class Environment:
+class Package:
     def __init__(self) -> None:
         self.installed_packages = None
 
@@ -27,4 +27,12 @@ class Environment:
             return False
 
 # singleton
-Environment = Environment()
+Package = Package()
+
+class HostDevice:
+    def __new__(cls) -> "HostDevice":
+        # todo return the old one
+        pass
+    def __init__(self) -> None:
+        # todo add inits
+        pass

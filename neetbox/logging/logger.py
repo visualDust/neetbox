@@ -12,9 +12,10 @@ from enum import Enum
 from neetbox.utils.framing import *
 from neetbox.utils import utils
 from neetbox.logging.formatting import *
-from inspect import isclass,iscoroutinefunction,isgeneratorfunction
+from inspect import isclass, iscoroutinefunction, isgeneratorfunction
 import functools
 from typing import List
+
 
 class LogLevel(Enum):
     ALL = 4
@@ -215,13 +216,16 @@ class Logger:
             )
             self.log(err, prefix=flag, into_stdout=False, traceback=3)
         return self
-    
-    def catch(self, something=Exception,*,exclude = None, default=None, reraise = True):
+
+    def catch(
+        self, something=Exception, *, reraise=True, handler=None
+    ):  # todo add handler interface
         if callable(something) and (
             not isclass(something) or not issubclass(something, BaseException)
         ):
             return self.catch()(something)
         logger = self
+
         class Catcher:
             def __init__(self, from_decorator):
                 self._from_decorator = from_decorator
@@ -232,22 +236,13 @@ class Logger:
             def __exit__(self, type_, value, traceback_):
                 if type_ is None:
                     return
-
                 if not issubclass(type_, something):
                     return False
-
-                if exclude is not None and issubclass(type_, exclude):
-                    return False
-
                 from_decorator = self._from_decorator
-                # _, depth, _, *options = logger._options
-
-                # if from_decorator:
-                #     depth += 1
-
                 catch_options = [(type_, value, traceback_)]
-                logger.log(from_decorator, catch_options, traceback=4 if from_decorator else 3)
-
+                logger.log(
+                    from_decorator, catch_options, traceback=4 if from_decorator else 3
+                )
                 return not reraise
 
             def __call__(self, function):
@@ -264,26 +259,23 @@ class Logger:
                     async def catch_wrapper(*args, **kwargs):
                         with catcher:
                             return await function(*args, **kwargs)
-                        return default
 
                 elif isgeneratorfunction(function):
 
                     def catch_wrapper(*args, **kwargs):
                         with catcher:
                             return (yield from function(*args, **kwargs))
-                        return default
 
                 else:
 
                     def catch_wrapper(*args, **kwargs):
                         with catcher:
                             return function(*args, **kwargs)
-                        return default
 
                 functools.update_wrapper(catch_wrapper, function)
                 return catch_wrapper
 
-        return Catcher(False)    
+        return Catcher(False)
 
     def os_info(self):
         """Log some maybe-useful os info
@@ -375,9 +367,12 @@ class Logger:
 
 DEFAULT_LOGGER = Logger(None)
 
+
 # todo remove dedicated
 def get_logger(whom: any = None, style: LogStyle = None) -> Logger:
-    DEFAULT_LOGGER.warn("'get_logger(whom)' is outdated and will be removed in the near future. Use 'logger(whom)' instead.")
+    DEFAULT_LOGGER.warn(
+        "'get_logger(whom)' is outdated and will be removed in the near future. Use 'logger(whom)' instead."
+    )
     if whom is None:
         return DEFAULT_LOGGER
     if whom in loggers_dict:

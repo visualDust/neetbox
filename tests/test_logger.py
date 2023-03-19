@@ -47,7 +47,7 @@ def test_out_of_dated():
     logger.log("someone said 1")
 
 
-def test_logger_cache():
+def test_logger_catch():
     from neetbox.logging import logger
 
     @logger.catch(reraise=False)
