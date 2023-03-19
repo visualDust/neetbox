@@ -19,5 +19,6 @@ jobs:
         uses: abatilo/actions-poetry@v2
         with:
           poetry-version: ${{ matrix.poetry-version }}
-      - name: Run poetry test
-        run: poetry run pytest
+      - name: Run pytest
+        run: | 
+          pytest tests
