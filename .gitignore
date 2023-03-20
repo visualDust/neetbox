@@ -3,7 +3,7 @@
 __pycache__/
 dist/
 poetry.lock
-
+test/optional
 # log files
 logdir
 for_debug.txt
