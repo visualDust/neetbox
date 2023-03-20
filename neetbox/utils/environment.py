@@ -9,7 +9,7 @@ class Package:
     def __init__(self) -> None:
         self.installed_packages = None
 
-    def is_installed(self, package: str, terminate: bool = True):
+    def is_installed(self, package: str, terminate: bool = False):
         caller = get_caller_identity_traceback(2)
         caller_name = caller.module_name if caller.module else caller.filename
         if not self.installed_packages:
