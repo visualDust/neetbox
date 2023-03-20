@@ -1,5 +1,5 @@
 import numpy as np
-from neetbox.core import env
+from neetbox.utils import package
 import cv2
 
 
@@ -33,7 +33,7 @@ def get_sobel_kernel(k=3):
 
 
 def get_thin_kernels(start=0, end=360, step=45):
-    assert env.installed("cv2", terminate=True)
+    assert package.is_installed("cv2", terminate=True)
     k_thin = 3  # actual size of the directional kernel
     # increase for a while to avoid interpolation when rotating
     k_increased = k_thin + 2

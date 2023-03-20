@@ -1,13 +1,15 @@
 from neetbox.utils.framing import get_caller_identity_traceback
 from neetbox.integrations import engine
 import importlib
+import GPUtil
+from GPUtil import GPU as GPU
 
 
 class Package:
     def __init__(self) -> None:
         self.installed_packages = None
 
-    def is_installed(self, package: str, terminate: bool = False):
+    def is_installed(self, package: str, terminate: bool = True):
         caller = get_caller_identity_traceback(2)
         caller_name = caller.module_name if caller.module else caller.filename
         if not self.installed_packages:
@@ -30,9 +32,13 @@ class Package:
 Package = Package()
 
 class HostDevice:
+    gpus:list
     def __new__(cls) -> "HostDevice":
         # todo return the old one
         pass
     def __init__(self) -> None:
+        self.gpus = GPUtil.getGPUs()
         # todo add inits
         pass
+
+HostDevice = HostDevice()
