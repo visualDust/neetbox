@@ -43,6 +43,7 @@ toml = ">0.10"
 pytest = "*"
 gputil = "^1.4.0"
 psutil = "^5.9.4"
+injector = "^0.20.1"
 
 [build-system]
 requires = ["poetry>=0.12"]
