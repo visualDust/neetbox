@@ -5,7 +5,9 @@
 # Date:   20230315
 
 import getpass
-import os, re
+import os
+import re
+import io
 import platform
 from datetime import date, datetime
 from enum import Enum
@@ -14,7 +16,8 @@ from neetbox.utils import utils
 from neetbox.logging.formatting import *
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
 import functools
-from typing import List
+import pathlib
+from typing import *
 
 
 class LogLevel(Enum):
@@ -55,6 +58,159 @@ def set_log_level(level: LogLevel):
         assert level >= 0 and level <= 3
         level = LogLevel(level)
     _global_log_level = level
+
+
+class LogMetadata:
+    def __init__(self, writer: '_AutoSplitLogWriter'):
+        self.written_bytes = 0
+        self.log_writer = writer
+
+
+SplitStrategyCallable = Callable[[LogMetadata], Union[str, Iterable[str]]]
+
+
+class LogSplitStrategies:
+    @staticmethod
+    def by_date() -> SplitStrategyCallable:
+        def _split_strategy(metadata: LogMetadata):
+            return date.today().strftime('%Y%m%d')
+        return _split_strategy
+
+    @staticmethod
+    def by_hour() -> SplitStrategyCallable:
+        def _split_strategy(metadata: LogMetadata):
+            return datetime.now().strftime('%Y%m%d-%H')
+        return _split_strategy
+
+    @staticmethod
+    def by_date_and_size(size_in_bytes: int) -> SplitStrategyCallable:
+        class DateSizeSplitStrategy:
+            def __init__(self):
+                self.file_id = None
+
+            def _already_exists(self, metadata: LogMetadata, file_id: int) -> bool:
+                f = metadata.log_writer.make_logfile_path(
+                    self.make_result(file_id))
+                return f.exists()
+
+            def make_result(self, file_id):
+                return date.today().strftime('%Y%m%d'), str(file_id)
+
+            def __call__(self, metadata: LogMetadata):
+                if self.file_id is None:
+                    self.file_id = 0
+                    while self._already_exists(metadata, self.file_id):
+                        self.file_id += 1
+                return self.make_result(self.file_id + metadata.written_bytes // size_in_bytes)
+
+        return DateSizeSplitStrategy()
+
+
+class _AutoSplitLogWriter(io.TextIOBase):
+    class ReentrantCounter:
+        def __init__(self):
+            self._count = 0
+
+        def __enter__(self):
+            self._count += 1
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self._count -= 1
+
+        def __bool__(self):
+            return self._count > 0
+
+    _writer: io.IOBase
+    _filename_template: str
+    _split_strategy: SplitStrategyCallable
+    _current_logfile: pathlib.Path
+
+    def __init__(self,
+                 base_dir,
+                 filename_template,
+                 split_strategy: Optional[SplitStrategyCallable],
+                 *,
+                 encoding='utf-8',
+                 open_on_creation=True,
+                 overwrite_existing=False,
+                 ) -> None:
+        self._writer = None
+        self._current_logfile = None
+        self._filename_template = filename_template
+        self._base_dir = pathlib.Path(str(base_dir))
+        self._encoding = encoding
+        self._open_mode = 'wb' if overwrite_existing else 'ab'
+        self._split_lock = _AutoSplitLogWriter.ReentrantCounter()
+
+        self._split_strategy = (
+            lambda *_: None) if split_strategy is None else split_strategy
+
+        self._stats = LogMetadata(self)
+
+        if open_on_creation:
+            self.open()
+
+    def _apply_filename_template(self, provider_supplied):
+        if provider_supplied is None:
+            return self._filename_template
+        if isinstance(provider_supplied, str):
+            return provider_supplied
+        if isinstance(provider_supplied, Iterable):
+            return self._filename_template.format(*provider_supplied)
+
+        raise ValueError(
+            'Filename provider must return either a string or an iterable of strings')
+
+    def make_logfile_path(self, provider_supplied):
+        return self._base_dir / self._apply_filename_template(provider_supplied)
+
+    def _create_logfile(self):
+        expected_logfile = self.make_logfile_path(
+            self._split_strategy(self._stats))
+        if expected_logfile != self._current_logfile:
+            if self._writer is not None:
+                self._writer.close()
+            expected_logfile.parent.mkdir(parents=True, exist_ok=True)
+            self._current_logfile = expected_logfile
+            self._writer = open(self._current_logfile, self._open_mode)
+
+    def _check_open(self):
+        if self._writer is None:
+            raise ValueError('Writer not opened')
+
+    def write(self, __s):
+        self._check_open()
+        if not self._split_lock:
+            self._create_logfile()
+
+        print('writing')
+        bytes = __s.encode(self._encoding)
+        self._stats.written_bytes += len(bytes)
+        self._writer.write(bytes)
+
+    def writelines(self, __lines: Iterable[str]) -> None:
+        for line in __lines:
+            self.write(line + '\n')
+
+    def open(self):
+        self._create_logfile()
+
+    def __enter__(self):
+        if self._writer is None:
+            self.open()
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
+
+    def flush(self):
+        self._writer.flush()
+
+    def close(self):
+        if self._writer is not None:
+            self._writer.close()
+
+    def split_lock(self):
+        return self._split_lock
 
 
 class Logger:
@@ -126,10 +282,12 @@ class Logger:
                 file_level = True
                 _whom = ""
                 if _caller_identity.module_name and _style.trace_level >= 2:
-                    id_seq.append(_caller_identity.module_name)  # trace as module level
+                    # trace as module level
+                    id_seq.append(_caller_identity.module_name)
                     file_level = False
                 if _caller_identity.class_name and _style.trace_level >= 1:
-                    id_seq.append(_caller_identity.class_name)  # trace as class level
+                    # trace as class level
+                    id_seq.append(_caller_identity.class_name)
                     file_level = False
                 if file_level and _style.trace_level >= 1:
                     id_seq.append(
@@ -294,7 +452,8 @@ class Logger:
             + "\n"
         )
         message += (
-            "system\t\t|\t" + str(platform.system()) + str(platform.version()) + "\n"
+            "system\t\t|\t" + str(platform.system()) +
+            str(platform.version()) + "\n"
         )
         message += (
             "python\t\t|\t"
@@ -331,12 +490,15 @@ class Logger:
         if os.path.isfile(path):
             raise "Target path is not a directory."
         if not os.path.exists(path):
-            DEFAULT_LOGGER.info(f"Directory {path} not found, trying to create.")
+            DEFAULT_LOGGER.info(
+                f"Directory {path} not found, trying to create.")
             try:
                 os.makedirs(path)
             except:
-                DEFAULT_LOGGER.err(f"Failed when trying to create directory {path}")
-                raise Exception(f"Failed when trying to create directory {path}")
+                DEFAULT_LOGGER.err(
+                    f"Failed when trying to create directory {path}")
+                raise Exception(
+                    f"Failed when trying to create directory {path}")
         log_file_name = ""
         if independent:
             log_file_name += self.whom
@@ -349,7 +511,8 @@ class Logger:
         if os.path.isdir(log_file_identity):
             raise Exception("Target path is not a file.")
         filename = utils.legal_file_name_of(os.path.basename(path))
-        dirname = os.path.dirname(path) if len(os.path.dirname(path)) != 0 else "."
+        dirname = os.path.dirname(path) if len(
+            os.path.dirname(path)) != 0 else "."
         if not os.path.exists(dirname):
             raise Exception(f"Could not find dictionary {dirname}")
         real_path = os.path.join(dirname, filename)
