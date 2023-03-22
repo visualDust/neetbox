@@ -1,3 +1,3 @@
-from neetbox.utils import package
+from neetbox.utils import pkg
 from neetbox.integrations import engine
-assert package.is_installed(engine.Torch, terminate=True)
+assert pkg.is_installed(engine.Torch, terminate=True)

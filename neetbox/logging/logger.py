@@ -4,11 +4,9 @@
 # URL:    https://gong.host
 # Date:   20230315
 
-import getpass
 import os
-import re
 import io
-import platform
+import re
 from datetime import date, datetime
 from enum import Enum
 from neetbox.utils.framing import *
@@ -376,12 +374,12 @@ class Logger:
         return self
 
     def catch(
-        self, something=Exception, *, reraise=True, handler=None
+        self, exception_type=Exception, *, reraise=True, handler=None
     ):  # todo add handler interface
-        if callable(something) and (
-            not isclass(something) or not issubclass(something, BaseException)
+        if callable(exception_type) and (
+            not isclass(exception_type) or not issubclass(exception_type, BaseException)
         ):
-            return self.catch()(something)
+            return self.catch()(exception_type)
         logger = self
 
         class Catcher:
@@ -394,13 +392,15 @@ class Logger:
             def __exit__(self, type_, value, traceback_):
                 if type_ is None:
                     return
-                if not issubclass(type_, something):
+                if not issubclass(type_, exception_type):
                     return False
                 from_decorator = self._from_decorator
                 catch_options = [(type_, value, traceback_)]
-                logger.log(
-                    from_decorator, catch_options, traceback=4 if from_decorator else 3
-                )
+                if handler:
+                    handler(traceback_)
+                # logger.log(
+                #     from_decorator, catch_options, traceback=4 if from_decorator else 3
+                # )
                 return not reraise
 
             def __call__(self, function):
@@ -434,36 +434,6 @@ class Logger:
                 return catch_wrapper
 
         return Catcher(False)
-
-    def os_info(self):
-        """Log some maybe-useful os info
-
-        Returns:
-            _Logger : the logger instance itself
-        """
-        message = (
-            f"whom\t\t|\t" + getpass.getuser() + " using " + str(platform.node()) + "\n"
-        )
-        message += (
-            "machine\t\t|\t"
-            + str(platform.machine())
-            + " on "
-            + str(platform.processor())
-            + "\n"
-        )
-        message += (
-            "system\t\t|\t" + str(platform.system()) +
-            str(platform.version()) + "\n"
-        )
-        message += (
-            "python\t\t|\t"
-            + str(platform.python_build())
-            + ", ver "
-            + platform.python_version()
-            + "\n"
-        )
-        self.log(message, with_datetime=False, with_identifier=False)
-        return self
 
     def skip_lines(self, line_cnt=1):
         """Let the logger log some empty lines

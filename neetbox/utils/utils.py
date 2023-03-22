@@ -9,7 +9,7 @@ import platform
 
 
 def is_pure_ansi(text: str) -> bool:
-    if not re.compile(r"^[A-Za-z0-9_]+$").match(text):
+    if not re.compile(r"^[A-Za-z0-9_-]+$").match(text):
         return False
     return True
 

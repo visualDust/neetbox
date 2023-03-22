@@ -4,7 +4,7 @@
 # URL:    https://gong.host
 # Date:   20230315
 
-from neetbox.utils import package
+from neetbox.utils import pkg
 from thop import profile as _profile
 import time
 from tqdm import tqdm
@@ -22,7 +22,7 @@ def profile(
     profiling=True,
     speedtest=1000,
 ):
-    assert package.is_installed('thop', terminate=True)
+    assert pkg.is_installed('thop', terminate=True)
     if speedtest:
         input_tensor = specific_input
         if not input_tensor:

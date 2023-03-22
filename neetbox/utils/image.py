@@ -10,7 +10,7 @@ import os
 import asyncio
 import numpy as np
 from neetbox.logging import logger
-from neetbox.utils import package
+from neetbox.utils import pkg
 from neetbox.integrations import engine
 
 
@@ -85,7 +85,7 @@ class ImageFolder:
     def get_random_image_as_tensor(self, engine=engine.Torch):
         assert engine in [engine.Torch]  # todo support other engines
         if engine == engine.Torch:
-            assert package.is_installed("torchvision", terminate=True)
+            assert pkg.is_installed("torchvision", terminate=True)
             import torchvision.transforms as T
 
             tensor_transform = T.Compose(

@@ -1,3 +1,3 @@
-from neetbox.utils.environment import Package as package, HostDevice as device
+from neetbox.utils.environment import Package as pkg, Environment as env
 
-__all__ = ["package","device"]
+__all__ = ["pkg","env"]

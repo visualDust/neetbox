@@ -1,6 +1,8 @@
 from neetbox.utils.framing import get_caller_identity_traceback
 from neetbox.integrations import engine
 import importlib
+import getpass
+import platform
 import GPUtil
 from GPUtil import GPU as GPU
 
@@ -31,9 +33,11 @@ class Package:
 # singleton
 Package = Package()
 
-class HostDevice:
+
+
+class Environment(dict):
     gpus:list
-    def __new__(cls) -> "HostDevice":
+    def __new__(cls) -> "Environment":
         # todo return the old one
         pass
     def __init__(self) -> None:
@@ -41,4 +45,33 @@ class HostDevice:
         # todo add inits
         pass
 
-HostDevice = HostDevice()
+Environment = Environment()
+
+# def os_info(self):
+#     """Log some maybe-useful os info
+#     Returns:
+#         _Logger : the logger instance itself
+#     """
+#     message = (
+#         f"whom\t\t|\t" + getpass.getuser() + " using " + str(platform.node()) + "\n"
+#     )
+#     message += (
+#         "machine\t\t|\t"
+#         + str(platform.machine())
+#         + " on "
+#         + str(platform.processor())
+#         + "\n"
+#     )
+#     message += (
+#         "system\t\t|\t" + str(platform.system()) +
+#         str(platform.version()) + "\n"
+#     )
+#     message += (
+#         "python\t\t|\t"
+#         + str(platform.python_build())
+#         + ", ver "
+#         + platform.python_version()
+#         + "\n"
+#     )
+#     self.log(message, with_datetime=False, with_identifier=False)
+#     return self
