@@ -2,12 +2,17 @@ from neetbox.utils.framing import get_caller_identity_traceback
 from neetbox.integrations import engine
 import importlib
 import getpass
+import time
+from threading import Thread
+import asyncio
 import platform
 import GPUtil
+import psutil
+from neetbox.utils.utils import Singleton
 from GPUtil import GPU as GPU
 
 
-class Package:
+class Package(metaclass=Singleton):
     def __init__(self) -> None:
         self.installed_packages = None
 
@@ -26,52 +31,87 @@ class Package:
             return True
         except:
             if terminate:
-                error_str = f"{caller_name} requires '{package}' which is not installed."
+                error_str = (
+                    f"{caller_name} requires '{package}' which is not installed."
+                )
                 raise ImportError(error_str)
             return False
+
 
 # singleton
 Package = Package()
 
 
+class _CPU_STAT:
+    def __init__(self, id=-1, percent=0.0, freq=0.0) -> None:
+        self.id = id
+        self.percent = percent
+        self.freq = freq
 
-class Environment(dict):
-    gpus:list
-    def __new__(cls) -> "Environment":
-        # todo return the old one
-        pass
+    def __str__(self) -> str:
+        return f"CPU{self.id}, {self.percent}%, {self.freq}Mhz"
+
+
+class Environment(metaclass=Singleton):
+    _update_interval = 1.0
+    """
+    The watcher may interacts with external libraries or devices
+    a thread may be more suitable because it can provide a separate execution
+    context with its own stack and memory space, which can simplify the design
+    and debugging of the code.
+    """
+    _watcher: Thread = None
+    _do_watch: bool = True
+    _update_interval: float = 1.0
+    gpus: list = []
+    cpus: list = []
+    platform_info: dict = {}
+
     def __init__(self) -> None:
+        self.platform_info["username"] = getpass.getuser()
+        self.platform_info["machine"] = platform.machine()
+        self.platform_info["processor"] = (
+            "unknown" if len(platform.processor()) == 0 else platform.processor()
+        )
+        self.platform_info["os name"] = platform.system()
+        self.platform_info["os release"] = platform.version()
+        self.platform_info["architecture"] = platform.architecture()
+        self.platform_info["python version"] = platform.python_version()
+        self.platform_info["python build"] = platform.python_build()
+
+        self.cpus = [_CPU_STAT() for _ in range(psutil.cpu_count(logical=True))]
         self.gpus = GPUtil.getGPUs()
-        # todo add inits
-        pass
+        self._with_gpu = False if len(self.gpus) == 0 else True
 
+        # the environment shoube be imported in the __init__.py of the outer module. And the watcher thread should be auto started
+        self.set_update_intervel()
+
+    def set_update_intervel(self, intervel=1.0) -> None:
+        if intervel < 1.0:
+            self._do_watch = False
+            return
+        self._do_watch = True
+        self._update_interval = intervel
+        if not self._watcher or not self._watcher.is_alive():
+
+            def watcher_fun(env_instance: Environment, do_update_gpus: bool):
+                while env_instance._do_watch:
+                    cpu_percent = psutil.cpu_percent(percpu=True)
+                    cpu_freq = psutil.cpu_freq(percpu=True)
+                    for index in range(len(cpu_percent)):
+                        env_instance.cpus[index] = _CPU_STAT(
+                            id=index, percent=cpu_percent[index], freq=cpu_freq[index]
+                        )
+                    if do_update_gpus:
+                        env_instance.gpus = GPUtil.getGPUs()
+                    env_instance.cpu_stats = psutil.cpu_stats()
+                    time.sleep(env_instance._update_interval)
+
+            self._watcher = Thread(
+                target=watcher_fun, args=(self, self._with_gpu), daemon=True
+            )
+            self._watcher.start()
+
+
+# singleton
 Environment = Environment()
-
-# def os_info(self):
-#     """Log some maybe-useful os info
-#     Returns:
-#         _Logger : the logger instance itself
-#     """
-#     message = (
-#         f"whom\t\t|\t" + getpass.getuser() + " using " + str(platform.node()) + "\n"
-#     )
-#     message += (
-#         "machine\t\t|\t"
-#         + str(platform.machine())
-#         + " on "
-#         + str(platform.processor())
-#         + "\n"
-#     )
-#     message += (
-#         "system\t\t|\t" + str(platform.system()) +
-#         str(platform.version()) + "\n"
-#     )
-#     message += (
-#         "python\t\t|\t"
-#         + str(platform.python_build())
-#         + ", ver "
-#         + platform.python_version()
-#         + "\n"
-#     )
-#     self.log(message, with_datetime=False, with_identifier=False)
-#     return self
