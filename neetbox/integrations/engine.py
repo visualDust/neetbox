@@ -5,6 +5,9 @@ import importlib
 
 class Engine(Enum):
     Torch = "torch"
+    
+    def __str__(self) -> str:
+        return self.value
 
 supported_engines:list = None
 installed_engines:list = None

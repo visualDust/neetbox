@@ -1,5 +1,4 @@
 from neetbox.utils.framing import get_caller_identity_traceback
-from neetbox.integrations import engine
 import importlib
 import getpass
 import time
@@ -21,8 +20,7 @@ class Package(metaclass=Singleton):
         caller_name = caller.module_name if caller.module else caller.filename
         if not self.installed_packages:
             self.installed_packages = []
-        if type(package) is engine:
-            package = package.value
+            package = str(package)
         if package in self.installed_packages:
             return True
         try:
