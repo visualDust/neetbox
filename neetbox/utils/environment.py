@@ -98,7 +98,9 @@ class Environment(metaclass=Singleton):
                     cpu_freq = psutil.cpu_freq(percpu=True)
                     for index in range(len(cpu_percent)):
                         env_instance.cpus[index] = _CPU_STAT(
-                            id=index, percent=cpu_percent[index], freq=cpu_freq[index]
+                            id=index,
+                            percent=cpu_percent[index],
+                            freq=cpu_freq[index] if len(cpu_freq) > 1 else cpu_freq[0],
                         )
                     if do_update_gpus:
                         env_instance.gpus = GPUtil.getGPUs()

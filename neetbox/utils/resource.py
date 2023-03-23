@@ -22,7 +22,7 @@ _loader_pool: Dict[
 
 class ResourceLoader:
     _ready: bool = False  # stands for each scan
-    image_path_list: list = []
+    file_path_list: list = []
     _initialized: bool = False  # stands for the first scan on creation
 
     def __new__(
@@ -36,7 +36,6 @@ class ResourceLoader:
     ):
         _id = "full_scan_" if sub_dirs else "partial_scan_" + folder + str(file_types)
         if not _id in _loader_pool:
-            print("not loaded")
             _loader_pool[_id] = super(ResourceLoader, cls).__new__(cls, *args, **kwargs)
         return _loader_pool[_id]
 
@@ -55,10 +54,9 @@ class ResourceLoader:
         if not self._ready and self._initialized:
             raise Exception("another scanning requested during the previous one.")
         self._ready = False
-        print("scanning...")
 
         def perform_scan():
-            image_path_list = []
+            file_path_list = []
             dirs = [self.path]
             while len(dirs) != 0:
                 dir_now = dirs.pop()
@@ -68,9 +66,9 @@ class ResourceLoader:
                     elif item.is_file():
                         for _t in self._file_types:
                             if item.name.endswith(f".{_t}"):
-                                image_path_list.append(item.path)
+                                file_path_list.append(item.path)
                                 break
-            self.image_path_list = image_path_list
+            self.file_path_list = file_path_list
             self._ready = True
             if not self._initialized:
                 self._initialized = True
@@ -83,24 +81,24 @@ class ResourceLoader:
     def get_file_list(self):
         if not self._ready:
             raise Exception("not ready.")
-        return self.image_path_list.copy()
+        return self.file_path_list.copy()
 
     def __getitem__(self, index):
         if not self._ready:
             raise Exception("not ready.")
         if type(index) is int:
-            return self.image_path_list[index]
+            return self.file_path_list[index]
 
 class ImagesLoader(ResourceLoader):
     
     def get_random_image(self):
-        rand_img_path = self.image_path_list[int(random() * len(self.image_path_list))]
+        rand_img_path = self.file_path_list[int(random() * len(self.file_path_list))]
         image = Image.open(rand_img_path).convert("RGB")
         return image
 
     def get_random_images(self, howmany=1):
-        assert howmany < len(self.image_path_list)
-        rand_idx_begin = int(random() * (len(self.image_path_list) - howmany))
+        assert howmany < len(self.file_path_list)
+        rand_idx_begin = int(random() * (len(self.file_path_list) - howmany))
         image_path_list = self[rand_idx_begin : rand_idx_begin + howmany]
         image_list = []
         for path in image_path_list:
