@@ -102,7 +102,7 @@ class Environment(metaclass=Singleton):
                         env_instance.cpus[index] = _CPU_STAT(
                             id=index,
                             percent=cpu_percent[index],
-                            freq=cpu_freq[index] if len(cpu_freq) > 1 else cpu_freq[0],
+                            freq=cpu_freq[index],
                         )
                     if do_update_gpus:
                         env_instance.gpus = GPUtil.getGPUs()
