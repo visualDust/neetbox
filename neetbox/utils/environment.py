@@ -96,6 +96,8 @@ class Environment(metaclass=Singleton):
                 while env_instance._do_watch:
                     cpu_percent = psutil.cpu_percent(percpu=True)
                     cpu_freq = psutil.cpu_freq(percpu=True)
+                    if len(cpu_freq) == 1:
+                        cpu_freq = cpu_freq * len(cpu_percent)
                     for index in range(len(cpu_percent)):
                         env_instance.cpus[index] = _CPU_STAT(
                             id=index,

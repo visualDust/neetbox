@@ -6,6 +6,7 @@
 
 import re
 import platform
+import functools
 
 
 def is_pure_ansi(text: str) -> bool:
@@ -13,6 +14,13 @@ def is_pure_ansi(text: str) -> bool:
         return False
     return True
 
+def is_fs_case_sensitive():
+    """Check if the file system is case sensitive
+
+    Returns:
+        bool: True if case sensitive
+    """
+    return 'windows' not in platform.system().lower() 
 
 def legal_file_name_of(text: str) -> str:
     """Remove invalid characters for windows file systems

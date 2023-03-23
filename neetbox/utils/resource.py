@@ -13,6 +13,7 @@ import threading
 from neetbox.utils import pkg
 from neetbox.integrations import engine
 from typing import Dict
+import pathlib
 
 
 _loader_pool: Dict[
@@ -55,20 +56,18 @@ class ResourceLoader:
             raise Exception("another scanning requested during the previous one.")
         self._ready = False
 
+        def can_match(path: pathlib.Path):
+            if not path.is_file():
+                return False
+            pattern = '**/*.' if self._scan_sub_dirs else '*.'
+            for file_type in self._file_types:
+                if path.match(pattern + file_type):
+                    return True
+            return False
+
         def perform_scan():
-            file_path_list = []
-            dirs = [self.path]
-            while len(dirs) != 0:
-                dir_now = dirs.pop()
-                for item in os.scandir(dir_now):
-                    if item.is_dir() and self._scan_sub_dirs:
-                        dirs.append(item.path)
-                    elif item.is_file():
-                        for _t in self._file_types:
-                            if item.name.endswith(f".{_t}"):
-                                file_path_list.append(item.path)
-                                break
-            self.file_path_list = file_path_list
+            self.file_path_list = [str(path) for path in pathlib.Path(
+                self.path).glob('**/*') if can_match(path)]
             self._ready = True
             if not self._initialized:
                 self._initialized = True
