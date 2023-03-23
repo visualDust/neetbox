@@ -1,5 +1,5 @@
 def test_registry():
-    from neetbox.pipline import Registry
+    from neetbox.pipeline import Registry
     reg1 = Registry("SOME-1")
     reg2 = Registry("SOME-1")
     reg3 = Registry("SOME-2")

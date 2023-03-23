@@ -12,6 +12,7 @@ from enum import Enum
 from neetbox.utils.framing import *
 from neetbox.utils import utils
 from neetbox.logging.formatting import *
+from neetbox.utils import env
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
 import functools
 import pathlib

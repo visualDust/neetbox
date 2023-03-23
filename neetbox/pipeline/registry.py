@@ -1,21 +1,23 @@
 from neetbox.logging import logger
 from neetbox.utils import utils
-from typing import Optional,Union,Sequence
+from typing import Optional, Union, Sequence
 import inspect
 import json
 import functools
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 _registry_pool: Dict[str, "Registry"] = dict()  # all registeres are stored here
-    
+
 class Registry(dict):
     """Register Helper Class
     A Register is a 'dict[str:any]'
     Registers are stored in a pool of type dict[str:Register]
     """
 
-    def __new__(cls, name: str, filter_strs:any = None) -> "Registry":
-        assert utils.is_pure_ansi(name), 'Registry name should not contain non-ansi char.'
+    def __new__(cls, name: str, filter_strs: any = None) -> "Registry":
+        assert utils.is_pure_ansi(
+            name
+        ), "Registry name should not contain non-ansi char."
         if name in _registry_pool:
             return _registry_pool[name]
         instance = dict.__new__(cls)
@@ -33,7 +35,7 @@ class Registry(dict):
                 [filter_strs] if isinstance(filter_strs, str) else filter_strs
             )
             self.filter_strs = dict()
-    
+
     def _register(
         self,
         what: any,
@@ -59,7 +61,9 @@ class Registry(dict):
                             self.name, k
                         )
                     )
-            self.filter_strs[name] = [filter_strs.get(k, None) for k in self.filter_strs]
+            self.filter_strs[name] = [
+                filter_strs.get(k, None) for k in self.filter_strs
+            ]
         elif hasattr(self, "filter_strs"):
             self.filter_strs[name] = [None] * len(self.filter_strs)
 
@@ -91,24 +95,48 @@ class Registry(dict):
         if not isinstance(others, list):
             others = [others]
         if not isinstance(others[0], Registry):
-            raise TypeError("Expect `Registry` type, but got {}".format(type(others[0])))
+            raise TypeError(
+                "Expect `Registry` type, but got {}".format(type(others[0]))
+            )
         for other in others:
             modules = list(other.values())
             names = list(other.keys())
             self.register_all(modules, force=force, names=names)
+            
+            
+    @classmethod
+    def get_all_registries():
+        return _registry_pool
     
+    @classmethod
+    def _find_global_with_name(name:str, default = None):
+        for reg_name, reg in _registry_pool.values():
+            private_sign = '__'
+            if not reg_name.startswith(private_sign):
+                if name in reg:
+                    return reg[name]
+        return default
+    
+    @classmethod
+    def _find_global_with_filter_strs(fileters:List[str]):
+        pass
+
     def __getitem__(self, __key: str) -> Any:
         return super().__getitem__(__key)
 
     def __setitem__(self, k, v) -> None:
-        assert utils.is_pure_ansi(k), 'Only ANSI chars are allowed for registering things.'
+        assert utils.is_pure_ansi(
+            k
+        ), "Only ANSI chars are allowed for registering things."
         super().__setitem__(k, v)
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         s = json.dumps(
-            self, indent=4, ensure_ascii=False, sort_keys=False, separators=(",", ":"), default=str
+            self,
+            indent=4,
+            ensure_ascii=False,
+            sort_keys=False,
+            separators=(",", ":"),
+            default=str,
         )
         return s
-
-    __str__ = __repr__
-
