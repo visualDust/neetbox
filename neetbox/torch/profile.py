@@ -5,6 +5,7 @@
 # Date:   20230315
 
 from neetbox.utils import pkg
+assert pkg.is_installed('thop')
 from thop import profile as _profile
 import time
 from tqdm import tqdm
