@@ -9,25 +9,53 @@ from random import random
 import os
 import asyncio
 import numpy as np
-from neetbox.logging import logger
+import threading
 from neetbox.utils import pkg
 from neetbox.integrations import engine
+from typing import Dict
 
 
-class ImageFolder:
-    def __init__(self, folder, sub_dirs=True, async_scan=False):
+_loader_pool: Dict[
+    str, "ResourceLoader"
+] = dict()  # all ResourceLoaders are stored here
+
+
+class ResourceLoader:
+    _ready: bool = False  # stands for each scan
+    image_path_list: list = []
+    _initialized: bool = False  # stands for the first scan on creation
+
+    def __new__(
+        cls,
+        folder,
+        file_types=["png", "jpg"],
+        sub_dirs=True,
+        async_scan=False,
+        *args,
+        **kwargs,
+    ):
+        _id = "full_scan_" if sub_dirs else "partial_scan_" + folder + str(file_types)
+        if not _id in _loader_pool:
+            print("not loaded")
+            _loader_pool[_id] = super(ResourceLoader, cls).__new__(cls, *args, **kwargs)
+        return _loader_pool[_id]
+
+    def __init__(
+        self, folder, file_types=["png", "jpg"], sub_dirs=True, async_scan=False
+    ):
+        super().__init__()
         self.path = folder
-        self.image_path_list = []
-        self._initialized = False
-        self._ready = False
+        self._file_types = file_types
         self._scan_sub_dirs = sub_dirs
         self._async_scan = async_scan
-        self._scan()
+        if not self._ready:
+            self._scan()
 
     def _scan(self):
         if not self._ready and self._initialized:
             raise Exception("another scanning requested during the previous one.")
         self._ready = False
+        print("scanning...")
 
         def perform_scan():
             image_path_list = []
@@ -38,22 +66,21 @@ class ImageFolder:
                     if item.is_dir() and self._scan_sub_dirs:
                         dirs.append(item.path)
                     elif item.is_file():
-                        if item.name.endswith(".jpg") or item.name.endswith(".png"):
-                            image_path_list.append(item.path)
+                        for _t in self._file_types:
+                            if item.name.endswith(f".{_t}"):
+                                image_path_list.append(item.path)
+                                break
             self.image_path_list = image_path_list
             self._ready = True
             if not self._initialized:
                 self._initialized = True
-            logger.log(f"Folder ready with {len(image_path_list)} images.")
 
         if self._async_scan:
-            import threading
-
             threading.Thread(target=perform_scan).start()
         else:
             perform_scan()
 
-    def get_image_list(self):
+    def get_file_list(self):
         if not self._ready:
             raise Exception("not ready.")
         return self.image_path_list.copy()
@@ -64,6 +91,8 @@ class ImageFolder:
         if type(index) is int:
             return self.image_path_list[index]
 
+class ImagesLoader(ResourceLoader):
+    
     def get_random_image(self):
         rand_img_path = self.image_path_list[int(random() * len(self.image_path_list))]
         image = Image.open(rand_img_path).convert("RGB")
