@@ -79,14 +79,3 @@ def load_word_vectors(root, wv_type, dim):
     ret = (wv_dict, wv_arr, wv_size)
     torch.save(ret, fname + '.pt')
     return ret
-
-
-def reporthook(t):
-    """https://github.com/tqdm/tqdm"""
-    last_b = [0]
-    def inner(b=1, bsize=1, tsize=None):
-        if tsize is not None:
-            t.total = tsize
-        t.update((b - last_b[0]) * bsize)
-        last_b[0] = b
-    return inner
