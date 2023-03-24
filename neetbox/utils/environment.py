@@ -119,7 +119,31 @@ class Environment(metaclass=Singleton):
                 target=watcher_fun, args=(self, self._with_gpu), daemon=True
             )
             self._watcher.start()
-                    
+            
+    def _run(self, command):
+        """
+        Running a command like a terminal.
+
+        Args:
+            command (str): The command need to run.
+
+        Returns:
+            int: The command return code.
+            str: The command running results.
+            err: The command error information.
+        """
+        p = subprocess.Popen(command, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, shell=True)
+        raw_output, raw_err = p.communicate()
+        rc = p.returncode
+        if self.platform_info["architecture"] == "32bit":
+            enc = 'oem'
+        else:
+            enc = locale.getpreferredencoding()
+        output = raw_output.decode(enc)
+        err = raw_err.decode(enc)
+        
+        return rc, output.strip(), err.strip()
 
 # singleton
 Environment = Environment()
