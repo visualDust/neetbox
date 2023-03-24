@@ -102,11 +102,11 @@ def colored(
 
     # Resolving background color
     if color_background:
-        if type(color_foreground) is AnsiColor:
+        if type(color_background) is AnsiColor:
             color_background = color_background.value
         color_background = color_background.value
-        if hasattr(Fore, color_foreground.upper()):
-            text = getattr(Back, color_foreground.upper()) + text + Fore.RESET
+        if hasattr(Back, color_background.upper()):
+            text = getattr(Back, color_background.upper()) + text + Fore.RESET
         else:
             raise ValueError("Wrong color was inputed in colored func.")
 

@@ -1,14 +1,19 @@
-from neetbox.utils.framing import get_caller_identity_traceback
-import importlib
+import asyncio
 import getpass
+import importlib
+import locale
+import platform
+import re, os
+import subprocess
 import time
 from threading import Thread
-import asyncio
-import platform
+
 import GPUtil
 import psutil
-from neetbox.utils.utils import Singleton
 from GPUtil import GPU as GPU
+
+from neetbox.utils.framing import get_caller_identity_traceback
+from neetbox.utils.utils import Singleton
 
 
 class Package(metaclass=Singleton):
@@ -66,6 +71,7 @@ class Environment(metaclass=Singleton):
     platform_info: dict = {}
 
     def __init__(self) -> None:
+        # system
         self.platform_info["username"] = getpass.getuser()
         self.platform_info["machine"] = platform.machine()
         self.platform_info["processor"] = (
@@ -76,7 +82,7 @@ class Environment(metaclass=Singleton):
         self.platform_info["architecture"] = platform.architecture()
         self.platform_info["python version"] = platform.python_version()
         self.platform_info["python build"] = platform.python_build()
-
+        # device
         self.cpus = [_CPU_STAT() for _ in range(psutil.cpu_count(logical=True))]
         self.gpus = GPUtil.getGPUs()
         self._with_gpu = False if len(self.gpus) == 0 else True
@@ -113,7 +119,31 @@ class Environment(metaclass=Singleton):
                 target=watcher_fun, args=(self, self._with_gpu), daemon=True
             )
             self._watcher.start()
+            
+    def _run(self, command):
+        """
+        Running a command like a terminal.
 
+        Args:
+            command (str): The command need to run.
+
+        Returns:
+            int: The command return code.
+            str: The command running results.
+            err: The command error information.
+        """
+        p = subprocess.Popen(command, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, shell=True)
+        raw_output, raw_err = p.communicate()
+        rc = p.returncode
+        if self.platform_info["architecture"] == "32bit":
+            enc = 'oem'
+        else:
+            enc = locale.getpreferredencoding()
+        output = raw_output.decode(enc)
+        err = raw_err.decode(enc)
+        
+        return rc, output.strip(), err.strip()
 
 # singleton
 Environment = Environment()
