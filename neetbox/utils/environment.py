@@ -119,60 +119,7 @@ class Environment(metaclass=Singleton):
                 target=watcher_fun, args=(self, self._with_gpu), daemon=True
             )
             self._watcher.start()
-            
-    def _run(self, command):
-        """Returns (return-code, stdout, stderr)"""
-        p = subprocess.Popen(command, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, shell=True)
-        raw_output, raw_err = p.communicate()
-        rc = p.returncode
-        if self.platform_info["architecture"] == "32bit":
-            enc = 'oem'
-        else:
-            enc = locale.getpreferredencoding()
-        output = raw_output.decode(enc)
-        err = raw_err.decode(enc)
-        
-        return rc, output.strip(), err.strip()
-    
-    def _get_nvidia_smi(self):
-        return "nvidia-smi"
-    
-    def get_gpu_device(self):
-        smi = self._get_nvidia_smi()
-        rc, out, _ = self._run(smi + " -L")
-        gpu_list = out.split("\n")
-        
-        return gpu_list
-    
-    def get_cuda_version(self):
-        conda_list = self.get_conda_packages()
-        cuda = [p.split(",")[2] for p in conda_list if p.startswith("cudatoolkit")]
-        if len(cuda) == 1:
-            return "CUDA runtime version: " + cuda[0].strip()
-        
-        nvcc = "nvcc --version"
-        rc, out, _ = self._run(nvcc)
-        match = re.search(r'release .+ V(.*)', out)
-        if match is None:
-            return None
-        return "CUDA runtime version: " + match.group(1).strip()
-    
-    def get_conda_packages(self):
-        conda_list_comm = "conda list"
-        rc, out, _ = self._run(conda_list_comm)
-        if out is None:
-            return None
-        
-        conda_packages = []
-        for line in out.splitlines():
-            is_in_list = any(name in line for name in ["torch", "numpy", "cudatoolkit", "soumith", "mkl", "magma", "mkl", "triton"])
-            if not line.startswith("#") and is_in_list:
-                formated_line = "".join([item + " " for item in line.split(" ") if item != ""]).strip()
-                conda_packages.append(formated_line.replace(" ", ","))
-        
-        return f"Package Installed: \n {conda_packages}" 
-        
+                    
 
 # singleton
 Environment = Environment()
