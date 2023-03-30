@@ -12,7 +12,6 @@ from enum import Enum
 from neetbox.utils.framing import *
 from neetbox.utils import utils
 from neetbox.logging.formatting import *
-from neetbox.utils import env
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
 import functools
 import pathlib
@@ -60,7 +59,7 @@ def set_log_level(level: LogLevel):
 
 
 class LogMetadata:
-    def __init__(self, writer: '_AutoSplitLogWriter'):
+    def __init__(self, writer: "_AutoSplitLogWriter"):
         self.written_bytes = 0
         self.log_writer = writer
 
@@ -72,13 +71,15 @@ class LogSplitStrategies:
     @staticmethod
     def by_date() -> SplitStrategyCallable:
         def _split_strategy(metadata: LogMetadata):
-            return date.today().strftime('%Y%m%d')
+            return date.today().strftime("%Y%m%d")
+
         return _split_strategy
 
     @staticmethod
     def by_hour() -> SplitStrategyCallable:
         def _split_strategy(metadata: LogMetadata):
-            return datetime.now().strftime('%Y%m%d-%H')
+            return datetime.now().strftime("%Y%m%d-%H")
+
         return _split_strategy
 
     @staticmethod
@@ -88,19 +89,20 @@ class LogSplitStrategies:
                 self.file_id = None
 
             def _already_exists(self, metadata: LogMetadata, file_id: int) -> bool:
-                f = metadata.log_writer.make_logfile_path(
-                    self.make_result(file_id))
+                f = metadata.log_writer.make_logfile_path(self.make_result(file_id))
                 return f.exists()
 
             def make_result(self, file_id):
-                return date.today().strftime('%Y%m%d'), str(file_id)
+                return date.today().strftime("%Y%m%d"), str(file_id)
 
             def __call__(self, metadata: LogMetadata):
                 if self.file_id is None:
                     self.file_id = 0
                     while self._already_exists(metadata, self.file_id):
                         self.file_id += 1
-                return self.make_result(self.file_id + metadata.written_bytes // size_in_bytes)
+                return self.make_result(
+                    self.file_id + metadata.written_bytes // size_in_bytes
+                )
 
         return DateSizeSplitStrategy()
 
@@ -124,25 +126,27 @@ class _AutoSplitLogWriter(io.TextIOBase):
     _split_strategy: SplitStrategyCallable
     _current_logfile: pathlib.Path
 
-    def __init__(self,
-                 base_dir,
-                 filename_template,
-                 split_strategy: Optional[SplitStrategyCallable],
-                 *,
-                 encoding='utf-8',
-                 open_on_creation=True,
-                 overwrite_existing=False,
-                 ) -> None:
+    def __init__(
+        self,
+        base_dir,
+        filename_template,
+        split_strategy: Optional[SplitStrategyCallable],
+        *,
+        encoding="utf-8",
+        open_on_creation=True,
+        overwrite_existing=False,
+    ) -> None:
         self._writer = None
         self._current_logfile = None
         self._filename_template = filename_template
         self._base_dir = pathlib.Path(str(base_dir))
         self._encoding = encoding
-        self._open_mode = 'wb' if overwrite_existing else 'ab'
+        self._open_mode = "wb" if overwrite_existing else "ab"
         self._split_lock = _AutoSplitLogWriter.ReentrantCounter()
 
         self._split_strategy = (
-            lambda *_: None) if split_strategy is None else split_strategy
+            (lambda *_: None) if split_strategy is None else split_strategy
+        )
 
         self._stats = LogMetadata(self)
 
@@ -158,14 +162,14 @@ class _AutoSplitLogWriter(io.TextIOBase):
             return self._filename_template.format(*provider_supplied)
 
         raise ValueError(
-            'Filename provider must return either a string or an iterable of strings')
+            "Filename provider must return either a string or an iterable of strings"
+        )
 
     def make_logfile_path(self, provider_supplied):
         return self._base_dir / self._apply_filename_template(provider_supplied)
 
     def _create_logfile(self):
-        expected_logfile = self.make_logfile_path(
-            self._split_strategy(self._stats))
+        expected_logfile = self.make_logfile_path(self._split_strategy(self._stats))
         if expected_logfile != self._current_logfile:
             if self._writer is not None:
                 self._writer.close()
@@ -175,21 +179,21 @@ class _AutoSplitLogWriter(io.TextIOBase):
 
     def _check_open(self):
         if self._writer is None:
-            raise ValueError('Writer not opened')
+            raise ValueError("Writer not opened")
 
     def write(self, __s):
         self._check_open()
         if not self._split_lock:
             self._create_logfile()
 
-        print('writing')
+        print("writing")
         bytes = __s.encode(self._encoding)
         self._stats.written_bytes += len(bytes)
         self._writer.write(bytes)
 
     def writelines(self, __lines: Iterable[str]) -> None:
         for line in __lines:
-            self.write(line + '\n')
+            self.write(line + "\n")
 
     def open(self):
         self._create_logfile()
@@ -326,52 +330,63 @@ class Logger:
             )
         return self
 
-    def ok(self):
-        # todo
-        pass
-
-    def debug(self, info, flag=f"DEBUG"):
-        if _global_log_level >= LogLevel.DEBUG:
-            self.log(
-                info,
-                prefix=f"[{colored(flag, AnsiColor.CYAN)}]",
-                into_file=False,
-                traceback=3,
-            )
-            self.log(info, prefix=flag, into_stdout=False, traceback=3)
-        return self
-
-    def info(self, message, flag="INFO"):
+    def ok(self, *message, flag="OK"):
         if _global_log_level >= LogLevel.INFO:
             self.log(
-                message,
+                *message,
                 prefix=f"[{colored(flag, AnsiColor.GREEN)}]",
                 into_file=False,
                 traceback=3,
             )
-            self.log(message, prefix=flag, into_stdout=False, traceback=3)
+            self.log(*message, prefix=flag, into_stdout=False, traceback=3)
         return self
 
-    def warn(self, message, flag="WARNING"):
+    def debug(self, *message, flag=f"DEBUG"):
+        if _global_log_level >= LogLevel.DEBUG:
+            self.log(
+                *message,
+                prefix=f"[{colored(flag, AnsiColor.CYAN)}]",
+                into_file=False,
+                traceback=3,
+            )
+            self.log(*message, prefix=flag, into_stdout=False, traceback=3)
+        return self
+
+    def info(self, *message, flag="INFO"):
+        if _global_log_level >= LogLevel.INFO:
+            self.log(
+                *message,
+                prefix=f"[{colored(flag, AnsiColor.WHITE)}]",
+                into_file=False,
+                traceback=3,
+            )
+            self.log(*message, prefix=flag, into_stdout=False, traceback=3)
+        return self
+
+    def warn(self, *message, flag="WARNING"):
         if _global_log_level >= LogLevel.WARNING:
             self.log(
-                message,
+                *message,
                 prefix=f"[{colored(flag, AnsiColor.YELLOW)}]",
                 into_file=False,
                 traceback=3,
             )
-            self.log(message, prefix=flag, into_stdout=False, traceback=3)
+            self.log(*message, prefix=flag, into_stdout=False, traceback=3)
         return self
 
-    def err(self, err, flag="ERROR"):
+    def err(self, err, flag="ERROR", reraise=False):
+        if type(err) is not Exception:
+            err = RuntimeError(str(err))
         if _global_log_level >= LogLevel.ERROR:
             self.log(
-                err,
+                str(err),
                 prefix=f"[{colored(flag,AnsiColor.RED)}]",
                 into_file=False,
                 traceback=3,
             )
-            self.log(err, prefix=flag, into_stdout=False, traceback=3)
+            self.log(str(err), prefix=flag, into_stdout=False, traceback=3)
+        if reraise:
+            raise err
         return self
 
     def catch(
@@ -402,6 +417,7 @@ class Logger:
                 # logger.log(
                 #     from_decorator, catch_options, traceback=4 if from_decorator else 3
                 # )
+                #todo add reraise functions
                 return not reraise
 
             def __call__(self, function):
@@ -461,15 +477,12 @@ class Logger:
         if os.path.isfile(path):
             raise "Target path is not a directory."
         if not os.path.exists(path):
-            DEFAULT_LOGGER.info(
-                f"Directory {path} not found, trying to create.")
+            DEFAULT_LOGGER.info(f"Directory {path} not found, trying to create.")
             try:
                 os.makedirs(path)
             except:
-                DEFAULT_LOGGER.err(
-                    f"Failed when trying to create directory {path}")
-                raise Exception(
-                    f"Failed when trying to create directory {path}")
+                DEFAULT_LOGGER.err(f"Failed when trying to create directory {path}")
+                raise Exception(f"Failed when trying to create directory {path}")
         log_file_name = ""
         if independent:
             log_file_name += self.whom
@@ -482,8 +495,7 @@ class Logger:
         if os.path.isdir(log_file_identity):
             raise Exception("Target path is not a file.")
         filename = utils.legal_file_name_of(os.path.basename(path))
-        dirname = os.path.dirname(path) if len(
-            os.path.dirname(path)) != 0 else "."
+        dirname = os.path.dirname(path) if len(os.path.dirname(path)) != 0 else "."
         if not os.path.exists(dirname):
             raise Exception(f"Could not find dictionary {dirname}")
         real_path = os.path.join(dirname, filename)

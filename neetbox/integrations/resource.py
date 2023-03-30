@@ -10,7 +10,8 @@ import os
 import asyncio
 import numpy as np
 import threading
-from neetbox.utils import pkg
+from neetbox.integrations import pkg
+from neetbox.logging import logger
 from neetbox.integrations import engine
 from typing import Dict
 import pathlib
@@ -71,6 +72,7 @@ class ResourceLoader:
             self._ready = True
             if not self._initialized:
                 self._initialized = True
+            logger.ok(f"Resource loader '{self.path}' ready with {len(self.file_path_list)} files.")
 
         if self._async_scan:
             threading.Thread(target=perform_scan).start()
@@ -111,7 +113,7 @@ class ImagesLoader(ResourceLoader):
     def get_random_image_as_tensor(self, engine=engine.Torch):
         assert engine in [engine.Torch]  # todo support other engines
         if engine == engine.Torch:
-            assert pkg.is_installed("torchvision", terminate=True)
+            assert pkg.is_installed("torchvision")
             import torchvision.transforms as T
 
             tensor_transform = T.Compose(
