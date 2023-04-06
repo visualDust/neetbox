@@ -15,6 +15,9 @@ from neetbox.logging import logger
 from neetbox.integrations import engine
 from typing import Dict
 import pathlib
+import urllib.request
+from tqdm import tqdm
+from typing import List, Union, Dict, Any
 
 
 _loader_pool: Dict[
@@ -42,7 +45,12 @@ class ResourceLoader:
         return _loader_pool[_id]
 
     def __init__(
-        self, folder, file_types=["png", "jpg"], sub_dirs=True, async_scan=False
+        self,
+        folder,
+        file_types=["png", "jpg"],
+        sub_dirs=True,
+        async_scan=False,
+        verbose=False,
     ):
         super().__init__()
         self.path = folder
@@ -50,9 +58,9 @@ class ResourceLoader:
         self._scan_sub_dirs = sub_dirs
         self._async_scan = async_scan
         if not self._ready:
-            self._scan()
+            self._scan(verbose)
 
-    def _scan(self):
+    def _scan(self, verbose):
         if not self._ready and self._initialized:
             raise Exception("another scanning requested during the previous one.")
         self._ready = False
@@ -60,19 +68,30 @@ class ResourceLoader:
         def can_match(path: pathlib.Path):
             if not path.is_file():
                 return False
-            pattern = '**/*.' if self._scan_sub_dirs else '*.'
+            pattern = "**/*." if self._scan_sub_dirs else "*."
             for file_type in self._file_types:
                 if path.match(pattern + file_type):
                     return True
             return False
 
         def perform_scan():
-            self.file_path_list = [str(path) for path in pathlib.Path(
-                self.path).glob('**/*') if can_match(path)]
+            if not verbose:  # do not output
+                self.file_path_list = [
+                    str(path)
+                    for path in pathlib.Path(self.path).glob("**/*")
+                    if can_match(path)
+                ]
+            else:
+                self.file_path_list = []
+                for path in tqdm(pathlib.Path(self.path).glob("**/*")):
+                    if can_match(path):
+                        self.file_path_list.append(path)
             self._ready = True
             if not self._initialized:
                 self._initialized = True
-            logger.ok(f"Resource loader '{self.path}' ready with {len(self.file_path_list)} files.")
+            logger.ok(
+                f"Resource loader '{self.path}' ready with {len(self.file_path_list)} files."
+            )
 
         if self._async_scan:
             threading.Thread(target=perform_scan).start()
@@ -90,8 +109,8 @@ class ResourceLoader:
         if type(index) is int:
             return self.file_path_list[index]
 
+
 class ImagesLoader(ResourceLoader):
-    
     def get_random_image(self):
         rand_img_path = self.file_path_list[int(random() * len(self.file_path_list))]
         image = Image.open(rand_img_path).convert("RGB")
@@ -128,3 +147,74 @@ class ImagesLoader(ResourceLoader):
             return image
 
     # todo to_dataset
+
+
+def download(
+    urls: Union[str, List[str], Dict[str, str]],
+    filenames: Union[str, List[str]] = None,
+    retry=3,
+    verbose=True,
+):
+    """download files from urls
+
+    Args:
+        urls (Union[str, List[str], Dict[str, str]]): single str to download from url; list of strs to download from urls; dict(filename:url) to download urls and rename them to filenames
+        filenames (Union[str, List[str]], optional): str to rename the downloaded file; list of strs to rename downloaded files; None means no rename. Defaults to None.
+        retry (int, optional): retries when error occures. Defaults to 3.
+        verbose (bool, optional): tell what happening in output. Defaults to True.
+
+    Returns:
+        _type_: _description_
+    """
+    assert type(urls) in [str, list, dict], "unkown format of url"
+    if type(urls) is str:
+        assert (
+            filenames is None
+            or type(filenames) is str
+            or (type(filenames) is list and len(filenames) == 1)
+        ), "num of urls and filenames mismatch"
+        urls = [
+            urls,
+        ]
+        filenames = (
+            [
+                filenames,
+            ]
+            if filenames
+            else None
+        )
+    if type(urls) is list:
+        if filenames is None:
+            filenames = [None] * len(urls)
+        assert type(filenames) is list and len(urls) == len(
+            filenames
+        ), "num of urls and filenames mismatch"
+
+        urls = {filenames[i]: urls[i] for i in range(len(urls))}
+
+    if verbose:
+        outer_pbar = tqdm(total=len(urls), desc=f"Downloading {len(urls)} file(s)")
+
+    _reporthook = None
+    _results = []
+    for fname, furl in urls.items():
+        if verbose:
+            inner_pbar = tqdm(total=100, leave=False, desc=f"Currently downloading")
+
+            def reporthook(p1, p2, p3):
+                inner_pbar.total = p3
+                inner_pbar.n = p1 * 2
+                inner_pbar.refresh()
+
+            _reporthook = reporthook
+            outer_pbar.update(1)
+        while retry:
+            try:
+                res = urllib.request.urlretrieve(
+                    url=furl, filename=fname, reporthook=_reporthook
+                )
+                _results.append(res)
+                break
+            except:
+                retry -= 1
+    return [fname for fname, reqmsg in _results]
