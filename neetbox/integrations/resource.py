@@ -68,22 +68,22 @@ class ResourceLoader:
         def can_match(path: pathlib.Path):
             if not path.is_file():
                 return False
-            pattern = "**/*." if self._scan_sub_dirs else "*."
             for file_type in self._file_types:
-                if path.match(pattern + file_type):
+                if path.match('*.' + file_type):
                     return True
             return False
 
         def perform_scan():
+            glob_str = '**/*' if self._scan_sub_dirs else "*"
             if not verbose:  # do not output
                 self.file_path_list = [
                     str(path)
-                    for path in pathlib.Path(self.path).glob("**/*")
+                    for path in pathlib.Path(self.path).glob(glob_str)
                     if can_match(path)
                 ]
             else:
                 self.file_path_list = []
-                for path in tqdm(pathlib.Path(self.path).glob("**/*")):
+                for path in tqdm(pathlib.Path(self.path).glob(glob_str)):
                     if can_match(path):
                         self.file_path_list.append(path)
             self._ready = True
