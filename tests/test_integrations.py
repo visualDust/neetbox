@@ -30,13 +30,13 @@ def test_resource_loader():
 def test_download():
     from neetbox.integrations.resource import download
     urls = {
-        'readme.md':'https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/readme.md',
-        'some.jpg':'https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/res/driving.jpg'
+        'somereadme.md':'https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/readme.md',
+        'someimage.jpg':'https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/res/driving.jpg'
     }
     res = download(urls=urls,verbose=True)
     print(res)
     import os
-    for fname,furl in urls:
+    for fname,furl in urls.items():
         os.remove(fname)
     
 test_resource_loader()
