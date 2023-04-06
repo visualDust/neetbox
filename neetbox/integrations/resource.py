@@ -152,6 +152,7 @@ class ImagesLoader(ResourceLoader):
 def download(
     urls: Union[str, List[str], Dict[str, str]],
     filenames: Union[str, List[str]] = None,
+    overwrite=True,
     retry=3,
     verbose=True,
 ):
@@ -192,22 +193,29 @@ def download(
 
         urls = {filenames[i]: urls[i] for i in range(len(urls))}
 
+    logger.log(f"Downloading {len(urls)} file(s)...")
+
     if verbose:
-        outer_pbar = tqdm(total=len(urls), desc=f"Downloading {len(urls)} file(s)")
+        outer_pbar = tqdm(total=len(urls), desc=f"Overall process")
 
     _reporthook = None
     _results = []
     for fname, furl in urls.items():
+        if fname and os.path.isfile(fname):
+            logger.log(
+                f"File {fname} already exists. If you want to redownload it, try to pass 'overwrite=True'"
+            )
         if verbose:
             inner_pbar = tqdm(total=100, leave=False, desc=f"Currently downloading")
 
             def reporthook(p1, p2, p3):
                 inner_pbar.total = p3
-                inner_pbar.n = p1 * 2
+                inner_pbar.n = p1 * p2
                 inner_pbar.refresh()
 
             _reporthook = reporthook
             outer_pbar.update(1)
+        retry = 1 if not retry else retry
         while retry:
             try:
                 res = urllib.request.urlretrieve(
@@ -217,4 +225,7 @@ def download(
                 break
             except:
                 retry -= 1
+                logger.err(f"Download interrupt. {retry} retry(s) remaining.")
+                if not retry:
+                    raise RuntimeError(f"Download failed after retries")
     return [fname for fname, reqmsg in _results]
