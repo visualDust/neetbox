@@ -72,22 +72,22 @@ class ResourceLoader:
         def can_match(path: pathlib.Path):
             if not path.is_file():
                 return False
-            pattern = "**/*." if self._scan_sub_dirs else "*."
             for file_type in self._file_types:
-                if path.match(pattern + file_type):
+                if path.match('*.' + file_type):
                     return True
             return False
 
         def perform_scan():
+            glob_str = '**/*' if self._scan_sub_dirs else "*"
             if not verbose:  # do not output
                 self.file_path_list = [
                     str(path)
-                    for path in pathlib.Path(self.path).glob("**/*")
+                    for path in pathlib.Path(self.path).glob(glob_str)
                     if can_match(path)
                 ]
             else:
                 self.file_path_list = []
-                for path in tqdm(pathlib.Path(self.path).glob("**/*")):
+                for path in tqdm(pathlib.Path(self.path).glob(glob_str)):
                     if can_match(path):
                         self.file_path_list.append(path)
             self._ready = True
@@ -167,6 +167,7 @@ def download(
     Args:
         urls (Union[str, List[str], Dict[str, str]]): single str to download from url; list of strs to download from urls; dict(filename:url) to download urls and rename them to filenames
         filenames (Union[str, List[str]], optional): str to rename the downloaded file; list of strs to rename downloaded files; None means no rename. Defaults to None.
+        overwrite Bool: whether to skip exist files. Default to True.
         retry (int, optional): retries when error occures. Defaults to 3.
         verbose (bool, optional): tell what happening in output. Defaults to True.
 
@@ -213,7 +214,6 @@ def download(
                     f"File {fname} already exists. If you want to redownload it, try to pass 'overwrite=True'"
                 )
                 continue
-            
         if verbose:
             inner_pbar = tqdm(total=100, leave=False, desc=f"Currently downloading")
 
