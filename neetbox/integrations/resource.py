@@ -212,6 +212,8 @@ def download(
                 logger.log(
                     f"File {fname} already exists. If you want to redownload it, try to pass 'overwrite=True'"
                 )
+                continue
+            
         if verbose:
             inner_pbar = tqdm(total=100, leave=False, desc=f"Currently downloading")
 

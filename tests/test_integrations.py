@@ -40,9 +40,8 @@ def test_download():
         "someimage.jpg": "https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/res/driving.jpg",
     }
     res = download(urls=urls, verbose=False)
-    res = download(urls=urls, verbose=False)
+    res = download(urls=urls, verbose=False, overwrite=False)
     print(res)
     import os
-
     for fname, furl in urls.items():
         os.remove(fname)
