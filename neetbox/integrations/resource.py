@@ -39,9 +39,13 @@ class ResourceLoader:
         *args,
         **kwargs,
     ):
-        _id = "full_scan_" if sub_dirs else "partial_scan_" + folder + str(file_types)
-        if not _id in _loader_pool:
-            _loader_pool[_id] = super(ResourceLoader, cls).__new__(cls, *args, **kwargs)
+        _id = folder + str(file_types) + "_R" if sub_dirs else ""
+        if _id in _loader_pool:
+            logger.info(
+                "ResourceLoader with same path and same file types already exists. Returning the old one."
+            )
+        else:
+            _loader_pool[_id] = super(ResourceLoader, cls).__new__(cls)
         return _loader_pool[_id]
 
     def __init__(
@@ -90,7 +94,7 @@ class ResourceLoader:
             if not self._initialized:
                 self._initialized = True
             logger.ok(
-                f"Resource loader '{self.path}' ready with {len(self.file_path_list)} files."
+                f"Resource loader '{self.path}' ready with {len(self._file_types)} file types({len(self.file_path_list)} files)."
             )
 
         if self._async_scan:
@@ -156,7 +160,9 @@ def download(
     retry=3,
     verbose=True,
 ):
-    """download files from urls
+    """download both online and local files from urls
+
+    Example: download('')
 
     Args:
         urls (Union[str, List[str], Dict[str, str]]): single str to download from url; list of strs to download from urls; dict(filename:url) to download urls and rename them to filenames
@@ -202,9 +208,10 @@ def download(
     _results = []
     for fname, furl in urls.items():
         if fname and os.path.isfile(fname):
-            logger.log(
-                f"File {fname} already exists. If you want to redownload it, try to pass 'overwrite=True'"
-            )
+            if not overwrite:
+                logger.log(
+                    f"File {fname} already exists. If you want to redownload it, try to pass 'overwrite=True'"
+                )
         if verbose:
             inner_pbar = tqdm(total=100, leave=False, desc=f"Currently downloading")
 

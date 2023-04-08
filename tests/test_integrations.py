@@ -25,6 +25,11 @@ def test_resource_loader():
     assert len(ldr.get_file_list()) == len(
         file_os_walk
     ), f"list length {len(ldr.get_file_list())} does not match {len(file_os_walk)}"
+    
+    file_type = "md"
+    ldr = ResourceLoader("./", file_types=[file_type])
+    from neetbox.integrations.resource import _loader_pool
+    print(_loader_pool.keys())
 
 
 def test_download():
