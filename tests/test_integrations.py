@@ -46,6 +46,3 @@ def test_download():
 
     for fname, furl in urls.items():
         os.remove(fname)
-
-
-test_resource_loader()

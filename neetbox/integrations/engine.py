@@ -1,7 +1,7 @@
 from enum import Enum
 from neetbox.logging import logger
 import importlib
-
+from typing import List,Optional
 
 class Engine(Enum):
     Torch = "torch"
@@ -9,8 +9,8 @@ class Engine(Enum):
     def __str__(self) -> str:
         return self.value
 
-supported_engines:list = None
-installed_engines:list = None
+supported_engines:Optional[List]= None
+installed_engines:Optional[List] = None
 
 # todo migrate to python 3.9 after frameworks are supporting it
 def get_supported_engines():

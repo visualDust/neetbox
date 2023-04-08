@@ -9,6 +9,7 @@ import os
 from colorama import Fore, Back, Style
 from random import random
 from ._colorama import *
+from typing import Optional, Union
 
 # todo use @cache when migrate to python 3.9
 def get_supported_colors():
@@ -26,8 +27,8 @@ def get_supported_styles():
 
 class LogStyle:
     def __init__(self) -> None:
-        self.fore: AnsiColor = None
-        self.back: AnsiColor = None
+        self.fore: Optional[AnsiColor] = None
+        self.back: Optional[AnsiColor] = None
         self.prefix: str = ""
         self.pattern = ""  # todo default pattern
         self.datetime_format: str = "%Y-%m-%d-%H:%M:%S"
@@ -38,7 +39,7 @@ class LogStyle:
         self.split_char_identity = "/"
         self.split_char_txt = " | "
         
-    def parse(pattern:str):
+    def parse(self,pattern:str):
         # todo
         pass
 
@@ -73,7 +74,7 @@ DEFAULT_STYLE = LogStyle()
 
 
 def colored(
-    text, color_foreground: AnsiColor = None, color_background: AnsiColor = None
+    text, color_foreground: Optional[Union[AnsiColor,str]] = None, color_background: Optional[Union[AnsiColor,str]] = None
 ):
     """_summary_
 
