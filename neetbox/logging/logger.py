@@ -9,12 +9,14 @@ import io
 import re
 from datetime import date, datetime
 from enum import Enum
+from pyfiglet import Figlet, FigletFont
 from neetbox.utils.framing import *
 from neetbox.utils import utils
 from neetbox.logging.formatting import *
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
 import functools
 import pathlib
+from random import randint
 from typing import *
 
 
@@ -417,7 +419,7 @@ class Logger:
                 # logger.log(
                 #     from_decorator, catch_options, traceback=4 if from_decorator else 3
                 # )
-                #todo add reraise functions
+                # todo add reraise functions
                 return not reraise
 
             def __call__(self, function):
@@ -451,6 +453,43 @@ class Logger:
                 return catch_wrapper
 
         return Catcher(False)
+
+    def banner(self, text, font: Optional[str] = None):
+        if font:
+            if font not in FigletFont.getFonts():  # path?
+                assert os.path.isfile(
+                    font
+                ), "The provided font is not a fontname or a font file path."
+                file_name = os.path.basename(font)
+                file = os.path.splitext(file_name)
+                if (
+                    file[0] not in FigletFont.getFonts()
+                ):  # no installed file match the file name
+                    try:
+                        self.info(
+                            f"{file[0]} is not installed. Trying to install as a fontfile."
+                        )
+                        FigletFont.installFonts(f"res/flfs/{font}.flf")
+                    except:
+                        self.err("Could not install font {font}. Fallback to default.")
+                        font = None
+                else:
+                    font = file[0]
+        if not font:
+            builtin_font_list = [
+                "ansiregular",
+                "ansishadow",
+                "isometrixc2",
+                "nscripts",
+                "nvscript",
+            ]
+            random_font_name = builtin_font_list[randint(0, len(builtin_font_list)) - 1]
+            if not random_font_name in FigletFont.getFonts():
+                FigletFont.installFonts(f"res/flfs/{random_font_name}.flf")
+            font = random_font_name
+        f = Figlet(font)
+        self.log(f.renderText(text), with_datetime=False, with_identifier=False)
+        return self
 
     def skip_lines(self, line_cnt=1):
         """Let the logger log some empty lines
