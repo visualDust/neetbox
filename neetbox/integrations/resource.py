@@ -210,6 +210,7 @@ def download(
     for fname, furl in urls.items():
         if fname and os.path.isfile(fname):
             if not overwrite:
+                _results.append((fname,None))
                 logger.log(
                     f"File {fname} already exists. If you want to redownload it, try to pass 'overwrite=True'"
                 )
