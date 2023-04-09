@@ -41,9 +41,10 @@ tqdm = ">=4"
 colorama = ">=0.3"
 toml = ">0.10"
 pytest = "*"
-gputil = "^1.4.0"
-psutil = "^5.9.4"
-injector = "^0.20.1"
+gputil = ">=1.4"
+psutil = ">=5.0"
+injector = ">=0.20"
+pyfiglet = ">=0.8"
 
 [build-system]
 requires = ["poetry>=0.12"]
