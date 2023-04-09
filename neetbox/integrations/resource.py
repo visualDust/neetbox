@@ -207,7 +207,7 @@ def download(
 
     _reporthook = None
     _results = []
-    for fname, furl in urls.items():
+    for fname, furl in tqdm(urls.items()):
         if fname and os.path.isfile(fname):
             if not overwrite:
                 _results.append((fname,None))
