@@ -9,7 +9,6 @@ from tqdm import tqdm
 from neetbox.integrations.resource import download
 from neetbox.logging import logger
 
-logger = logger("NEETBOX")
 __all__ = ['load_word_vectors']
 
 def load_word_vectors(root, wv_type, dim):
