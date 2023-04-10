@@ -11,8 +11,6 @@ import torch
 
 from neetbox.logging import logger
 
-logger = logger("NEETBOX")
-
 
 def profile(
     model,
