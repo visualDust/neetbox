@@ -238,4 +238,9 @@ def download(
                 logger.err(f"Download interrupt. {retry} retry(s) remaining.")
                 if not retry:
                     raise RuntimeError(f"Download failed after retries")
-    return [fname for fname, reqmsg in _results]
+    results = [fname for fname, reqmsg in _results]
+    if not len(results):
+        results = None
+    if len(results) == 1:
+        results = results[0]
+    return results

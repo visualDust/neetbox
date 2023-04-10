@@ -50,7 +50,7 @@ class Package(metaclass=Singleton):
                 retry -= 1
                 if retry:
                     logger.err(
-                        f"illegal input: required 'y'/'n' but recieved {choice}. {retry} retries remaining."
+                        f"illegal input: required 'y'/'n' but recieved '{choice}'. {retry} retries remaining."
                     )
         return _installed
 

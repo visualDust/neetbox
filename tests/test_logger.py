@@ -40,14 +40,6 @@ def test_logger_with_specific_identity():
 
     B().b()
 
-
-def test_out_of_dated():
-    from neetbox.logging import get_logger
-
-    logger = get_logger("someone")
-    logger.log("someone said 1")
-
-
 def test_logger_catch():
     from neetbox.logging import logger
 

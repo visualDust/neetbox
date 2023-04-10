@@ -14,7 +14,7 @@ class Registry(dict):
     Registers are stored in a pool of type dict[str:Register]
     """
 
-    def __new__(cls, name: str, filter_strs: any = None) -> "Registry":
+    def __new__(cls, name: str, filter_strs: Any= None) -> "Registry":
         assert utils.is_pure_ansi(
             name
         ), "Registry name should not contain non-ansi char."
@@ -31,14 +31,11 @@ class Registry(dict):
         super().__init__()
         self.name = name
         if filter_strs:
-            self.filter_strs = (
-                [filter_strs] if isinstance(filter_strs, str) else filter_strs
-            )
-            self.filter_strs = dict()
+            self.filter_strs = [filter_strs] if isinstance(filter_strs, str) else filter_strs
 
     def _register(
         self,
-        what: any,
+        what: Any,
         force: bool = False,
         name: Optional[str] = None,
         **filter_strs,
@@ -105,11 +102,11 @@ class Registry(dict):
             
             
     @classmethod
-    def get_all_registries():
+    def get_all_registries(cls):
         return _registry_pool
     
     @classmethod
-    def _find_global_with_name(name:str, default = None):
+    def _find_global_with_name(cls, name:str, default = None):
         for reg_name, reg in _registry_pool.values():
             private_sign = '__'
             if not reg_name.startswith(private_sign):
@@ -118,7 +115,8 @@ class Registry(dict):
         return default
     
     @classmethod
-    def _find_global_with_filter_strs(fileters:List[str]):
+    def _find_global_with_filter_strs(cls, fileters:List[str]):
+        # todo
         pass
 
     def __getitem__(self, __key: str) -> Any:

@@ -8,9 +8,9 @@ import torch
 
 from tqdm import tqdm
 from six.moves.urllib.request import urlretrieve
-from neetbox.logging import get_logger
+from neetbox.logging import logger
 
-logger = get_logger("NEETBOX")
+logger = logger("NEETBOX")
 __all__ = ['load_word_vectors']
 
 def load_word_vectors(root, wv_type, dim):

@@ -551,16 +551,3 @@ class Logger:
 
 
 DEFAULT_LOGGER = Logger(None)
-
-
-# todo remove dedicated
-def get_logger(whom: any = None, style: LogStyle = None) -> Logger:
-    DEFAULT_LOGGER.warn(
-        "'get_logger(whom)' is outdated and will be removed in the near future. Use 'logger(whom)' instead."
-    )
-    if whom is None:
-        return DEFAULT_LOGGER
-    if whom in loggers_dict:
-        return loggers_dict[whom]
-    loggers_dict[whom] = Logger(whom=whom, style=style)
-    return loggers_dict[whom]

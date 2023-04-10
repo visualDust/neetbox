@@ -1,4 +1,4 @@
-from neetbox.logging import get_logger
+from neetbox.logging import logger
 
-logger = get_logger("NEETBOX")
+logger = logger("NEETBOX")
 
