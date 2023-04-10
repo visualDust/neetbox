@@ -1,5 +1,4 @@
 import os
-import six
 import sys
 import array
 import zipfile
@@ -7,7 +6,7 @@ import zipfile
 import torch
 
 from tqdm import tqdm
-from six.moves.urllib.request import urlretrieve
+from neetbox.integrations.resource import download
 from neetbox.logging import logger
 
 logger = logger("NEETBOX")
@@ -47,11 +46,10 @@ def load_word_vectors(root, wv_type, dim):
         filename = os.path.basename(fname)
         if not os.path.exists(root):
             os.makedirs(root)
-        with tqdm(unit='B', unit_scale=True, miniters=1, desc=filename) as t:
-            fname, _ = urlretrieve(url, fname, reporthook=reporthook(t))
-            with zipfile.ZipFile(fname, "r") as zf:
-                logger.log(f'extracting word vectors into {root}')
-                zf.extractall(root)
+        fname = download(url,fname)
+        with zipfile.ZipFile(fname, "r") as zf:
+            logger.log(f'extracting word vectors into {root}')
+            zf.extractall(root)
         if not os.path.isfile(fname + '.txt'):
             raise RuntimeError('no word vectors of requested dimension found')
         return load_word_vectors(root, wv_type, dim)
@@ -66,8 +64,7 @@ def load_word_vectors(root, wv_type, dim):
             if wv_size is None:
                 wv_size = len(entries)
             try:
-                if isinstance(word, six.binary_type):
-                    word = word.decode('utf-8')
+                word = word.decode('utf-8')
             except:
                 logger.log(f'non-UTF8 token {repr(word)} was ignored.')
                 continue
