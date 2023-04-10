@@ -45,3 +45,9 @@ def test_download():
     import os
     for fname, furl in urls.items():
         os.remove(fname)
+
+
+def test_load_word_vector():
+    from neetbox.torch.nlp import load_word_vectors
+    
+    res = load_word_vectors("./other", wv_type="glove.glove.6B", dim=50)

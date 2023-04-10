@@ -1,9 +1,13 @@
 .vscode
 
+.pytest_cache
 __pycache__/
 dist/
 poetry.lock
 test/optional
+
 # log files
 logdir
 for_debug.txt
+
+other/
