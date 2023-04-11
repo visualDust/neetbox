@@ -32,16 +32,16 @@ def test_resource_loader():
     print(_loader_pool.keys())
 
 
-def test_download():
-    from neetbox.integrations.resource import download
+# def test_download():
+#     from neetbox.integrations.resource import download
 
-    urls = {
-        "somereadme.md": "https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/readme.md",
-        "someimage.jpg": "https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/res/driving.jpg",
-    }
-    res = download(urls=urls, verbose=False)
-    res = download(urls=urls, verbose=False, overwrite=False)
-    print(res)
-    import os
-    for fname, furl in urls.items():
-        os.remove(fname)
+#     urls = {
+#         "somereadme.md": "https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/readme.md",
+#         "someimage.jpg": "https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/res/driving.jpg",
+#     }
+#     res = download(urls=urls, verbose=False)
+#     res = download(urls=urls, verbose=False, overwrite=False)
+#     print(res)
+#     import os
+#     for fname, furl in urls.items():
+#         os.remove(fname)

@@ -1,17 +1,26 @@
 def test_registry():
     from neetbox.pipeline import Registry
-    reg1 = Registry("SOME-1")
-    reg2 = Registry("SOME-1")
-    reg3 = Registry("SOME-2")
+    reg1 = Registry("RName-functions")
+    reg2 = Registry("RName-classes")
     
-    @reg1.register()
+    @reg1.register(name='a', tags=['function'])
     def a():
         pass
-    @reg2.register()
+    
+    @reg1.register(name='b', tags='function')
     def b():
         pass
-    print(reg1)
-    @reg3.register()
+    
+    @reg1.register(name='b', tags='function')
+    def b1():
+        pass
+    
+    @reg2.register(name='C', tags='class')
     class C:
         pass
-    print(reg3)
+    
+    print(f"Things in reg1: {reg1}")
+    print(f"Things in reg2: {reg2}")
+    print(f"Finding functions: {Registry.find(tags='function')}")
+
+    

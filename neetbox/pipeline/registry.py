@@ -1,12 +1,11 @@
 from neetbox.logging import logger
-from neetbox.utils import utils
+from neetbox.utils.utils import *
 from typing import Optional, Union, Sequence
 import inspect
 import json
 import functools
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
-_registry_pool: Dict[str, "Registry"] = dict()  # all registeres are stored here
 
 class Registry(dict):
     """Register Helper Class
@@ -14,75 +13,84 @@ class Registry(dict):
     Registers are stored in a pool of type dict[str:Register]
     """
 
-    def __new__(cls, name: str, filter_strs: Any= None) -> "Registry":
-        assert utils.is_pure_ansi(
-            name
-        ), "Registry name should not contain non-ansi char."
-        if name in _registry_pool:
-            return _registry_pool[name]
+    # class level
+    _registry_pool: Dict[str, "Registry"] = dict()  # all registeres are stored here
+
+    # instance level
+    initialized: bool = False
+
+    def __new__(cls, name: str) -> "Registry":
+        assert is_pure_ansi(name), "Registry name should not contain non-ansi char."
+        if name in cls._registry_pool:
+            return cls._registry_pool[name]
+        logger.log(f"Creating Registry for {cls}")
         instance = dict.__new__(cls)
-        _registry_pool[name] = instance
+        cls._registry_pool[name] = instance
         return instance
 
     # not compatible with python below 3.8
-    def __init__(
-        self, name: str, *, filter_strs: Optional[Union[str, Sequence[str]]] = None
-    ) -> None:
-        super().__init__()
-        self.name = name
-        if filter_strs:
-            self.filter_strs = [filter_strs] if isinstance(filter_strs, str) else filter_strs
+    def __init__(self, name: str) -> None:
+        if not self.initialized:
+            # do initializations
+            self.name = name
+            self.initialized = True
 
     def _register(
         self,
         what: Any,
-        force: bool = False,
         name: Optional[str] = None,
-        **filter_strs,
+        force: bool = False,
+        tags: Optional[Union[str, Sequence[str]]] = None,
     ):
         if not (inspect.isfunction(what) or inspect.isclass(what)):
             logger.warn("Registering {type(what)}, which is not a class or a callable.")
         name = name or what.__name__
-        if not force and name in self.keys():
-            raise ValueError(f"{name} already exists in Registry:{self.name}")
-
-        if filter_strs:
-            if not hasattr(self, "filter_strs"):
-                raise ValueError(
-                    "Registry `{}` does not have `filter_strs`.".format(self.name)
+        if type(tags) is str:
+            tags = [tags]
+        if name in self.keys():
+            if not force:
+                logger.warn(
+                    f"{name} already exists in Registry:{self.name}. If you want to overwrite, try to register with 'force=True'"
                 )
-            for k in filter_strs.keys():
-                if k not in self.filter_strs:
-                    raise ValueError(
-                        "Registry `{}`: 'filter_strs' does not has expected key {}.".format(
-                            self.name, k
-                        )
-                    )
-            self.filter_strs[name] = [
-                filter_strs.get(k, None) for k in self.filter_strs
-            ]
-        elif hasattr(self, "filter_strs"):
-            self.filter_strs[name] = [None] * len(self.filter_strs)
-
-        self[name] = what
+            else:
+                logger.warn(f"Overwritting: {name} existed in Registry:{self.name}.")
+                self[name] = (what, tags)
+        else:
+            self[name] = (what, tags)
         return what
 
     def register(
-        self, force: bool = False, name: Optional[str] = None, **filter_strs
+        self,
+        *,
+        name: Optional[str] = None,
+        force: bool = False,
+        tags: Optional[Union[str, Sequence[str]]] = None,
     ) -> Callable:
-        return functools.partial(self._register, force=force, name=name, **filter_strs)
+        return functools.partial(
+            self._register, name=name, force=force, tags=tags
+        )
 
     def register_all(
         self,
-        modules: Sequence[Callable],
+        what: Union[Dict, Sequence[Callable]],
         names: Optional[Sequence[str]] = None,
-        filter_strs: Optional[Sequence[Dict[str, Any]]] = None,
+        tags: Optional[Union[str, Sequence[str]]] = None,
         force: bool = False,
     ) -> None:
-        _names = names if names else [None] * len(modules)
-        _info = filter_strs if filter_strs else [{}] * len(modules)
-        for module, name, info in zip(modules, _names, _info):
-            self._register(module, force=force, name=name, **info)
+        if type(what) is dict:
+            _names = what.keys()
+            what = what.values()
+        if type(what) is list:
+            _names = names if names else [None] * len(what)
+            for module, name, info in zip(what, _names, tags):
+                self._register(module, force=force, name=name, tags=tags)
+        else:
+            logger.err(
+                ValueError(
+                    f"Unsupported format of 'what'. Please use list or dict(tuple)."
+                ),
+                reraise=True,
+            )
 
     def merge(
         self,
@@ -92,44 +100,68 @@ class Registry(dict):
         if not isinstance(others, list):
             others = [others]
         if not isinstance(others[0], Registry):
-            raise TypeError(
-                "Expect `Registry` type, but got {}".format(type(others[0]))
+            logger.err(
+                TypeError("Expect `Registry` type, but got {}".format(type(others[0]))),
+                reraise=True,
             )
         for other in others:
-            modules = list(other.values())
-            names = list(other.keys())
-            self.register_all(modules, force=force, names=names)
-            
-            
+            self.register_all(other, force=force)
+
     @classmethod
-    def get_all_registries(cls):
-        return _registry_pool
-    
-    @classmethod
-    def _find_global_with_name(cls, name:str, default = None):
-        for reg_name, reg in _registry_pool.values():
-            private_sign = '__'
+    def find(
+        cls,
+        name: Optional[str] = None,
+        tags: Optional[Union[str, List[str]]] = None,
+        default=None,
+    ):
+        if not name and not tags:
+            logger.err(
+                ValueError(
+                    "Please provide at least the name or the tags you want to find."
+                ),
+                reraise=True,
+            )
+        results = []
+        # filter name
+        for reg_name, reg in cls._registry_pool.items():
+            private_sign = "__"
             if not reg_name.startswith(private_sign):
-                if name in reg:
-                    return reg[name]
-        return default
-    
-    @classmethod
-    def _find_global_with_filter_strs(cls, fileters:List[str]):
-        # todo
-        pass
+                if not name:
+                    results += [(_n, _o) for _n, _o in reg.items()]
+                elif name in reg:
+                    results.append((name, reg[name]))
+
+        # filter tags
+        if type(tags) is str:
+            tags = [tags]
+
+        def _tags_match(f_tags, s_tags) -> bool:
+            # check if all tags in f_tags are listed in s_tags
+            for _t in f_tags:
+                if _t not in s_tags:
+                    return False
+            return True
+
+        results = {
+            _name: obj_tag_pair[0]
+            for _name, obj_tag_pair in results
+            if _tags_match(tags, obj_tag_pair[1])
+        }
+        return results
 
     def __getitem__(self, __key: str) -> Any:
-        return super().__getitem__(__key)
+        return super().__getitem__(__key)[0]
 
     def __setitem__(self, k, v) -> None:
-        assert utils.is_pure_ansi(
-            k
-        ), "Only ANSI chars are allowed for registering things."
+        assert is_pure_ansi(k), "Only ANSI chars are allowed for registering things."
+        if type(v) is not tuple:
+            v = (v, None)
+        if len(v) != 2:
+            raise ValueError("Only support value of format (object, list(str))")
         super().__setitem__(k, v)
 
     def __str__(self) -> str:
-        s = json.dumps(
+        return json.dumps(
             self,
             indent=4,
             ensure_ascii=False,
@@ -137,4 +169,3 @@ class Registry(dict):
             separators=(",", ":"),
             default=str,
         )
-        return s
