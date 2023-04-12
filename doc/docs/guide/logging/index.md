@@ -25,7 +25,7 @@ output:
 
 ## Auto tracing
 
-`get_logger()` automatically trace back the caller of logger instance.
+The default `logger` automatically trace back the caller of logger instance.
 
 ```python
 from neetbox.logging import logger
@@ -50,20 +50,16 @@ output:
 2023-03-18-13:57:47 > AClass/post_processing > Running PostProcessing...
 ```
 
-if you want to specify the identity, try:
+if you want to specify the identity, try `logger(whom)`:
 ```python
-from neetbox.logging import get_logger
-logger = get_logger(whom="identity name")
+from neetbox.logging import logger
+logger = logger(whom="identity name")
 logger.log("some message")
 ```
 output:
 ```bash
 2023-03-18-13:58:40 > identity name > some message 
 ```
-
-:::caution
-If you are creating a logger using `get_logger()`, notice that what you create is a new instance of the `Logger` class. It would not share attributes with the default `logger`. See [Who Is Logging?](/docs/guide/logging/logger-instances) for more information.
-:::
 
 ## Log into files
 
@@ -86,7 +82,7 @@ in `./logdir/2023-03-18.log`:
 ```
 
 :::caution
-Because someone does have the requirement of logging some messages into some specific files, different loggers hold different log writers. See [Who Is Logging?](./logger-instances.md) for more information.
+If you are creating a logger using the Logger constructor, notice that what you create is a new instance of the `Logger` class and it would not share file writers with the others. See [Who Is Logging?](/docs/guide/logging/logger-instances) for more information.
 :::
 
 ## Options using `logger.log`

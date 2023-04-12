@@ -1,12 +1,13 @@
 [tool.poetry]
 name = "neetbox"
-version = "0.1.411"
+version = "0.1.501"
 description = "NEETBox contains useless CV code snippets."
 license = "MIT"
 authors = ["VisualDust <gavin@gong.host>"]
 maintainers = [
     "VisualDust <gavin@gong.host>",
     "PommesPeter <me@pommespeter.space>",
+    "PaperCube <imzhy@hotmail.com>"
 ]
 
 
@@ -37,7 +38,12 @@ pillow = ">=8"
 pandas = ">=1"
 tqdm = ">=4"
 colorama = ">=0.3"
-toml = "^0.10.2"
+toml = ">0.10"
+pytest = "*"
+gputil = ">=1.4"
+psutil = ">=5.0"
+injector = ">=0.20"
+pyfiglet = ">=0.8"
 
 [build-system]
 requires = ["poetry>=0.12"]

@@ -1,13 +1,13 @@
 .vscode
-tests/
+neetbox.toml
+.pytest_cache
 __pycache__/
 dist/
 poetry.lock
-
-#vd files
-./test.ipynb
-./test.py
+test/optional
 
 # log files
-logdir
+log
 for_debug.txt
+
+other/
