@@ -1,17 +1,18 @@
 from neetbox.config._default import DEFAULT_CONFIG as default
-from neetbox.config._config import _update
+from neetbox.config._config import _update as update
 
-_update(default)
-from neetbox.config._config import WORKSPACE_CONFIG as config
+update(default)
+from neetbox.config._config import _get
 from neetbox.utils.framing import *
 
 
 def get_module_config():
     module_name = get_frame_module_traceback(traceback=2).__name__
-    the_config = config
+    the_config = _get()
+    print(module_name)
     for sub_module_name in module_name.split(".")[1:]:  # skip 'neetbox'
         if sub_module_name not in the_config:
-            return {}
+            return the_config
         the_config = the_config[sub_module_name]
     return the_config
 

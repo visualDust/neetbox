@@ -11,6 +11,7 @@ from datetime import date, datetime
 from enum import Enum
 from pyfiglet import Figlet, FigletFont
 from neetbox.utils.framing import *
+from neetbox.config import get_module_config
 from neetbox.utils import utils
 from neetbox.logging.formatting import *
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
@@ -18,7 +19,6 @@ import functools
 import pathlib
 from random import randint
 from typing import *
-
 
 class LogLevel(Enum):
     ALL = 4
@@ -57,6 +57,7 @@ def set_log_level(level: LogLevel):
     if type(level) is int:
         assert level >= 0 and level <= 3
         level = LogLevel(level)
+    global _global_log_level
     _global_log_level = level
 
 
