@@ -20,7 +20,7 @@ def test_logger_with_specific_identity():
     from neetbox.logging import logger
 
     logger = logger("someone")
-    logger.set_log_dir("./logdir")
+    logger.set_log_dir("./log")
     logger.log("someone said 1")
 
     def b():
