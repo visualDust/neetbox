@@ -476,7 +476,7 @@ class Logger:
                 FigletFont.installFonts(f"{module_path}/flfs/{font}.flf")
             else:  # path?
                 assert os.path.isfile(
-                    font
+                font
                 ), "The provided font is not a fontname or a font file path."
                 file_name = os.path.basename(font)
                 file = os.path.splitext(file_name)
@@ -522,6 +522,9 @@ class Logger:
         if not path:
             self._bind_file(None)
             return self
+        if not path:
+            self._bind_file(None)
+            return self
         if os.path.isfile(path):
             raise "Target path is not a directory."
         if not os.path.exists(path):
@@ -539,6 +542,9 @@ class Logger:
         return self
 
     def _bind_file(self, path):
+        if not path:
+            self.file_writer = None
+            return self
         if not path:
             self.file_writer = None
             return self
