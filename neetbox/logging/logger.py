@@ -456,10 +456,22 @@ class Logger:
         return Catcher(False)
 
     def banner(self, text, font: Optional[str] = None):
-        if font:
-            if font not in FigletFont.getFonts():  # path?
+        builtin_font_list = [
+                "ansiregular",
+                "ansishadow",
+                "isometrixc2",
+                "nscripts",
+                "nvscript",
+            ]
+        if not font:
+            font = builtin_font_list[randint(0, len(builtin_font_list)) - 1]
+            
+        if font not in FigletFont.getFonts():
+            if font in builtin_font_list: # builtin but not installed
+                FigletFont.installFonts(f"res/flfs/{font}.flf")
+            else: # path?
                 assert os.path.isfile(
-                    font
+                font
                 ), "The provided font is not a fontname or a font file path."
                 file_name = os.path.basename(font)
                 file = os.path.splitext(file_name)
@@ -476,18 +488,6 @@ class Logger:
                         font = None
                 else:
                     font = file[0]
-        if not font:
-            builtin_font_list = [
-                "ansiregular",
-                "ansishadow",
-                "isometrixc2",
-                "nscripts",
-                "nvscript",
-            ]
-            random_font_name = builtin_font_list[randint(0, len(builtin_font_list)) - 1]
-            if not random_font_name in FigletFont.getFonts():
-                FigletFont.installFonts(f"res/flfs/{random_font_name}.flf")
-            font = random_font_name
         f = Figlet(font)
         self.log(f.renderText(text), with_datetime=False, with_identifier=False)
         return self
