@@ -9,8 +9,8 @@ import io
 import re
 from datetime import date, datetime
 from enum import Enum
-from pyfiglet import Figlet, FigletFont
 from neetbox.utils.framing import *
+from neetbox.integrations import pkg
 from neetbox.config import get_module_config
 from neetbox.utils import utils
 from neetbox.logging.formatting import *
@@ -19,6 +19,7 @@ import functools
 import pathlib
 from random import randint
 from typing import *
+
 
 class LogLevel(Enum):
     ALL = 4
@@ -456,8 +457,24 @@ class Logger:
         return Catcher(False)
 
     def banner(self, text, font: Optional[str] = None):
-        if font:
-            if font not in FigletFont.getFonts():  # path?
+        assert pkg.is_installed("pyfiglet", try_install_if_not=True)
+        from pyfiglet import Figlet, FigletFont
+
+        builtin_font_list = [
+            "ansiregular",
+            "ansishadow",
+            "isometrixc2",
+            "nscripts",
+            "nvscript",
+        ]
+        if not font:
+            font = builtin_font_list[randint(0, len(builtin_font_list)) - 1]
+
+        if font not in FigletFont.getFonts():
+            if font in builtin_font_list:  # builtin but not installed
+                module_path = os.path.dirname(__file__)
+                FigletFont.installFonts(f"{module_path}/flfs/{font}.flf")
+            else:  # path?
                 assert os.path.isfile(
                     font
                 ), "The provided font is not a fontname or a font file path."
@@ -476,18 +493,6 @@ class Logger:
                         font = None
                 else:
                     font = file[0]
-        if not font:
-            builtin_font_list = [
-                "ansiregular",
-                "ansishadow",
-                "isometrixc2",
-                "nscripts",
-                "nvscript",
-            ]
-            random_font_name = builtin_font_list[randint(0, len(builtin_font_list)) - 1]
-            if not random_font_name in FigletFont.getFonts():
-                FigletFont.installFonts(f"res/flfs/{random_font_name}.flf")
-            font = random_font_name
         f = Figlet(font)
         self.log(f.renderText(text), with_datetime=False, with_identifier=False)
         return self
@@ -514,6 +519,9 @@ class Logger:
         return self
 
     def set_log_dir(self, path, independent=False):
+        if not path:
+            self._bind_file(None)
+            return self
         if os.path.isfile(path):
             raise "Target path is not a directory."
         if not os.path.exists(path):
@@ -531,6 +539,9 @@ class Logger:
         return self
 
     def _bind_file(self, path):
+        if not path:
+            self.file_writer = None
+            return self
         log_file_identity = os.path.abspath(path)
         if os.path.isdir(log_file_identity):
             raise Exception("Target path is not a file.")
