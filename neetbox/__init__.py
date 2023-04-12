@@ -16,7 +16,6 @@ def init(path=None):
 
     _fallback_flag = False
     if not os.path.isfile(config_file_path):  # config file not exists
-        print("config file not found")
         try:  # creating config file using default config
             with open(config_file_path, "w+") as cfgf:
                 toml.dump(default, cfgf)
