@@ -10,8 +10,7 @@ import re
 from datetime import date, datetime
 from enum import Enum
 from neetbox.utils.framing import *
-from neetbox.integrations import pkg
-from neetbox.config import get_module_config
+from pyfiglet import Figlet, FigletFont
 from neetbox.utils import utils
 from neetbox.logging.formatting import *
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
@@ -456,10 +455,7 @@ class Logger:
 
         return Catcher(False)
 
-    def banner(self, text, font: Optional[str] = None):
-        assert pkg.is_installed("pyfiglet", try_install_if_not=True)
-        from pyfiglet import Figlet, FigletFont
-
+    def banner(self, text, font: Optional[str] = None):        
         builtin_font_list = [
             "ansiregular",
             "ansishadow",

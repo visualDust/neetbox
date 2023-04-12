@@ -1,7 +1,4 @@
-from neetbox.config._default import DEFAULT_CONFIG as default
-from neetbox.config._config import _update as update
-
-update(default)
+from neetbox.config._config import _update as update, DEFAULT_CONFIG as default
 from neetbox.config._config import _get
 from neetbox.utils.framing import *
 
