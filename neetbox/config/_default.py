@@ -1,6 +1,6 @@
 DEFAULT_CONFIG = {
     "logging": {
-        "logdir":"./log"
+        "logdir":None
     },
     "integrations":{
     }
