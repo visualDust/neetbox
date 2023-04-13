@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Simple Model Profiler
+# Simple Model Profiler Helper
 
 The profiler measures your models' performance on speed and latency with given `input_shape` using your hardware.
 

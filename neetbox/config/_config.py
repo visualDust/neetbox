@@ -6,9 +6,19 @@ def _default_none():
     return None
 
 
-DEFAULT_CONFIG = collections.defaultdict(_default_none)
-DEFAULT_CONFIG.update({"logging": {"logdir": None}, "integrations": {}})
-
+DEFAULT_CONFIG = {
+    "name": None,
+    "version": None,
+    "logging": {"logdir": None},
+    "pipeline":{
+    },
+    "integrations": {
+        "environment": {
+            "GPUS": "auto",
+        },
+        "datasets": [],
+    },
+}
 WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()
 
 

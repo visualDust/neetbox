@@ -44,10 +44,11 @@ gputil = ">=1.4"
 psutil = ">=5.0"
 injector = ">=0.20"
 pyfiglet = ">=0.8"
+python-daemon = "^3.0.1"
 
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
 [tool.poetry.scripts]
-neetbox = 'neetbox.cli.parse:parse'
+neet = 'neetbox.cli.parse:parse'

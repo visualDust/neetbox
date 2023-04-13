@@ -17,10 +17,10 @@ def handle_init(args):
     path = vars(args)["pathspec"]
     path = None if not len(path) else path[0]
     try:
-        neetbox.init()
-        logger.skip_lines(2)
-        logger.banner("neetbox", font="ansishadow")
-        logger.log("Welcome to NEETBOX")
+        if neetbox.init():
+            logger.skip_lines(2)
+            logger.banner("neetbox", font="ansishadow")
+            logger.log("Welcome to NEETBOX")
     except Exception as e:
         logger.err(f"Failed to init {path}: {e}")
 
