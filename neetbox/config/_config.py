@@ -1,18 +1,38 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# URL:    https://gong.host
+# Date:   20230413
+
 import collections
 from neetbox.utils.utils import patch
+from multiprocessing import current_process
 
-
-def _default_none():
-    return None
-
-
-DEFAULT_CONFIG = collections.defaultdict(_default_none)
-DEFAULT_CONFIG.update({"logging": {"logdir": None}, "integrations": {}})
-
+DEFAULT_CONFIG = {
+    "name": None,
+    "version": None,
+    "logging": {"logdir": None},
+    "pipeline": {},
+    "integrations": {
+        "environment": {
+            "gpus": "auto",
+        },
+        "datasets": [],
+    },
+    "daemon": {
+        "enable": True,
+        "displayName": None,
+        "server": "localhost",
+        "port": 20202,
+        "updateInterval": 10,
+        "uploadInterval": 10,
+        "info": ["log", "status"],
+    },
+}
 WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()
 
 
-def _update(cfg: dict):
+def update_with(cfg: dict):
     def _update_dict_recursively(self: dict, the_other: dict):
         for _k, _v in the_other.items():
             if type(_v) is dict:  # currently resolving a dict child
@@ -27,6 +47,6 @@ def _update(cfg: dict):
     _update_dict_recursively(WORKSPACE_CONFIG, cfg)
 
 
-def _get():
+def get_current():
     global WORKSPACE_CONFIG
     return WORKSPACE_CONFIG

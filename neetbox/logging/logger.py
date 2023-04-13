@@ -6,7 +6,6 @@
 
 import os
 import io
-import re
 from datetime import date, datetime
 from enum import Enum
 from neetbox.utils.framing import *

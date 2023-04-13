@@ -4,8 +4,8 @@ from neetbox.integrations.environment import (
     Package as pkg,
     Environment as env,
     _CPU_STAT as CPU,
+    _GPU_STAT as GPU
 )
-from GPUtil import GPU as GPU
 
 __all__ = [
     "pkg",

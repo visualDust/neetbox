@@ -10,7 +10,7 @@ def test_package_installed():
 def test_device_info():
     from neetbox.integrations import env
 
-    for cpu in env.cpus:
+    for cpu in env['cpus']:
         print(cpu)
 
 
