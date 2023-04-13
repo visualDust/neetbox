@@ -16,7 +16,7 @@ from threading import Thread
 import pip
 import GPUtil
 import psutil
-from GPUtil import GPU as GPU
+from GPUtil import GPU
 from neetbox.logging import logger
 from typing import Union
 from neetbox.utils.framing import get_caller_identity_traceback
@@ -77,9 +77,11 @@ class Package(metaclass=Singleton):
             package_name_install = (
                 package if type(try_install_if_not) is bool else try_install_if_not
             )
-            logger.warn(f"{caller_name} requires '{package_name_install}' which is not installed.")
+            logger.warn(
+                f"{caller_name} requires '{package_name_install}' which is not installed."
+            )
             if try_install_if_not:
-                return self.install(package=package_name_install,terminate=True)
+                return self.install(package=package_name_install, terminate=True)
             return False
 
 
@@ -87,14 +89,33 @@ class Package(metaclass=Singleton):
 Package = Package()
 
 
-class _CPU_STAT:
+class _CPU_STAT(dict):
     def __init__(self, id=-1, percent=0.0, freq=0.0) -> None:
-        self.id = id
-        self.percent = percent
-        self.freq = freq
+        self["id"] = id
+        self["percent"] = percent
+        self["freq"] = freq
 
     def __str__(self) -> str:
-        return f"CPU{self.id}, {self.percent}%, {self.freq}Mhz"
+        return f"CPU{self['id']}, {(self['percent'])}%, {(self['freq'])}Mhz"
+
+
+class _GPU_STAT(dict):
+    def __init__(self, id=-1, name="GPU"):
+        self["id"] = id
+        self["name"] = name
+
+    @classmethod
+    def parse(cls, gpu: GPU):
+        _instance = _GPU_STAT()
+        _instance["id"] = gpu.id
+        _instance["name"] = gpu.name
+        _instance["memoryUtil"] = gpu.memoryUtil
+        _instance["memoryTotal"] = gpu.memoryTotal
+        _instance["memoryFree"] = gpu.memoryFree
+        _instance["memoryUsed"] = gpu.memoryUsed
+        _instance["temperature"] = gpu.temperature
+        _instance["driver"] = gpu.driver
+        return _instance
 
 
 class Environment(dict, metaclass=Singleton):
@@ -108,7 +129,7 @@ class Environment(dict, metaclass=Singleton):
     _watcher: Thread = None
     _do_watch: bool = True
     _update_interval: float = 1.0
-    
+
     def __init__(self) -> None:
         # system
         self["username"] = getpass.getuser()
@@ -122,9 +143,9 @@ class Environment(dict, metaclass=Singleton):
         self["python_version"] = platform.python_version()
         self["python_build"] = platform.python_build()
         # device
-        self['cpus'] = [_CPU_STAT() for _ in range(psutil.cpu_count(logical=True))]
-        self['gpus'] = GPUtil.getGPUs()
-        self._with_gpu = False if len(self['gpus']) == 0 else True
+        self["cpus"] = [_CPU_STAT() for _ in range(psutil.cpu_count(logical=True))]
+        self["gpus"] = [_GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()]
+        self._with_gpu = False if len(self["gpus"]) == 0 else True
 
         # the environment shoube be imported in the __init__.py of the outer module. And the watcher thread should be auto started
         self.set_update_intervel()
@@ -144,14 +165,14 @@ class Environment(dict, metaclass=Singleton):
                     if len(cpu_freq) == 1:
                         cpu_freq = cpu_freq * len(cpu_percent)
                     for index in range(len(cpu_percent)):
-                        env_instance['cpus'][index] = _CPU_STAT(
+                        env_instance["cpus"][index] = _CPU_STAT(
                             id=index,
                             percent=cpu_percent[index],
                             freq=cpu_freq[index],
                         )
                     if do_update_gpus:
-                        env_instance['gpus'] = GPUtil.getGPUs()
-                    env_instance[''] = psutil.cpu_stats()
+                        env_instance["gpus"] = [_GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()]
+                    env_instance[""] = psutil.cpu_stats()
                     time.sleep(env_instance._update_interval)
 
             self._watcher = Thread(
@@ -189,7 +210,8 @@ class Environment(dict, metaclass=Singleton):
 # singleton
 Environment = Environment()
 
+
 # watch updates in daemon
-@watch(name='env')
+@watch(name="env")
 def update_env_stat():
     return dict(Environment)

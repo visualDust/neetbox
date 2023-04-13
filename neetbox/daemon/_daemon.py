@@ -41,8 +41,7 @@ def daemon_process(daemon_config=None):
         global __COUNT_DOWN
         global _STAT_POOL
         __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
-        _json_data = request.get_data()
-        print(_json_data)
+        _json_data = request.get_json()
         _STAT_POOL[name] = _json_data
         return "ok"
 
