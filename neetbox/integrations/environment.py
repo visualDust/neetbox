@@ -21,6 +21,7 @@ from neetbox.logging import logger
 from typing import Union
 from neetbox.utils.framing import get_caller_identity_traceback
 from neetbox.utils.utils import Singleton
+from neetbox.daemon import watch
 
 
 class Package(metaclass=Singleton):
@@ -96,7 +97,7 @@ class _CPU_STAT:
         return f"CPU{self.id}, {self.percent}%, {self.freq}Mhz"
 
 
-class Environment(metaclass=Singleton):
+class Environment(dict, metaclass=Singleton):
     _update_interval = 1.0
     """
     The watcher may interacts with external libraries or devices
@@ -107,26 +108,23 @@ class Environment(metaclass=Singleton):
     _watcher: Thread = None
     _do_watch: bool = True
     _update_interval: float = 1.0
-    gpus: list = []
-    cpus: list = []
-    platform_info: dict = {}
-
+    
     def __init__(self) -> None:
         # system
-        self.platform_info["username"] = getpass.getuser()
-        self.platform_info["machine"] = platform.machine()
-        self.platform_info["processor"] = (
+        self["username"] = getpass.getuser()
+        self["machine"] = platform.machine()
+        self["processor"] = (
             "unknown" if len(platform.processor()) == 0 else platform.processor()
         )
-        self.platform_info["os name"] = platform.system()
-        self.platform_info["os release"] = platform.version()
-        self.platform_info["architecture"] = platform.architecture()
-        self.platform_info["python version"] = platform.python_version()
-        self.platform_info["python build"] = platform.python_build()
+        self["os_name"] = platform.system()
+        self["os_release"] = platform.version()
+        self["architecture"] = platform.architecture()
+        self["python_version"] = platform.python_version()
+        self["python_build"] = platform.python_build()
         # device
-        self.cpus = [_CPU_STAT() for _ in range(psutil.cpu_count(logical=True))]
-        self.gpus = GPUtil.getGPUs()
-        self._with_gpu = False if len(self.gpus) == 0 else True
+        self['cpus'] = [_CPU_STAT() for _ in range(psutil.cpu_count(logical=True))]
+        self['gpus'] = GPUtil.getGPUs()
+        self._with_gpu = False if len(self['gpus']) == 0 else True
 
         # the environment shoube be imported in the __init__.py of the outer module. And the watcher thread should be auto started
         self.set_update_intervel()
@@ -146,14 +144,14 @@ class Environment(metaclass=Singleton):
                     if len(cpu_freq) == 1:
                         cpu_freq = cpu_freq * len(cpu_percent)
                     for index in range(len(cpu_percent)):
-                        env_instance.cpus[index] = _CPU_STAT(
+                        env_instance['cpus'][index] = _CPU_STAT(
                             id=index,
                             percent=cpu_percent[index],
                             freq=cpu_freq[index],
                         )
                     if do_update_gpus:
-                        env_instance.gpus = GPUtil.getGPUs()
-                    env_instance.cpu_stats = psutil.cpu_stats()
+                        env_instance['gpus'] = GPUtil.getGPUs()
+                    env_instance[''] = psutil.cpu_stats()
                     time.sleep(env_instance._update_interval)
 
             self._watcher = Thread(
@@ -161,9 +159,9 @@ class Environment(metaclass=Singleton):
             )
             self._watcher.start()
 
-    def _run(self, command):
+    def exec(self, command):
         """
-        Running a command like a terminal.
+        Run a terminal command.
 
         Args:
             command (str): The command need to run.
@@ -190,3 +188,8 @@ class Environment(metaclass=Singleton):
 
 # singleton
 Environment = Environment()
+
+# watch updates in daemon
+@watch(name='env')
+def update_env_stat():
+    return dict(Environment)

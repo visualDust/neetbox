@@ -6,18 +6,13 @@
 
 import collections
 from neetbox.utils.utils import patch
-
-
-def _default_none():
-    return None
-
+from multiprocessing import current_process
 
 DEFAULT_CONFIG = {
     "name": None,
     "version": None,
     "logging": {"logdir": None},
-    "pipeline":{
-    },
+    "pipeline": {},
     "integrations": {
         "environment": {
             "gpus": "auto",
@@ -25,17 +20,19 @@ DEFAULT_CONFIG = {
         "datasets": [],
     },
     "daemon": {
-        "enable":True,
-        "server":"localhost",
-        "port":20202,
-        "delay":1,
-        "info": ['log','status'],
-    }
+        "enable": True,
+        "displayName": None,
+        "server": "localhost",
+        "port": 20202,
+        "updateInterval": 10,
+        "uploadInterval": 10,
+        "info": ["log", "status"],
+    },
 }
 WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()
 
 
-def _update(cfg: dict):
+def update_with(cfg: dict):
     def _update_dict_recursively(self: dict, the_other: dict):
         for _k, _v in the_other.items():
             if type(_v) is dict:  # currently resolving a dict child
@@ -50,6 +47,6 @@ def _update(cfg: dict):
     _update_dict_recursively(WORKSPACE_CONFIG, cfg)
 
 
-def _get():
+def get_current():
     global WORKSPACE_CONFIG
     return WORKSPACE_CONFIG

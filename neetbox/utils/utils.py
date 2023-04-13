@@ -7,6 +7,7 @@
 import re
 import platform
 import functools
+import json
 
 
 def is_pure_ansi(text: str) -> bool:
@@ -39,6 +40,12 @@ def legal_file_name_of(text: str) -> str:
         return new_title
     return text
 
+def is_jsonable(x):
+    try:
+        x = json.dumps(x)
+        return True
+    except (TypeError, OverflowError):
+        return False
 
 def singleton(class_):
     class class_w(class_):

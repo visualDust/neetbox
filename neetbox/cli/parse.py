@@ -2,27 +2,24 @@ import argparse
 import os
 import neetbox
 from neetbox.logging.logger import Logger
+from neetbox.daemon._apis import get_status_of
 
 logger = Logger("NEETBOX")  # builtin standalone logger
 
 
 def handle_status(args):
-    logger.err(
-        "This feature is not availiable. CLI Features are still under construction."
-    )
-    pass
+    print(get_status_of())
 
 
 def handle_init(args):
-    path = vars(args)["pathspec"]
-    path = None if not len(path) else path[0]
+    name = vars(args)["name"]
     try:
-        if neetbox.init():
+        if neetbox.init(name=name):
             logger.skip_lines(2)
             logger.banner("neetbox", font="ansishadow")
             logger.log("Welcome to NEETBOX")
     except Exception as e:
-        logger.err(f"Failed to init {path}: {e}")
+        logger.err(f"Failed to init here: {e}")
 
 
 def handle_archive(args):
@@ -65,7 +62,14 @@ init_parser = subparsers.add_parser(
     "init",
     help="initialize current folder as workspace and generate the config file from defaults",
 )
-init_parser.add_argument("pathspec", help="Files to add content from", nargs="*")
+init_parser.add_argument(
+    "--name",
+    "-n",
+    help="set project name",
+    metavar="name",
+    required=False,
+    default=None,
+)
 init_parser.set_defaults(handle=handle_init)
 
 commit_parser = subparsers.add_parser(
