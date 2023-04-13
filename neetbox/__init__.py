@@ -1,6 +1,6 @@
 import os
 import toml
-from neetbox.config import default as default_config
+from neetbox.config import default as default_config, get_module_level_config
 from neetbox.config._config import update_with
 from neetbox.daemon import _try_attach_daemon
 from neetbox.utils.framing import get_frame_module_traceback
@@ -8,6 +8,10 @@ from neetbox.utils.framing import get_frame_module_traceback
 module = get_frame_module_traceback(1).__name__
 config_file_name = f"{module}.toml"
 
+def post_init():
+    import setproctitle
+    project_name = get_module_level_config()['name']
+    setproctitle.setproctitle(project_name)
 
 def init(path=None, load=False, **kwargs) -> bool:
     if path:
@@ -54,6 +58,7 @@ def init(path=None, load=False, **kwargs) -> bool:
         logger = Logger("NEETBOX")  # builtin standalone logger
         logger.ok(f"Loaded workspace config from {config_file_path}.")
         _try_attach_daemon()  # try attach daemon
+        post_init()
         return True
     except Exception as e:
         from neetbox.logging.logger import Logger

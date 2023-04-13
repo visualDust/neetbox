@@ -18,7 +18,6 @@ def _watch(func: Callable, name: str, freq: float):
         func (function): A function returns a tuple '(name,value)'. 'name' represents the name of the value.
     """
     name = name or func.__name__
-    print(name,(freq, func))
     _update_queue_dict[name] = (freq, func)
 
 

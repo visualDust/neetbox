@@ -46,6 +46,7 @@ injector = ">=0.20"
 pyfiglet = ">=0.8"
 python-daemon = "^3.0.1"
 flask = "^2.2.3"
+setproctitle = "^1.3.2"
 
 [build-system]
 requires = ["poetry>=0.12"]
