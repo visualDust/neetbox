@@ -14,4 +14,5 @@ def get_status_of(name=None):
     api_addr = f"{base_addr}/status"
     logger.info(f"Fetching from {api_addr}")
     r = requests.get(api_addr)
-    return r.json()
+    _data = r.json()
+    return _data

@@ -3,6 +3,7 @@ from neetbox.daemon._daemon import daemon_process
 from neetbox.logging import logger
 import daemon
 import time
+import os
 
 def __attach_daemon(daemon_config):
     try:
@@ -13,11 +14,14 @@ def __attach_daemon(daemon_config):
         return # ignore if debugging in ipython
     _online_status = connect_daemon(daemon_config) # try to connect daemon
     if not _online_status: # if no daemon online
-        logger.log(f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon...")
-        with daemon.DaemonContext():
-            daemon_process(daemon_config) # create daemon
+        pid = os.fork()
+        if pid <= 0 : # child process
+            logger.log(f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon...")
+            with daemon.DaemonContext():
+                daemon_process(daemon_config) # create daemon
         time.sleep(1)
-        connect_daemon(daemon_config) # try connect daemon
+        while not connect_daemon(daemon_config):# try connect daemon
+            time.sleep(1)
 
 def _try_attach_daemon():
     from neetbox.config import get_module_level_config
