@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# URL:    https://gong.host
+# Date:   20230413
+
 import collections
 from neetbox.utils.utils import patch
 
@@ -14,10 +20,17 @@ DEFAULT_CONFIG = {
     },
     "integrations": {
         "environment": {
-            "GPUS": "auto",
+            "gpus": "auto",
         },
         "datasets": [],
     },
+    "daemon": {
+        "enable":True,
+        "server":"localhost",
+        "port":20202,
+        "delay":1,
+        "info": ['log','status'],
+    }
 }
 WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()
 

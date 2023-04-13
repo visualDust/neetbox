@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# URL:    https://gong.host
+# Date:   20230413
+
 from neetbox.config._config import _update as update, DEFAULT_CONFIG as default
 from neetbox.config._config import _get
 from neetbox.utils.framing import *

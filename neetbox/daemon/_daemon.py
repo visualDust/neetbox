@@ -2,7 +2,7 @@ import datetime
 import time
 import daemon
 from neetbox.logging import logger
-logger = logger("TEST DAEMON").set_log_dir("./abaaba")
+logger = logger("NEETDAEMON").set_log_dir("")
  
 def main_program():
     while True:
