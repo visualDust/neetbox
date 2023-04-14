@@ -20,6 +20,14 @@ __TIME_CTR_MAX_CYCLE = 9999999
 _update_value_dict = {}
 
 
+class _WatchConfig(dict):
+    def __init__(self, name, freq, initiative=False, to_log=False):
+        self["name"] = name
+        self["freq"] = freq
+        self["initiative"] = initiative
+        self["to_log"] = to_log
+
+
 def __get(name):
     _the_value = _update_value_dict.get(name, None)
     if _the_value and "value" in _the_value:
@@ -29,38 +37,47 @@ def __get(name):
 
 def __update_and_get(name):
     _vtuple = _update_queue_dict[name]
-    _update_freq, _vfun = _vtuple
+    _watch_config, _vfun = _vtuple
     _the_value = _vfun()
     _update_value_dict[name] = {
         "value": _the_value,
         "timestamp": datetime.timestamp(datetime.now()),
-        "interval": (_update_freq * __TIME_UNIT_SEC),
+        "interval": (_watch_config["freq"] * __TIME_UNIT_SEC),
     }
     return _the_value
 
 
-def _watch(func: Callable, name: str, freq: float, initiative=False):
+def _watch(func: Callable, name: str, freq: float, initiative=False, to_log=False):
     """Function decorator to let the daemon watch a value of the function
 
     Args:
         func (function): A function returns a tuple '(name,value)'. 'name' represents the name of the value.
     """
     name = name or func.__name__
-    _update_queue_dict[name] = (freq, func)
+    _update_queue_dict[name] = (
+        _WatchConfig(name, freq=freq, initiative=initiative, to_log=to_log),
+        func,
+    )
     if (
         initiative
     ):  # initiatively update the value dict when the function was called manually
+        logger.log(
+            f"added {name} to daemon monitor. It will update on each call of the function."
+        )
         return partial(__update_and_get, name)
     else:
+        logger.log(
+            f"added {name} to daemon monitor. It will update every {freq*__TIME_UNIT_SEC} second(s)."
+        )
         return partial(__get, name)
 
 
-def watch(name=None, freq=None, initiative=False):
+def watch(name=None, freq=None, initiative=False, to_log=False):
     if not initiative:  # passively update
         freq = freq or get_module_level_config()["updateInterval"]
     else:
         freq = __TIME_CTR_MAX_CYCLE + 1
-    return partial(_watch, name=name, freq=freq, initiative=initiative)
+    return partial(_watch, name=name, freq=freq, initiative=initiative, to_log=to_log)
 
 
 def _update_thread():
@@ -70,9 +87,9 @@ def _update_thread():
         _ctr = (_ctr + 1) % __TIME_CTR_MAX_CYCLE
         time.sleep(__TIME_UNIT_SEC)
         for _vname, _vtuple in _update_queue_dict.items():
-            _update_freq, _vfun = _vtuple
+            _watch_config, _vfun = _vtuple
             if (
-                _ctr % _update_freq == 0 and _update_freq <= __TIME_CTR_MAX_CYCLE
+                not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0
             ):  # do update
                 _the_value = __update_and_get(_vname)
 

@@ -5,9 +5,7 @@
 # Date:   20230414
 
 from flask import Flask, json, abort, request
-import json as _json
 from neetbox.config import get_module_level_config
-from neetbox.logging import logger
 from threading import Thread
 import time
 import sys

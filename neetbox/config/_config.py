@@ -27,6 +27,7 @@ DEFAULT_CONFIG = {
         "updateInterval": 10,
         "uploadInterval": 10,
         "info": ["log", "status"],
+        "allowIpython":False
     },
 }
 WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()
