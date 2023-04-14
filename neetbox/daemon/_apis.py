@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# URL:    https://gong.host
+# Date:   20230414
+
 from neetbox.config import get_module_level_config
 from neetbox.logging import logger
 import requests
