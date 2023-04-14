@@ -13,13 +13,16 @@ import os
 
 
 def __attach_daemon(daemon_config):
-    try:
-        __IPYTHON__
-    except NameError:
-        pass
-    else:
-        logger.log(f"NEETBOX DAEMON won't start when debugging in ipython console.")
-        return False  # ignore if debugging in ipython
+    if not daemon_config["allowIpython"]:
+        try:
+            __IPYTHON__
+        except NameError:
+            pass
+        else:
+            logger.log(
+                f"NEETBOX DAEMON won't start when debugging in ipython console. If you want to allow daemon run in ipython, try to set 'allowIpython' to True."
+            )
+            return False  # ignore if debugging in ipython
     _online_status = connect_daemon(daemon_config)  # try to connect daemon
     if not _online_status:  # if no daemon online
         logger.log(
@@ -32,7 +35,7 @@ def __attach_daemon(daemon_config):
                 f"Could not fork subprocess because {e}. NEETBOX daemon won't work on Windows."
             )
             return False  # do not run if could not fork
-        if pid <= 0:  # child process
+        if pid == 0:  # child process
             assert pkg.is_installed(
                 "daemon", try_install_if_not="python-daemon"
             ), "'python-daemon' is not installed, which is necessary for creating NEETBOX DAEMON"
@@ -45,9 +48,15 @@ def __attach_daemon(daemon_config):
                 return False  # do not run if on windows
             with daemon.DaemonContext():
                 daemon_process(daemon_config)  # create daemon
+        elif pid < 0:
+            logger.err(
+                "Faild to spawn daemon process using os.fork. NEETBOX daemon will not start."
+            )
+            return False
         time.sleep(1)
         _retry = 3
         while not connect_daemon(daemon_config):  # try connect daemon
+            logger.warn(f"Could not connect to the daemon. {_retry} retries remaining.")
             time.sleep(1)
             _retry -= 1
             if not _retry:
