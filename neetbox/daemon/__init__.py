@@ -7,7 +7,6 @@
 from neetbox.daemon._daemon_client import connect_daemon, watch
 from neetbox.daemon._daemon import daemon_process
 from neetbox.logging import logger
-from neetbox.integrations import pkg
 import time
 import os
 
@@ -36,9 +35,6 @@ def __attach_daemon(daemon_config):
             )
             return False  # do not run if could not fork
         if pid == 0:  # child process
-            assert pkg.is_installed(
-                "daemon", try_install_if_not="python-daemon"
-            ), "'python-daemon' is not installed, which is necessary for creating NEETBOX DAEMON"
             try:
                 import daemon
             except Exception as e:
