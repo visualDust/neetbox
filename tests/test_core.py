@@ -1,5 +1,5 @@
 def test_registry():
-    from neetbox.pipeline import Registry
+    from neetbox.core import Registry
     reg1 = Registry("RName-functions")
     reg2 = Registry("RName-classes")
     

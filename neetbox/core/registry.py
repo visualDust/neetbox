@@ -12,13 +12,24 @@ import json
 import functools
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
-class _RegEndpoint():
-        def __init__(self, what, tags=None):
-            self.what = what
-            self.tags = tags
-            
+
+class _RegEndpoint:
+    def __init__(self, what, tags=None):
+        """Generate a massive type which contains both the regietered object and it's tags
+
+        Args:
+            what (_type_): The object being registered
+            tags (_type_, optional): The tags. Defaults to None.
+        """
+        self.what = what
+        self.tags = tags
+
+    def __str__(self) -> str:
+        return f"{self.what} with tags: {self.tags}"
+
+
 class Registry(dict):
-    
+
     """Register Helper Class
     A Register is a 'dict[str:any]'
     Registers are stored in a pool of type dict[str:Register]
@@ -26,7 +37,7 @@ class Registry(dict):
 
     # class level
     _registry_pool: Dict[str, "Registry"] = dict()  # all registeres are stored here
-      
+
     def __new__(cls, name: str) -> "Registry":
         assert is_pure_ansi(name), "Registry name should not contain non-ansi char."
         if name in cls._registry_pool:
@@ -37,16 +48,16 @@ class Registry(dict):
         return instance
 
     # not compatible with python below 3.8
-    def __init__(self,name,*args, **kwargs) -> None:
-        if not 'initialized' in self:
-            self['initialized'] = True
+    def __init__(self, name, *args, **kwargs) -> None:
+        if not "initialized" in self:
+            self["initialized"] = True
             self.name = name
 
     def _register(
         self,
         what: Any,
         name: Optional[str] = None,
-        force: bool = False,
+        force: bool = True,
         tags: Optional[Union[str, Sequence[str]]] = None,
     ):
         # if not (inspect.isfunction(what) or inspect.isclass(what)):
@@ -54,28 +65,29 @@ class Registry(dict):
         name = name or what.__name__
         if type(tags) is str:
             tags = [tags]
+        _endp = _RegEndpoint(what, tags)
         if name in self.keys():
             if not force:
                 logger.warn(
                     f"{name} already exists in Registry:{self.name}. If you want to overwrite, try to register with 'force=True'"
                 )
             else:
-                logger.warn(f"Overwritting: existing {name} in Registry {self.name}.")
-                self[name] = _RegEndpoint(what, tags)
+                logger.warn(
+                    f"Overwritting existing '{name}' in Registry '{self.name}'."
+                )
+                self[name] = _endp
         else:
-            self[name] = _RegEndpoint(what, tags)
+            self[name] = _endp
         return what
 
     def register(
         self,
         *,
         name: Optional[str] = None,
-        force: bool = False,
+        force: bool = True,
         tags: Optional[Union[str, Sequence[str]]] = None,
-    ) -> Callable:
-        return functools.partial(
-            self._register, name=name, force=force, tags=tags
-        )
+    ):
+        return functools.partial(self._register, name=name, force=force, tags=tags)
 
     @classmethod
     def find(
@@ -96,7 +108,7 @@ class Registry(dict):
             private_sign = "__"
             if not reg_name.startswith(private_sign):
                 if not name:
-                    results += [(_n, _o) for _n, _o in reg.items()]
+                    results += [(_n, _o) for _n, _o in reg.items(_real_type=False)]
                 elif name in reg:
                     results.append((name, reg[name]))
 
@@ -127,7 +139,7 @@ class Registry(dict):
     def __setitem__(self, k, v) -> None:
         assert is_pure_ansi(k), "Only ANSI chars are allowed for registering things."
         self.__dict__[k] = v
-        
+
     def clear(self):
         return self.__dict__.clear()
 
@@ -141,16 +153,29 @@ class Registry(dict):
         return self.__dict__.update(*args, **kwargs)
 
     def keys(self):
-        return [_item[0] for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
+        return [
+            _item[0]
+            for _item in self.__dict__.items()
+            if type(_item[1]) is _RegEndpoint
+        ]
 
     def values(self):
-        return [_item[1].what for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
+        return [
+            _item[1].what
+            for _item in self.__dict__.items()
+            if type(_item[1]) is _RegEndpoint
+        ]
 
-    def items(self):
-        _legal_items = [_item for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
-        _legal_items = [(_k,_v.what) for _k,_v in _legal_items if type(_v) is _RegEndpoint]
+    def items(self, _real_type=True):
+        _legal_items = [
+            _item for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint
+        ]
+        if _real_type:
+            _legal_items = [
+                (_k, _v.what) for _k, _v in _legal_items if type(_v) is _RegEndpoint
+            ]
         return _legal_items
-        
+
     def pop(self, *args):
         return self.__dict__.pop(*args)
 
