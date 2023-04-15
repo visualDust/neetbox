@@ -45,10 +45,11 @@ def __get(name):
     return _the_value
 
 
-def __update_and_get(name):
+def __update_and_get(name, *args, **kwargs):
+    global _update_value_dict
     _watched_fun: _WatchedFun = _update_queue_dict[name]
     _watch_config = _watched_fun.others
-    _the_value = _watched_fun()
+    _the_value = _watched_fun(*args, **kwargs)
     _update_value_dict[name] = {
         "value": _the_value,
         "timestamp": datetime.timestamp(datetime.now()),
@@ -66,7 +67,7 @@ def _watch(func: Callable, name: str, freq: float, initiative=False, to_log=Fals
     name = name or func.__name__
     _update_queue_dict._register(
         name=name,
-        what= _WatchedFun(
+        what=_WatchedFun(
             func=func,
             others=_WatchConfig(name, freq=freq, initiative=initiative, to_log=to_log),
         ),
@@ -143,6 +144,7 @@ def connect_daemon(daemon_config):
         _ctr = 0
         _api_name = "sync"
         _api_addr = f"{base_addr}/{_api_name}/{_display_name}"
+        global _update_value_dict
         while True:
             _ctr = (_ctr + 1) % 99999999
             _upload_interval = daemon_config["uploadInterval"]
