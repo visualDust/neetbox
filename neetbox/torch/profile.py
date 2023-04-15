@@ -4,7 +4,7 @@
 # URL:    https://gong.host
 # Date:   20230315
 
-from neetbox.integrations import pkg
+from neetbox.utils import pkg
 import time
 from tqdm import tqdm
 import torch

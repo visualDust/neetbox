@@ -7,7 +7,7 @@
 from neetbox.daemon._daemon_client import connect_daemon, watch
 from neetbox.daemon._daemon import daemon_process
 from neetbox.logging import logger
-
+from neetbox.utils import pkg
 import platform
 import time
 import os
@@ -30,7 +30,7 @@ def __attach_daemon(daemon_config):
         logger.log(
             f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon..."
         )
-        if platform.system() == "Windows":
+        if platform.system() == "Windows": # running on windows
             try:
                 from neetbox.daemon._win_service import installService
 
@@ -38,22 +38,11 @@ def __attach_daemon(daemon_config):
             except Exception as e:
                 logger.err(f"Could not install Windows service because {e}.")
                 return False
-        else:
-            try:
-                pid = os.fork()
-            except Exception as e:
-                logger.err(
-                    f"Could not fork subprocess because {e}. NEETBOX daemon won't work on Windows."
-                )
-                return False  # do not run if could not fork
+        else: # not on windows 
+            pid = os.fork()
             if pid == 0:  # child process
-                try:
-                    import daemon
-                except Exception as e:
-                    logger.err(
-                        f"Package 'python-daemon' not working because {e}. NEETBOX daemon won't work on Windows."
-                    )
-                    return False  # do not run if on windows
+                pkg.is_installed('daemon', try_install_if_not='python-daemon')
+                import daemon
                 with daemon.DaemonContext():
                     daemon_process(daemon_config)  # create daemon
             elif pid < 0:

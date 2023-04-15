@@ -1,0 +1,10 @@
+name = "FakeConfig"
+
+[logging]
+
+[pipeline]
+
+[integrations]
+
+[daemon]
+enable = false
