@@ -93,7 +93,7 @@ def patch(func):
     return func
 
 
-class _PipPackageHealper(metaclass=Singleton):
+class PipPackageHealper(metaclass=Singleton):
     def __init__(self) -> None:
         self.installed_packages = None
 
@@ -154,4 +154,4 @@ class _PipPackageHealper(metaclass=Singleton):
 
 
 # singleton
-_PipPackageHealper = _PipPackageHealper()
+PipPackageHealper = PipPackageHealper()
