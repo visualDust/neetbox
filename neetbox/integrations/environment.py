@@ -4,89 +4,17 @@
 # URL:    https://gong.host
 # Date:   20230413
 
-import asyncio
 import getpass
-import importlib
 import locale
 import platform
-import re, os
 import subprocess
 import time
 from threading import Thread
-import pip
 import GPUtil
 import psutil
 from GPUtil import GPU
-from neetbox.logging import logger
-from typing import Union
-from neetbox.utils.framing import get_caller_identity_traceback
 from neetbox.utils.utils import Singleton
 from neetbox.daemon import watch
-
-
-class Package(metaclass=Singleton):
-    def __init__(self) -> None:
-        self.installed_packages = None
-
-    @logger.catch
-    def install(self, package, terminate=False):
-        caller = get_caller_identity_traceback(2)
-        caller_name = caller.module_name if caller.module else caller.filename
-        retry = 4
-        _installed = False
-        while retry:
-            if not retry:
-                error_str = f"Bad Input"
-                raise ValueError(error_str)
-            choice = input(
-                f"{caller_name} want to install {package} via pip. Allow? y/[n]:"
-            )
-            if choice in ["y", "yes"]:  # user choose to install
-                logger.info("installing", package, "via pip...")
-                pip.main(["install", package])
-                _installed = True
-                break
-            if choice in ["n", "no"]:  # user choose not to install
-                if terminate:  # the package must be installed
-                    error_str = f"{caller_name} requires '{package}' but it is not going to be installed."
-                    raise RuntimeError(error_str)
-                else:
-                    logger.warn(f"{package} is not going to be installed")
-                    break
-            else:  # illegal input
-                retry -= 1
-                if retry:
-                    logger.err(
-                        f"illegal input: required 'y'/'n' but recieved '{choice}'. {retry} retries remaining."
-                    )
-        return _installed
-
-    def is_installed(self, package: str, try_install_if_not: Union[str, bool] = True):
-        caller = get_caller_identity_traceback(2)
-        caller_name = caller.module_name if caller.module else caller.filename
-        if not self.installed_packages:
-            self.installed_packages = []
-            package = str(package)
-        if package in self.installed_packages:
-            return True
-        try:
-            importlib.import_module(package)
-            self.installed_packages.append(package)
-            return True
-        except:
-            package_name_install = (
-                package if type(try_install_if_not) is bool else try_install_if_not
-            )
-            logger.warn(
-                f"{caller_name} requires '{package_name_install}' which is not installed."
-            )
-            if try_install_if_not:
-                return self.install(package=package_name_install, terminate=True)
-            return False
-
-
-# singleton
-Package = Package()
 
 
 class _CPU_STAT(dict):
@@ -171,7 +99,9 @@ class Environment(dict, metaclass=Singleton):
                             freq=cpu_freq[index],
                         )
                     if do_update_gpus:
-                        env_instance["gpus"] = [_GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()]
+                        env_instance["gpus"] = [
+                            _GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()
+                        ]
                     env_instance[""] = psutil.cpu_stats()
                     time.sleep(env_instance._update_interval)
 

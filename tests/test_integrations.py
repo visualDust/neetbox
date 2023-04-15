@@ -1,5 +1,5 @@
 def test_package_installed():
-    from neetbox.integrations import pkg
+    from neetbox.utils import pkg
 
     package_name = "opencv-python"
     package_name_import = "cv2"

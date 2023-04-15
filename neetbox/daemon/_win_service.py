@@ -3,15 +3,14 @@ import sys
 from os.path import splitext, abspath
 from sys import modules
 
+from neetbox.daemon._daemon import daemon_process
+from neetbox.logging import logger
+
 import win32api
 import win32event
 import win32service
 import win32serviceutil
-
-from neetbox.daemon._daemon import daemon_process
-from neetbox.logging import logger
-
-
+        
 class NEETBOXService(win32serviceutil.ServiceFramework):
     _svc_name_ = "NEETBOX"
     _svc_description_ = "NEETBOX daemon service"

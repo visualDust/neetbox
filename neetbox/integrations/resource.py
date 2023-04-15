@@ -4,13 +4,12 @@
 # URL:    https://gong.host
 # Date:   20230315
 
-from PIL import Image
 from random import random
 import os
 import asyncio
 import numpy as np
 import threading
-from neetbox.integrations import pkg
+from neetbox.utils import pkg
 from neetbox.logging import logger
 from neetbox.integrations import engine
 from typing import Dict
@@ -115,6 +114,12 @@ class ResourceLoader:
 
 
 class ImagesLoader(ResourceLoader):
+    
+    def __init__(self, folder, file_types=["png", "jpg"], sub_dirs=True, async_scan=False, verbose=False):
+        pkg.is_installed('PIL', try_install_if_not='pillow')
+        from PIL import Image
+        super().__init__(folder, file_types, sub_dirs, async_scan, verbose)
+        
     def get_random_image(self):
         rand_img_path = self.file_path_list[int(random() * len(self.file_path_list))]
         image = Image.open(rand_img_path).convert("RGB")

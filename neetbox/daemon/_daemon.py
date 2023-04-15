@@ -4,7 +4,7 @@
 # URL:    https://gong.host
 # Date:   20230414
 
-from flask import Flask, json, abort, request
+from neetbox.utils import pkg
 from neetbox.config import get_module_level_config
 from threading import Thread
 import time
@@ -21,6 +21,7 @@ def daemon_process(daemon_config=None):
 
     setproctitle.setproctitle(__DAEMON_NAME)
     daemon_config = daemon_config or get_module_level_config()
+    from flask import Flask, json, abort, request
     api = Flask(__DAEMON_NAME)
 
     @api.route("/hello", methods=["GET"])

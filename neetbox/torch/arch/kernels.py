@@ -1,5 +1,5 @@
 import numpy as np
-from neetbox.integrations import pkg
+from neetbox.utils import pkg
 
 
 def get_gaussian_kernel(k=3, mu=0, sigma=1, normalize=True):
