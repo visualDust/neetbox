@@ -32,8 +32,9 @@ def __attach_daemon(daemon_config):
         )
         if platform.system() == "Windows": # running on windows
             try:
+                assert pkg.is_installed('win32api', try_install_if_not='pywin32'), "Please install 'pywin32' before using NEETBOX daemon"
+                assert pkg.is_installed('win32serviceutil', try_install_if_not='pypiwin32'), "Please install 'pywin32' before using NEETBOX daemon"
                 from neetbox.daemon._win_service import installService
-
                 installService(cfg=daemon_config)
             except Exception as e:
                 logger.err(f"Could not install Windows service because {e}.")

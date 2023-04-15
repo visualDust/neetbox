@@ -1,3 +1,3 @@
-from neetbox.utils.utils import __PipPackageHealper as pkg
+from neetbox.utils.utils import PipPackageHealper as pkg
 
 __all__ = ["pkg"]
