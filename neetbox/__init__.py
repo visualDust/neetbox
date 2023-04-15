@@ -8,10 +8,13 @@ from neetbox.utils.framing import get_frame_module_traceback
 module = get_frame_module_traceback(1).__name__
 config_file_name = f"{module}.toml"
 
+
 def post_init():
     import setproctitle
-    project_name = get_module_level_config()['name']
+
+    project_name = get_module_level_config()["name"]
     setproctitle.setproctitle(project_name)
+
 
 def init(path=None, load=False, **kwargs) -> bool:
     if path:
