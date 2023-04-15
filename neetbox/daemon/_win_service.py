@@ -12,7 +12,7 @@ from neetbox.daemon._daemon import daemon_process
 from neetbox.logging import logger
 
 
-class PythonService(win32serviceutil.ServiceFramework):
+class NEETBOXService(win32serviceutil.ServiceFramework):
     _svc_name_ = "NEETBOX"
     _svc_description_ = "NEETBOX daemon service"
     _config = None
@@ -30,7 +30,7 @@ class PythonService(win32serviceutil.ServiceFramework):
 
     @staticmethod
     def set_config(config):
-        PythonService._config = config
+        NEETBOXService._config = config
 
     def SvcDoRun(self):
         try:
@@ -46,7 +46,7 @@ class PythonService(win32serviceutil.ServiceFramework):
 
 
 def installService(
-    cls=PythonService, cfg=None, display_name: str = None, stay_alive: bool = True
+    cls=NEETBOXService, cfg=None, display_name: str = None, stay_alive: bool = True
 ):
     cls.set_config(cfg)
     name = cls._svc_name_
@@ -93,12 +93,12 @@ def installService(
 
 if __name__ == "__main__":
     # just for test
-    PythonService.set_config(
+    NEETBOXService.set_config(
         {
             "server": "localhost",
             "port": 20202,
             "enable": True,
         }
     )
-    # win32serviceutil.HandleCommandLine(PythonService)
+    # win32serviceutil.HandleCommandLine(NEETBOXService)
     installService()
