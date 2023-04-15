@@ -7,6 +7,8 @@
 from neetbox.daemon._daemon_client import connect_daemon, watch
 from neetbox.daemon._daemon import daemon_process
 from neetbox.logging import logger
+
+import platform
 import time
 import os
 
@@ -19,7 +21,8 @@ def __attach_daemon(daemon_config):
             pass
         else:
             logger.log(
-                f"NEETBOX DAEMON won't start when debugging in ipython console. If you want to allow daemon run in ipython, try to set 'allowIpython' to True."
+                "NEETBOX DAEMON won't start when debugging in ipython console. If you want to allow daemon run in "
+                "ipython, try to set 'allowIpython' to True."
             )
             return False  # ignore if debugging in ipython
     _online_status = connect_daemon(daemon_config)  # try to connect daemon
@@ -27,28 +30,37 @@ def __attach_daemon(daemon_config):
         logger.log(
             f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon..."
         )
-        try:
-            pid = os.fork()
-        except Exception as e:
-            logger.err(
-                f"Could not fork subprocess because {e}. NEETBOX daemon won't work on Windows."
-            )
-            return False  # do not run if could not fork
-        if pid == 0:  # child process
+        if platform.system() == "Windows":
             try:
-                import daemon
+                from neetbox.daemon._win_service import installService
+
+                installService(cfg=daemon_config)
+            except Exception as e:
+                logger.err(f"Could not install Windows service because {e}.")
+                return False
+        else:
+            try:
+                pid = os.fork()
             except Exception as e:
                 logger.err(
-                    f"Package 'python-daemon' not working because {e}. NEETBOX daemon won't work on Windows."
+                    f"Could not fork subprocess because {e}. NEETBOX daemon won't work on Windows."
                 )
-                return False  # do not run if on windows
-            with daemon.DaemonContext():
-                daemon_process(daemon_config)  # create daemon
-        elif pid < 0:
-            logger.err(
-                "Faild to spawn daemon process using os.fork. NEETBOX daemon will not start."
-            )
-            return False
+                return False  # do not run if could not fork
+            if pid == 0:  # child process
+                try:
+                    import daemon
+                except Exception as e:
+                    logger.err(
+                        f"Package 'python-daemon' not working because {e}. NEETBOX daemon won't work on Windows."
+                    )
+                    return False  # do not run if on windows
+                with daemon.DaemonContext():
+                    daemon_process(daemon_config)  # create daemon
+            elif pid < 0:
+                logger.err(
+                    "Faild to spawn daemon process using os.fork. NEETBOX daemon will not start."
+                )
+                return False
         time.sleep(1)
         _retry = 3
         while not connect_daemon(daemon_config):  # try connect daemon
