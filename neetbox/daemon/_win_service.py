@@ -72,8 +72,7 @@ def installService(
         logger.log(f"Service {name} started successfully.")
         return
     except win32service.error as e:
-        logger.err(f"Service {name} start failed because {e}.")
-        raise
+        pass
 
     # install and start the service
     try:
