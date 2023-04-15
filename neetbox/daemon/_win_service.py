@@ -7,7 +7,8 @@ from neetbox.daemon._daemon import daemon_process
 from neetbox.logging import logger
 
 from neetbox.utils import pkg
-assert pkg.is_installed('win32api', try_install_if_not='pypiwin32'), "Please install 'pywin32' before using NEETBOX daemon"
+assert pkg.is_installed('win32api', try_install_if_not='pywin32'), "Please install 'pywin32' before using NEETBOX daemon"
+assert pkg.is_installed('win32serviceutil', try_install_if_not='pypiwin32'), "Please install 'pywin32' before using NEETBOX daemon"
 import win32api
 import win32event
 import win32service
