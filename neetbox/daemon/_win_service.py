@@ -5,11 +5,6 @@ from sys import modules
 
 from neetbox.daemon._daemon import daemon_process
 from neetbox.logging import logger
-
-import win32api
-import win32event
-import win32service
-import win32serviceutil
         
 class NEETBOXService(win32serviceutil.ServiceFramework):
     _svc_name_ = "NEETBOX"
@@ -47,6 +42,12 @@ class NEETBOXService(win32serviceutil.ServiceFramework):
 def installService(
     cls=NEETBOXService, cfg=None, display_name: str = None, stay_alive: bool = True
 ):
+    from neetbox.utils import pkg
+    assert pkg.is_installed('win32api', try_install_if_not='pywin32'), "Please install 'pywin32' before using NEETBOX daemon"
+    import win32api
+    import win32event
+    import win32service
+    import win32serviceutil
     cls.set_config(cfg)
     name = cls._svc_name_
     cls._svc_display_name_ = display_name or name
