@@ -61,6 +61,21 @@ def installService(
     cls._svc_reg_class_ = "%s.%s" % (module_file, cls.__name__)
     if stay_alive:
         win32api.SetConsoleCtrlHandler(lambda x: True, True)
+
+    # check if the service is already installed
+    try:
+        win32serviceutil.QueryServiceStatus(cls._svc_name_)
+        logger.log(f"Service {name} already installed.")
+
+        # if installed, start it
+        win32serviceutil.StartService(cls._svc_name_)
+        logger.log(f"Service {name} started successfully.")
+        return
+    except win32service.error as e:
+        logger.err(f"Service {name} start failed because {e}.")
+        raise
+
+    # install and start the service
     try:
         win32serviceutil.InstallService(
             cls._svc_reg_class_,
