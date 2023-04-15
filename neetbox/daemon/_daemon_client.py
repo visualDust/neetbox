@@ -8,13 +8,14 @@ import requests
 import time
 import json
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Any
 from threading import Thread
 from functools import partial
 from neetbox.config import get_module_level_config
 from neetbox.logging import logger
+from neetbox.core import Registry
 
-_update_queue_dict = {}
+_update_queue_dict = Registry("daemon")
 __TIME_UNIT_SEC = 0.1
 __TIME_CTR_MAX_CYCLE = 9999999
 _update_value_dict = {}
@@ -28,6 +29,15 @@ class _WatchConfig(dict):
         self["to_log"] = to_log
 
 
+class _WatchedFun:
+    def __init__(self, func, others) -> None:
+        self.func = func
+        self.others = others
+
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        return self.func(*args, **kwds)
+
+
 def __get(name):
     _the_value = _update_value_dict.get(name, None)
     if _the_value and "value" in _the_value:
@@ -36,9 +46,9 @@ def __get(name):
 
 
 def __update_and_get(name):
-    _vtuple = _update_queue_dict[name]
-    _watch_config, _vfun = _vtuple
-    _the_value = _vfun()
+    _watched_fun: _WatchedFun = _update_queue_dict[name]
+    _watch_config = _watched_fun.others
+    _the_value = _watched_fun()
     _update_value_dict[name] = {
         "value": _the_value,
         "timestamp": datetime.timestamp(datetime.now()),
@@ -54,9 +64,13 @@ def _watch(func: Callable, name: str, freq: float, initiative=False, to_log=Fals
         func (function): A function returns a tuple '(name,value)'. 'name' represents the name of the value.
     """
     name = name or func.__name__
-    _update_queue_dict[name] = (
-        _WatchConfig(name, freq=freq, initiative=initiative, to_log=to_log),
-        func,
+    _update_queue_dict._register(
+        name=name,
+        what= _WatchedFun(
+            func=func,
+            others=_WatchConfig(name, freq=freq, initiative=initiative, to_log=to_log),
+        ),
+        force=True,
     )
     if (
         initiative
@@ -80,14 +94,18 @@ def watch(name=None, freq=None, initiative=False, to_log=False):
     return partial(_watch, name=name, freq=freq, initiative=initiative, to_log=to_log)
 
 
+def listen(name=None):
+    pass  # todo
+
+
 def _update_thread():
     # update values
     _ctr = 0
     while True:
         _ctr = (_ctr + 1) % __TIME_CTR_MAX_CYCLE
         time.sleep(__TIME_UNIT_SEC)
-        for _vname, _vtuple in _update_queue_dict.items():
-            _watch_config, _vfun = _vtuple
+        for _vname, _watched_fun in _update_queue_dict.items():
+            _watch_config = _watched_fun.others
             if (
                 not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0
             ):  # do update
