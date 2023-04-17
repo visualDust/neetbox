@@ -5,7 +5,7 @@
 # Date:   20230413
 
 import collections
-from neetbox.utils.utils import patch
+from neetbox.utils.mvc import patch
 from multiprocessing import current_process
 
 DEFAULT_CONFIG = {

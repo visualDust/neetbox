@@ -19,7 +19,7 @@ pip install --index-url https://pypi.org/simple/ neetbox --force-reinstall
 ## If you want (Click to go):
 
 - [x] [Simple Logging Utility](/docs/guide/logging/)
-- [x] [The CLI](/docs/guide/cli/)
+- [x] [The CLI](/docs/guide/neetcli/)
 - [x] [Pipeline](/docs/guide/pipeline/)
 - [x] [Integrations and other helpful tools](/docs/guide/integrations/)
 - [x] [Basic PyTorch Code Snippets](/docs/guide/torch-snippets/)

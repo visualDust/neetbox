@@ -15,7 +15,8 @@ from neetbox.config import get_module_level_config
 from neetbox.logging import logger
 from neetbox.core import Registry
 
-_update_queue_dict = Registry("daemon")
+_watch_queue_dict = Registry("daemon_watch")
+_listen_queue_dict = Registry("daemon_listen")
 __TIME_UNIT_SEC = 0.1
 __TIME_CTR_MAX_CYCLE = 9999999
 _update_value_dict = {}
@@ -47,7 +48,7 @@ def __get(name):
 
 def __update_and_get(name, *args, **kwargs):
     global _update_value_dict
-    _watched_fun: _WatchedFun = _update_queue_dict[name]
+    _watched_fun: _WatchedFun = _watch_queue_dict[name]
     _watch_config = _watched_fun.others
     _the_value = _watched_fun(*args, **kwargs)
     _update_value_dict[name] = {
@@ -65,7 +66,7 @@ def _watch(func: Callable, name: str, freq: float, initiative=False, to_log=Fals
         func (function): A function returns a tuple '(name,value)'. 'name' represents the name of the value.
     """
     name = name or func.__name__
-    _update_queue_dict._register(
+    _watch_queue_dict._register(
         name=name,
         what=_WatchedFun(
             func=func,
@@ -105,7 +106,7 @@ def _update_thread():
     while True:
         _ctr = (_ctr + 1) % __TIME_CTR_MAX_CYCLE
         time.sleep(__TIME_UNIT_SEC)
-        for _vname, _watched_fun in _update_queue_dict.items():
+        for _vname, _watched_fun in _watch_queue_dict.items():
             _watch_config = _watched_fun.others
             if (
                 not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0

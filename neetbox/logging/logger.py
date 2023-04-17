@@ -9,8 +9,7 @@ import io
 from datetime import date, datetime
 from enum import Enum
 from neetbox.utils.framing import *
-from pyfiglet import Figlet, FigletFont
-from neetbox.utils import utils
+from neetbox.utils import format
 from neetbox.logging.formatting import *
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
 import functools
@@ -454,7 +453,12 @@ class Logger:
 
         return Catcher(False)
 
-    def banner(self, text, font: Optional[str] = None):        
+    def banner(self, text, font: Optional[str] = None):
+        from neetbox.utils import pkg
+
+        assert pkg.is_installed("pyfiglet", try_install_if_not=True)
+        from pyfiglet import Figlet, FigletFont
+
         builtin_font_list = [
             "ansiregular",
             "ansishadow",
@@ -471,7 +475,7 @@ class Logger:
                 FigletFont.installFonts(f"{module_path}/flfs/{font}.flf")
             else:  # path?
                 assert os.path.isfile(
-                font
+                    font
                 ), "The provided font is not a fontname or a font file path."
                 file_name = os.path.basename(font)
                 file = os.path.splitext(file_name)
@@ -546,7 +550,7 @@ class Logger:
         log_file_identity = os.path.abspath(path)
         if os.path.isdir(log_file_identity):
             raise Exception("Target path is not a file.")
-        filename = utils.legal_file_name_of(os.path.basename(path))
+        filename = format.legal_file_name_of(os.path.basename(path))
         dirname = os.path.dirname(path) if len(os.path.dirname(path)) != 0 else "."
         if not os.path.exists(dirname):
             raise Exception(f"Could not find dictionary {dirname}")

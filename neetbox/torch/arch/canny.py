@@ -1,3 +1,12 @@
+from neetbox.utils import pkg
+
+assert pkg.is_installed("numpy", try_install_if_not=True)
+from neetbox.utils.framing import get_frame_module_traceback
+
+module_name = get_frame_module_traceback().__name__
+assert pkg.is_installed(
+    "torch", try_install_if_not=False
+), f"{module_name} requires torch which is not installed."
 import numpy as np
 import torch
 import torch.nn as nn
@@ -5,7 +14,15 @@ from neetbox.torch.arch.kernels import *
 
 
 class CannyFilter(nn.Module):
-    def __init__(self, k_gaussian=3, mu=0, sigma=1, k_sobel=3, padding=True, use_cuda=False,):
+    def __init__(
+        self,
+        k_gaussian=3,
+        mu=0,
+        sigma=1,
+        k_sobel=3,
+        padding=True,
+        use_cuda=False,
+    ):
         super(CannyFilter, self).__init__()
         # device
         self.device = "cuda" if use_cuda else "cpu"
@@ -19,7 +36,9 @@ class CannyFilter(nn.Module):
             padding=k_gaussian // 2 if padding else 0,
             bias=False,
         )
-        self.gaussian_filter.weight.data.copy_(torch.from_numpy(gaussian_2D[None, None, :]))
+        self.gaussian_filter.weight.data.copy_(
+            torch.from_numpy(gaussian_2D[None, None, :])
+        )
 
         # sobel
         sobel_2D = get_sobel_kernel(k_sobel)
@@ -77,15 +96,15 @@ class CannyFilter(nn.Module):
         # gaussian
 
         for c in range(C):
-            blurred[:, c: c + 1] = self.gaussian_filter(img[:, c: c + 1])
+            blurred[:, c : c + 1] = self.gaussian_filter(img[:, c : c + 1])
 
-            grad_x = grad_x + self.sobel_filter_x(blurred[:, c: c + 1])
-            grad_y = grad_y + self.sobel_filter_y(blurred[:, c: c + 1])
+            grad_x = grad_x + self.sobel_filter_x(blurred[:, c : c + 1])
+            grad_y = grad_y + self.sobel_filter_y(blurred[:, c : c + 1])
 
         # thick edges
 
         grad_x, grad_y = grad_x / C, grad_y / C
-        grad_magnitude = (grad_x ** 2 + grad_y ** 2) ** 0.5
+        grad_magnitude = (grad_x**2 + grad_y**2) ** 0.5
         grad_orientation = torch.atan(grad_y / grad_x)
         grad_orientation = grad_orientation * (360 / np.pi) + 180  # convert to degree
         grad_orientation = torch.round(grad_orientation / 45) * 45  # keep a split by 45

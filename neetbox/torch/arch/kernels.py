@@ -1,3 +1,5 @@
+from neetbox.utils import pkg
+assert pkg.is_installed('numpy', try_install_if_not=True)
 import numpy as np
 from neetbox.utils import pkg
 
