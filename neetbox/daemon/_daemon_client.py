@@ -138,12 +138,11 @@ def _update_thread():
         time.sleep(__TIME_UNIT_SEC)
         for _vname, _watched_fun in _watch_queue_dict.items():
             _watch_config = _watched_fun.others
-            _update_freq = _watch_config["freq"]
             if (
-                not _watch_config["initiative"] and _ctr % _update_freq == 0
+                not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0
             ):  # do update
 
-                def _so_update_and_ping_listen(_vname, _update_freq):
+                def _so_update_and_ping_listen(_vname, _watch_config):
                     t0 = time.perf_counter()
                     _the_value = __update_and_get(_vname)  # update value
                     for _listener_name, _listener_func in _listen_queue_dict[
@@ -152,14 +151,16 @@ def _update_thread():
                         _listener_func(_the_value)
                     t1 = time.perf_counter()
                     delta_t = t1 - t0
+                    _update_freq = _watch_config["freq"]
+                    _update_initiative = _watch_config["initiative"]
                     expected_time_limit = _update_freq * __TIME_UNIT_SEC
-                    if delta_t > expected_time_limit:
+                    if _update_initiative >= 0 and delta_t > expected_time_limit:
                         logger.warn(
                             f"Watched value {_vname} takes longer time({delta_t:.8f}s) to update than it was expected({expected_time_limit}s)."
                         )
 
                 Thread(
-                    target=_so_update_and_ping_listen, args=(_vname, _update_freq)
+                    target=_so_update_and_ping_listen, args=(_vname, _watch_config)
                 ).start()
 
 
