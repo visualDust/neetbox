@@ -4,9 +4,14 @@
 # URL:    https://gong.host
 # Date:   20230414
 
+
+from neetbox.utils import pkg
+from neetbox.utils.framing import get_frame_module_traceback
+module_name = get_frame_module_traceback().__name__
+assert pkg.is_installed('requests', try_install_if_not=True), f"{module_name} requires requests which is not installed"
+import requests
 from neetbox.config import get_module_level_config
 from neetbox.logging import logger
-import requests
 import time
 import json
 logger = logger("NEETBOX DAEMON API")

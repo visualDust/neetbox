@@ -4,7 +4,7 @@
 # URL:    https://gong.host
 # Date:   20230414
 
-from neetbox.daemon._daemon_client import connect_daemon, watch
+from neetbox.daemon._daemon_client import connect_daemon, watch, listen
 from neetbox.logging import logger
 from neetbox.utils import pkg
 import platform
@@ -15,7 +15,7 @@ import os
 def __attach_daemon(daemon_config):
     if not daemon_config["allowIpython"]:
         try:
-            __IPYTHON__
+            eval("__IPYTHON__")
         except NameError:
             pass
         else:
@@ -79,4 +79,4 @@ def _try_attach_daemon():
         __attach_daemon(_cfg)
 
 
-__all__ = ["watch", "_try_attach_daemon"]
+__all__ = ["watch", "listen", "_try_attach_daemon"]

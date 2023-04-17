@@ -5,6 +5,10 @@
 # Date:   20230414
 
 from neetbox.utils import pkg
+from neetbox.utils.framing import get_frame_module_traceback
+module_name = get_frame_module_traceback().__name__
+assert pkg.is_installed('flask', try_install_if_not=True), f"{module_name} requires flask which is not installed"
+from flask import Flask, json, abort, request
 from neetbox.config import get_module_level_config
 from threading import Thread
 import time
@@ -21,7 +25,6 @@ def daemon_process(daemon_config=None):
 
     setproctitle.setproctitle(__DAEMON_NAME)
     daemon_config = daemon_config or get_module_level_config()
-    from flask import Flask, json, abort, request
     api = Flask(__DAEMON_NAME)
 
     @api.route("/hello", methods=["GET"])

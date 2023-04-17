@@ -37,9 +37,8 @@ tqdm = ">=4"
 colorama = ">=0.3"
 toml = ">0.10"
 injector = ">=0.20"
-flask = "^2.2.3"
 setproctitle = "^1.3.2"
-requests = "^2.28.2"
+rich = "^13.3.4"
 
 [build-system]
 requires = ["poetry>=0.12"]
