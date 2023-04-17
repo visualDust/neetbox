@@ -5,12 +5,11 @@
 # Date:   20230413
 
 from neetbox.logging import logger
-from neetbox.utils.utils import *
+from neetbox.utils.format import *
 from typing import Optional, Union, Sequence
-import inspect
 import json
 import functools
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 
 class _RegEndpoint:
@@ -42,7 +41,7 @@ class Registry(dict):
         assert is_pure_ansi(name), "Registry name should not contain non-ansi char."
         if name in cls._registry_pool:
             return cls._registry_pool[name]
-        logger.log(f"Creating Registry for '{name}'")
+        # logger.log(f"Creating Registry for '{name}'")
         instance = dict.__new__(cls)
         cls._registry_pool[name] = instance
         return instance
@@ -197,3 +196,5 @@ class Registry(dict):
             separators=(",", ":"),
             default=str,
         )
+        
+    __repr__ = __str__

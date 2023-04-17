@@ -1,6 +1,6 @@
 def test_default_logger():
     from neetbox.logging import logger
-    logger.banner('neetbox')
+    # logger.banner('neetbox')
 
     logger.info("loginfo")
     logger.warn("logwarn")

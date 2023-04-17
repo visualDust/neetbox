@@ -4,8 +4,7 @@
 # URL:    https://gong.host
 # Date:   20230414
 
-from neetbox.daemon._daemon_client import connect_daemon, watch
-from neetbox.daemon._daemon import daemon_process
+from neetbox.daemon._daemon_client import connect_daemon, watch, listen
 from neetbox.logging import logger
 from neetbox.utils import pkg
 import platform
@@ -16,7 +15,7 @@ import os
 def __attach_daemon(daemon_config):
     if not daemon_config["allowIpython"]:
         try:
-            __IPYTHON__
+            eval("__IPYTHON__")
         except NameError:
             pass
         else:
@@ -30,20 +29,27 @@ def __attach_daemon(daemon_config):
         logger.log(
             f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon..."
         )
-        if platform.system() == "Windows": # running on windows
+        if platform.system() == "Windows":  # running on windows
             try:
-                assert pkg.is_installed('win32api', try_install_if_not='pywin32'), "Please install 'pywin32' before using NEETBOX daemon"
-                assert pkg.is_installed('win32serviceutil', try_install_if_not='pypiwin32'), "Please install 'pywin32' before using NEETBOX daemon"
+                assert pkg.is_installed(
+                    "win32api", try_install_if_not="pywin32"
+                ), "Please install 'pywin32' before using NEETBOX daemon"
+                assert pkg.is_installed(
+                    "win32serviceutil", try_install_if_not="pypiwin32"
+                ), "Please install 'pywin32' before using NEETBOX daemon"
                 from neetbox.daemon._win_service import installService
+
                 installService(cfg=daemon_config)
             except Exception as e:
                 logger.err(f"Could not install Windows service because {e}.")
                 return False
-        else: # not on windows 
+        else:  # not on windows
             pid = os.fork()
             if pid == 0:  # child process
-                pkg.is_installed('daemon', try_install_if_not='python-daemon')
+                pkg.is_installed("daemon", try_install_if_not="python-daemon")
                 import daemon
+                from neetbox.daemon._daemon import daemon_process
+
                 with daemon.DaemonContext():
                     daemon_process(daemon_config)  # create daemon
             elif pid < 0:
@@ -73,4 +79,4 @@ def _try_attach_daemon():
         __attach_daemon(_cfg)
 
 
-__all__ = ["watch", "_try_attach_daemon"]
+__all__ = ["watch", "listen", "_try_attach_daemon"]

@@ -5,7 +5,7 @@
 # Date:   20230413
 
 from neetbox.utils import pkg
-from neetbox.utils.utils import Singleton
+from neetbox.utils.mvc import Singleton
 from neetbox.logging import logger
 from neetbox.core import Registry
 

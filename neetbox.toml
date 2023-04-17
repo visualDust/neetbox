@@ -7,4 +7,5 @@ name = "FakeConfig"
 [integrations]
 
 [daemon]
-enable = false
+enable = true
+allowIpython = true

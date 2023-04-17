@@ -4,7 +4,15 @@
 # URL:    https://gong.host
 # Date:   20230414
 
+from neetbox.utils import pkg
+from neetbox.utils.framing import get_frame_module_traceback
+
+module_name = get_frame_module_traceback().__name__
+assert pkg.is_installed(
+    "requests", try_install_if_not=True
+), f"{module_name} requires requests which is not installed"
 import requests
+import collections
 import time
 import json
 from datetime import datetime
@@ -15,18 +23,24 @@ from neetbox.config import get_module_level_config
 from neetbox.logging import logger
 from neetbox.core import Registry
 
-_update_queue_dict = Registry("daemon")
+_watch_queue_dict = Registry("__daemon_watch")
+
+
+def __default_empty_dict():
+    return {}
+
+
+_listen_queue_dict = collections.defaultdict(__default_empty_dict)
 __TIME_UNIT_SEC = 0.1
 __TIME_CTR_MAX_CYCLE = 9999999
 _update_value_dict = {}
 
 
 class _WatchConfig(dict):
-    def __init__(self, name, freq, initiative=False, to_log=False):
+    def __init__(self, name, freq, initiative=False):
         self["name"] = name
         self["freq"] = freq
         self["initiative"] = initiative
-        self["to_log"] = to_log
 
 
 class _WatchedFun:
@@ -47,7 +61,7 @@ def __get(name):
 
 def __update_and_get(name, *args, **kwargs):
     global _update_value_dict
-    _watched_fun: _WatchedFun = _update_queue_dict[name]
+    _watched_fun: _WatchedFun = _watch_queue_dict[name]
     _watch_config = _watched_fun.others
     _the_value = _watched_fun(*args, **kwargs)
     _update_value_dict[name] = {
@@ -58,20 +72,20 @@ def __update_and_get(name, *args, **kwargs):
     return _the_value
 
 
-def _watch(func: Callable, name: str, freq: float, initiative=False, to_log=False):
+def _watch(func: Callable, name: str, freq: float, initiative=False, force=False):
     """Function decorator to let the daemon watch a value of the function
 
     Args:
         func (function): A function returns a tuple '(name,value)'. 'name' represents the name of the value.
     """
     name = name or func.__name__
-    _update_queue_dict._register(
+    _watch_queue_dict._register(
         name=name,
         what=_WatchedFun(
             func=func,
-            others=_WatchConfig(name, freq=freq, initiative=initiative, to_log=to_log),
+            others=_WatchConfig(name, freq=freq, initiative=initiative),
         ),
-        force=True,
+        force=force,
     )
     if (
         initiative
@@ -87,16 +101,33 @@ def _watch(func: Callable, name: str, freq: float, initiative=False, to_log=Fals
         return partial(__get, name)
 
 
-def watch(name=None, freq=None, initiative=False, to_log=False):
+def watch(name=None, freq=None, initiative=False, force=False):
     if not initiative:  # passively update
         freq = freq or get_module_level_config()["updateInterval"]
     else:
-        freq = __TIME_CTR_MAX_CYCLE + 1
-    return partial(_watch, name=name, freq=freq, initiative=initiative, to_log=to_log)
+        freq = -1
+    return partial(_watch, name=name, freq=freq, initiative=initiative, force=force)
 
 
-def listen(name=None):
-    pass  # todo
+def _listen(func: Callable, target: str, name: str = None, force=False):
+    name = name or func.__name__
+    if name in _listen_queue_dict[target]:
+        if not force:
+            logger.warn(
+                f"There is already a listener called '{name}' lisiting '{target}' If you want to overwrite, try to register with 'force=True'"
+            )
+            return func
+        else:
+            logger.warn(
+                f"There is already a listener called '{name}' lisiting '{target}', overwriting."
+            )
+    _listen_queue_dict[target][name] = func
+    logger.log(f"{name} is now lisiting to {target}.")
+    return func
+
+
+def listen(target: str, name: str = None, force=False):
+    return partial(_listen, target=target, name=name, force=force)
 
 
 def _update_thread():
@@ -105,12 +136,32 @@ def _update_thread():
     while True:
         _ctr = (_ctr + 1) % __TIME_CTR_MAX_CYCLE
         time.sleep(__TIME_UNIT_SEC)
-        for _vname, _watched_fun in _update_queue_dict.items():
+        for _vname, _watched_fun in _watch_queue_dict.items():
             _watch_config = _watched_fun.others
             if (
                 not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0
             ):  # do update
-                _the_value = __update_and_get(_vname)
+
+                def _so_update_and_ping_listen(_vname, _watch_config):
+                    t0 = time.perf_counter()
+                    _the_value = __update_and_get(_vname)  # update value
+                    for _listener_name, _listener_func in _listen_queue_dict[
+                        _vname
+                    ].items():
+                        _listener_func(_the_value)
+                    t1 = time.perf_counter()
+                    delta_t = t1 - t0
+                    _update_freq = _watch_config["freq"]
+                    _update_initiative = _watch_config["initiative"]
+                    expected_time_limit = _update_freq * __TIME_UNIT_SEC
+                    if _update_initiative >= 0 and delta_t > expected_time_limit:
+                        logger.warn(
+                            f"Watched value {_vname} takes longer time({delta_t:.8f}s) to update than it was expected({expected_time_limit}s)."
+                        )
+
+                Thread(
+                    target=_so_update_and_ping_listen, args=(_vname, _watch_config)
+                ).start()
 
 
 update_thread = Thread(target=_update_thread, daemon=True)
@@ -145,6 +196,8 @@ def connect_daemon(daemon_config):
         _api_name = "sync"
         _api_addr = f"{base_addr}/{_api_name}/{_display_name}"
         global _update_value_dict
+        _disconnect_flag = False
+        _disconnect_retries = 10
         while True:
             _ctr = (_ctr + 1) % 99999999
             _upload_interval = daemon_config["uploadInterval"]
@@ -154,7 +207,30 @@ def connect_daemon(daemon_config):
             # upload data
             _data = json.dumps(_update_value_dict, default=str)
             _headers = {"Content-Type": "application/json"}
-            requests.post(_api_addr, data=_data, headers=_headers)
+            try:
+                requests.post(_api_addr, data=_data, headers=_headers)
+            except Exception as e:
+                if _disconnect_flag:
+                    _disconnect_retries -= 1
+                    if not _disconnect_retries:
+                        logger.err(
+                            "Failed to reconnect to daemon after {10} retries, Trying to launch new daemon..."
+                        )
+                        from neetbox.daemon import _try_attach_daemon
+
+                        _try_attach_daemon()
+                        time.sleep(__TIME_UNIT_SEC)
+                    continue
+                logger.warn(
+                    f"Failed to upload data to daemon cause {e}. Waiting for reconnect..."
+                )
+                _disconnect_flag = True
+            else:
+                if not _disconnect_flag:
+                    continue
+                logger.ok(f"Succefully reconnected to daemon.")
+                _disconnect_flag = False
+                _disconnect_retries = 10
 
     upload_thread = Thread(target=_upload_thread, daemon=True)
     upload_thread.start()

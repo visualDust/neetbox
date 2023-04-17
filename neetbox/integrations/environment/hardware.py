@@ -1,19 +1,24 @@
+# gputil = ">=1.4"
+# psutil = ">=5.0"
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
 # URL:    https://gong.host
 # Date:   20230413
 
-import getpass
-import locale
-import platform
-import subprocess
-import time
-from threading import Thread
+
+from neetbox.utils import pkg
+from neetbox.utils.framing import get_frame_module_traceback
+module_name = get_frame_module_traceback().__name__
+assert pkg.is_installed('psutil', try_install_if_not=True), f"{module_name} requires psutil which is not installed"
+assert pkg.is_installed('GPUtil', try_install_if_not=True), f"{module_name} requires GPUtil which is not installed"
 import GPUtil
 import psutil
 from GPUtil import GPU
-from neetbox.utils.utils import Singleton
+
+import time
+from threading import Thread
+from neetbox.utils.mvc import Singleton
 from neetbox.daemon import watch
 
 
@@ -45,8 +50,7 @@ class _GPU_STAT(dict):
         _instance["driver"] = gpu.driver
         return _instance
 
-
-class Environment(dict, metaclass=Singleton):
+class _Hardware(dict, metaclass=Singleton):
     _update_interval = 1.0
     """
     The watcher may interacts with external libraries or devices
@@ -59,17 +63,6 @@ class Environment(dict, metaclass=Singleton):
     _update_interval: float = 1.0
 
     def __init__(self) -> None:
-        # system
-        self["username"] = getpass.getuser()
-        self["machine"] = platform.machine()
-        self["processor"] = (
-            "unknown" if len(platform.processor()) == 0 else platform.processor()
-        )
-        self["os_name"] = platform.system()
-        self["os_release"] = platform.version()
-        self["architecture"] = platform.architecture()
-        self["python_version"] = platform.python_version()
-        self["python_build"] = platform.python_build()
         # device
         self["cpus"] = [_CPU_STAT() for _ in range(psutil.cpu_count(logical=True))]
         self["gpus"] = [_GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()]
@@ -86,7 +79,7 @@ class Environment(dict, metaclass=Singleton):
         self._update_interval = intervel
         if not self._watcher or not self._watcher.is_alive():
 
-            def watcher_fun(env_instance: Environment, do_update_gpus: bool):
+            def watcher_fun(env_instance: _Hardware, do_update_gpus: bool):
                 while env_instance._do_watch:
                     cpu_percent = psutil.cpu_percent(percpu=True)
                     cpu_freq = psutil.cpu_freq(percpu=True)
@@ -110,38 +103,10 @@ class Environment(dict, metaclass=Singleton):
             )
             self._watcher.start()
 
-    def exec(self, command):
-        """
-        Run a terminal command.
-
-        Args:
-            command (str): The command need to run.
-
-        Returns:
-            int: The command return code.
-            str: The command running results.
-            err: The command error information.
-        """
-        p = subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        )
-        raw_output, raw_err = p.communicate()
-        rc = p.returncode
-        if self.platform_info["architecture"] == "32bit":
-            enc = "oem"
-        else:
-            enc = locale.getpreferredencoding()
-        output = raw_output.decode(enc)
-        err = raw_err.decode(enc)
-
-        return rc, output.strip(), err.strip()
-
-
 # singleton
-Environment = Environment()
-
+hardware = _Hardware()
 
 # watch updates in daemon
-@watch(name="env")
+@watch(name="hardware")
 def update_env_stat():
-    return dict(Environment)
+    return dict(hardware)

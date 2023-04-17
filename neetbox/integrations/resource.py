@@ -6,10 +6,10 @@
 
 from random import random
 import os
-import asyncio
+from neetbox.utils import pkg
+assert pkg.is_installed('numpy', try_install_if_not=True)
 import numpy as np
 import threading
-from neetbox.utils import pkg
 from neetbox.logging import logger
 from neetbox.integrations import engine
 from typing import Dict

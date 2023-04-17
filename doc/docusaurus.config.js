@@ -74,6 +74,11 @@ const config = {
             activeBasePath: '/docs/develop',
             label: 'Develop',
             position: 'left'
+          },
+          {
+            to: 'https://github.com/visualDust/neetbox',
+            label: 'Github',
+            position: 'right'
           }
         ],
       },
