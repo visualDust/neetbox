@@ -12,7 +12,9 @@ DEFAULT_CONFIG = {
     "name": None,
     "version": None,
     "logging": {"logdir": None},
-    "pipeline": {},
+    "pipeline": {
+        "updateInterval": 10,
+    },
     "integrations": {
         "environment": {
             "gpus": "auto",
@@ -24,10 +26,9 @@ DEFAULT_CONFIG = {
         "displayName": None,
         "server": "localhost",
         "port": 20202,
-        "updateInterval": 10,
         "uploadInterval": 10,
         "info": ["log", "status"],
-        "allowIpython":False
+        "allowIpython": False,
     },
 }
 WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()

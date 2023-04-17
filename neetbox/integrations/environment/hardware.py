@@ -19,7 +19,7 @@ from GPUtil import GPU
 import time
 from threading import Thread
 from neetbox.utils.mvc import Singleton
-from neetbox.daemon import watch
+from neetbox.pipeline import watch
 
 
 class _CPU_STAT(dict):
