@@ -69,6 +69,23 @@ def __update_and_get(name, *args, **kwargs):
         "timestamp": datetime.timestamp(datetime.now()),
         "interval": (_watch_config["freq"] * __TIME_UNIT_SEC),
     }
+
+    def _so_update_and_ping_listen(_name, _value, _watch_config):
+        t0 = time.perf_counter()
+        for _listener_name, _listener_func in _listen_queue_dict[_name].items():
+            _listener_func(_value)
+        t1 = time.perf_counter()
+        delta_t = t1 - t0
+        _update_freq = _watch_config["freq"]
+        expected_time_limit = _update_freq * __TIME_UNIT_SEC
+        if not _watch_config["initiative"] >= 0 and delta_t > expected_time_limit:
+            logger.warn(
+                f"Watched value {_name} takes longer time({delta_t:.8f}s) to update than it was expected({expected_time_limit}s)."
+            )
+
+    Thread(
+        target=_so_update_and_ping_listen, args=(name, _the_value, _watch_config)
+    ).start()
     return _the_value
 
 
@@ -141,27 +158,7 @@ def _update_thread():
             if (
                 not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0
             ):  # do update
-
-                def _so_update_and_ping_listen(_vname, _watch_config):
-                    t0 = time.perf_counter()
-                    _the_value = __update_and_get(_vname)  # update value
-                    for _listener_name, _listener_func in _listen_queue_dict[
-                        _vname
-                    ].items():
-                        _listener_func(_the_value)
-                    t1 = time.perf_counter()
-                    delta_t = t1 - t0
-                    _update_freq = _watch_config["freq"]
-                    _update_initiative = _watch_config["initiative"]
-                    expected_time_limit = _update_freq * __TIME_UNIT_SEC
-                    if _update_initiative >= 0 and delta_t > expected_time_limit:
-                        logger.warn(
-                            f"Watched value {_vname} takes longer time({delta_t:.8f}s) to update than it was expected({expected_time_limit}s)."
-                        )
-
-                Thread(
-                    target=_so_update_and_ping_listen, args=(_vname, _watch_config)
-                ).start()
+                _the_value = __update_and_get(_vname)
 
 
 update_thread = Thread(target=_update_thread, daemon=True)
