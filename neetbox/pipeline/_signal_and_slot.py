@@ -120,7 +120,12 @@ def watch(name=None, freq=None, initiative=False, force=False):
 def _listen(func: Callable, target: str, name: str = None, force=False):
     name = name or func.__name__
     if type(target) is not str:
-        target = target.__name__
+        if type(target) is partial:
+            if target.func in [__update_and_get, __get]:
+                target = target.args[0]
+        else:
+            target = target.__name__
+
     if name in _listen_queue_dict[target]:
         if not force:
             logger.warn(

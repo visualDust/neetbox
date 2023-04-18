@@ -10,3 +10,6 @@ from neetbox.logging import logger
 from neetbox.core import Registry
 
 pipes = Registry("__pipe")
+
+class Pipe():
+    pass
