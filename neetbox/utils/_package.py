@@ -17,9 +17,9 @@ class PipPackageHealper(metaclass=Singleton):
             if not retry:
                 error_str = f"Bad Input"
                 raise ValueError(error_str)
-            choice = input(
-                f"{caller_name} want to install {package} via pip. Allow? y/[n]:"
-            )
+            print(f"{caller_name} want to install {package} via pip.")
+            choice = input("Make your choice: [y]/n")
+            choice = choice or 'y'
             if choice in ["y", "yes"]:  # user choose to install
                 print(f"installing {package} via pip...")
                 pip.main(["install", package])

@@ -4,7 +4,7 @@
 # URL:    https://gong.host
 # Date:   20230414
 
-from neetbox.daemon._daemon_client import connect_daemon, watch, listen
+from neetbox.daemon._daemon_client import connect_daemon
 from neetbox.logging import logger
 from neetbox.utils import pkg
 import platform

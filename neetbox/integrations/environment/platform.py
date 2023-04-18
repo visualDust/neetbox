@@ -8,7 +8,7 @@ import getpass
 import platform
 import locale
 import subprocess
-from neetbox.daemon import watch
+from neetbox.pipeline import watch
 from neetbox.utils.mvc import Singleton
 
 
