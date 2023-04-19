@@ -16,6 +16,8 @@ import functools
 import pathlib
 from random import randint
 from typing import *
+from rich import print as rprint
+from rich.panel import Panel
 
 
 class LogLevel(Enum):
@@ -305,19 +307,19 @@ class Logger:
                 _whom += id_seq[i]
 
         # converting args into a single string
-        _message = ""
+        _pure_str_message = ""
         for msg in content:
-            _message += str(msg) + " "
+            _pure_str_message += str(msg) + " "
 
         # perform log
         if into_stdout:
-            print(
+            rprint(
                 _prefix
                 + _datetime
                 + _style.split_char_cmd * min(len(_datetime), 1)
-                + colored_by_style(_whom, style=_style)
-                + _style.split_char_cmd * min(len(_whom), 1)
-                + _message
+                + styled_text(_whom, style=_style)
+                + _style.split_char_cmd * min(len(_whom), 1),
+                _pure_str_message,
             )
         if into_file and self.file_writer:
             self.file_writer.write(
@@ -326,7 +328,7 @@ class Logger:
                 + _style.split_char_txt * min(len(_datetime), 1)
                 + _whom
                 + _style.split_char_txt * min(len(_whom), 1)
-                + _message
+                + _pure_str_message
                 + "\n"
             )
         return self
@@ -335,7 +337,7 @@ class Logger:
         if _global_log_level >= LogLevel.INFO:
             self.log(
                 *message,
-                prefix=f"[{colored(flag, AnsiColor.GREEN)}]",
+                prefix=f"[{colored_text(flag, 'green')}]",
                 into_file=False,
                 traceback=3,
             )
@@ -346,7 +348,7 @@ class Logger:
         if _global_log_level >= LogLevel.DEBUG:
             self.log(
                 *message,
-                prefix=f"[{colored(flag, AnsiColor.CYAN)}]",
+                prefix=f"[{colored_text(flag, 'cyan')}]",
                 into_file=False,
                 traceback=3,
             )
@@ -357,7 +359,7 @@ class Logger:
         if _global_log_level >= LogLevel.INFO:
             self.log(
                 *message,
-                prefix=f"[{colored(flag, AnsiColor.WHITE)}]",
+                prefix=f"[{colored_text(flag, 'white')}]",
                 into_file=False,
                 traceback=3,
             )
@@ -368,7 +370,7 @@ class Logger:
         if _global_log_level >= LogLevel.WARNING:
             self.log(
                 *message,
-                prefix=f"[{colored(flag, AnsiColor.YELLOW)}]",
+                prefix=f"[{colored_text(flag, 'yellow')}]",
                 into_file=False,
                 traceback=3,
             )
@@ -381,7 +383,7 @@ class Logger:
         if _global_log_level >= LogLevel.ERROR:
             self.log(
                 str(err),
-                prefix=f"[{colored(flag,AnsiColor.RED)}]",
+                prefix=f"[{colored_text(flag,'red')}]",
                 into_file=False,
                 traceback=3,
             )
@@ -493,7 +495,8 @@ class Logger:
                 else:
                     font = file[0]
         f = Figlet(font)
-        self.log(f.renderText(text), with_datetime=False, with_identifier=False)
+        rendered_text = f.renderText(text)
+        rprint(Panel.fit(f"{rendered_text}", border_style="green"))
         return self
 
     def skip_lines(self, line_cnt=1):

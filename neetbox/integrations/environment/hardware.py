@@ -1,5 +1,3 @@
-# gputil = ">=1.4"
-# psutil = ">=5.0"
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
