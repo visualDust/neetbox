@@ -7,16 +7,31 @@
 from random import random
 import os
 from neetbox.utils import pkg
-assert pkg.is_installed('numpy', try_install_if_not=True)
+
+assert pkg.is_installed("numpy", try_install_if_not=True)
 import numpy as np
 import threading
 from neetbox.logging import logger
 from neetbox.integrations import engine
+from typing import Iterable
 from typing import Dict
 import pathlib
-import urllib.request
-from tqdm import tqdm
+import signal
+from functools import partial
+from urllib.request import urlopen
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 from typing import List, Union, Dict, Any
+from rich.progress import track
+from rich.progress import (
+    BarColumn,
+    DownloadColumn,
+    Progress,
+    TaskID,
+    TextColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+)
 
 
 _loader_pool: Dict[
@@ -72,12 +87,12 @@ class ResourceLoader:
             if not path.is_file():
                 return False
             for file_type in self._file_types:
-                if path.match('*.' + file_type):
+                if path.match("*." + file_type):
                     return True
             return False
 
         def perform_scan():
-            glob_str = '**/*' if self._scan_sub_dirs else "*"
+            glob_str = "**/*" if self._scan_sub_dirs else "*"
             if not verbose:  # do not output
                 self.file_path_list = [
                     str(path)
@@ -86,7 +101,7 @@ class ResourceLoader:
                 ]
             else:
                 self.file_path_list = []
-                for path in tqdm(pathlib.Path(self.path).glob(glob_str)):
+                for path in pathlib.Path(self.path).glob(glob_str):
                     if can_match(path):
                         self.file_path_list.append(path)
             self._ready = True
@@ -114,12 +129,19 @@ class ResourceLoader:
 
 
 class ImagesLoader(ResourceLoader):
-    
-    def __init__(self, folder, file_types=["png", "jpg"], sub_dirs=True, async_scan=False, verbose=False):
-        pkg.is_installed('PIL', try_install_if_not='pillow')
+    def __init__(
+        self,
+        folder,
+        file_types=["png", "jpg"],
+        sub_dirs=True,
+        async_scan=False,
+        verbose=False,
+    ):
+        pkg.is_installed("PIL", try_install_if_not="pillow")
         from PIL import Image
+
         super().__init__(folder, file_types, sub_dirs, async_scan, verbose)
-        
+
     def get_random_image(self):
         rand_img_path = self.file_path_list[int(random() * len(self.file_path_list))]
         image = Image.open(rand_img_path).convert("RGB")
@@ -161,9 +183,7 @@ class ImagesLoader(ResourceLoader):
 def download(
     urls: Union[str, List[str], Dict[str, str]],
     filenames: Union[str, List[str]] = None,
-    overwrite=True,
-    retry=3,
-    verbose=True,
+    max_workers=4,
 ):
     """download both online and local files from urls
 
@@ -175,11 +195,42 @@ def download(
         overwrite Bool: whether to skip exist files. Default to True.
         retry (int, optional): retries when error occures. Defaults to 3.
         verbose (bool, optional): tell what happening in output. Defaults to True.
-
-    Returns:
-        _type_: _description_
     """
+    progress = Progress(
+        TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
+        BarColumn(bar_width=None),
+        "[progress.percentage]{task.percentage:>3.1f}%",
+        "•",
+        DownloadColumn(),
+        "•",
+        TransferSpeedColumn(),
+        "•",
+        TimeRemainingColumn(),
+    )
+
+    done_event = Event()
+
+    def handle_sigint(signum, frame):
+        done_event.set()
+
+    signal.signal(signal.SIGINT, handle_sigint)
+
+    def copy_url(task_id: TaskID, url: str, path: str) -> None:
+        """Copy data from a url to a local file."""
+        response = urlopen(url)
+        # This will break if the response doesn't contain content length
+        progress.update(task_id, total=int(response.info()["Content-length"]))
+        with open(path, "wb") as dest_file:
+            progress.start_task(task_id)
+            for data in iter(partial(response.read, 32768), b""):
+                dest_file.write(data)
+                progress.update(task_id, advance=len(data))
+                if done_event.is_set():
+                    return
+        logger.log(f"Downloaded {path}.")
+
     assert type(urls) in [str, list, dict], "unkown format of url"
+
     if type(urls) is str:
         assert (
             filenames is None
@@ -207,45 +258,10 @@ def download(
 
     logger.log(f"Downloading {len(urls)} file(s)...")
 
-    if verbose:
-        outer_pbar = tqdm(total=len(urls), desc=f"Overall process")
-
-    _reporthook = None
-    _results = []
-    for fname, furl in tqdm(urls.items()):
-        if fname and os.path.isfile(fname):
-            if not overwrite:
-                _results.append((fname,None))
-                logger.log(
-                    f"File {fname} already exists. If you want to redownload it, try to pass 'overwrite=True'"
-                )
-                continue
-        if verbose:
-            inner_pbar = tqdm(total=100, leave=False, desc=f"Currently downloading")
-
-            def reporthook(p1, p2, p3):
-                inner_pbar.total = p3
-                inner_pbar.n = p1 * p2
-                inner_pbar.refresh()
-
-            _reporthook = reporthook
-            outer_pbar.update(1)
-        retry = 1 if not retry else retry
-        while retry:
-            try:
-                res = urllib.request.urlretrieve(
-                    url=furl, filename=fname, reporthook=_reporthook
-                )
-                _results.append(res)
-                break
-            except:
-                retry -= 1
-                logger.err(f"Download interrupt. {retry} retry(s) remaining.")
-                if not retry:
-                    raise RuntimeError(f"Download failed after retries")
-    results = [fname for fname, reqmsg in _results]
-    if not len(results):
-        results = None
-    if len(results) == 1:
-        results = results[0]
-    return results
+    with progress:
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            for fname, url in urls.items():
+                filename = url.split("/")[-1]
+                dest_path = os.path.join(fname)
+                task_id = progress.add_task("download", filename=filename, start=False)
+                pool.submit(copy_url, task_id, url, dest_path)
