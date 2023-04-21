@@ -27,20 +27,29 @@ def connect_daemon(daemon_config):
     _display_name = _display_name or _launch_config["name"]
 
     logger.log(
-        f"Connecting daemon at {daemon_config['server']}:{daemon_config['port']} ..."
+        f"Connecting to daemon at {daemon_config['server']}:{daemon_config['port']} ..."
     )
     _daemon_address = f"{daemon_config['server']}:{daemon_config['port']}"
     base_addr = f"http://{_daemon_address}"
 
     # check if daemon is alive
     def _check_daemon_alive():
+        no_proxy = {
+            "http": None, 
+            "https": None
+        }
+
         _api_name = "hello"
         _api_addr = f"{base_addr}/{_api_name}"
-        r = requests.get(_api_addr)
+        r = requests.get(_api_addr, proxies=no_proxy)
+        if not r.ok:
+            raise IOError(f"Daemon at {_api_addr} is not alive. ({r.status_code}")
+        logger.log(f'daemon response from {_api_addr} is {r} ({r.status_code})')
 
     try:
         _check_daemon_alive()
     except Exception as e:
+        logger.err(e)
         return False
 
     def _upload_thread():
