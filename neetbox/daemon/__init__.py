@@ -5,11 +5,14 @@
 # Date:   20230414
 
 from neetbox.daemon._daemon_client import connect_daemon
+from neetbox.daemon.daemonable_process import DaemonableProcess
 from neetbox.logging import logger
 from neetbox.utils import pkg
+from neetbox.pipeline import watch, listen
 import platform
 import time
 import os
+import json
 
 
 def __attach_daemon(daemon_config):
@@ -25,50 +28,43 @@ def __attach_daemon(daemon_config):
             )
             return False  # ignore if debugging in ipython
     _online_status = connect_daemon(daemon_config)  # try to connect daemon
+    logger.log('daemon connection status: ' + str(_online_status))
     if not _online_status:  # if no daemon online
         logger.log(
             f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon..."
         )
-        if platform.system() == "Windows":  # running on windows
-            try:
-                assert pkg.is_installed(
-                    "win32api", try_install_if_not="pywin32"
-                ), "Please install 'pywin32' before using NEETBOX daemon"
-                assert pkg.is_installed(
-                    "win32serviceutil", try_install_if_not="pypiwin32"
-                ), "Please install 'pywin32' before using NEETBOX daemon"
-                from neetbox.daemon._win_service import installService
 
-                installService(cfg=daemon_config)
-            except Exception as e:
-                logger.err(f"Could not install Windows service because {e}.")
-                return False
-        else:  # not on windows
-            pid = os.fork()
-            if pid == 0:  # child process
-                pkg.is_installed("daemon", try_install_if_not="python-daemon")
-                import daemon
-                from neetbox.daemon._daemon import daemon_process
+        popen = DaemonableProcess(
+            target='neetbox.daemon._daemon_launcher',
+            args=['--config', json.dumps(daemon_config)],
+            mode='detached',
+            redirect_stdout=None,
+            env_append={'NEETBOX_DAEMON_PROCESS': '1'},
+        ).start()
 
-                with daemon.DaemonContext():
-                    daemon_process(daemon_config)  # create daemon
-            elif pid < 0:
-                logger.err(
-                    "Faild to spawn daemon process using os.fork. NEETBOX daemon will not start."
-                )
-                return False
         time.sleep(1)
-        _retry = 3
-        while not connect_daemon(daemon_config):  # try connect daemon
-            logger.warn(f"Could not connect to the daemon. {_retry} retries remaining.")
-            time.sleep(1)
-            _retry -= 1
-            if not _retry:
-                logger.err(
-                    "Connect daemon faild after 3 retries, daemon connector won't start."
-                )
-                return False
-        return True
+        
+        _retry_timeout = 10
+        _time_begin = time.perf_counter()
+
+        logger.log('Created daemon process, trying to connect to daemon...')
+        while time.perf_counter() - _time_begin < 10:  # try connect daemon
+            if connect_daemon(daemon_config):
+                return True
+            else:
+                exit_code = popen.poll()
+                if exit_code is not None:
+                    logger.err(
+                        f"Daemon process exited unexpectedly with exit code {exit_code}."
+                    )
+                    return False
+            
+                time.sleep(0.5)
+
+        logger.err(
+            f"Failed to connect to daemon after {_retry_timeout}s, daemon connector won't start."
+        )
+        return False
 
 
 def _try_attach_daemon():

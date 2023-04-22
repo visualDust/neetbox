@@ -40,7 +40,7 @@ rich = "^13.3.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.0.0"
-requests = "^2.28.2"
+httpx = "^0.24.0"
 flask = "^2.2.3"
 
 

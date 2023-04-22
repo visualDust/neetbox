@@ -70,6 +70,8 @@ def init(path=None, load=False, **kwargs) -> bool:
         logger.err(f"Failed to load config from {config_file_path}: {e}")
         return False
 
-
-if os.path.isfile(config_file_name):  # if in a workspace
+is_in_daemon_process = 'NEETBOX_DAEMON_PROCESS' in os.environ and os.environ['NEETBOX_DAEMON_PROCESS'] == '1'
+print('prevent_daemon_loading =', is_in_daemon_process)
+if os.path.isfile(config_file_name) and not is_in_daemon_process:  # if in a workspace
     init(load=True)
+
