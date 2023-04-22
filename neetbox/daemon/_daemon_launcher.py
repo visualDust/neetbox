@@ -1,5 +1,4 @@
-print('========= If you see this on Windows, your subprocess is running with consoles merged =========')
-print('========= This happens when your DaemonableProcess runs in attached mode. =========')
+print('========= Daemon Launcher =========')
 
 import os
 import sys
@@ -8,10 +7,8 @@ import sys
 
 import json
 import argparse
-print('imported external packages')
 
 from neetbox.daemon._daemon import daemon_process
-print('imported neetbox.daemon')
 
 def run():
     if len(sys.argv) <= 1:

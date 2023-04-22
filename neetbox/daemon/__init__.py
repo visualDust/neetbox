@@ -45,12 +45,13 @@ def __attach_daemon(daemon_config):
         time.sleep(1)
         _retry = 3
         while not connect_daemon(daemon_config):  # try connect daemon
-            logger.warn(f"Could not connect to the daemon. {_retry} retries remaining.")
+            logger.warn(
+                f"Could not connect to the daemon. {_retry} retries remaining.")
             time.sleep(1)
             _retry -= 1
             if not _retry:
                 logger.err(
-                    "Connect daemon faild after 3 retries, daemon connector won't start."
+                    "Failed to connect to daemon after 3 retries, daemon connector won't start."
                 )
                 return False
         return True
