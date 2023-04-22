@@ -84,7 +84,8 @@ class DaemonableProcess:
                     stdin=self.__stdin,
                     stdout=self.__redirect_stdout,
                     stderr=self.__redirect_stderr,
-                    env=self.__env
+                    env=self.__env,
+                    start_new_session=self.mode == 'detached',
                 )
 
                 if self.mode == 'attached':
@@ -92,6 +93,8 @@ class DaemonableProcess:
                     atexit.register(lambda: popen.terminate())
 
                 print(popen)
+            
+            return popen
 
     def terminate(self):
         pass

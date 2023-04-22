@@ -33,6 +33,15 @@ def __attach_daemon(daemon_config):
         logger.log(
             f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon..."
         )
+
+        popen = DaemonableProcess(
+            target='neetbox.daemon._daemon_launcher',
+            args=['--config', json.dumps(daemon_config)],
+            mode='detached',
+            redirect_stdout=None,
+            env_append={'NEETBOX_DAEMON_PROCESS': '1'},
+        ).start()
+
         time.sleep(1)
         _retry = 3
         while not connect_daemon(daemon_config):  # try connect daemon
