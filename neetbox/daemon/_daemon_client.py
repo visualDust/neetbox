@@ -23,6 +23,8 @@ assert pkg.is_installed(
 
 __TIME_UNIT_SEC = 0.1
 
+__upload_thread: Thread = None
+
 
 def _upload_thread(daemon_config, base_addr, display_name):
     _ctr = 0
@@ -98,10 +100,12 @@ def connect_daemon(daemon_config):
         logger.err(e)
         return False
 
-    upload_thread = Thread(target=_upload_thread,
-                           daemon=True,
-                           args=[daemon_config, base_addr, _display_name]
-                           )
-    upload_thread.start()
+    global __upload_thread
+    if __upload_thread is None or not __upload_thread.is_alive():
+        __upload_thread = Thread(target=_upload_thread,
+                                daemon=True,
+                                args=[daemon_config, base_addr, _display_name]
+                                )
+        __upload_thread.start()
 
     return True

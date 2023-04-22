@@ -9,6 +9,7 @@ import json
 import argparse
 
 from neetbox.daemon._daemon import daemon_process
+# from neetbox.daemon._local_http_client import _local_http_client
 
 def run():
     if len(sys.argv) <= 1:

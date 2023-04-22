@@ -43,18 +43,28 @@ def __attach_daemon(daemon_config):
         ).start()
 
         time.sleep(1)
-        _retry = 3
-        while not connect_daemon(daemon_config):  # try connect daemon
-            logger.warn(
-                f"Could not connect to the daemon. {_retry} retries remaining.")
-            time.sleep(1)
-            _retry -= 1
-            if not _retry:
-                logger.err(
-                    "Failed to connect to daemon after 3 retries, daemon connector won't start."
-                )
-                return False
-        return True
+        
+        _retry_timeout = 10
+        _time_begin = time.perf_counter()
+
+        logger.log('Created daemon process, trying to connect to daemon...')
+        while time.perf_counter() - _time_begin < 10:  # try connect daemon
+            if connect_daemon(daemon_config):
+                return True
+            else:
+                exit_code = popen.poll()
+                if exit_code is not None:
+                    logger.err(
+                        f"Daemon process exited unexpectedly with exit code {exit_code}."
+                    )
+                    return False
+            
+                time.sleep(0.5)
+
+        logger.err(
+            f"Failed to connect to daemon after {_retry_timeout}s, daemon connector won't start."
+        )
+        return False
 
 
 def _try_attach_daemon():
