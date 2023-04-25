@@ -458,7 +458,6 @@ class Logger:
     def banner(self, text, font: Optional[str] = None):
         from neetbox.utils import pkg
 
-        assert pkg.is_installed("pyfiglet", try_install_if_not=True)
         from pyfiglet import Figlet, FigletFont
 
         builtin_font_list = [

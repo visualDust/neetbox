@@ -8,7 +8,6 @@ from random import random
 import os
 from neetbox.utils import pkg
 
-assert pkg.is_installed("numpy", try_install_if_not=True)
 import numpy as np
 import threading
 from neetbox.logging import logger
