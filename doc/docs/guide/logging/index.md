@@ -105,4 +105,4 @@ output:
 2023-03-18-14:44:22 > some message 
 ```
 
-Looking for advanced format control? See [advanced logging format](./advanced-logging-format.md)
+Looking for advanced format control? See [advanced logging format](./config-logger.md)
