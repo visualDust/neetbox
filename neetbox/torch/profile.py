@@ -5,9 +5,6 @@
 # Date:   20230315
 
 from neetbox.utils import pkg
-from neetbox.utils.framing import get_frame_module_traceback
-module_name = get_frame_module_traceback().__name__
-assert pkg.is_installed('torch', try_install_if_not=False), f"{module_name} requires torch which is not installed."
 import time
 from tqdm import tqdm
 import torch

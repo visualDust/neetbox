@@ -1,7 +1,5 @@
 from neetbox.utils import pkg
-assert pkg.is_installed('numpy', try_install_if_not=True)
 import numpy as np
-from neetbox.utils import pkg
 
 
 def get_gaussian_kernel(k=3, mu=0, sigma=1, normalize=True):
