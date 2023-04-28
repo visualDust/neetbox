@@ -71,7 +71,7 @@ def init(path=None, load=False, **kwargs) -> bool:
         return False
 
 is_in_daemon_process = 'NEETBOX_DAEMON_PROCESS' in os.environ and os.environ['NEETBOX_DAEMON_PROCESS'] == '1'
-print('prevent_daemon_loading =', is_in_daemon_process)
+# print('prevent_daemon_loading =', is_in_daemon_process)
 if os.path.isfile(config_file_name) and not is_in_daemon_process:  # if in a workspace
     init(load=True)
 

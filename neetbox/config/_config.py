@@ -23,12 +23,16 @@ DEFAULT_CONFIG = {
     },
     "daemon": {
         "enable": True,
-        "displayName": None,
+        "allowIpython": False,
         "server": "localhost",
         "port": 20202,
+        "mode": "detached",
+        "displayName": None,
         "uploadInterval": 10,
-        "info": ["log", "status"],
-        "allowIpython": False,
+        "mute": True,
+        "launcher":{
+            "port": 20202,
+        }
     },
 }
 WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()
