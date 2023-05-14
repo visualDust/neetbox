@@ -10,16 +10,7 @@ from neetbox.config import get_module_level_config
 from threading import Thread
 import json
 import time
-import httpx
-from neetbox.utils import pkg
-from neetbox.utils.framing import get_frame_module_traceback
-
 from neetbox.daemon._local_http_client import _local_http_client
-
-module_name = get_frame_module_traceback().__name__
-assert pkg.is_installed(
-    "httpx", try_install_if_not=True
-), f"{module_name} requires httpx which is not installed"
 
 __TIME_UNIT_SEC = 0.1
 
@@ -43,11 +34,9 @@ def _upload_thread(daemon_config, base_addr, display_name):
         _data = json.dumps(_update_value_dict, default=str)
         _headers = {"Content-Type": "application/json"}
         try:
-            resp = _local_http_client.post(
-                _api_addr, data=_data, headers=_headers)
+            resp = _local_http_client.post(_api_addr, data=_data, headers=_headers)
             if resp.is_error:
-                raise IOError(
-                    f"Failed to upload data to daemon. ({resp.status_code})")
+                raise IOError(f"Failed to upload data to daemon. ({resp.status_code})")
         except Exception as e:
             if _disconnect_flag:
                 _disconnect_retries -= 1
@@ -89,10 +78,8 @@ def connect_daemon(daemon_config):
         _api_addr = f"{base_addr}/{_api_name}"
         r = _local_http_client.get(_api_addr)
         if r.is_error:
-            raise IOError(
-                f"Daemon at {_api_addr} is not alive. ({r.status_code})")
-        logger.log(
-            f'daemon response from {_api_addr} is {r} ({r.status_code})')
+            raise IOError(f"Daemon at {_api_addr} is not alive. ({r.status_code})")
+        logger.log(f"daemon response from {_api_addr} is {r} ({r.status_code})")
 
     try:
         _check_daemon_alive()
@@ -102,10 +89,11 @@ def connect_daemon(daemon_config):
 
     global __upload_thread
     if __upload_thread is None or not __upload_thread.is_alive():
-        __upload_thread = Thread(target=_upload_thread,
-                                daemon=True,
-                                args=[daemon_config, base_addr, _display_name]
-                                )
+        __upload_thread = Thread(
+            target=_upload_thread,
+            daemon=True,
+            args=[daemon_config, base_addr, _display_name],
+        )
         __upload_thread.start()
 
     return True
