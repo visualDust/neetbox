@@ -32,11 +32,13 @@ classifiers = [
 # default = true
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4"
+python = ">=3.9,<3.13"
 toml = ">0.10"
 injector = ">=0.20"
 setproctitle = ">=1.0"
 rich = ">=13"
+numpy = "^1.26.0"
+pillow = "^10.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.0.0"
