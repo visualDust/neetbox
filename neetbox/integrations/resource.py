@@ -31,7 +31,7 @@ from rich.progress import (
     TimeRemainingColumn,
     TransferSpeedColumn,
 )
-
+from PIL import Image
 
 _loader_pool: Dict[
     str, "ResourceLoader"
@@ -137,7 +137,6 @@ class ImagesLoader(ResourceLoader):
         verbose=False,
     ):
         pkg.is_installed("PIL", try_install_if_not="pillow")
-        from PIL import Image
 
         super().__init__(folder, file_types, sub_dirs, async_scan, verbose)
 
