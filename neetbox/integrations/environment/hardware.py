@@ -7,17 +7,23 @@
 
 from neetbox.utils import pkg
 from neetbox.utils.framing import get_frame_module_traceback
+
 module_name = get_frame_module_traceback().__name__
-assert pkg.is_installed('psutil', try_install_if_not=True), f"{module_name} requires psutil which is not installed"
-assert pkg.is_installed('GPUtil', try_install_if_not=True), f"{module_name} requires GPUtil which is not installed"
+assert pkg.is_installed(
+    "psutil", try_install_if_not=True
+), f"{module_name} requires psutil which is not installed"
+assert pkg.is_installed(
+    "GPUtil", try_install_if_not=True
+), f"{module_name} requires GPUtil which is not installed"
+import time
+from threading import Thread
+
 import GPUtil
 import psutil
 from GPUtil import GPU
 
-import time
-from threading import Thread
-from neetbox.utils.mvc import Singleton
 from neetbox.pipeline import watch
+from neetbox.utils.mvc import Singleton
 
 
 class _CPU_STAT(dict):
@@ -47,6 +53,7 @@ class _GPU_STAT(dict):
         _instance["temperature"] = gpu.temperature
         _instance["driver"] = gpu.driver
         return _instance
+
 
 class _Hardware(dict, metaclass=Singleton):
     _update_interval = 1.0
@@ -101,8 +108,10 @@ class _Hardware(dict, metaclass=Singleton):
             )
             self._watcher.start()
 
+
 # singleton
 hardware = _Hardware()
+
 
 # watch updates in daemon
 @watch(name="hardware")

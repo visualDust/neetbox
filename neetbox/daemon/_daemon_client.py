@@ -4,13 +4,14 @@
 # URL:    https://gong.host
 # Date:   20230414
 
-from neetbox.pipeline._signal_and_slot import _update_value_dict
-from neetbox.logging import logger
-from neetbox.config import get_module_level_config
-from threading import Thread
 import json
 import time
+from threading import Thread
+
+from neetbox.config import get_module_level_config
 from neetbox.daemon._local_http_client import _local_http_client
+from neetbox.logging import logger
+from neetbox.pipeline._signal_and_slot import _update_value_dict
 
 __TIME_UNIT_SEC = 0.1
 

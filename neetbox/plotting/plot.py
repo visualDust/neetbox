@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 
+
 def draw_split_y_plot(x, y, split_range=[(0, 5), (10, 30)]):
     """
     画 y 轴的断开图线
@@ -39,14 +40,22 @@ def draw_split_y_plot(x, y, split_range=[(0, 5), (10, 30)]):
     # Finally, we need to disable clipping.
 
     # draw split line
-    d = .5  # proportion of vertical to horizontal extent of the slanted line
-    kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
-                  linestyle="none", color='k', mec='k', mew=1, clip_on=False)
+    d = 0.5  # proportion of vertical to horizontal extent of the slanted line
+    kwargs = dict(
+        marker=[(-1, -d), (1, d)],
+        markersize=12,
+        linestyle="none",
+        color="k",
+        mec="k",
+        mew=1,
+        clip_on=False,
+    )
     ax1.plot([0, 1], [0, 0], transform=ax1.transAxes, **kwargs)
     ax2.plot([0, 1], [1, 1], transform=ax2.transAxes, **kwargs)
     ax3.plot([1, 0], [0, 1], transform=ax2.transAxes, **kwargs)
 
     plt.show()
+
 
 def draw_split_x_plot(x, y, split_range=[(0, 5), (10, 30), (50, 100)], is_show=False):
     """
@@ -75,19 +84,26 @@ def draw_split_x_plot(x, y, split_range=[(0, 5), (10, 30), (50, 100)], is_show=F
     ax3.set_xlim(part3[0], part3[1])  # most of the data
 
     # hide the spines between ax and ax2
-    ax1.spines['right'].set_visible(False)
-    ax2.spines['left'].set_visible(False)
-    ax2.spines['right'].set_visible(False)
-    ax3.spines['left'].set_visible(False)
+    ax1.spines["right"].set_visible(False)
+    ax2.spines["left"].set_visible(False)
+    ax2.spines["right"].set_visible(False)
+    ax3.spines["left"].set_visible(False)
     ax1.yaxis.tick_left()
     ax2.yaxis.tick_right()
     ax2.tick_params(right=False)
     ax3.tick_params(left=False)
 
     # draw split line
-    d = .5  # proportion of vertical to horizontal extent of the slanted line
-    kwargs = dict(marker=[(-1, -d), (1, d)], markersize=12,
-                  linestyle="none", color='k', mec='k', mew=1, clip_on=False)
+    d = 0.5  # proportion of vertical to horizontal extent of the slanted line
+    kwargs = dict(
+        marker=[(-1, -d), (1, d)],
+        markersize=12,
+        linestyle="none",
+        color="k",
+        mec="k",
+        mew=1,
+        clip_on=False,
+    )
     ax1.plot([1, 1], [1, 0], transform=ax1.transAxes, **kwargs)
     ax2.plot([0, 0], [1, 0], transform=ax2.transAxes, **kwargs)
     ax2.plot([1, 1], [1, 0], transform=ax2.transAxes, **kwargs)
@@ -95,21 +111,22 @@ def draw_split_x_plot(x, y, split_range=[(0, 5), (10, 30), (50, 100)], is_show=F
 
     fig.set_figheight(5)
     fig.set_figwidth(10)
-    fig.text(0.5, -0.16, 'Subject Object Pair', ha='center', fontsize=14)
+    fig.text(0.5, -0.16, "Subject Object Pair", ha="center", fontsize=14)
 
     ax1.set_ylabel("mR", fontsize=14)
     x_list = list(range(len(y)))
-    ax1.set_xticks(x_list[part1[0]:part1[1]], x[part1[0]:part1[1]], rotation=60)
-    ax2.set_xticks(x_list[part2[0]:part2[1]], x[part2[0]:part2[1]], rotation=60)
-    ax3.set_xticks(x_list[part3[0]:part3[1]], x[part3[0]:part3[1]], rotation=60)
+    ax1.set_xticks(x_list[part1[0] : part1[1]], x[part1[0] : part1[1]], rotation=60)
+    ax2.set_xticks(x_list[part2[0] : part2[1]], x[part2[0] : part2[1]], rotation=60)
+    ax3.set_xticks(x_list[part3[0] : part3[1]], x[part3[0] : part3[1]], rotation=60)
     ax1.xaxis.set_major_locator(ticker.MultipleLocator(8))
     ax2.xaxis.set_major_locator(ticker.MultipleLocator(22))
     ax3.xaxis.set_major_locator(ticker.MultipleLocator(8))
 
     if is_show:
         plt.show()
-    
+
     return fig, ax1, ax2, ax3
+
 
 def sorted_dict(data, key=0, up_or_down=True):
     """
@@ -123,4 +140,3 @@ def sorted_dict(data, key=0, up_or_down=True):
         dict: sorted dict
     """
     return dict(sorted(data.items(), key=lambda x: x[key], reverse=up_or_down))
-    

@@ -4,10 +4,11 @@
 # URL:    https://gong.host
 # Date:   20230315
 
-from neetbox.utils import pkg
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+from neetbox.utils import pkg
 
 
 def ConvNxN(

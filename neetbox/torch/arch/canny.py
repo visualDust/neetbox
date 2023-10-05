@@ -1,8 +1,9 @@
-from neetbox.utils import pkg
 import numpy as np
 import torch
 import torch.nn as nn
+
 from neetbox.torch.arch.kernels import *
+from neetbox.utils import pkg
 
 
 class CannyFilter(nn.Module):

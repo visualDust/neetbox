@@ -4,12 +4,13 @@
 # URL:    https://gong.host
 # Date:   20230413
 
+from neetbox.core import Registry
+from neetbox.logging import logger
 from neetbox.utils import pkg
 from neetbox.utils.mvc import Singleton
-from neetbox.logging import logger
-from neetbox.core import Registry
 
 pipes = Registry("__pipe")
 
-class Pipe():
+
+class Pipe:
     pass

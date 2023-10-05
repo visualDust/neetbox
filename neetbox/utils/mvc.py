@@ -4,6 +4,7 @@
 # URL:    https://gong.host
 # Date:   20230416
 
+
 def singleton(class_):
     class class_w(class_):
         _instance = None

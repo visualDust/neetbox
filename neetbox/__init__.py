@@ -1,6 +1,9 @@
 import os
+
 import toml
-from neetbox.config import default as default_config, get_module_level_config
+
+from neetbox.config import default as default_config
+from neetbox.config import get_module_level_config
 from neetbox.config._config import update_with
 from neetbox.daemon import _try_attach_daemon
 from neetbox.utils.framing import get_frame_module_traceback
@@ -70,8 +73,11 @@ def init(path=None, load=False, **kwargs) -> bool:
         logger.err(f"Failed to load config from {config_file_path}: {e}")
         return False
 
-is_in_daemon_process = 'NEETBOX_DAEMON_PROCESS' in os.environ and os.environ['NEETBOX_DAEMON_PROCESS'] == '1'
+
+is_in_daemon_process = (
+    "NEETBOX_DAEMON_PROCESS" in os.environ
+    and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
+)
 # print('prevent_daemon_loading =', is_in_daemon_process)
 if os.path.isfile(config_file_name) and not is_in_daemon_process:  # if in a workspace
     init(load=True)
-

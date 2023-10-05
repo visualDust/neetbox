@@ -7,12 +7,13 @@
 import collections
 import time
 from datetime import datetime
-from typing import Callable, Any
-from threading import Thread
 from functools import partial
-from neetbox.logging import logger
-from neetbox.core import Registry
+from threading import Thread
+from typing import Any, Callable
+
 from neetbox.config import get_module_level_config
+from neetbox.core import Registry
+from neetbox.logging import logger
 
 _watch_queue_dict = Registry("__pipeline_watch")
 

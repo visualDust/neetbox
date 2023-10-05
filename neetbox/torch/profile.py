@@ -4,11 +4,13 @@
 # URL:    https://gong.host
 # Date:   20230315
 
-from neetbox.utils import pkg
 import time
-from tqdm import tqdm
+
 import torch
+from tqdm import tqdm
+
 from neetbox.logging import logger
+from neetbox.utils import pkg
 
 
 def profile(
@@ -18,7 +20,7 @@ def profile(
     profiling=True,
     speedtest=1000,
 ):
-    assert pkg.is_installed('thop', try_install_if_not=True)
+    assert pkg.is_installed("thop", try_install_if_not=True)
     if speedtest:
         input_tensor = specific_input
         if not input_tensor:
@@ -101,7 +103,8 @@ def profile(
             if next(model.parameters()).is_cuda:
                 input_tensor = input_tensor.cuda()
         input_tensor = (input_tensor,)
-        assert pkg.is_installed('thop')
+        assert pkg.is_installed("thop")
         from thop import profile as _profile
+
         flops, params = _profile(model, inputs=input_tensor)
         logger.log(f"Model FLOPs = {flops/1e9}G, params = {params/1e6}M")

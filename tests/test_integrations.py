@@ -1,5 +1,6 @@
 def test_download():
     from neetbox.integrations.resource import download
+
     print("testing download")
     urls = {
         "somereadme.md": "https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/readme.md",
@@ -7,5 +8,6 @@ def test_download():
     }
     download(urls=urls)
     import os
+
     for fname, furl in urls.items():
         os.remove(fname)

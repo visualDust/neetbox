@@ -1,8 +1,11 @@
-import pip
 import importlib
 from typing import Union
-from neetbox.utils.mvc import Singleton
+
+import pip
+
 from neetbox.utils.framing import get_caller_identity_traceback
+from neetbox.utils.mvc import Singleton
+
 
 class PipPackageHealper(metaclass=Singleton):
     def __init__(self) -> None:
@@ -19,7 +22,7 @@ class PipPackageHealper(metaclass=Singleton):
                 raise ValueError(error_str)
             print(f"{caller_name} want to install {package} via pip.")
             choice = input("Make your choice: [y]/n")
-            choice = choice or 'y'
+            choice = choice or "y"
             if choice in ["y", "yes"]:  # user choose to install
                 print(f"installing {package} via pip...")
                 pip.main(["install", package])
