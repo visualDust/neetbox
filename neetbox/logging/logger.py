@@ -4,20 +4,22 @@
 # URL:    https://gong.host
 # Date:   20230315
 
-import os
+import functools
 import io
+import os
+import pathlib
 from datetime import date, datetime
 from enum import Enum
-from neetbox.utils.framing import *
-from neetbox.utils import format
-from neetbox.logging.formatting import *
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
-import functools
-import pathlib
 from random import randint
 from typing import *
+
 from rich import print as rprint
 from rich.panel import Panel
+
+from neetbox.logging.formatting import *
+from neetbox.utils import format
+from neetbox.utils.framing import *
 
 
 class LogLevel(Enum):
@@ -456,9 +458,9 @@ class Logger:
         return Catcher(False)
 
     def banner(self, text, font: Optional[str] = None):
-        from neetbox.utils import pkg
-
         from pyfiglet import Figlet, FigletFont
+
+        from neetbox.utils import pkg
 
         builtin_font_list = [
             "ansiregular",

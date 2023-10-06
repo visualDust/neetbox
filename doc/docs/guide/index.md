@@ -10,6 +10,12 @@ sidebar_position: 1
 pip install neetbox
 ```
 
+If you want to enable torch-related feature, please try below:
+
+```bash
+pip install neetbox[torch]
+```
+
 Since NEETBOX is under ~~heavy~~ development, it's better to forcely reinstall the newest version:
 
 ```bash
@@ -37,3 +43,13 @@ So here is the thing: I'm new to complex Computer Vision projects and I found my
 
 
 I would appreciate it if you would contribute your excellent tiny code snippets. There is no such ~~"Code of conduct"~~ here (lol) as long as the code runs buglessly. Leave your code here with simply a doc related to it would be helpful.
+
+## Contribution
+
+if you want to make this repository greater again, you should follow the step below to setup your development environment.
+
+1. Make sure you are in the correct python version.
+2. Run `poetry install` to setup your environment.
+3. Contribute your code and pull request!!!!
+4. Ask [VisualDust](mailto://gavin@gong.host) or [PaperCube](mailto://imzhy@hotmail.com) to review your change.
+5. Merge!!!!

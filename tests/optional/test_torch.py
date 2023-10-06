@@ -1,4 +1,5 @@
 import pytest
+
 pytest.skip(allow_module_level=True)
 
 from neetbox.torch.arch import cnn
@@ -15,4 +16,4 @@ model = cnn.ResBlock(
 
 model.eval()
 
-profile(model,input_shape=(1,16,32,32))
+profile(model, input_shape=(1, 16, 32, 32))

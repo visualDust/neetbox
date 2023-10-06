@@ -5,8 +5,9 @@
 # Date:   20230413
 
 import collections
-from neetbox.utils.mvc import patch
 from multiprocessing import current_process
+
+from neetbox.utils.mvc import patch
 
 DEFAULT_CONFIG = {
     "name": None,
@@ -30,9 +31,9 @@ DEFAULT_CONFIG = {
         "displayName": None,
         "uploadInterval": 10,
         "mute": True,
-        "launcher":{
+        "launcher": {
             "port": 20202,
-        }
+        },
     },
 }
 WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()

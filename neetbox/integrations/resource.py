@@ -4,24 +4,19 @@
 # URL:    https://gong.host
 # Date:   20230315
 
-from random import random
 import os
-from neetbox.utils import pkg
-
-import numpy as np
-import threading
-from neetbox.logging import logger
-from neetbox.integrations import engine
-from typing import Iterable
-from typing import Dict
 import pathlib
 import signal
-from functools import partial
-from urllib.request import urlopen
+import threading
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
+from random import random
 from threading import Event
-from typing import List, Union, Dict, Any
-from rich.progress import track
+from typing import Any, Dict, Iterable, List, Union
+from urllib.request import urlopen
+
+import numpy as np
+from PIL import Image
 from rich.progress import (
     BarColumn,
     DownloadColumn,
@@ -30,8 +25,12 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
     TransferSpeedColumn,
+    track,
 )
-from PIL import Image
+
+from neetbox.integrations import engine
+from neetbox.logging import logger
+from neetbox.utils import pkg
 
 _loader_pool: Dict[
     str, "ResourceLoader"

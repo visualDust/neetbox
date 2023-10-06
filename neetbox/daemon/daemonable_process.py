@@ -1,23 +1,20 @@
-import time
-import subprocess
 import multiprocessing
-
 import os
+import subprocess
 import sys
-
+import time
 from typing import *
 
-is_ms_windows = 'win32' in sys.platform or 'cygwin' in sys.platform
+is_ms_windows = "win32" in sys.platform or "cygwin" in sys.platform
 
 
 class DaemonableProcess:
-
     def __init__(
         self,
         *,
         target: str,
         args: List = [],
-        mode: Literal['attached', 'detached'],
+        mode: Literal["attached", "detached"],
         redirect_stdout=None,
         redirect_stderr=subprocess.STDOUT,
         use_os_spawn_for_daemon=False,
@@ -31,8 +28,8 @@ class DaemonableProcess:
         self.__stdin = redirect_stdin
         # self.__is_daemon = is_daemon
         # self.__is_detached = is_detached
-        self.__redirect_stdout=redirect_stdout
-        self.__redirect_stderr=redirect_stderr
+        self.__redirect_stdout = redirect_stdout
+        self.__redirect_stderr = redirect_stderr
         self.__env = dict(os.environ)
         if env_append is not None:
             self.__env.update(env_append)
@@ -40,7 +37,7 @@ class DaemonableProcess:
 
     @property
     def is_daemon(self):
-        return self.__mode == 'daemon'
+        return self.__mode == "daemon"
 
     @property
     def mode(self):
@@ -55,14 +52,14 @@ class DaemonableProcess:
             raise NotImplementedError()
         else:
             # use subprocess
-            command_line = [sys.executable, '-m', self.target, *self.__args]
+            command_line = [sys.executable, "-m", self.target, *self.__args]
 
             if is_ms_windows:
                 # windows + subprocess
                 creationflags = {
-                    'attached': 0,
-                    'shared': 0,
-                    'detached': subprocess.CREATE_NO_WINDOW,
+                    "attached": 0,
+                    "shared": 0,
+                    "detached": subprocess.CREATE_NO_WINDOW,
                 }[self.__mode]
 
                 popen = subprocess.Popen(
@@ -71,7 +68,7 @@ class DaemonableProcess:
                     stdout=self.__redirect_stdout,
                     stderr=self.__redirect_stderr,
                     stdin=self.__stdin,
-                    env=self.__env
+                    env=self.__env,
                 )
                 print(popen)
 
@@ -85,15 +82,16 @@ class DaemonableProcess:
                     stdout=self.__redirect_stdout,
                     stderr=self.__redirect_stderr,
                     env=self.__env,
-                    start_new_session=self.mode == 'detached',
+                    start_new_session=self.mode == "detached",
                 )
 
-                if self.mode == 'attached':
+                if self.mode == "attached":
                     import atexit
+
                     atexit.register(lambda: popen.terminate())
 
                 print(popen)
-            
+
             return popen
 
     def terminate(self):
@@ -102,11 +100,12 @@ class DaemonableProcess:
 
 def main():
     DaemonableProcess(
-        target='ppcdaemontest.daemon_worker',
-        args=['1'],
-        mode='attached',
+        target="ppcdaemontest.daemon_worker",
+        args=["1"],
+        mode="attached",
     ).start()
     time.sleep(3)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

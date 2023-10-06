@@ -4,9 +4,9 @@
 # URL:    https://gong.host
 # Date:   20230319
 
-import re
-import platform
 import json
+import platform
+import re
 
 
 def is_pure_ansi(text: str) -> bool:

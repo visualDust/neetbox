@@ -5,9 +5,10 @@
 # Date:   20230417
 
 import getpass
-import platform
 import locale
+import platform
 import subprocess
+
 from neetbox.pipeline import watch
 from neetbox.utils.mvc import Singleton
 
@@ -61,5 +62,6 @@ platform = __Platform()
 @watch(name="platform", initiative=True)
 def update_env_stat():
     return dict(platform)
+
 
 update_env_stat()

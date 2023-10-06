@@ -1,5 +1,6 @@
 def test_default_logger():
     from neetbox.logging import logger
+
     # logger.banner('neetbox')
 
     logger.info("loginfo")
@@ -39,6 +40,7 @@ def test_logger_with_specific_identity():
             self.logger.log("from class B")
 
     B().b()
+
 
 def test_logger_catch():
     from neetbox.logging import logger

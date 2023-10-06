@@ -4,16 +4,17 @@
 # URL:    https://gong.host
 # Date:   20230414
 
+import json
+import os
+import platform
+import subprocess
+import time
+
 from neetbox.daemon._daemon_client import connect_daemon
 from neetbox.daemon.daemonable_process import DaemonableProcess
 from neetbox.logging import logger
+from neetbox.pipeline import listen, watch
 from neetbox.utils import pkg
-from neetbox.pipeline import watch, listen
-import subprocess
-import platform
-import time
-import os
-import json
 
 
 def __attach_daemon(daemon_config):

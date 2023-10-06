@@ -4,12 +4,12 @@
 # URL:    https://gong.host
 # Date:   20230413
 
+import functools
+import json
+from typing import Any, Dict, List, Optional, Sequence, Union
+
 from neetbox.logging import logger
 from neetbox.utils.format import *
-from typing import Optional, Union, Sequence
-import json
-import functools
-from typing import Any, Dict, List, Optional, Sequence, Union
 
 
 class _RegEndpoint:
@@ -196,5 +196,5 @@ class Registry(dict):
             separators=(",", ":"),
             default=str,
         )
-        
+
     __repr__ = __str__

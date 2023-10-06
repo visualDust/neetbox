@@ -1,10 +1,11 @@
 import argparse
-import os
 import json
+import os
+
 import neetbox
-from neetbox.logging.logger import Logger
-from neetbox.logging.formatting import LogStyle
 from neetbox.daemon._apis import get_status_of
+from neetbox.logging.formatting import LogStyle
+from neetbox.logging.logger import Logger
 
 _log_style = LogStyle()
 _log_style.with_datetime = False
