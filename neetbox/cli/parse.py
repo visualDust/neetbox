@@ -1,6 +1,6 @@
-import argparse
 import json
-import os
+
+import click
 
 import neetbox
 from neetbox.daemon._apis import get_status_of
@@ -12,17 +12,35 @@ _log_style.with_datetime = False
 logger = Logger("NEETBOX", style=_log_style)  # builtin standalone logger
 
 
-def handle_status(args):
+@click.group()
+@click.option(
+    "--verbose",
+    "-v",
+    help="set verbose flag to True",
+    default=False,
+)
+@click.pass_context
+def main(ctx, verbose: bool):
+    ctx.ensure_object(dict)
+    """This is NEETBOX cli"""
+    ctx.obj["verbose"] = verbose
+
+
+@main.command()
+def status():
+    """Show the working tree status"""
     _stat_json = None
     try:
         _stat_json = get_status_of()
-        print(json.dumps(_stat_json))
-    except Exception as e:
+        click.echo(json.dumps(_stat_json))
+    except Exception as e:  # noqa
         logger.log("Could not fetch data. Is there any project with NEETBOX running?")
 
 
-def handle_init(args):
-    name = vars(args)["name"]
+@main.command()
+@click.option("--name", "-n", help="set project name", metavar="name", required=False)
+def init(name: str):
+    """initialize current folder as workspace and generate the config file from defaults"""
     try:
         if neetbox.init(name=name):
             logger.skip_lines(2)
@@ -32,88 +50,31 @@ def handle_init(args):
         logger.err(f"Failed to init here: {e}")
 
 
-def handle_archive(args):
-    logger.err(
-        "This feature is not availiable. CLI Features are still under construction."
-    )
-    pass
-
-
-def handle_list(args):
-    logger.err(
-        "This feature is not availiable. CLI Features are still under construction."
-    )
-    pass
-
-
-def handle_dataset(args):
-    logger.err(
-        "This feature is not availiable. CLI Features are still under construction."
-    )
-    pass
-
-
-parser = argparse.ArgumentParser(
-    prog="NEETBOX", description="This is NEETBOX cli", epilog="NEETBOX would help?"
-)
-parser.add_argument(
-    "-v", "--verbose", help="set verbose flag to True", action="store_true"
-)  # on/off flag
-
-subparsers = parser.add_subparsers(
-    title="These are common NEEBOX commands used in various situations",
-    metavar="command",
-)
-
-status_parser = subparsers.add_parser("status", help="Show the working tree status")
-status_parser.set_defaults(handle=handle_status)
-
-init_parser = subparsers.add_parser(
-    "init",
-    help="initialize current folder as workspace and generate the config file from defaults",
-)
-init_parser.add_argument(
-    "--name",
-    "-n",
-    help="set project name",
-    metavar="name",
-    required=False,
-    default=None,
-)
-init_parser.set_defaults(handle=handle_init)
-
-commit_parser = subparsers.add_parser(
-    "archive", help="Record changes to the repository"
-)
-commit_parser.add_argument(
+@main.command()
+@click.option(
     "--message",
     "-m",
     help="Use the given <msg> as the commit message",
-    metavar="msg",
+    metavar="message",
     required=True,
 )
-commit_parser.add_argument(
+@click.option(
     "--delete",
     "-d",
     help="Delete files after archive done.",
     default=False,
     required=False,
 )
-commit_parser.set_defaults(handle=handle_archive)
-
-list_parser = subparsers.add_parser(
-    "list", help="List all the resources connected to NEETBOX"
-)
-list_parser.set_defaults(handle=handle_list)
+def archive(message: str, delete: bool):
+    """Record changes to the repository"""
+    pass
 
 
-def parse():
-    args = parser.parse_args()
-    if hasattr(args, "handle"):
-        args.handle(args)
-    else:
-        parser.print_help()
+@main.command()
+def list():
+    """List all the resources connected to NEETBOX"""
+    pass
 
 
 if __name__ == "__main__":
-    parse()
+    main()

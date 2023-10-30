@@ -12,14 +12,14 @@ from datetime import date, datetime
 from enum import Enum
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
 from random import randint
-from typing import *
+from typing import Callable, Iterable, Optional, Union
 
 from rich import print as rprint
 from rich.panel import Panel
 
-from neetbox.logging.formatting import *
+from neetbox.logging.formatting import LogStyle, colored_text, styled_text
 from neetbox.utils import format
-from neetbox.utils.framing import *
+from neetbox.utils.framing import get_caller_identity_traceback
 
 
 class LogLevel(Enum):
@@ -346,7 +346,7 @@ class Logger:
             self.log(*message, prefix=flag, into_stdout=False, traceback=3)
         return self
 
-    def debug(self, *message, flag=f"DEBUG"):
+    def debug(self, *message, flag="DEBUG"):
         if _global_log_level >= LogLevel.DEBUG:
             self.log(
                 *message,
