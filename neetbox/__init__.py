@@ -46,7 +46,7 @@ def init(path=None, load=False, **kwargs) -> bool:
                 logger.err(f"Failed to create {config_file_path}: {e}")
                 return False
         else:  # config file exist:
-            logger.err((f"Config file already exists."))
+            logger.err((f"Config file already exists."))  # noqa
             return False
     else:  # if load only
         if not os.path.isfile(config_file_path):  # but config file not exist
