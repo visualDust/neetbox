@@ -38,19 +38,22 @@ _loader_pool: Dict[
 
 
 class ResourceLoader:
-    _ready: bool = False  # stands for each scan
+    ready: bool = False  # stands for each scan
     file_path_list: list = []
     _initialized: bool = False  # stands for the first scan on creation
 
     def __new__(
         cls,
         folder,
-        file_types=["png", "jpg"],
+        file_types: [str] = [],
         sub_dirs=True,
-        async_scan=False,
+        verbose=False,
         *args,
         **kwargs,
     ):
+        if not file_types or not len(file_types):
+            logger.err("Please specify file type(s) so that I can scan.")
+            raise Exception("No file type(s) specified")
         _id = folder + str(file_types) + "_R" if sub_dirs else ""
         if _id in _loader_pool:
             logger.info(
@@ -63,23 +66,32 @@ class ResourceLoader:
     def __init__(
         self,
         folder,
-        file_types=["png", "jpg"],
+        file_types=[],
         sub_dirs=True,
         async_scan=False,
         verbose=False,
     ):
+        """ResourceLoader scans given file type(s) in given place(s)
+
+        Args:
+            folder (str): which folder to scan
+            file_types (str[]): file type(s) to include. For example, ['jpg','png']
+            sub_dirs (bool, optional): scan sub-folder(s)?. Defaults to True.
+            async_scan (bool, optional): run scan traks in a new thread. Defaults to False.
+            verbose (bool, optional): verbose output. Defaults to False.
+        """
         super().__init__()
-        self.path = folder
+        self.path = os.path.abspath(folder)
         self._file_types = file_types
         self._scan_sub_dirs = sub_dirs
         self._async_scan = async_scan
-        if not self._ready:
+        if not self.ready:
             self._scan(verbose)
 
     def _scan(self, verbose):
-        if not self._ready and self._initialized:
+        if not self.ready and self._initialized:
             raise Exception("another scanning requested during the previous one.")
-        self._ready = False
+        self.ready = False
 
         def can_match(path: pathlib.Path):
             if not path.is_file():
@@ -101,27 +113,33 @@ class ResourceLoader:
                 self.file_path_list = []
                 for path in pathlib.Path(self.path).glob(glob_str):
                     if can_match(path):
+                        if verbose:
+                            logger.log(f"File match: {path}")
                         self.file_path_list.append(path)
-            self._ready = True
+            self.ready = True  # scan complete
             if not self._initialized:
                 self._initialized = True
             logger.ok(
                 f"Resource loader '{self.path}' ready with {len(self._file_types)} file types({len(self.file_path_list)} files)."
             )
 
+        logger.log(
+            f"Scanning started at '{self.path}' for {len(self._file_types)} file types."
+        )
+        # call to scan
         if self._async_scan:
             threading.Thread(target=perform_scan).start()
         else:
             perform_scan()
 
     def get_file_list(self):
-        if not self._ready:
-            raise Exception("not ready.")
+        if not self.ready:
+            raise Exception("not ready. scanning in process.")
         return self.file_path_list.copy()
 
     def __getitem__(self, index):
-        if not self._ready:
-            raise Exception("not ready.")
+        if not self.ready:
+            raise Exception("not ready. scanning in process.")
         if type(index) is int:
             return self.file_path_list[index]
 
@@ -191,7 +209,6 @@ def download(
         filenames (Union[str, List[str]], optional): str to rename the downloaded file; list of strs to rename downloaded files; None means no rename. Defaults to None.
         overwrite Bool: whether to skip exist files. Default to True.
         retry (int, optional): retries when error occures. Defaults to 3.
-        verbose (bool, optional): tell what happening in output. Defaults to True.
     """
     progress = Progress(
         TextColumn("[bold blue]{task.fields[filename]}", justify="right"),
@@ -262,3 +279,5 @@ def download(
                 dest_path = os.path.join(fname)
                 task_id = progress.add_task("download", filename=filename, start=False)
                 pool.submit(copy_url, task_id, url, dest_path)
+
+    return urls
