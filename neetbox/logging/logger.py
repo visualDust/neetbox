@@ -456,6 +456,13 @@ class Logger:
                 return catch_wrapper
 
         return Catcher(False)
+    
+    def mention(self, func):
+        @functools.wraps(func)
+        def with_logging(*args, **kwargs):
+            self.log(f"Currently running: {func.__name__}",traceback=3)
+            return func(*args, **kwargs)
+        return with_logging
 
     def banner(self, text, font: Optional[str] = None):
         from pyfiglet import Figlet, FigletFont
