@@ -23,6 +23,37 @@ output:
 2023-03-18-13:56:03 > test.py > hello world 
 ```
 
+## Using a decorator
+
+`@logger.mention` will mention the decorated function on each call.
+
+```python
+@logger.mention
+def function_a():
+    print('message from a')
+
+def function_b():
+    function_a()
+    print('message from b')
+
+def function_c():
+    function_a()
+    function_b()
+    print('message from c')
+
+function_c()
+```
+output:
+```html
+2023-11-18-06:26:04 > main/function_c >  Currently running: function_a
+message from a
+2023-11-18-06:26:04 > main/function_b >  Currently running: function_a
+message from a
+message from b
+message from c
+```
+
+
 ## Auto tracing
 
 The default `logger` automatically trace back the caller of logger instance.
