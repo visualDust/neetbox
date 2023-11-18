@@ -460,7 +460,7 @@ class Logger:
     def mention(self, func):
         @functools.wraps(func)
         def with_logging(*args, **kwargs):
-            self.log(f"Currently running: {func.__name__}", with_identifier=False)
+            self.log(f"Currently running: {func.__name__}",traceback=3)
             return func(*args, **kwargs)
         return with_logging
 
