@@ -4,13 +4,25 @@
 # URL:    https://gong.host
 # Date:   20230318
 
+from dataclasses import dataclass
 import os
 import warnings
 from random import random
 from typing import Optional
 
-
+@dataclass
 class LogStyle:
+    color: Optional[str] = None
+    prefix: str = ""
+    text_style: Optional[str] = None
+    datetime_format: str = "%Y-%m-%d-%H:%M:%S"
+    with_identifier: bool = True
+    trace_level = 3
+    with_datetime: bool = True
+    split_char_cmd = " > "
+    split_char_identity = "/"
+    split_char_txt = " | "
+    
     @classmethod
     def get_supported_colors(cls):
         return ["red", "green", "blue", "cyan", "yellow", "magenta"]
@@ -18,18 +30,6 @@ class LogStyle:
     @classmethod
     def get_supported_text_style(cls):
         return ["bold", "italic", "blink"]
-
-    def __init__(self) -> None:
-        self.color: Optional[str] = None
-        self.prefix: str = ""
-        self.text_style: Optional[str] = None
-        self.datetime_format: str = "%Y-%m-%d-%H:%M:%S"
-        self.with_identifier: bool = True
-        self.trace_level = 3
-        self.with_datetime: bool = True
-        self.split_char_cmd = " > "
-        self.split_char_identity = "/"
-        self.split_char_txt = " | "
 
     def parse(self, pattern: str):
         # todo
