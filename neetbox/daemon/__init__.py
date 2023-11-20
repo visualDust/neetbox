@@ -29,6 +29,7 @@ def __attach_daemon(daemon_config):
                 "ipython, try to set 'allowIpython' to True."
             )
             return False  # ignore if debugging in ipython
+    pkg.is_installed("flask", try_install_if_not=True)
     _online_status = connect_daemon(daemon_config)  # try to connect daemon
     logger.log("daemon connection status: " + str(_online_status))
     if not _online_status:  # if no daemon online
