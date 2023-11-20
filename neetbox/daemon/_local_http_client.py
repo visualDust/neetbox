@@ -1,5 +1,9 @@
 import httpx
+import logging
 
+httpx_logger = logging.getLogger("httpx")
+httpx_logger.setLevel(logging.ERROR)
+    
 __no_proxy = {
     "http://": None,
     "https://": None,
