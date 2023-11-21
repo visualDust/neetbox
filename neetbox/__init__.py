@@ -8,7 +8,7 @@ from neetbox.config._config import update_with
 from neetbox.daemon import _try_attach_daemon
 from neetbox.utils.framing import get_frame_module_traceback
 
-module = get_frame_module_traceback(1).__name__
+module = get_frame_module_traceback(1).__name__  # type: ignore
 config_file_name = f"{module}.toml"
 
 
@@ -36,9 +36,7 @@ def init(path=None, load=False, **kwargs) -> bool:
                     if "name" in kwargs and kwargs["name"]:  # using given name
                         _config["name"] = kwargs["name"]
                     else:  # using the folder name
-                        _config["name"] = os.path.basename(
-                            os.path.normpath(os.getcwd())
-                        )
+                        _config["name"] = os.path.basename(os.path.normpath(os.getcwd()))
                     toml.dump(_config, config_file)
                 logger.ok(f"Workspace config created as {config_file_path}.")
                 return True
@@ -75,8 +73,7 @@ def init(path=None, load=False, **kwargs) -> bool:
 
 
 is_in_daemon_process = (
-    "NEETBOX_DAEMON_PROCESS" in os.environ
-    and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
+    "NEETBOX_DAEMON_PROCESS" in os.environ and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
 )
 # print('prevent_daemon_loading =', is_in_daemon_process)
 if os.path.isfile(config_file_name) and not is_in_daemon_process:  # if in a workspace

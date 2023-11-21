@@ -42,6 +42,6 @@ def get_installed_engines():
                 importlib.import_module(engine.value)
                 installed_engines.append(engine)
                 logger.info(f"'{engine.vaule}' was found installed.")
-            except:
+            except ImportError:
                 pass
     return installed_engines.copy()
