@@ -35,7 +35,7 @@ DEFAULT_WORKSPACE_CONFIG = {
     "daemon": {
         "enable": True,
         "allowIpython": False,
-        "server": "localhost",
+        "server": "0.0.0.0",
         "port": 20202,
         "mode": "detached",
         "displayName": None,

@@ -4,7 +4,7 @@
 # URL:    https://gong.host
 # Date:   20230414
 
-import os 
+import os
 import sys
 import time
 from threading import Thread
@@ -12,13 +12,6 @@ from threading import Thread
 from flask import Flask, abort, json, request
 
 from neetbox.config import get_module_level_config
-from neetbox.utils import pkg
-from neetbox.utils.framing import get_frame_module_traceback
-
-module_name = get_frame_module_traceback().__name__  # type: ignore
-assert pkg.is_installed(
-    "flask", try_install_if_not=True
-), f"{module_name} requires flask which is not installed"
 
 _STAT_POOL = {}
 __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours
@@ -78,9 +71,7 @@ def daemon_process(daemon_config=None):
             time.sleep(secs)
             os._exit(0)
 
-        Thread(
-            target=__sleep_and_shutdown
-        ).start()  # shutdown after 3 seconds
+        Thread(target=__sleep_and_shutdown).start()  # shutdown after 3 seconds
         return f"shutdown in {3} seconds."
 
     def _count_down_thread():
@@ -94,17 +85,21 @@ def daemon_process(daemon_config=None):
     count_down_thread = Thread(target=_count_down_thread, daemon=True)
     count_down_thread.start()
 
-    api.run(host="0.0.0.0", port=daemon_config["port"], debug=True)
+    api.run(host=daemon_config["server"], port=daemon_config["port"], debug=True)
 
-if __name__ == '__main__':
-    daemon_process({
-        "enable": True,
-        "server": "localhost",
-        "port": 20202,
-        "mode": "detached",
-        "displayName": None,
-        "uploadInterval": 10,
-        "mute": True,
-        "launcher": {
+
+if __name__ == "__main__":
+    daemon_process(
+        {
+            "enable": True,
+            "server": "0.0.0.0",
             "port": 20202,
-        }})
+            "mode": "detached",
+            "displayName": None,
+            "uploadInterval": 10,
+            "mute": True,
+            "launcher": {
+                "port": 20202,
+            },
+        }
+    )
