@@ -12,10 +12,6 @@ from neetbox.daemon._daemon_client import connect_daemon
 from neetbox.daemon.daemonable_process import DaemonableProcess
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
-from neetbox.utils import pkg
-
-pkg.is_installed("flask", try_install_if_not=True)
-pkg.is_installed("setproctitle", try_install_if_not=True)
 
 
 def __attach_daemon(daemon_config):
@@ -30,7 +26,6 @@ def __attach_daemon(daemon_config):
                 "ipython, try to set 'allowIpython' to True."
             )
             return False  # ignore if debugging in ipython
-    pkg.is_installed("flask", try_install_if_not=True)
     _online_status = connect_daemon(daemon_config)  # try to connect daemon
     logger.log("daemon connection status: " + str(_online_status))
     if not _online_status:  # if no daemon online

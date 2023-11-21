@@ -5,11 +5,11 @@ description = "NEETBox contains useless CV code snippets."
 license = "MIT"
 authors = ["VisualDust <gavin@gong.host>"]
 maintainers = [
-    "VisualDust <gavin@gong.host>",
-    "PommesPeter <me@pommespeter.space>",
     "PaperCube <imzhy@hotmail.com>",
-    "PuQing <me@puqing.work>",
+    "VisualDust <gavin@gong.host>",
     "Lideming <me@yuuza.net>",
+    "PommesPeter <me@pommespeter.space>",
+    "PuQing <me@puqing.work>",
 ]
 
 
@@ -44,6 +44,7 @@ pillow = "^10.0.1"
 pre-commit = ">=3.4.0"
 click = "^8.1.7"
 pytest = "^7.4.3"
+pyfiglet = "^1.0.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0.0"
