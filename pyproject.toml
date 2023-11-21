@@ -63,3 +63,6 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry.scripts]
 neet = 'neetbox.cli.parse:main'
+
+[tool.black]
+line-length = 100

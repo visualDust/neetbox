@@ -12,7 +12,7 @@ from datetime import date, datetime
 from enum import Enum
 from inspect import isclass, iscoroutinefunction, isgeneratorfunction
 from random import randint
-from typing import Callable, Iterable, Optional, Union
+from typing import Any, Callable, Iterable, Optional, Union
 
 from rich import print as rprint
 from rich.panel import Panel
@@ -105,9 +105,7 @@ class LogSplitStrategies:
                     self.file_id = 0
                     while self._already_exists(metadata, self.file_id):
                         self.file_id += 1
-                return self.make_result(
-                    self.file_id + metadata.written_bytes // size_in_bytes
-                )
+                return self.make_result(self.file_id + metadata.written_bytes // size_in_bytes)
 
         return DateSizeSplitStrategy()
 
@@ -126,10 +124,10 @@ class _AutoSplitLogWriter(io.TextIOBase):
         def __bool__(self):
             return self._count > 0
 
-    _writer: io.IOBase
+    _writer: Union[io.IOBase, None]
     _filename_template: str
-    _split_strategy: SplitStrategyCallable
-    _current_logfile: pathlib.Path
+    _split_strategy: Union[SplitStrategyCallable, Callable]
+    _current_logfile: Union[pathlib.Path, None]
 
     def __init__(
         self,
@@ -149,9 +147,7 @@ class _AutoSplitLogWriter(io.TextIOBase):
         self._open_mode = "wb" if overwrite_existing else "ab"
         self._split_lock = _AutoSplitLogWriter.ReentrantCounter()
 
-        self._split_strategy = (
-            (lambda *_: None) if split_strategy is None else split_strategy
-        )
+        self._split_strategy = (lambda *_: None) if split_strategy is None else split_strategy
 
         self._stats = LogMetadata(self)
 
@@ -166,9 +162,7 @@ class _AutoSplitLogWriter(io.TextIOBase):
         if isinstance(provider_supplied, Iterable):
             return self._filename_template.format(*provider_supplied)
 
-        raise ValueError(
-            "Filename provider must return either a string or an iterable of strings"
-        )
+        raise ValueError("Filename provider must return either a string or an iterable of strings")
 
     def make_logfile_path(self, provider_supplied):
         return self._base_dir / self._apply_filename_template(provider_supplied)
@@ -180,7 +174,7 @@ class _AutoSplitLogWriter(io.TextIOBase):
                 self._writer.close()
             expected_logfile.parent.mkdir(parents=True, exist_ok=True)
             self._current_logfile = expected_logfile
-            self._writer = open(self._current_logfile, self._open_mode)
+            self._writer = open(self._current_logfile, self._open_mode)  # type: ignore
 
     def _check_open(self):
         if self._writer is None:
@@ -222,12 +216,12 @@ class _AutoSplitLogWriter(io.TextIOBase):
 
 
 class Logger:
-    def __init__(self, whom, style: LogStyle = None):
-        self.whom: any = whom
-        self.style: LogStyle = style
+    def __init__(self, whom, style: Optional[LogStyle] = None):
+        self.whom: Any = whom
+        self.style: Optional[LogStyle] = style
         self.file_writer = None
 
-    def __call__(self, whom: any = None, style: LogStyle = None) -> "Logger":
+    def __call__(self, whom: Any = None, style: Optional[LogStyle] = None) -> "Logger":
         if whom is None:
             return DEFAULT_LOGGER
         if whom in loggers_dict:
@@ -238,10 +232,10 @@ class Logger:
     def log(
         self,
         *content,
-        prefix: str = None,
-        datetime_format: str = None,
-        with_identifier: bool = None,
-        with_datetime: bool = None,
+        prefix: Optional[str] = None,
+        datetime_format: Optional[str] = None,
+        with_identifier: Optional[bool] = None,
+        with_datetime: Optional[bool] = None,
         into_file: bool = True,
         into_stdout: bool = True,
         traceback=2,
@@ -266,22 +260,16 @@ class Logger:
         # composing datetime
         _with_datetime = _style.with_datetime
         _datetime = ""
-        if (
-            with_datetime is not None
-        ):  # if explicitly determined wether to log with datetime
+        if with_datetime is not None:  # if explicitly determined wether to log with datetime
             _with_datetime = with_datetime
         if _with_datetime:
-            _datetime_fmt = (
-                datetime_format if datetime_format else _style.datetime_format
-            )
+            _datetime_fmt = datetime_format if datetime_format else _style.datetime_format
             _datetime = datetime.now().strftime(_datetime_fmt)
 
         # if with identifier
         _whom = ""
         _with_identifier = _style.with_identifier
-        if (
-            with_identifier is not None
-        ):  # if explicitly determined wether to log with identifier
+        if with_identifier is not None:  # if explicitly determined wether to log with identifier
             _with_identifier = with_identifier
         if _with_identifier:
             _whom = str(self.whom)  # check identity
@@ -298,9 +286,7 @@ class Logger:
                     id_seq.append(_caller_identity.class_name)
                     file_level = False
                 if file_level and _style.trace_level >= 1:
-                    id_seq.append(
-                        _caller_identity.filename
-                    )  # not module level and class level
+                    id_seq.append(_caller_identity.filename)  # not module level and class level
             if _caller_identity.func_name != "<module>":
                 id_seq.append(_caller_identity.func_name)  # skip for jupyters
             for i in range(len(id_seq)):
@@ -485,15 +471,11 @@ class Logger:
                 ), "The provided font is not a fontname or a font file path."
                 file_name = os.path.basename(font)
                 file = os.path.splitext(file_name)
-                if (
-                    file[0] not in FigletFont.getFonts()
-                ):  # no installed file match the file name
+                if file[0] not in FigletFont.getFonts():  # no installed file match the file name
                     try:
-                        self.info(
-                            f"{file[0]} is not installed. Trying to install as a fontfile."
-                        )
+                        self.info(f"{file[0]} is not installed. Trying to install as a fontfile.")
                         FigletFont.installFonts(f"res/flfs/{font}.flf")
-                    except:
+                    except Exception:
                         self.err("Could not install font {font}. Fallback to default.")
                         font = None
                 else:
@@ -532,12 +514,12 @@ class Logger:
             self._bind_file(None)
             return self
         if os.path.isfile(path):
-            raise "Target path is not a directory."
+            raise Exception("Target path is not a directory.")
         if not os.path.exists(path):
             DEFAULT_LOGGER.info(f"Directory {path} not found, trying to create.")
             try:
                 os.makedirs(path)
-            except:
+            except Exception:
                 DEFAULT_LOGGER.err(f"Failed when trying to create directory {path}")
                 raise Exception(f"Failed when trying to create directory {path}")
         log_file_name = ""
@@ -564,9 +546,7 @@ class Logger:
         real_path = os.path.join(dirname, filename)
         if log_file_identity not in writers_dict:
             # todo add fflush buffer size or time
-            writers_dict[log_file_identity] = open(
-                real_path, "a", encoding="utf-8", buffering=1
-            )
+            writers_dict[log_file_identity] = open(real_path, "a", encoding="utf-8", buffering=1)
         self.file_writer = writers_dict[log_file_identity]
         return self
 
