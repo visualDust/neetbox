@@ -4,13 +4,6 @@
 # URL:    https://gong.host
 # Date:   20230414
 
-from neetbox.utils import pkg
-from neetbox.utils.framing import get_frame_module_traceback
-
-module_name = get_frame_module_traceback().__name__
-assert pkg.is_installed(
-    "flask", try_install_if_not=True
-), f"{module_name} requires flask which is not installed"
 import sys
 import time
 from threading import Thread
@@ -18,6 +11,13 @@ from threading import Thread
 from flask import Flask, abort, json, request
 
 from neetbox.config import get_module_level_config
+from neetbox.utils import pkg
+from neetbox.utils.framing import get_frame_module_traceback
+
+module_name = get_frame_module_traceback().__name__  # type: ignore
+assert pkg.is_installed(
+    "flask", try_install_if_not=True
+), f"{module_name} requires flask which is not installed"
 
 _STAT_POOL = {}
 __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours
@@ -77,7 +77,9 @@ def daemon_process(daemon_config=None):
             time.sleep(secs=secs)
             sys.exit(0)
 
-        Thread(target=__sleep_and_shutdown, args=(3)).start() # shutdown after 3 seconds
+        Thread(
+            target=__sleep_and_shutdown, args=(3)
+        ).start()  # shutdown after 3 seconds
         return "ok"
 
     def _count_down_thread():

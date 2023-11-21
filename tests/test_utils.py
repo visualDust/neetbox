@@ -1,6 +1,3 @@
-from neetbox.utils import format
-
-
 def test_package_installed():
     from neetbox.utils import pkg
 

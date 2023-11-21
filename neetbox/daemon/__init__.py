@@ -5,8 +5,6 @@
 # Date:   20230414
 
 import json
-import os
-import platform
 import subprocess
 import time
 
