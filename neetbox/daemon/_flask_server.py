@@ -85,7 +85,7 @@ def daemon_process(daemon_config=None):
     count_down_thread = Thread(target=_count_down_thread, daemon=True)
     count_down_thread.start()
 
-    api.run(host=daemon_config["server"], port=daemon_config["port"], debug=True)
+    api.run(host="0.0.0.0", port=daemon_config["port"], debug=True)
 
 
 if __name__ == "__main__":
