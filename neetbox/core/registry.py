@@ -48,7 +48,7 @@ class Registry(dict):
 
     # not compatible with python below 3.8
     def __init__(self, name, *args, **kwargs) -> None:
-        if not "initialized" in self:
+        if "initialized" not in self:
             self["initialized"] = True
             self.name = name
 

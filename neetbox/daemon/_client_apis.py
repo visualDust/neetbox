@@ -5,21 +5,16 @@
 # Date:   20230414
 
 
+from neetbox.config import get_module_level_config
 from neetbox.daemon._local_http_client import _local_http_client
+from neetbox.logging import logger
 from neetbox.utils import pkg
 from neetbox.utils.framing import get_frame_module_traceback
 
-module_name = get_frame_module_traceback().__name__
+module_name = get_frame_module_traceback().__name__  # type: ignore
 assert pkg.is_installed(
     "httpx", try_install_if_not=True
 ), f"{module_name} requires httpx which is not installed"
-import json
-import time
-
-import httpx
-
-from neetbox.config import get_module_level_config
-from neetbox.logging import logger
 
 logger = logger("NEETBOX DAEMON API")
 

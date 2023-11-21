@@ -5,10 +5,9 @@
 # Date:   20230318
 
 from dataclasses import dataclass
-import os
-import warnings
 from random import random
 from typing import Optional
+
 
 @dataclass
 class LogStyle:
@@ -22,7 +21,7 @@ class LogStyle:
     split_char_cmd = " > "
     split_char_identity = "/"
     split_char_txt = " | "
-    
+
     @classmethod
     def get_supported_colors(cls):
         return ["red", "green", "blue", "cyan", "yellow", "magenta"]

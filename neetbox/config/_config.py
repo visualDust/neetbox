@@ -4,14 +4,14 @@
 # URL:    https://gong.host
 # Date:   20230413
 
-import collections
-from multiprocessing import current_process
 
 DEFAULT_GLOBAL_CONFIG = {
     "daemon": {
         "enable": True,
         "allowIpython": False,
-        "servers": [{"host": "localhost", "port": "20202"},],
+        "servers": [
+            {"host": "localhost", "port": "20202"},
+        ],
         "mode": "detached",
         "displayName": None,
         "uploadInterval": 10,

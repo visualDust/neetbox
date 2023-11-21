@@ -91,7 +91,7 @@ def profile(
                         f"Seems your model has an imbalanced performance peek between CUDA side synchronous test and none-sync one. Consider raising speedtest loop times (currently {speedtest} +2) to have a stable result."
                     )
                 logger.debug(
-                    f"Note that the CUDA side synchronous speedtest is more reliable since you are using a GPU."
+                    "Note that the CUDA side synchronous speedtest is more reliable since you are using a GPU."
                 )
     if profiling:
         if speedtest:

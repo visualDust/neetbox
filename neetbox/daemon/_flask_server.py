@@ -12,6 +12,13 @@ from threading import Thread
 from flask import Flask, abort, json, request
 
 from neetbox.config import get_module_level_config
+from neetbox.utils import pkg
+from neetbox.utils.framing import get_frame_module_traceback
+
+module_name = get_frame_module_traceback().__name__  # type: ignore
+assert pkg.is_installed(
+    "flask", try_install_if_not=True
+), f"{module_name} requires flask which is not installed"
 
 _STAT_POOL = {}
 __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours

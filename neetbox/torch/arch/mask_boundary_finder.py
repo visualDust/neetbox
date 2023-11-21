@@ -1,8 +1,6 @@
 import torch
 import torch.nn.functional as F
 
-from neetbox.utils import pkg
-
 
 class MaskEdgeDetecter(torch.nn.Module):
     """generate the 'edge bar' for a 0-1 mask Groundtruth of a image

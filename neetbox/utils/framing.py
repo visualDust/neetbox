@@ -5,7 +5,9 @@
 # Date:   20230319
 
 import inspect
+import types
 from os import path
+from typing import Union
 
 
 def get_frame_traceback(traceback=1):
@@ -27,13 +29,10 @@ def get_frame_class_traceback(traceback=1):
     return None
 
 
-def get_frame_module_traceback(traceback=1):
+def get_frame_module_traceback(traceback=1) -> Union[types.ModuleType, None]:
     frame = get_frame_traceback(traceback + 1)
-    try:
-        module = inspect.getmodule(frame[0])
-        return module
-    except:
-        return None
+    module = inspect.getmodule(frame[0])
+    return module
 
 
 def get_frame_filepath_traceback(traceback=1):
@@ -63,12 +62,9 @@ class TracedIdentity:
             self.class_obj = self.locals["self"].__class__
             if self.class_obj:
                 self.class_name = self.class_obj.__name__
-        try:
-            module = inspect.getmodule(frame[0])
-            self.module = module
-            self.module_name = module.__name__
-        except:
-            pass
+        module: Union[types.ModuleType, None] = inspect.getmodule(frame[0])
+        self.module = module
+        self.module_name = module.__name__ if module else None
         self.filepath = path.abspath(frame.filename)
         self.filename = path.basename(frame.filename)
         return self

@@ -401,7 +401,6 @@ class Logger:
             not isclass(exception_type) or not issubclass(exception_type, BaseException)
         ):
             return self.catch()(exception_type)
-        logger = self
 
         class Catcher:
             def __init__(self, from_decorator):
@@ -415,8 +414,6 @@ class Logger:
                     return
                 if not issubclass(type_, exception_type):
                     return False
-                from_decorator = self._from_decorator
-                catch_options = [(type_, value, traceback_)]
                 if handler:
                     handler(traceback_)
                 # logger.log(
@@ -456,18 +453,17 @@ class Logger:
                 return catch_wrapper
 
         return Catcher(False)
-    
+
     def mention(self, func):
         @functools.wraps(func)
         def with_logging(*args, **kwargs):
-            self.log(f"Currently running: {func.__name__}",traceback=3)
+            self.log(f"Currently running: {func.__name__}", traceback=3)
             return func(*args, **kwargs)
+
         return with_logging
 
     def banner(self, text, font: Optional[str] = None):
         from pyfiglet import Figlet, FigletFont
-
-        from neetbox.utils import pkg
 
         builtin_font_list = [
             "ansiregular",
@@ -575,7 +571,7 @@ class Logger:
         return self
 
     def file_bend(self) -> bool:
-        return self.file_writer != None
+        return self.file_writer is not None
 
 
 DEFAULT_LOGGER = Logger(None)

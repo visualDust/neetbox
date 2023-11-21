@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from random import random
 from threading import Event
-from typing import Any, Dict, Iterable, List, Union
+from typing import Dict, List, Union
 from urllib.request import urlopen
 
 import numpy as np
@@ -25,7 +25,6 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
     TransferSpeedColumn,
-    track,
 )
 
 from neetbox.integrations import engine

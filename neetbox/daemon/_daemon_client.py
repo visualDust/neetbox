@@ -7,6 +7,7 @@
 import json
 import time
 from threading import Thread
+from typing import Union
 
 from neetbox.config import get_module_level_config
 from neetbox.daemon._local_http_client import _local_http_client
@@ -15,14 +16,13 @@ from neetbox.pipeline._signal_and_slot import _update_value_dict
 
 __TIME_UNIT_SEC = 0.1
 
-__upload_thread: Thread = None
+__upload_thread: Union[Thread, None] = None
 
 
 def _upload_thread(daemon_config, base_addr, display_name):
     _ctr = 0
     _api_name = "sync"
     _api_addr = f"{base_addr}/{_api_name}/{display_name}"
-    global _update_value_dict
     _disconnect_flag = False
     _disconnect_retries = 10
     while True:
@@ -36,18 +36,18 @@ def _upload_thread(daemon_config, base_addr, display_name):
         _headers = {"Content-Type": "application/json"}
         try:
             # upload data
-            resp = _local_http_client.post(_api_addr, data=_data, headers=_headers)
-            if resp.is_error: # upload failed
+            resp = _local_http_client.post(_api_addr, json=_data, headers=_headers)
+            if resp.is_error:  # upload failed
                 raise IOError(f"Failed to upload data to daemon. ({resp.status_code})")
         except Exception as e:
-            if _disconnect_flag: # already in retries
+            if _disconnect_flag:  # already in retries
                 _disconnect_retries -= 1
-                if not _disconnect_retries: # retry count down exceeded
+                if not _disconnect_retries:  # retry count down exceeded
                     logger.err(
                         "Failed to reconnect to daemon after {10} retries, Trying to launch new daemon..."
                     )
                     from neetbox.daemon import _try_attach_daemon
-                    
+
                     _try_attach_daemon()
                     time.sleep(__TIME_UNIT_SEC)
                 continue
@@ -58,7 +58,7 @@ def _upload_thread(daemon_config, base_addr, display_name):
         else:
             if not _disconnect_flag:
                 continue
-            logger.ok(f"Successfully reconnected to daemon.")
+            logger.ok("Successfully reconnected to daemon.")
             _disconnect_flag = False
             _disconnect_retries = 10
 
