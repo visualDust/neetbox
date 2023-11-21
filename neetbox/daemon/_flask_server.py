@@ -4,13 +4,7 @@
 # URL:    https://gong.host
 # Date:   20230414
 
-from neetbox.utils import pkg
-from neetbox.utils.framing import get_frame_module_traceback
-
-module_name = get_frame_module_traceback().__name__
-assert pkg.is_installed(
-    "flask", try_install_if_not=True
-), f"{module_name} requires flask which is not installed"
+import os 
 import sys
 import time
 from threading import Thread
@@ -52,11 +46,11 @@ def daemon_process(daemon_config=None):
         return _returning_stat
 
     @api.route("/status/list", methods=["GET"])
-    def return_names_of_status(name):
+    def return_names_of_status():
         global __COUNT_DOWN
         global _STAT_POOL
         __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
-        _names = {_STAT_POOL.keys()}
+        _names = {"names": list(_STAT_POOL.keys())}
         return _names
 
     @api.route("/sync/<name>", methods=["POST"])
@@ -74,11 +68,13 @@ def daemon_process(daemon_config=None):
         __COUNT_DOWN = -1
 
         def __sleep_and_shutdown(secs=3):
-            time.sleep(secs=secs)
-            sys.exit(0)
+            time.sleep(secs)
+            os._exit(0)
 
-        Thread(target=__sleep_and_shutdown, args=(3)).start() # shutdown after 3 seconds
-        return "ok"
+        Thread(
+            target=__sleep_and_shutdown
+        ).start()  # shutdown after 3 seconds
+        return f"shutdown in {3} seconds."
 
     def _count_down_thread():
         global __COUNT_DOWN
@@ -91,4 +87,17 @@ def daemon_process(daemon_config=None):
     count_down_thread = Thread(target=_count_down_thread, daemon=True)
     count_down_thread.start()
 
-    api.run(host="0.0.0.0", port=daemon_config["port"])
+    api.run(host="0.0.0.0", port=daemon_config["port"], debug=True)
+
+if __name__ == '__main__':
+    daemon_process({
+        "enable": True,
+        "server": "localhost",
+        "port": 20202,
+        "mode": "detached",
+        "displayName": None,
+        "uploadInterval": 10,
+        "mute": True,
+        "launcher": {
+            "port": 20202,
+        }})
