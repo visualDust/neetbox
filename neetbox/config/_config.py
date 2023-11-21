@@ -8,7 +8,19 @@ import collections
 from neetbox.utils.mvc import patch
 from multiprocessing import current_process
 
-DEFAULT_CONFIG = {
+DEFAULT_GLOBAL_CONFIG = {
+    "daemon": {
+        "enable": True,
+        "allowIpython": False,
+        "servers": [{"host": "localhost", "port": "20202"},],
+        "mode": "detached",
+        "displayName": None,
+        "uploadInterval": 10,
+        "mute": True,
+    },
+}
+
+DEFAULT_WORKSPACE_CONFIG = {
     "name": None,
     "version": None,
     "logging": {"logdir": None},
@@ -35,7 +47,7 @@ DEFAULT_CONFIG = {
         }
     },
 }
-WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()
+WORKSPACE_CONFIG: dict = DEFAULT_WORKSPACE_CONFIG.copy()
 
 
 def update_with(cfg: dict):
