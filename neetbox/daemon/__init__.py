@@ -65,9 +65,7 @@ def __attach_daemon(daemon_config):
             else:
                 exit_code = popen.poll()
                 if exit_code is not None:
-                    logger.err(
-                        f"Daemon process exited unexpectedly with exit code {exit_code}."
-                    )
+                    logger.err(f"Daemon process exited unexpectedly with exit code {exit_code}.")
                     return False
 
                 time.sleep(0.5)

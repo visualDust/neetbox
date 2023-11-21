@@ -51,9 +51,7 @@ def _upload_thread(daemon_config, base_addr, display_name):
                     _try_attach_daemon()
                     time.sleep(__TIME_UNIT_SEC)
                 continue
-            logger.warn(
-                f"Failed to upload data to daemon cause {e}. Waiting for reconnect..."
-            )
+            logger.warn(f"Failed to upload data to daemon cause {e}. Waiting for reconnect...")
             _disconnect_flag = True
         else:
             if not _disconnect_flag:
@@ -68,9 +66,7 @@ def connect_daemon(daemon_config, launch_upload_thread=True):
     _launch_config = get_module_level_config("@")
     _display_name = _display_name or _launch_config["name"]
 
-    logger.log(
-        f"Connecting to daemon at {daemon_config['server']}:{daemon_config['port']} ..."
-    )
+    logger.log(f"Connecting to daemon at {daemon_config['server']}:{daemon_config['port']} ...")
     _daemon_address = f"{daemon_config['server']}:{daemon_config['port']}"
     _base_addr = f"http://{_daemon_address}"
 

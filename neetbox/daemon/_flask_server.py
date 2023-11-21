@@ -56,7 +56,7 @@ def daemon_process(daemon_config=None):
         global __COUNT_DOWN
         global _STAT_POOL
         __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
-        _names = {_STAT_POOL.keys()}
+        _names = list(_STAT_POOL.keys())
         return _names
 
     @api.route("/sync/<name>", methods=["POST"])
@@ -77,9 +77,7 @@ def daemon_process(daemon_config=None):
             time.sleep(secs=secs)
             sys.exit(0)
 
-        Thread(
-            target=__sleep_and_shutdown, args=(3)
-        ).start()  # shutdown after 3 seconds
+        Thread(target=__sleep_and_shutdown, args=(3,)).start()  # shutdown after 3 seconds
         return "ok"
 
     def _count_down_thread():
