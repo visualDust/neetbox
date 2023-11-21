@@ -5,8 +5,6 @@
 # Date:   20230414
 
 import json
-import os
-import platform
 import subprocess
 import time
 
@@ -14,7 +12,6 @@ from neetbox.daemon._daemon_client import connect_daemon
 from neetbox.daemon.daemonable_process import DaemonableProcess
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
-from neetbox.utils import pkg
 
 
 def __attach_daemon(daemon_config):
@@ -29,11 +26,17 @@ def __attach_daemon(daemon_config):
                 "ipython, try to set 'allowIpython' to True."
             )
             return False  # ignore if debugging in ipython
-    pkg.is_installed("flask", try_install_if_not=True)
     _online_status = connect_daemon(daemon_config)  # try to connect daemon
     logger.log("daemon connection status: " + str(_online_status))
     if not _online_status:  # if no daemon online
-        logger.log(
+        if daemon_config["server"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:
+            # daemon not running on localhost
+            logger.err(
+                f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, daemon will not be attached. Continue anyway."
+            )
+            return False
+
+        logger.warn(
             f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon..."
         )
 
@@ -57,9 +60,7 @@ def __attach_daemon(daemon_config):
             else:
                 exit_code = popen.poll()
                 if exit_code is not None:
-                    logger.err(
-                        f"Daemon process exited unexpectedly with exit code {exit_code}."
-                    )
+                    logger.err(f"Daemon process exited unexpectedly with exit code {exit_code}.")
                     return False
 
                 time.sleep(0.5)

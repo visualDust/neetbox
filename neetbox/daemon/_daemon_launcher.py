@@ -1,16 +1,14 @@
-print("========= Daemon Launcher =========")
-
 import argparse
 import json
-import os
 import sys
 
-from neetbox.daemon._daemon import daemon_process
+from neetbox.daemon._flask_server import daemon_process
 
 # sys.stdout=open(r'D:\Projects\ML\neetbox\logdir\daemon.log', 'a+')
 
 
 # from neetbox.daemon._local_http_client import _local_http_client
+print("========= Daemon Launcher =========")
 
 
 def run():
@@ -27,6 +25,5 @@ def run():
 
 
 print("_daemon_launcher is starting with __name__ =", __name__, " and args =", sys.argv)
-
 run()
 print("_daemon_launcher: exiting")

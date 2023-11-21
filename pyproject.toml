@@ -5,9 +5,11 @@ description = "NEETBox contains useless CV code snippets."
 license = "MIT"
 authors = ["VisualDust <gavin@gong.host>"]
 maintainers = [
-    "VisualDust <gavin@gong.host>",
-    "PommesPeter <me@pommespeter.space>",
     "PaperCube <imzhy@hotmail.com>",
+    "VisualDust <gavin@gong.host>",
+    "Lideming <me@yuuza.net>",
+    "PommesPeter <me@pommespeter.space>",
+    "PuQing <me@puqing.work>",
 ]
 
 
@@ -41,9 +43,11 @@ numpy = "^1.26.0"
 pillow = "^10.0.1"
 pre-commit = ">=3.4.0"
 click = "^8.1.7"
+pytest = "^7.4.3"
+pyfiglet = "^1.0.2"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.0.0"
+pytest = "^7.0.0"
 httpx = "^0.24.0"
 flask = "^2.2.3"
 black = "^23.9.1"
@@ -60,3 +64,6 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry.scripts]
 neet = 'neetbox.cli.parse:main'
+
+[tool.black]
+line-length = 100

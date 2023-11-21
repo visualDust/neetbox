@@ -1,9 +1,10 @@
-import httpx
 import logging
+
+import httpx
 
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.ERROR)
-    
+
 __no_proxy = {
     "http://": None,
     "https://": None,
@@ -11,7 +12,7 @@ __no_proxy = {
 
 
 def __load_http_client():
-    __local_http_client = httpx.Client(proxies=__no_proxy)
+    __local_http_client = httpx.Client(proxies=__no_proxy)  # type: ignore
     return __local_http_client
 
 

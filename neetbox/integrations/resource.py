@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from random import random
 from threading import Event
-from typing import Any, Dict, Iterable, List, Union
+from typing import Dict, List, Union
 from urllib.request import urlopen
 
 import numpy as np
@@ -25,7 +25,6 @@ from rich.progress import (
     TextColumn,
     TimeRemainingColumn,
     TransferSpeedColumn,
-    track,
 )
 
 from neetbox.integrations import engine
@@ -48,11 +47,12 @@ class ResourceLoader:
         file_types=["*"],
         sub_dirs=True,
         verbose=False,
+        force_rescan=False,
         *args,
         **kwargs,
     ):
         _id = folder + str(file_types) + "_R" if sub_dirs else ""
-        if _id in _loader_pool:
+        if _id in _loader_pool and not force_rescan:
             logger.info(
                 "ResourceLoader with same path and same file type(s) already exists. Returning the old one."
             )
@@ -67,6 +67,7 @@ class ResourceLoader:
         sub_dirs=True,
         async_scan=False,
         verbose=False,
+        force_rescan=False,
     ):
         """ResourceLoader scans given file type(s) in given place(s)
 
@@ -76,6 +77,7 @@ class ResourceLoader:
             sub_dirs (bool, optional): scan sub-folder(s)?. Defaults to True.
             async_scan (bool, optional): run scan traks in a new thread. Defaults to False.
             verbose (bool, optional): verbose output. Defaults to False.
+            force_rescan (bool, optional): rescan the folder even the same file type(s) was scanned here before. Default to False.
         """
         super().__init__()
         self.path = os.path.abspath(folder)
