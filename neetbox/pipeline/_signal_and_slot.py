@@ -36,9 +36,9 @@ class _WatchConfig(dict):
 
 
 class _WatchedFun:
-    def __init__(self, func, others) -> None:
+    def __init__(self, func, watch_cfg) -> None:
         self.func = func
-        self.others = others
+        self.others = watch_cfg
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
         return self.func(*args, **kwds)
@@ -75,9 +75,7 @@ def __update_and_get(name, *args, **kwargs):
                 f"Watched value {_name} takes longer time({delta_t:.8f}s) to update than it was expected({expected_time_limit}s)."
             )
 
-    Thread(
-        target=_so_update_and_ping_listen, args=(name, _the_value, _watch_config)
-    ).start()
+    Thread(target=_so_update_and_ping_listen, args=(name, _the_value, _watch_config)).start()
     return _the_value
 
 
@@ -92,16 +90,12 @@ def _watch(func: Callable, name: str, freq: float, initiative=False, force=False
         name=name,
         what=_WatchedFun(
             func=func,
-            others=_WatchConfig(name, freq=freq, initiative=initiative),
+            watch_cfg=_WatchConfig(name, freq=freq, initiative=initiative),
         ),
         force=force,
     )
-    if (
-        initiative
-    ):  # initiatively update the value dict when the function was called manually
-        logger.log(
-            f"added {name} to daemon monitor. It will update on each call of the function."
-        )
+    if initiative:  # initiatively update the value dict when the function was called manually
+        logger.log(f"added {name} to daemon monitor. It will update on each call of the function.")
         return partial(__update_and_get, name)
     else:
         logger.log(
@@ -154,9 +148,7 @@ def _update_thread():
         time.sleep(__TIME_UNIT_SEC)
         for _vname, _watched_fun in _watch_queue_dict.items():
             _watch_config = _watched_fun.others
-            if (
-                not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0
-            ):  # do update
+            if not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0:  # do update
                 _the_value = __update_and_get(_vname)
 
 
