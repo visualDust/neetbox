@@ -3,6 +3,11 @@ print('========= Daemon Launcher =========')
 import os
 import sys
 
+<<<<<<< Updated upstream
+=======
+from neetbox.daemon._flask_server import daemon_process
+
+>>>>>>> Stashed changes
 # sys.stdout=open(r'D:\Projects\ML\neetbox\logdir\daemon.log', 'a+')
 
 import json
