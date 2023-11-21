@@ -4,10 +4,9 @@
 # URL:    https://gong.host
 # Date:   20230413
 
-import inspect
-from typing import Optional, Union
 
-from neetbox.config._config import DEFAULT_CONFIG as default
+import inspect
+from neetbox.config._config import DEFAULT_WORKSPACE_CONFIG as default
 from neetbox.config._config import get_current
 from neetbox.utils.framing import *
 

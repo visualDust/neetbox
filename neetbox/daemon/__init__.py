@@ -16,6 +16,9 @@ from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 from neetbox.utils import pkg
 
+pkg.is_installed("flask", try_install_if_not=True)
+pkg.is_installed("setproctitle", try_install_if_not=True)
+
 
 def __attach_daemon(daemon_config):
     if not daemon_config["allowIpython"]:
@@ -32,7 +35,14 @@ def __attach_daemon(daemon_config):
     _online_status = connect_daemon(daemon_config)  # try to connect daemon
     logger.log("daemon connection status: " + str(_online_status))
     if not _online_status:  # if no daemon online
-        logger.log(
+        if daemon_config["server"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:
+            # daemon not running on localhost
+            logger.err(
+                f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, daemon will not be attached. Continue anyway."
+            )
+            return False
+
+        logger.warn(
             f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon..."
         )
 

@@ -5,8 +5,7 @@ import json
 import os
 import sys
 
-from neetbox.daemon._daemon import daemon_process
-
+from neetbox.daemon._flask_server import daemon_process
 # sys.stdout=open(r'D:\Projects\ML\neetbox\logdir\daemon.log', 'a+')
 
 
