@@ -48,6 +48,7 @@ class ResourceLoader:
         file_types: [str] = [],
         sub_dirs=True,
         verbose=False,
+        force_rescan=False,
         *args,
         **kwargs,
     ):
@@ -55,7 +56,7 @@ class ResourceLoader:
             logger.err("Please specify file type(s) so that I can scan.")
             raise Exception("No file type(s) specified")
         _id = folder + str(file_types) + "_R" if sub_dirs else ""
-        if _id in _loader_pool:
+        if _id in _loader_pool and not force_rescan:
             logger.info(
                 "ResourceLoader with same path and same file types already exists. Returning the old one."
             )
@@ -70,6 +71,7 @@ class ResourceLoader:
         sub_dirs=True,
         async_scan=False,
         verbose=False,
+        force_rescan=False,
     ):
         """ResourceLoader scans given file type(s) in given place(s)
 
@@ -79,6 +81,7 @@ class ResourceLoader:
             sub_dirs (bool, optional): scan sub-folder(s)?. Defaults to True.
             async_scan (bool, optional): run scan traks in a new thread. Defaults to False.
             verbose (bool, optional): verbose output. Defaults to False.
+            force_rescan (bool, optional): rescan the folder even the same file type(s) was scanned here before. Default to False.
         """
         super().__init__()
         self.path = os.path.abspath(folder)
@@ -123,9 +126,6 @@ class ResourceLoader:
                 f"Resource loader '{self.path}' ready with {len(self._file_types)} file types({len(self.file_path_list)} files)."
             )
 
-        logger.log(
-            f"Scanning started at '{self.path}' for {len(self._file_types)} file types."
-        )
         # call to scan
         if self._async_scan:
             threading.Thread(target=perform_scan).start()
