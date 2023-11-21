@@ -1,9 +1,8 @@
-import multiprocessing
 import os
 import subprocess
 import sys
 import time
-from typing import *
+from typing import List, Literal
 
 is_ms_windows = "win32" in sys.platform or "cygwin" in sys.platform
 
@@ -59,7 +58,7 @@ class DaemonableProcess:
                 creationflags = {
                     "attached": 0,
                     "shared": 0,
-                    "detached": subprocess.CREATE_NO_WINDOW,
+                    "detached": subprocess.CREATE_NO_WINDOW,  # type: ignore (only for windows)
                 }[self.__mode]
 
                 popen = subprocess.Popen(
