@@ -17,7 +17,7 @@ def test_resource_loader():
     import time
     print("testing resource loader")
     md_loader = ResourceLoader('./',['md'])
-    py_loader_async = ResourceLoader('./',['py'],async_scan=True,verbose=True)
+    py_loader_async = ResourceLoader('./', async_scan=True,verbose=True)
     while not py_loader_async.ready:
         print("waiting resource loader")
         time.sleep(1)

@@ -7,14 +7,11 @@ def test_default_logger():
     logger.warn("logwarn")
     logger.err("logerr")
 
+    @logger.mention
     def a():
         logger.log("Hello from the default logger")
 
-    class A:
-        def a(self):
-            logger.log("Hello from the default logger")
-
-    A().a()
+    a()
 
 
 def test_logger_with_specific_identity():
