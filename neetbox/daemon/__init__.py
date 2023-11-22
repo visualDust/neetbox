@@ -9,10 +9,10 @@ import subprocess
 import time
 
 import neetbox
+from neetbox.config import get_module_level_config
 from neetbox.daemon._agent import neet_action as action
 from neetbox.daemon.client._daemon_client import connect_daemon
 from neetbox.daemon.server.daemonable_process import DaemonableProcess
-from neetbox.config import get_module_level_config
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 
@@ -33,7 +33,7 @@ def __attach_daemon(daemon_config):
     logger.log("daemon connection status: " + str(_is_daemon_server_online))
     if not _is_daemon_server_online:  # if no daemon online
         # check if possible to launch
-        daemon_client_config = daemon_config['client']
+        daemon_client_config = daemon_config["client"]
         if daemon_client_config["server"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:
             # daemon not running on localhost
             logger.err(
@@ -44,11 +44,12 @@ def __attach_daemon(daemon_config):
         logger.warn(
             f"No daemon running at {daemon_client_config['server']}:{daemon_client_config['port']}, trying to create daemon..."
         )
-        
+
+        # TODO BAD NEWS daemon process seems not launching properly
         popen = DaemonableProcess(
             target="neetbox.daemon.server._daemon_launcher",
-            args=["--config", json.dumps(daemon_config['server'])],
-            mode=daemon_config['server']["mode"],
+            args=["--config", json.dumps(daemon_config["server"])],
+            mode=daemon_config["server"]["mode"],
             redirect_stdout=subprocess.DEVNULL if daemon_config["mute"] else None,
             env_append={"NEETBOX_DAEMON_PROCESS": "1"},
         ).start()
