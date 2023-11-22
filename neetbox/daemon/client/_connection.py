@@ -2,7 +2,6 @@ import asyncio
 import logging
 
 import httpx
-import websockets
 
 from neetbox.utils.mvc import Singleton
 
@@ -23,8 +22,8 @@ def __load_http_client():
 # singleton
 _local_http_client: httpx.Client = __load_http_client()
 
-# class Connection(metaclass = Singleton):
-#     _http_client: httpx.Client
-#     _websocket_client
-#     def __init__(self,) -> None:
-#         websockets.connect()
+class Connection(metaclass = Singleton):
+    _http_client: httpx.Client
+    # _websocket_client
+    def __init__(self, cfg) -> None:
+        pass
