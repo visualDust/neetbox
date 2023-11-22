@@ -14,13 +14,13 @@ print("========= Daemon  =========")
 def run():
     if len(sys.argv) <= 1:
         print("_daemon_: Warning: empty daemon_config")
-        daemon_config = {}
+        daemon_config = None
     else:
         ap = argparse.ArgumentParser()
         ap.add_argument("--config")
         args = ap.parse_args()
         daemon_config = json.loads(args.config)
-        print("Daemon  started with config:", daemon_config)
+        print("Daemon started with config:", daemon_config)
     daemon_process(daemon_config)
 
 
