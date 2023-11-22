@@ -98,8 +98,5 @@ if __name__ == "__main__":
             "displayName": None,
             "uploadInterval": 10,
             "mute": True,
-            "launcher": {
-                "port": 20202,
-            },
         }
     )

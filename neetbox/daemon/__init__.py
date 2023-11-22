@@ -8,8 +8,9 @@ import json
 import subprocess
 import time
 
-from neetbox.daemon._daemon_client import connect_daemon
-from neetbox.daemon.daemonable_process import DaemonableProcess
+from neetbox.daemon._agent import neet_action as action
+from neetbox.daemon.client._daemon_client import connect_daemon
+from neetbox.daemon.server.daemonable_process import DaemonableProcess
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 
@@ -41,8 +42,8 @@ def __attach_daemon(daemon_config):
         )
 
         popen = DaemonableProcess(
-            target="neetbox.daemon._daemon_launcher",
-            args=["--config", json.dumps(daemon_config["launcher"])],
+            target="neetbox.daemon.server._daemon_",
+            args=["--config", json.dumps(daemon_config[""])],
             mode=daemon_config["mode"],
             redirect_stdout=subprocess.DEVNULL if daemon_config["mute"] else None,
             env_append={"NEETBOX_DAEMON_PROCESS": "1"},
@@ -79,4 +80,4 @@ def _try_attach_daemon():
         __attach_daemon(_cfg)
 
 
-__all__ = ["watch", "listen", "_try_attach_daemon"]
+__all__ = ["watch", "listen", "action", "_try_attach_daemon"]

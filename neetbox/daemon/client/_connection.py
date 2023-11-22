@@ -1,6 +1,10 @@
+import asyncio
 import logging
 
 import httpx
+import websockets
+
+from neetbox.utils.mvc import Singleton
 
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.ERROR)
@@ -16,4 +20,11 @@ def __load_http_client():
     return __local_http_client
 
 
+# singleton
 _local_http_client: httpx.Client = __load_http_client()
+
+# class Connection(metaclass = Singleton):
+#     _http_client: httpx.Client
+#     _websocket_client
+#     def __init__(self,) -> None:
+#         websockets.connect()

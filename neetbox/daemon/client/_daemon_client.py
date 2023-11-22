@@ -10,7 +10,7 @@ from threading import Thread
 from typing import Union
 
 from neetbox.config import get_module_level_config
-from neetbox.daemon._local_http_client import _local_http_client
+from neetbox.daemon.client._connection import _local_http_client
 from neetbox.logging import logger
 from neetbox.pipeline._signal_and_slot import _update_value_dict
 

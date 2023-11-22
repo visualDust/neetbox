@@ -52,6 +52,7 @@ httpx = "^0.24.0"
 flask = "^2.2.3"
 black = "^23.9.1"
 isort = "^5.11.5"
+pre-commit = "^3"
 
 [tool.poetry.extras]
 torch = ["torch", "torchvision", "torchaudio"]
