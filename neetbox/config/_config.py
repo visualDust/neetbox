@@ -12,25 +12,17 @@ DEFAULT_WORKSPACE_CONFIG = {
         "updateInterval": 10,
     },
     "integrations": {
-        "environment": {
-            "gpus": "auto",
-        },
-        "datasets": [],
+        "environment": {"hardware": {"monit": "true"}, "platform": {"monit": "true"}},
     },
     "daemon": {
         "enable": True,
+        "server": "localhost",
+        "port": 20202,
+        "displayName": None,
         "allowIpython": False,
         "mute": True,
-        "server": {
-            "mode": "detached",
-            "port": 20202,
-        },
-        "client": {
-            "server": "localhost",
-            "port": 20202,
-            "displayName": None,
-            "uploadInterval": 10,
-        },
+        "mode": "detached",
+        "uploadInterval": 10,
     },
 }
 WORKSPACE_CONFIG: dict = DEFAULT_WORKSPACE_CONFIG.copy()

@@ -8,15 +8,17 @@ import os
 import sys
 import time
 from threading import Thread
-import setproctitle
-from flask_socketio import SocketIO
-from flask_socketio import send as ws_send
-from flask_socketio import emit as ws_emit
-from neetbox.core import Registry
-from flask import Flask, abort, json, jsonify, request
-from neetbox.logging import logger
-from neetbox.config import get_module_level_config
 from typing import Dict, Tuple
+
+import setproctitle
+from flask import Flask, abort, json, jsonify, request
+from flask_socketio import SocketIO
+from flask_socketio import emit as ws_emit
+from flask_socketio import send as ws_send
+
+from neetbox.config import get_module_level_config
+from neetbox.core import Registry
+from neetbox.logging import logger
 
 __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours
 __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
@@ -27,7 +29,7 @@ FRONTEND_API_ROOT = "/web"
 CLIENT_API_ROOT = "/cli"
 
 
-def daemon_process(cfg=None):
+def daemon_process(cfg=None, debug=False):
     # getting config
     cfg = cfg or get_module_level_config()
 
@@ -63,35 +65,40 @@ def daemon_process(cfg=None):
             pass
 
     # ===============================================================
-    
-    app = Flask(__name__)
+
+    if debug:
+        from apiflask import APIFlask
+
+        app = APIFlask(__name__)
+    else:
+        app = Flask(__name__)
     socketio = SocketIO(app, cors_allowed_origins="*")
     __client_registry = Registry("__daemon_server")  # manage connections
     connected_clients: Dict(str, Tuple(str, str)) = {}  # {sid:(name,type)} store connection only
 
     # ========================  WS  SERVER  ===========================
-    
-    """ server behaviors when someone is requesting data of a Client 
-    
+
+    """ server behaviors when someone is requesting data of a Client
+
     !!! some axioms
     !!! a client and related frontend(s) must connect to the server with websocket
     !!! per name, per client. No duplicate names for different client
     !!! there might be multiple frontend(s) reading from single client
-    
-    frontend requesting status of name 
+
+    frontend requesting status of name
     -   name exist: return status
     -   name not exist: return 404
-    
+
     client synchronizing status of name
     -   name exist: update status
-    -   name not exist: 
+    -   name not exist:
         -   create Client with name
         -   update status
-    
-    
+
+
     on websocket connect:
     -   its a client with name:
-        -   name exist: 
+        -   name exist:
             -   show warning, client websocket overwrite
             -   replace Client's ws conn sid
         -   name not exist:
@@ -100,14 +107,14 @@ def daemon_process(cfg=None):
         -   name exist: add to Client's frontend ws conn list
         -   name not exist:
             -   error! frontend cannot read to a non-existing client
-        
+
     on websocket disconnect:
     -   is a frontend conn
         -   remove sid from Client's frontend ws conn list
     -   is a client conn
         -   remove sid from Client
     -   remove from connected_clients dict
-    
+
     on server receive json
     -    sent by client with name
         -   name exist: (name must exist)
@@ -177,18 +184,19 @@ def daemon_process(cfg=None):
                 target_sid = __client_registry[name].cli_ws_sid
                 ws_send(data, to=target_sid)
 
-
     # ======================== HTTP  SERVER ===========================
-    
+
     @app.route(f"{FRONTEND_API_ROOT}/wsforward/<name>", methods=["POST"])
-    def handle_json_forward_to_client_ws(name): # forward frontend http json to client ws
+    def handle_json_forward_to_client_ws(name):  # forward frontend http json to client ws
         data = request.json
-        if name in __client_registry: # client name exist
+        if name in __client_registry:  # client name exist
             target_sid = __client_registry[name].cli_ws_sid
-            if target_sid is None: # no active cli ws connection for this name
-                logger.warn(f"frontend tried to talk to forward to a disconnected client ws with name {name}.")
-                abort(404) 
-            ws_send(data,to=target_sid)
+            if target_sid is None:  # no active cli ws connection for this name
+                logger.warn(
+                    f"frontend tried to talk to forward to a disconnected client ws with name {name}."
+                )
+                abort(404)
+            ws_send(data, to=target_sid)
             return "ok"
 
     @app.route("/hello", methods=["GET"])
@@ -247,11 +255,11 @@ def daemon_process(cfg=None):
     count_down_thread = Thread(target=_count_down_thread, daemon=True)
     count_down_thread.start()
 
-    socketio.run(app, host="0.0.0.0", port=cfg["port"], debug=True)
+    socketio.run(app, host="0.0.0.0", port=cfg["port"], debug=debug)
 
 
 if __name__ == "__main__":
     import neetbox
 
-    cfg = get_module_level_config(neetbox.daemon.server)
-    daemon_process(cfg)
+    cfg = get_module_level_config(neetbox.daemon)
+    daemon_process(cfg, debug=True)
