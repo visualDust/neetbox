@@ -18,7 +18,7 @@ class PipPackageHealper(metaclass=Singleton):
         _installed = False
         while retry:
             if not retry:
-                error_str = f"Bad Input"
+                error_str = "Bad Input"
                 raise ValueError(error_str)
             print(f"{caller_name} want to install {package} via pip.")
             choice = input("Make your choice: [y]/n")
@@ -55,7 +55,7 @@ class PipPackageHealper(metaclass=Singleton):
             importlib.import_module(package)
             self.installed_packages.append(package)
             return True
-        except:
+        except:  # noqa
             package_name_install = (
                 package if type(try_install_if_not) is bool else try_install_if_not
             )
@@ -68,4 +68,4 @@ class PipPackageHealper(metaclass=Singleton):
 
 
 # singleton
-PipPackageHealper = PipPackageHealper()
+pipPackageHealper = PipPackageHealper()

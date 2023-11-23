@@ -3,7 +3,7 @@ import json
 import click
 
 import neetbox
-from neetbox.daemon._apis import get_status_of
+from neetbox.daemon.client._client_apis import get_status_of
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 

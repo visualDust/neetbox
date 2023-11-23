@@ -1,9 +1,8 @@
-import multiprocessing
 import os
 import subprocess
 import sys
 import time
-from typing import *
+from typing import List, Literal
 
 is_ms_windows = "win32" in sys.platform or "cygwin" in sys.platform
 
@@ -59,7 +58,7 @@ class DaemonableProcess:
                 creationflags = {
                     "attached": 0,
                     "shared": 0,
-                    "detached": subprocess.CREATE_NO_WINDOW,
+                    "detached": subprocess.CREATE_NO_WINDOW,  # type: ignore (only for windows)
                 }[self.__mode]
 
                 popen = subprocess.Popen(
@@ -70,7 +69,7 @@ class DaemonableProcess:
                     stdin=self.__stdin,
                     env=self.__env,
                 )
-                print(popen)
+                # print(popen)
 
                 # return_code = popen.wait()
                 # print('return_code', return_code)
@@ -90,7 +89,7 @@ class DaemonableProcess:
 
                     atexit.register(lambda: popen.terminate())
 
-                print(popen)
+                # print(popen)
 
             return popen
 

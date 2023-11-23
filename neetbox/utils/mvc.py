@@ -9,11 +9,9 @@ def singleton(class_):
     class class_w(class_):
         _instance = None
 
-        def __new__(class_, *args, **kwargs):
+        def __new__(cls, *args, **kwargs):
             if class_w._instance is None:
-                class_w._instance = super(class_w, class_).__new__(
-                    class_, *args, **kwargs
-                )
+                class_w._instance = super(class_w, cls).__new__(cls, *args, **kwargs)
 
 
 class Singleton(type):

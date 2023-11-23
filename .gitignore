@@ -5,6 +5,7 @@ __pycache__/
 dist/
 poetry.lock
 test/optional
+build_and_reinstall_wheel.cmd
 
 # log files
 log

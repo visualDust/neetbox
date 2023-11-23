@@ -5,26 +5,21 @@
 # Date:   20230414
 
 
-from neetbox.daemon._local_http_client import _local_http_client
+from neetbox.config import get_module_level_config
+from neetbox.daemon.client._connection import connection
+from neetbox.logging import logger
 from neetbox.utils import pkg
 from neetbox.utils.framing import get_frame_module_traceback
 
-module_name = get_frame_module_traceback().__name__
+module_name = get_frame_module_traceback().__name__  # type: ignore
 assert pkg.is_installed(
     "httpx", try_install_if_not=True
 ), f"{module_name} requires httpx which is not installed"
-import json
-import time
-
-import httpx
-
-from neetbox.config import get_module_level_config
-from neetbox.logging import logger
 
 logger = logger("NEETBOX DAEMON API")
 
 __cfg = get_module_level_config()
-daemon_address = f"{__cfg['server']}:{__cfg['port']}"
+daemon_address = f"{__cfg['host']}:{__cfg['port']}"
 base_addr = f"http://{daemon_address}"
 
 
@@ -32,6 +27,6 @@ def get_status_of(name=None):
     name = name or ""
     api_addr = f"{base_addr}/status"
     logger.info(f"Fetching from {api_addr}")
-    r = _local_http_client.get(api_addr)
+    r = connection.http.get(api_addr)
     _data = r.json()
     return _data

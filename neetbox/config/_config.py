@@ -4,39 +4,28 @@
 # URL:    https://gong.host
 # Date:   20230413
 
-import collections
-from multiprocessing import current_process
-
-from neetbox.utils.mvc import patch
-
-DEFAULT_CONFIG = {
+DEFAULT_WORKSPACE_CONFIG = {
     "name": None,
     "version": None,
-    "logging": {"logdir": None},
+    "logging": {"level": "INFO", "logdir": None},
     "pipeline": {
         "updateInterval": 10,
     },
     "integrations": {
-        "environment": {
-            "gpus": "auto",
-        },
-        "datasets": [],
+        "environment": {"hardware": {"monit": "true"}, "platform": {"monit": "true"}},
     },
     "daemon": {
         "enable": True,
-        "allowIpython": False,
-        "server": "localhost",
+        "host": "localhost",
         "port": 20202,
-        "mode": "detached",
         "displayName": None,
-        "uploadInterval": 10,
+        "allowIpython": False,
         "mute": True,
-        "launcher": {
-            "port": 20202,
-        },
+        "mode": "detached",
+        "uploadInterval": 10,
     },
 }
-WORKSPACE_CONFIG: dict = DEFAULT_CONFIG.copy()
+WORKSPACE_CONFIG: dict = DEFAULT_WORKSPACE_CONFIG.copy()
 
 
 def update_with(cfg: dict):
