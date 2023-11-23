@@ -8,8 +8,11 @@ import json
 import subprocess
 import time
 
-from neetbox.daemon._daemon_client import connect_daemon
-from neetbox.daemon.daemonable_process import DaemonableProcess
+import neetbox
+from neetbox.config import get_module_level_config
+from neetbox.daemon.client._action_agent import _NeetActionManager as NeetActionManager
+from neetbox.daemon.client._daemon_client import connect_daemon
+from neetbox.daemon.server.daemonable_process import DaemonableProcess
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 
@@ -26,23 +29,24 @@ def __attach_daemon(daemon_config):
                 "ipython, try to set 'allowIpython' to True."
             )
             return False  # ignore if debugging in ipython
-    _online_status = connect_daemon(daemon_config)  # try to connect daemon
-    logger.log("daemon connection status: " + str(_online_status))
-    if not _online_status:  # if no daemon online
-        if daemon_config["server"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:
+    _is_daemon_server_online = connect_daemon()  # try to connect daemon
+    logger.log("daemon connection status: " + str(_is_daemon_server_online))
+    if not _is_daemon_server_online:  # if no daemon online
+        # check if possible to launch
+        if daemon_config["host"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:
             # daemon not running on localhost
             logger.err(
-                f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, daemon will not be attached. Continue anyway."
+                f"No daemon running at {daemon_config['host']}:{daemon_config['port']}, daemon will not be attached. Continue anyway."
             )
             return False
 
         logger.warn(
-            f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon..."
+            f"No daemon running at {daemon_config['host']}:{daemon_config['port']}, trying to create daemon..."
         )
 
         popen = DaemonableProcess(
-            target="neetbox.daemon._daemon_launcher",
-            args=["--config", json.dumps(daemon_config["launcher"])],
+            target="neetbox.daemon.server._daemon_launcher",
+            args=["--config", json.dumps(daemon_config)],
             mode=daemon_config["mode"],
             redirect_stdout=subprocess.DEVNULL if daemon_config["mute"] else None,
             env_append={"NEETBOX_DAEMON_PROCESS": "1"},
@@ -55,7 +59,7 @@ def __attach_daemon(daemon_config):
 
         logger.log("Created daemon process, trying to connect to daemon...")
         while time.perf_counter() - _time_begin < 10:  # try connect daemon
-            if connect_daemon(daemon_config):
+            if connect_daemon():
                 return True
             else:
                 exit_code = popen.poll()
@@ -79,4 +83,5 @@ def _try_attach_daemon():
         __attach_daemon(_cfg)
 
 
-__all__ = ["watch", "listen", "_try_attach_daemon"]
+action = NeetActionManager.register
+__all__ = ["watch", "listen", "action", "NeetActionManager", "_try_attach_daemon"]

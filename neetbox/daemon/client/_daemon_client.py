@@ -10,7 +10,8 @@ from threading import Thread
 from typing import Union
 
 from neetbox.config import get_module_level_config
-from neetbox.daemon._local_http_client import _local_http_client
+from neetbox.daemon.client._connection import connection
+from neetbox.daemon.server._server import CLIENT_API_ROOT
 from neetbox.logging import logger
 from neetbox.pipeline._signal_and_slot import _update_value_dict
 
@@ -22,7 +23,7 @@ __upload_thread: Union[Thread, None] = None
 def _upload_thread(daemon_config, base_addr, display_name):
     _ctr = 0
     _api_name = "sync"
-    _api_addr = f"{base_addr}/{_api_name}/{display_name}"
+    _api_addr = f"{base_addr}/{CLIENT_API_ROOT}/{_api_name}/{display_name}"
     _disconnect_flag = False
     _disconnect_retries = 10
     while True:
@@ -36,7 +37,7 @@ def _upload_thread(daemon_config, base_addr, display_name):
         _headers = {"Content-Type": "application/json"}
         try:
             # upload data
-            resp = _local_http_client.post(_api_addr, json=_data, headers=_headers)
+            resp = connection.http.post(_api_addr, json=_data, headers=_headers)
             if resp.is_error:  # upload failed
                 raise IOError(f"Failed to upload data to daemon. ({resp.status_code})")
         except Exception as e:
@@ -61,20 +62,21 @@ def _upload_thread(daemon_config, base_addr, display_name):
             _disconnect_retries = 10
 
 
-def connect_daemon(daemon_config, launch_upload_thread=True):
+def connect_daemon(cfg=None, launch_upload_thread=True):
+    cfg = cfg or get_module_level_config()
     _display_name = get_module_level_config()["displayName"]
     _launch_config = get_module_level_config("@")
     _display_name = _display_name or _launch_config["name"]
 
-    logger.log(f"Connecting to daemon at {daemon_config['server']}:{daemon_config['port']} ...")
-    _daemon_address = f"{daemon_config['server']}:{daemon_config['port']}"
-    _base_addr = f"http://{_daemon_address}"
+    logger.log(f"Connecting to daemon at {cfg['host']}:{cfg['port']} ...")
+    _daemon_server_address = f"{cfg['host']}:{cfg['port']}"
+    _base_addr = f"http://{_daemon_server_address}"
 
     # check if daemon is alive
     def _check_daemon_alive(_api_addr):
         _api_name = "hello"
         _api_addr = f"{_api_addr}/{_api_name}"
-        r = _local_http_client.get(_api_addr)
+        r = connection.http.get(_api_addr)
         if r.is_error:
             raise IOError(f"Daemon at {_api_addr} is not alive. ({r.status_code})")
 
@@ -91,7 +93,7 @@ def connect_daemon(daemon_config, launch_upload_thread=True):
             __upload_thread = Thread(
                 target=_upload_thread,
                 daemon=True,
-                args=[daemon_config, _base_addr, _display_name],
+                args=[cfg, _base_addr, _display_name],
             )
             __upload_thread.start()
 

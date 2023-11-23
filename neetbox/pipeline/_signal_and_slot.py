@@ -95,10 +95,12 @@ def _watch(func: Callable, name: Optional[str], freq: float, initiative=False, f
         force=force,
     )
     if initiative:  # initiatively update the value dict when the function was called manually
-        logger.log(f"added {name} to daemon monitor. It will update on each call of the function.")
+        logger.debug(
+            f"added {name} to daemon monitor. It will update on each call of the function."
+        )
         return partial(__update_and_get, name)
     else:
-        logger.log(
+        logger.debug(
             f"added {name} to daemon monitor. It will update every {freq*__TIME_UNIT_SEC} second(s)."
         )
         return partial(__get, name)

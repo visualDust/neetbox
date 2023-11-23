@@ -1,11 +1,22 @@
-name = "FakeConfig"
+name = "neetbox"
 
 [logging]
+level = "DEBUG"
 
 [pipeline]
-
-[integrations]
+updateInterval = 10
 
 [daemon]
 enable = true
-allowIpython = true
+host = "localhost"
+port = 20202
+allowIpython = false
+mute = true
+mode = "detached"
+uploadInterval = 10
+
+[integrations.environment.hardware]
+monit = "true"
+
+[integrations.environment.platform]
+monit = "true"
