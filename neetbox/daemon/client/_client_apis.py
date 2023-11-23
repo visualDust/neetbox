@@ -19,7 +19,7 @@ assert pkg.is_installed(
 logger = logger("NEETBOX DAEMON API")
 
 __cfg = get_module_level_config()
-daemon_address = f"{__cfg['server']}:{__cfg['port']}"
+daemon_address = f"{__cfg['host']}:{__cfg['port']}"
 base_addr = f"http://{daemon_address}"
 
 
