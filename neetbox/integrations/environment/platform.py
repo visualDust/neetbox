@@ -18,9 +18,7 @@ class __Platform(dict, metaclass=Singleton):
         # system
         self["username"] = getpass.getuser()
         self["machine"] = platform.machine()
-        self["processor"] = (
-            "unknown" if len(platform.processor()) == 0 else platform.processor()
-        )
+        self["processor"] = "unknown" if len(platform.processor()) == 0 else platform.processor()
         self["os_name"] = platform.system()
         self["os_release"] = platform.version()
         self["architecture"] = platform.architecture()
@@ -39,9 +37,7 @@ class __Platform(dict, metaclass=Singleton):
             str: The command running results.
             err: The command error information.
         """
-        p = subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-        )
+        p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         raw_output, raw_err = p.communicate()
         rc = p.returncode
         if self.platform_info["architecture"] == "32bit":

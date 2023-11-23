@@ -8,7 +8,7 @@ from neetbox.config._config import update_with
 from neetbox.daemon import _try_attach_daemon
 from neetbox.utils.framing import get_frame_module_traceback
 
-module = get_frame_module_traceback(1).__name__
+module = get_frame_module_traceback(1).__name__  # type: ignore
 config_file_name = f"{module}.toml"
 
 

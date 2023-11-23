@@ -31,9 +31,7 @@ from neetbox.integrations import engine
 from neetbox.logging import logger
 from neetbox.utils import pkg
 
-_loader_pool: Dict[
-    str, "ResourceLoader"
-] = dict()  # all ResourceLoaders are stored here
+_loader_pool: Dict[str, "ResourceLoader"] = dict()  # all ResourceLoaders are stored here
 
 
 class ResourceLoader:
@@ -104,9 +102,7 @@ class ResourceLoader:
             glob_str = "**/*" if self._scan_sub_dirs else "*"
             if not verbose:  # do not output
                 self.file_path_list = [
-                    str(path)
-                    for path in pathlib.Path(self.path).glob(glob_str)
-                    if can_match(path)
+                    str(path) for path in pathlib.Path(self.path).glob(glob_str) if can_match(path)
                 ]
             else:
                 self.file_path_list = []
@@ -175,7 +171,7 @@ class ImagesLoader(ResourceLoader):
         return np.array(image)
 
     def get_random_image_as_tensor(self, engine=engine.Torch):
-        assert engine in [engine.Torch]  # todo support other engines
+        assert engine in [engine.Torch]  # TODO support other engines
         if engine == engine.Torch:
             assert pkg.is_installed("torchvision")
             import torchvision.transforms as T
@@ -186,12 +182,10 @@ class ImagesLoader(ResourceLoader):
                     T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
                 ]
             )
-            image = tensor_transform(self.get_random_image()).unsqueeze(
-                0
-            )  # To tensor of NCHW
+            image = tensor_transform(self.get_random_image()).unsqueeze(0)  # To tensor of NCHW
             return image
 
-    # todo to_dataset
+    # TODO(VisualDust): to_dataset
 
 
 def download(
