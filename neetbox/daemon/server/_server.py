@@ -11,7 +11,7 @@ from threading import Thread
 from typing import Dict, Tuple
 
 import setproctitle
-from flask import Flask, abort, json, jsonify, request
+from flask import Flask, abort, json, request
 from flask_socketio import SocketIO
 from flask_socketio import emit as ws_emit
 from flask_socketio import send as ws_send
@@ -207,9 +207,7 @@ def daemon_process(cfg=None, debug=False):
     def return_status_of(name):
         global __COUNT_DOWN
         __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
-        if not name:
-            pass  # returning full dict
-        elif name in __client_registry:
+        if name in __client_registry:
             _returning_stat = __client_registry[name].status  # returning specific status
         else:
             abort(404)
