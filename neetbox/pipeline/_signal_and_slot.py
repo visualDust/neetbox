@@ -36,9 +36,9 @@ class _WatchConfig(dict):
 
 
 class _WatchedFun:
-    def __init__(self, func, others) -> None:
+    def __init__(self, func, watch_cfg) -> None:
         self.func = func
-        self.others = others
+        self.others = watch_cfg
 
     def __call__(self, *args: Any, **kwds: Any) -> Any:
         return self.func(*args, **kwds)
@@ -90,7 +90,7 @@ def _watch(func: Callable, name: Optional[str], freq: float, initiative=False, f
         name=name,
         what=_WatchedFun(
             func=func,
-            others=_WatchConfig(name, freq=freq, initiative=initiative),
+            watch_cfg=_WatchConfig(name, freq=freq, initiative=initiative),
         ),
         force=force,
     )
