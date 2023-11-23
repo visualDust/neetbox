@@ -7,11 +7,11 @@ updateInterval = 10
 
 [daemon]
 enable = true
-server = "localhost"
+host = "localhost"
 port = 20202
 allowIpython = false
 mute = true
-mode = "attached"
+mode = "detached"
 uploadInterval = 10
 
 [integrations.environment.hardware]

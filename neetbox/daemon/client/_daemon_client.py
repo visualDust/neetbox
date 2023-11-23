@@ -11,9 +11,9 @@ from typing import Union
 
 from neetbox.config import get_module_level_config
 from neetbox.daemon.client._connection import _local_http_client
+from neetbox.daemon.server._server import CLIENT_API_ROOT
 from neetbox.logging import logger
 from neetbox.pipeline._signal_and_slot import _update_value_dict
-from neetbox.daemon.server._server import CLIENT_API_ROOT
 
 __TIME_UNIT_SEC = 0.1
 
@@ -68,8 +68,8 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
     _launch_config = get_module_level_config("@")
     _display_name = _display_name or _launch_config["name"]
 
-    logger.log(f"Connecting to daemon at {cfg['server']}:{cfg['port']} ...")
-    _daemon_server_address = f"{cfg['server']}:{cfg['port']}"
+    logger.log(f"Connecting to daemon at {cfg['host']}:{cfg['port']} ...")
+    _daemon_server_address = f"{cfg['host']}:{cfg['port']}"
     _base_addr = f"http://{_daemon_server_address}"
 
     # check if daemon is alive

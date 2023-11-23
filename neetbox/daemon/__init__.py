@@ -33,18 +33,17 @@ def __attach_daemon(daemon_config):
     logger.log("daemon connection status: " + str(_is_daemon_server_online))
     if not _is_daemon_server_online:  # if no daemon online
         # check if possible to launch
-        if daemon_config["server"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:
+        if daemon_config["host"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:
             # daemon not running on localhost
             logger.err(
-                f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, daemon will not be attached. Continue anyway."
+                f"No daemon running at {daemon_config['host']}:{daemon_config['port']}, daemon will not be attached. Continue anyway."
             )
             return False
 
         logger.warn(
-            f"No daemon running at {daemon_config['server']}:{daemon_config['port']}, trying to create daemon..."
+            f"No daemon running at {daemon_config['host']}:{daemon_config['port']}, trying to create daemon..."
         )
 
-        # TODO BAD NEWS daemon process seems not launching properly
         popen = DaemonableProcess(
             target="neetbox.daemon.server._daemon_launcher",
             args=["--config", json.dumps(daemon_config)],
