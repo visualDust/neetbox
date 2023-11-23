@@ -44,7 +44,7 @@ class _NeetActionManager(metaclass=Singleton):
             action_dict[name] = action.argspec.args
         return action_dict
 
-    def eval_call(self, name: str, params: dict, callback: None):
+    def eval_call(name: str, params: dict, callback: None):
         if name not in _NeetActionManager.__ACTION_POOL:
             logger.err(f"Could not find action with name {name}, action stopped.")
             return False
@@ -82,10 +82,6 @@ class _NeetActionManager(metaclass=Singleton):
         return function
 
 
-# singleton
-neet_action = _NeetActionManager()
-
-
 # example
 if __name__ == "__main__":
     import time
@@ -102,6 +98,6 @@ if __name__ == "__main__":
     def callback_fun(text):
         print(f"callback_fun print: {text}")
 
-    neet_action.eval_call("some", {"a": "3", "b": "4"}, callback=callback_fun)
+    _NeetActionManager.eval_call(name="some", params={"a": "3", "b": "4"}, callback=callback_fun)
     print("you should see this line first before callback_fun print")
     time.sleep(4)

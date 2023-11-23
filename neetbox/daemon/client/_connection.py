@@ -4,7 +4,6 @@ import logging
 from typing import Callable, Optional
 
 import httpx
-import websocket
 
 from neetbox.config import get_module_level_config
 from neetbox.core import Registry
@@ -13,11 +12,6 @@ from neetbox.utils.mvc import Singleton
 
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.ERROR)
-
-__no_proxy = {
-    "http://": None,
-    "https://": None,
-}
 
 EVENT_TYPE_NAME_KEY = "event-type"
 EVENT_PAYLOAD_NAME_KEY = "payload"
@@ -34,7 +28,12 @@ class ClientConn(metaclass=Singleton):
         cfg = get_module_level_config()
 
         def __load_http_client():
-            __local_http_client = httpx.Client(proxies=__no_proxy)  # type: ignore
+            __local_http_client = httpx.Client(
+                proxies={
+                    "http://": None,
+                    "https://": None,
+                }
+            )  # type: ignore
             return __local_http_client
 
         # create htrtp client
