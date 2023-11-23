@@ -36,9 +36,7 @@ def init(path=None, load=False, **kwargs) -> bool:
                     if "name" in kwargs and kwargs["name"]:  # using given name
                         _config["name"] = kwargs["name"]
                     else:  # using the folder name
-                        _config["name"] = os.path.basename(
-                            os.path.normpath(os.getcwd())
-                        )
+                        _config["name"] = os.path.basename(os.path.normpath(os.getcwd()))
                     toml.dump(_config, config_file)
                 logger.ok(f"Workspace config created as {config_file_path}.")
                 return True
@@ -75,9 +73,10 @@ def init(path=None, load=False, **kwargs) -> bool:
 
 
 is_in_daemon_process = (
-    "NEETBOX_DAEMON_PROCESS" in os.environ
-    and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
+    "NEETBOX_DAEMON_PROCESS" in os.environ and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
 )
 # print('prevent_daemon_loading =', is_in_daemon_process)
 if os.path.isfile(config_file_name) and not is_in_daemon_process:  # if in a workspace
-    init(load=True)
+    success = init(load=True)  # init from config file
+    if not success:
+        os._exit(255)

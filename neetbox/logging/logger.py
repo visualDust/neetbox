@@ -18,7 +18,6 @@ from rich import print as rprint
 from rich.panel import Panel
 
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
-from neetbox.utils import format
 from neetbox.utils.framing import get_caller_identity_traceback
 
 

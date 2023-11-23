@@ -1,11 +1,13 @@
 import functools
 import inspect
+from ast import literal_eval
 from threading import Thread
 from typing import Callable, Optional
-from ast import literal_eval
+
 from neetbox.core import Registry
-from neetbox.utils.mvc import Singleton
 from neetbox.logging import logger
+from neetbox.pipeline import watch
+from neetbox.utils.mvc import Singleton
 
 
 class PackedAction(Callable):
@@ -27,27 +29,29 @@ class PackedAction(Callable):
 class _NeetAction(metaclass=Singleton):
     __ACTION_POOL: Registry = Registry("__NEET_ACTIONS")
 
-    def register(self, *, name: Optional[str] = None, blocking: bool = False):
-        return functools.partial(self._register, name=name, blocking=blocking)
-
-    def _register(self, function: Callable, name: str = None, blocking: bool = False):
-        packed = PackedAction(function=function, name=name, blocking=blocking)
-        _NeetAction.__ACTION_POOL._register(what=packed, name=packed.name, force=True)
-        return function
-
-    def get_actions(self):
+    def get_action_names():
         action_names = _NeetAction.__ACTION_POOL.keys()
         actions = {}
         for n in action_names:
             actions[n] = _NeetAction.__ACTION_POOL[n].argspec
         return actions
 
+    def get_action_dict():
+        action_dict = {}
+        action_names = _NeetAction.__ACTION_POOL.keys()
+        for name in action_names:
+            action = _NeetAction.__ACTION_POOL[name]
+            action_dict[name] = action.argspec.args
+        return action_dict
+
     def eval_call(self, name: str, params: dict, callback: None):
         if name not in _NeetAction.__ACTION_POOL:
             logger.err(f"Could not find action with name {name}, action stopped.")
             return False
         target_action = _NeetAction.__ACTION_POOL[name]
-        logger.log(f"Agent runs function '{target_action.name}', blocking = {target_action.blocking}")
+        logger.log(
+            f"Agent runs function '{target_action.name}', blocking = {target_action.blocking}"
+        )
         if not target_action.blocking:  # non-blocking run in thread
 
             def run_and_callback(target_action, params, callback):
@@ -62,6 +66,20 @@ class _NeetAction(metaclass=Singleton):
             return None
         else:  # blocking run
             return target_action.eval_call(params)
+
+    @watch(initiative=True)
+    def _update_action_dict():
+        # for status updater
+        return _NeetAction.get_action_dict()
+
+    def register(self, *, name: Optional[str] = None, blocking: bool = False):
+        return functools.partial(self._register, name=name, blocking=blocking)
+
+    def _register(self, function: Callable, name: str = None, blocking: bool = False):
+        packed = PackedAction(function=function, name=name, blocking=blocking)
+        _NeetAction.__ACTION_POOL._register(what=packed, name=packed.name, force=True)
+        _NeetAction._update_action_dict()  # update for sync
+        return function
 
 
 # singleton
@@ -80,7 +98,8 @@ if __name__ == "__main__":
         return f"a = {a}, b = {b}"
 
     print("registered actions:")
-    print(neet_action.get_actions())
+    action_dict = _NeetAction.get_action_dict()
+    print(action_dict)
 
     def callback_fun(text):
         print(f"callback_fun print: {text}")
