@@ -8,16 +8,17 @@ import functools
 import os
 from datetime import date, datetime
 from enum import Enum
-from inspect import isclass, iscoroutinefunction, isgeneratorfunction
 from random import randint
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
+from rich import print as rprint
 from rich.panel import Panel
 
 from neetbox.core import Registry
 from neetbox.logging._writer import (
     FileLogWriter,
     JsonLogWriter,
+    RawLog,
     consoleLogWriter,
     webSocketLogWriter,
 )
@@ -90,28 +91,6 @@ class Logger:
         __WHOM_2_LOGGER[whom] = Logger(whom=whom, style=style)
         return __WHOM_2_LOGGER[whom]
 
-    def _write(self, raw_msg):
-        # perform log
-        if into_stdout:
-            rprint(
-                _prefix
-                + _datetime
-                + _style.split_char_cmd * min(len(_datetime), 1)
-                + styled_text(_whom, style=_style)
-                + _style.split_char_cmd * min(len(_whom), 1),
-                _pure_str_message,
-            )
-        if into_file and self.file_writer:
-            self.file_writer.write(
-                _prefix
-                + _datetime
-                + _style.split_char_txt * min(len(_datetime), 1)
-                + _whom
-                + _style.split_char_txt * min(len(_whom), 1)
-                + _pure_str_message
-                + "\n"
-            )
-
     def log(
         self,
         *content,
@@ -119,18 +98,33 @@ class Logger:
         datetime_format: Optional[str] = None,
         with_identifier: Optional[bool] = None,
         with_datetime: Optional[bool] = None,
-        skip_writers: Optional[list[str]] = None,
+        skip_writers: Optional[Union[list[str], str]] = None,
         traceback=2,
     ):
         _caller_identity = get_caller_identity_traceback(traceback=traceback)
-
-        # getting style
-        _style = self.style
 
         # converting args into a single string
         _pure_str_message = ""
         for msg in content:
             _pure_str_message += str(msg) + " "
+
+        if type(skip_writers) is str:
+            skip_writers = [skip_writers]
+
+        raw_log = RawLog(
+            rich_msg=_pure_str_message,
+            caller_identity=_caller_identity,
+            style=self.style,
+            prefix=prefix,
+            datetime_format=datetime_format,
+            with_identifier=with_identifier,
+            with_datetime=with_datetime,
+            skip_writers=skip_writers,
+        )
+
+        for writer in [self.console_writer, self.ws_writer, self.file_writer]:
+            if writer:
+                raw_log.write_by(writer)
 
         return self
 

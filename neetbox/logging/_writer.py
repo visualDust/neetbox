@@ -1,4 +1,5 @@
 import datetime
+import inspect
 import io
 import os
 import pathlib
@@ -10,6 +11,11 @@ from rich import print as rprint
 
 from neetbox.logging import formatting
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
+
+
+# declare type
+class LogWriter:
+    pass
 
 
 # declare type
@@ -31,20 +37,27 @@ class JsonLogWriter:
 class RawLog:
     rich_msg: str
     caller_identity: Any
-    default_style: LogStyle
+    style: LogStyle
     prefix: Optional[str] = None
     datetime_format: Optional[str] = None
     with_identifier: Optional[bool] = None
     with_datetime: Optional[bool] = None
     skip_writers: Optional[list[str]] = None
-    name2writerType = {
-        "console": __ConsoleLogWriter,
-        "file": FileLogWriter,
-        "json": JsonLogWriter,
-    }
 
-    def __repr__(self) -> str:
-        _default_style = self.default_style
+    def write_by(self, writer: LogWriter) -> bool:
+        name2writerType = {
+            "console": __ConsoleLogWriter,
+            "file": FileLogWriter,
+            "json": JsonLogWriter,
+        }
+        for swr in self.skip_writers:
+            if isinstance(writer, name2writerType[swr]):
+                return False  # skip this writer, do not write
+        writer.write(self)
+        return False
+
+    def json(self) -> dict:
+        _default_style = self.style
         # prefix
         _prefix = self.prefix or _default_style.prefix
         # composing datetime
@@ -82,16 +95,17 @@ class RawLog:
                 _whom += id_seq[i]
         return {"prefix": _prefix, "datetime": _datetime, "whom": _whom, "msg": self.rich_msg}
 
-    def dumps(self) -> dict:
+    def __repr__(self) -> str:
         pass
 
-    def loads(s) -> "RawLog":
-        # todo
+    def dumps(s: str):
+        # todo dump from str
         pass
 
 
+# Log writer interface
 class LogWriter:
-    def write(self, massive: RawLog):
+    def write(self, raw_log: RawLog):
         pass
 
 
@@ -99,14 +113,21 @@ class LogWriter:
 
 
 class __ConsoleLogWriter(metaclass=LogWriter):
-    def write(self, massive: RawLog):
-        # todo continue work
-        massive.default_style.pre = _style.prefix
-        if prefix is not None:  # if using specific prefix
-            _prefix = prefix
-        console.print(massive)
+    def write(self, raw_log: RawLog):
+        _msg_dict = raw_log.json()
+        _style = raw_log.style
+        rich_msg = (
+            _msg_dict["prefix"]
+            + _msg_dict["datetime"]
+            + _style.split_char_cmd * min(len(_msg_dict["datetime"]), 1)
+            + styled_text(_msg_dict["whom"], style=_style)
+            + _style.split_char_cmd * min(len(_msg_dict["whom"]), 1),
+            +_msg_dict["msg"],
+        )
+        rprint(rich_msg)
 
 
+# console writer singleton
 consoleLogWriter = __ConsoleLogWriter()
 
 
@@ -266,10 +287,10 @@ class _AutoSplitLogWriter(io.TextIOBase):
 
 
 class FileLogWriter:
-    # static variable
+    # class level static pool
     PATH_2_FILE_WRITER = {}
 
-    # non-static things
+    # instance level non-static things
     file_writer = None  # assign in __init__
 
     def __new__(cls, path, *args, **kwargs):
@@ -291,17 +312,28 @@ class FileLogWriter:
     def __init__(self, path) -> None:
         self.file_writer = open(path, "a", encoding="utf-8", buffering=1)
 
-    def write(self, massive: RawLog):
-        self.file_writer.write(massive)
+    def write(self, raw_log: RawLog):
+        _msg_dict = raw_log.json()
+        _style = raw_log.style
+        text_msg = (
+            _msg_dict["prefix"]
+            + _msg_dict["datetime"]
+            + _style.split_char_txt * min(len(_msg_dict["datetime"]), 1)
+            + _msg_dict["whom"]
+            + _style.split_char_txt * min(len(_msg_dict["whom"]), 1)
+            + _msg_dict["msg"]
+            + "\n"
+        )
+        self.file_writer.write(text_msg)
 
 
 # ================== JSON LOG WRITER =====================
 
 
 class JsonLogWriter(FileLogWriter):
-    def write(self, massive: RawLog):
-        # todo convert to json
-        self.file_writer.write(massive)
+    def write(self, raw_log: RawLog):
+        # todo convert to json and write
+        pass
 
 
 # ================== WS LOG WRITER =====================
@@ -311,7 +343,7 @@ class __WebSocketLogWriter(metaclass=LogWriter):
     def __init__(self) -> None:
         pass
 
-    def write(self, massive: RawLog):
+    def write(self, raw_log: RawLog):
         pass
 
 
