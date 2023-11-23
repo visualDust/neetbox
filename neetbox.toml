@@ -1,6 +1,7 @@
 name = "neetbox"
 
 [logging]
+level = "DEBUG"
 
 [pipeline]
 updateInterval = 10

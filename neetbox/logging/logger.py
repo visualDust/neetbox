@@ -18,14 +18,14 @@ from rich import print as rprint
 from rich.panel import Panel
 
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
-from neetbox.utils import format
+from neetbox.utils import formatting
 from neetbox.utils.framing import get_caller_identity_traceback
 
 
 class LogLevel(Enum):
     ALL = 4
-    INFO = 3
-    DEBUG = 2
+    DEBUG = 3
+    INFO = 2
     WARNING = 1
     ERROR = 0
 
@@ -52,15 +52,23 @@ writers_dict = {}
 style_dict = {}
 loggers_dict = {}
 
-_global_log_level = LogLevel.ALL
+_GLOBAL_LOG_LEVEL = LogLevel.INFO
 
 
 def set_log_level(level: LogLevel):
+    if type(level) is str:
+        level = {
+            "ALL": LogLevel.ALL,
+            "DEBUG": LogLevel.DEBUG,
+            "INFO": LogLevel.INFO,
+            "WARNING": LogLevel.WARNING,
+            "ERROR": LogLevel.ERROR,
+        }[level]
     if type(level) is int:
         assert level >= 0 and level <= 3
         level = LogLevel(level)
-    global _global_log_level
-    _global_log_level = level
+    global _GLOBAL_LOG_LEVEL
+    _GLOBAL_LOG_LEVEL = level
 
 
 class LogMetadata:
@@ -322,7 +330,7 @@ class Logger:
         return self
 
     def ok(self, *message, flag="OK"):
-        if _global_log_level >= LogLevel.INFO:
+        if _GLOBAL_LOG_LEVEL >= LogLevel.INFO:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'green')}]",
@@ -333,7 +341,7 @@ class Logger:
         return self
 
     def debug(self, *message, flag="DEBUG"):
-        if _global_log_level >= LogLevel.DEBUG:
+        if _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'cyan')}]",
@@ -344,7 +352,7 @@ class Logger:
         return self
 
     def info(self, *message, flag="INFO"):
-        if _global_log_level >= LogLevel.INFO:
+        if _GLOBAL_LOG_LEVEL >= LogLevel.INFO:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'white')}]",
@@ -355,7 +363,7 @@ class Logger:
         return self
 
     def warn(self, *message, flag="WARNING"):
-        if _global_log_level >= LogLevel.WARNING:
+        if _GLOBAL_LOG_LEVEL >= LogLevel.WARNING:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'yellow')}]",
@@ -368,7 +376,7 @@ class Logger:
     def err(self, err, flag="ERROR", reraise=False):
         if type(err) is not Exception:
             err = RuntimeError(str(err))
-        if _global_log_level >= LogLevel.ERROR:
+        if _GLOBAL_LOG_LEVEL >= LogLevel.ERROR:
             self.log(
                 str(err),
                 prefix=f"[{colored_text(flag,'red')}]",
@@ -539,7 +547,7 @@ class Logger:
         log_file_identity = os.path.abspath(path)
         if os.path.isdir(log_file_identity):
             raise Exception("Target path is not a file.")
-        filename = format.legal_file_name_of(os.path.basename(path))
+        filename = formatting.legal_file_name_of(os.path.basename(path))
         dirname = os.path.dirname(path) if len(os.path.dirname(path)) != 0 else "."
         if not os.path.exists(dirname):
             raise Exception(f"Could not find dictionary {dirname}")

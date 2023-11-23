@@ -116,7 +116,7 @@ def daemon_process(cfg=None, debug=False):
     -   remove from connected_clients dict
 
     on server receive json
-    -    sent by client with name
+    -   sent by client with name
         -   name exist: (name must exist)
             -   for websocket of frontend within name:
                 -   forward message

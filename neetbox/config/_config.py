@@ -7,7 +7,7 @@
 DEFAULT_WORKSPACE_CONFIG = {
     "name": None,
     "version": None,
-    "logging": {"logdir": None},
+    "logging": {"level": "INFO", "logdir": None},
     "pipeline": {
         "updateInterval": 10,
     },

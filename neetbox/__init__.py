@@ -77,4 +77,6 @@ is_in_daemon_process = (
 )
 # print('prevent_daemon_loading =', is_in_daemon_process)
 if os.path.isfile(config_file_name) and not is_in_daemon_process:  # if in a workspace
-    init(load=True)
+    success = init(load=True)  # init from config file
+    if not success:
+        os._exit(255)

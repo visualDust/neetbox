@@ -9,7 +9,7 @@ import json
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 from neetbox.logging import logger
-from neetbox.utils.format import *
+from neetbox.utils.formatting import *
 
 
 class _RegEndpoint:
