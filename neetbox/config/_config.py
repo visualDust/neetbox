@@ -4,21 +4,6 @@
 # URL:    https://gong.host
 # Date:   20230413
 
-
-DEFAULT_GLOBAL_CONFIG = {
-    "daemon": {
-        "enable": True,
-        "allowIpython": False,
-        "servers": [
-            {"host": "localhost", "port": "20202"},
-        ],
-        "mode": "detached",
-        "displayName": None,
-        "uploadInterval": 10,
-        "mute": True,
-    },
-}
-
 DEFAULT_WORKSPACE_CONFIG = {
     "name": None,
     "version": None,
@@ -35,14 +20,16 @@ DEFAULT_WORKSPACE_CONFIG = {
     "daemon": {
         "enable": True,
         "allowIpython": False,
-        "server": "localhost",
-        "port": 20202,
-        "mode": "detached",
-        "displayName": None,
-        "uploadInterval": 10,
         "mute": True,
-        "launcher": {
+        "server": {
+            "mode": "detached",
             "port": 20202,
+        },
+        "client": {
+            "server": "localhost",
+            "port": 20202,
+            "displayName": None,
+            "uploadInterval": 10,
         },
     },
 }

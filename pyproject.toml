@@ -19,8 +19,6 @@ repository = "https://github.com/visualDust/neetbox"
 keywords = ["computer vision", "tools", "logging"]
 classifiers = [
     "Development Status :: 1 - Planning",
-    "Environment :: Console",
-    "Framework :: Matplotlib",
     "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Visualization",
     "Topic :: Software Development :: Testing",
@@ -45,13 +43,15 @@ pre-commit = ">=3.4.0"
 click = "^8.1.7"
 pytest = "^7.4.3"
 pyfiglet = "^1.0.2"
+httpx = "^0.24.0"
+flask = "^2.2.3"
+flask-socketio = "^5.3.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0.0"
-httpx = "^0.24.0"
-flask = "^2.2.3"
 black = "^23.9.1"
 isort = "^5.11.5"
+pre-commit = "^3"
 
 [tool.poetry.extras]
 torch = ["torch", "torchvision", "torchaudio"]

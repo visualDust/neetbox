@@ -149,7 +149,7 @@ def _update_thread():
         for _vname, _watched_fun in _watch_queue_dict.items():
             _watch_config = _watched_fun.others
             if not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0:  # do update
-                _ = __update_and_get(_vname)
+                _the_value = __update_and_get(_vname)
 
 
 update_thread = Thread(target=_update_thread, daemon=True)

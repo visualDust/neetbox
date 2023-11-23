@@ -1,11 +1,26 @@
-name = "FakeConfig"
+name = "neetbox"
 
 [logging]
 
 [pipeline]
+updateInterval = 10
 
 [integrations]
+datasets = []
 
 [daemon]
 enable = true
-allowIpython = true
+allowIpython = false
+mute = true
+
+[integrations.environment]
+gpus = "auto"
+
+[daemon.server]
+mode = "detached"
+port = 20202
+
+[daemon.client]
+server = "localhost"
+port = 20202
+uploadInterval = 10
