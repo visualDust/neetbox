@@ -18,6 +18,7 @@ from rich import print as rprint
 from rich.panel import Panel
 
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
+from neetbox.utils import formatting
 from neetbox.utils.framing import get_caller_identity_traceback
 
 
@@ -538,7 +539,7 @@ class Logger:
         log_file_identity = os.path.abspath(path)
         if os.path.isdir(log_file_identity):
             raise Exception("Target path is not a file.")
-        filename = format.legal_file_name_of(os.path.basename(path))
+        filename = formatting.legal_file_name_of(os.path.basename(path))
         dirname = os.path.dirname(path) if len(os.path.dirname(path)) != 0 else "."
         if not os.path.exists(dirname):
             raise Exception(f"Could not find dictionary {dirname}")
