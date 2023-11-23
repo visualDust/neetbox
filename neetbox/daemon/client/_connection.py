@@ -4,9 +4,11 @@ import logging
 from typing import Callable, Optional
 
 import httpx
+import websockets
 
 from neetbox.config import get_module_level_config
 from neetbox.core import Registry
+from neetbox.daemon.server._server import CLIENT_API_ROOT
 from neetbox.logging import logger
 from neetbox.utils.mvc import Singleton
 
@@ -38,10 +40,14 @@ class ClientConn(metaclass=Singleton):
 
         # create htrtp client
         ClientConn.http = __load_http_client()
+
+        ws_server_addr = f"ws://{cfg['host']}/{CLIENT_API_ROOT}"
         # todo establishing socket connection
 
-    def __on_ws_message(msg):
+    def __on_ws_message(ws, msg):
         logger.debug(f"ws received {msg}")
+        # ack to sender
+        ws.send({"ack"})
         # message should be json
         event_type_name = msg[EVENT_TYPE_NAME_KEY]
         if event_type_name not in ClientConn.__ws_subscription:
@@ -59,7 +65,7 @@ class ClientConn(metaclass=Singleton):
 
     def ws_send(msg):
         logger.debug(f"ws sending {msg}")
-        # send to ws if ws is connected, otherwise drop message? idk
+        # todo send to ws if ws is connected, otherwise drop message? idk
         pass
 
     def ws_subscribe(event_type_name: str):
