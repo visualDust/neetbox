@@ -1,5 +1,6 @@
 import functools
 import inspect
+from ast import literal_eval
 from threading import Thread
 from typing import Callable, Optional
 
@@ -8,7 +9,7 @@ from neetbox.logging import logger
 from neetbox.utils.mvc import Singleton
 
 
-class PackedAction(Callable):
+class PackedAction:
     def __init__(self, function: Callable, name=None, blocking=False, **kwargs):
         super().__init__(**kwargs)
         self.function = function

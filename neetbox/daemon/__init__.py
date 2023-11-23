@@ -8,8 +8,6 @@ import json
 import subprocess
 import time
 
-import neetbox
-from neetbox.config import get_module_level_config
 from neetbox.daemon._agent import neet_action as action
 from neetbox.daemon.client._daemon_client import connect_daemon
 from neetbox.daemon.server.daemonable_process import DaemonableProcess

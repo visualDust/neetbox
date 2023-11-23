@@ -11,7 +11,7 @@ from threading import Thread
 from typing import Dict, Tuple
 
 import setproctitle
-from flask import Flask, abort, json, jsonify, request
+from flask import Flask, abort, json, request
 from flask_socketio import SocketIO
 from flask_socketio import emit as ws_emit
 from flask_socketio import send as ws_send
