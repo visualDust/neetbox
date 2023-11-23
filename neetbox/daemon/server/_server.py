@@ -207,9 +207,7 @@ def daemon_process(cfg=None, debug=False):
     def return_status_of(name):
         global __COUNT_DOWN
         __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
-        if not name:
-            pass  # returning full dict
-        elif name in __client_registry:
+        if name in __client_registry:
             _returning_stat = __client_registry[name].status  # returning specific status
         else:
             abort(404)

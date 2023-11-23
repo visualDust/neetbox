@@ -71,9 +71,7 @@ class Registry(dict):
                     f"{name} already exists in Registry:{self.name}. If you want to overwrite, try to register with 'force=True'"
                 )
             else:
-                logger.warn(
-                    f"Overwritting existing '{name}' in Registry '{self.name}'."
-                )
+                logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
                 self[name] = _endp
         else:
             self[name] = _endp
@@ -96,9 +94,7 @@ class Registry(dict):
     ):
         if not name and not tags:
             logger.err(
-                ValueError(
-                    "Please provide at least the name or the tags you want to find."
-                ),
+                ValueError("Please provide at least the name or the tags you want to find."),
                 reraise=True,
             )
         results = []
@@ -122,11 +118,7 @@ class Registry(dict):
                     return False
             return True
 
-        results = {
-            _name: _endp.what
-            for _name, _endp in results
-            if _tags_match(tags, _endp.tags)
-        }
+        results = {_name: _endp.what for _name, _endp in results if _tags_match(tags, _endp.tags)}
         return results
 
     def __getitem__(self, __key: str) -> Any:
@@ -152,27 +144,15 @@ class Registry(dict):
         return self.__dict__.update(*args, **kwargs)
 
     def keys(self):
-        return [
-            _item[0]
-            for _item in self.__dict__.items()
-            if type(_item[1]) is _RegEndpoint
-        ]
+        return [_item[0] for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
 
     def values(self):
-        return [
-            _item[1].what
-            for _item in self.__dict__.items()
-            if type(_item[1]) is _RegEndpoint
-        ]
+        return [_item[1].what for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
 
     def items(self, _real_type=True):
-        _legal_items = [
-            _item for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint
-        ]
+        _legal_items = [_item for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
         if _real_type:
-            _legal_items = [
-                (_k, _v.what) for _k, _v in _legal_items if type(_v) is _RegEndpoint
-            ]
+            _legal_items = [(_k, _v.what) for _k, _v in _legal_items if type(_v) is _RegEndpoint]
         return _legal_items
 
     def pop(self, *args):
