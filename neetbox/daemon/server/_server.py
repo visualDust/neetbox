@@ -27,7 +27,7 @@ FRONTEND_API_ROOT = "/web"
 CLIENT_API_ROOT = "/cli"
 
 
-def daemon_process(cfg=None):
+def daemon_process(cfg=None, debug=False):
     # getting config
     cfg = cfg or get_module_level_config()
 
@@ -63,14 +63,17 @@ def daemon_process(cfg=None):
             pass
 
     # ===============================================================
-    
-    app = Flask(__name__)
+
+    if debug:
+        from apiflask import APIFlask
+        app = APIFlask(__name__)
+    else: app = Flask(__name__)
     socketio = SocketIO(app, cors_allowed_origins="*")
     __client_registry = Registry("__daemon_server")  # manage connections
     connected_clients: Dict(str, Tuple(str, str)) = {}  # {sid:(name,type)} store connection only
 
     # ========================  WS  SERVER  ===========================
-    
+
     """ server behaviors when someone is requesting data of a Client 
     
     !!! some axioms
@@ -177,18 +180,19 @@ def daemon_process(cfg=None):
                 target_sid = __client_registry[name].cli_ws_sid
                 ws_send(data, to=target_sid)
 
-
     # ======================== HTTP  SERVER ===========================
-    
+
     @app.route(f"{FRONTEND_API_ROOT}/wsforward/<name>", methods=["POST"])
-    def handle_json_forward_to_client_ws(name): # forward frontend http json to client ws
+    def handle_json_forward_to_client_ws(name):  # forward frontend http json to client ws
         data = request.json
-        if name in __client_registry: # client name exist
+        if name in __client_registry:  # client name exist
             target_sid = __client_registry[name].cli_ws_sid
-            if target_sid is None: # no active cli ws connection for this name
-                logger.warn(f"frontend tried to talk to forward to a disconnected client ws with name {name}.")
-                abort(404) 
-            ws_send(data,to=target_sid)
+            if target_sid is None:  # no active cli ws connection for this name
+                logger.warn(
+                    f"frontend tried to talk to forward to a disconnected client ws with name {name}."
+                )
+                abort(404)
+            ws_send(data, to=target_sid)
             return "ok"
 
     @app.route("/hello", methods=["GET"])
@@ -247,11 +251,11 @@ def daemon_process(cfg=None):
     count_down_thread = Thread(target=_count_down_thread, daemon=True)
     count_down_thread.start()
 
-    socketio.run(app, host="0.0.0.0", port=cfg["port"], debug=True)
+    socketio.run(app, host="0.0.0.0", port=cfg["port"], debug=debug)
 
 
 if __name__ == "__main__":
     import neetbox
 
-    cfg = get_module_level_config(neetbox.daemon.server)
-    daemon_process(cfg)
+    cfg = get_module_level_config(neetbox.daemon)
+    daemon_process(cfg, debug=True)

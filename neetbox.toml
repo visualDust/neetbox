@@ -5,22 +5,17 @@ name = "neetbox"
 [pipeline]
 updateInterval = 10
 
-[integrations]
-datasets = []
-
 [daemon]
 enable = true
-allowIpython = false
-mute = true
-
-[integrations.environment]
-gpus = "auto"
-
-[daemon.server]
-mode = "detached"
-port = 20202
-
-[daemon.client]
 server = "localhost"
 port = 20202
+allowIpython = false
+mute = true
+mode = "attached"
 uploadInterval = 10
+
+[integrations.environment.hardware]
+monit = "true"
+
+[integrations.environment.platform]
+monit = "true"

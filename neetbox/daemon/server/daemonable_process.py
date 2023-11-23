@@ -69,7 +69,7 @@ class DaemonableProcess:
                     stdin=self.__stdin,
                     env=self.__env,
                 )
-                print(popen)
+                # print(popen)
 
                 # return_code = popen.wait()
                 # print('return_code', return_code)
@@ -89,7 +89,7 @@ class DaemonableProcess:
 
                     atexit.register(lambda: popen.terminate())
 
-                print(popen)
+                # print(popen)
 
             return popen
 
