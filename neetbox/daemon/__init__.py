@@ -10,7 +10,7 @@ import time
 
 import neetbox
 from neetbox.config import get_module_level_config
-from neetbox.daemon._agent import neet_action as action
+from neetbox.daemon.client._action_agent import _NeetActionManager as NeetActionManager
 from neetbox.daemon.client._daemon_client import connect_daemon
 from neetbox.daemon.server.daemonable_process import DaemonableProcess
 from neetbox.logging import logger
@@ -83,4 +83,5 @@ def _try_attach_daemon():
         __attach_daemon(_cfg)
 
 
-__all__ = ["watch", "listen", "action", "_try_attach_daemon"]
+action = NeetActionManager.register
+__all__ = ["watch", "listen", "action", "NeetActionManager", "_try_attach_daemon"]

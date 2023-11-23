@@ -10,7 +10,7 @@ from threading import Thread
 from typing import Union
 
 from neetbox.config import get_module_level_config
-from neetbox.daemon.client._connection import _local_http_client
+from neetbox.daemon.client._connection import connection
 from neetbox.daemon.server._server import CLIENT_API_ROOT
 from neetbox.logging import logger
 from neetbox.pipeline._signal_and_slot import _update_value_dict
@@ -37,7 +37,7 @@ def _upload_thread(daemon_config, base_addr, display_name):
         _headers = {"Content-Type": "application/json"}
         try:
             # upload data
-            resp = _local_http_client.post(_api_addr, json=_data, headers=_headers)
+            resp = connection.http.post(_api_addr, json=_data, headers=_headers)
             if resp.is_error:  # upload failed
                 raise IOError(f"Failed to upload data to daemon. ({resp.status_code})")
         except Exception as e:
@@ -76,7 +76,7 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
     def _check_daemon_alive(_api_addr):
         _api_name = "hello"
         _api_addr = f"{_api_addr}/{_api_name}"
-        r = _local_http_client.get(_api_addr)
+        r = connection.http.get(_api_addr)
         if r.is_error:
             raise IOError(f"Daemon at {_api_addr} is not alive. ({r.status_code})")
 

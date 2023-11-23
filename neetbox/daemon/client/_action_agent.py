@@ -26,29 +26,29 @@ class PackedAction(Callable):
         return self.function(**eval_params)
 
 
-class _NeetAction(metaclass=Singleton):
+class _NeetActionManager(metaclass=Singleton):
     __ACTION_POOL: Registry = Registry("__NEET_ACTIONS")
 
     def get_action_names():
-        action_names = _NeetAction.__ACTION_POOL.keys()
+        action_names = _NeetActionManager.__ACTION_POOL.keys()
         actions = {}
         for n in action_names:
-            actions[n] = _NeetAction.__ACTION_POOL[n].argspec
+            actions[n] = _NeetActionManager.__ACTION_POOL[n].argspec
         return actions
 
     def get_action_dict():
         action_dict = {}
-        action_names = _NeetAction.__ACTION_POOL.keys()
+        action_names = _NeetActionManager.__ACTION_POOL.keys()
         for name in action_names:
-            action = _NeetAction.__ACTION_POOL[name]
+            action = _NeetActionManager.__ACTION_POOL[name]
             action_dict[name] = action.argspec.args
         return action_dict
 
     def eval_call(self, name: str, params: dict, callback: None):
-        if name not in _NeetAction.__ACTION_POOL:
+        if name not in _NeetActionManager.__ACTION_POOL:
             logger.err(f"Could not find action with name {name}, action stopped.")
             return False
-        target_action = _NeetAction.__ACTION_POOL[name]
+        target_action = _NeetActionManager.__ACTION_POOL[name]
         logger.log(
             f"Agent runs function '{target_action.name}', blocking = {target_action.blocking}"
         )
@@ -70,35 +70,33 @@ class _NeetAction(metaclass=Singleton):
     @watch(initiative=True)
     def _update_action_dict():
         # for status updater
-        return _NeetAction.get_action_dict()
+        return _NeetActionManager.get_action_dict()
 
-    def register(self, *, name: Optional[str] = None, blocking: bool = False):
-        return functools.partial(self._register, name=name, blocking=blocking)
+    def register(name: Optional[str] = None, blocking: bool = False):
+        return functools.partial(_NeetActionManager._register, name=name, blocking=blocking)
 
-    def _register(self, function: Callable, name: str = None, blocking: bool = False):
+    def _register(function: Callable, name: str = None, blocking: bool = False):
         packed = PackedAction(function=function, name=name, blocking=blocking)
-        _NeetAction.__ACTION_POOL._register(what=packed, name=packed.name, force=True)
-        _NeetAction._update_action_dict()  # update for sync
+        _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, force=True)
+        _NeetActionManager._update_action_dict()  # update for sync
         return function
 
 
 # singleton
-neet_action = _NeetAction()
+neet_action = _NeetActionManager()
 
 
 # example
 if __name__ == "__main__":
     import time
 
-    action = neet_action
-
-    @action.register(name="some")
+    @_NeetActionManager.register(name="some")
     def some(a, b):
         time.sleep(1)
         return f"a = {a}, b = {b}"
 
     print("registered actions:")
-    action_dict = _NeetAction.get_action_dict()
+    action_dict = _NeetActionManager.get_action_dict()
     print(action_dict)
 
     def callback_fun(text):

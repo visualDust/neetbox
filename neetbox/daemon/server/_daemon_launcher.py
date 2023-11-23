@@ -6,8 +6,6 @@ from neetbox.daemon.server._server import daemon_process
 
 # sys.stdout=open(r'D:\Projects\ML\neetbox\logdir\daemon.log', 'a+')
 
-
-# from neetbox.daemon._local_http_client import _local_http_client
 print("========= Daemon  =========")
 
 
