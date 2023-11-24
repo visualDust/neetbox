@@ -102,9 +102,9 @@ const CPUGraph = ({ cpuData, timestamp }) => {
         // max: timestamp,
         data: new Array(10).fill(0).map((x, i) => i),
       },
-    };
+    } as echarts.EChartsOption;
     return newOption;
   }, [history]);
 
-  return <ECharts initialOption={initialOption} updatingOption={updatingOption} />;
+  return <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{height: '300px'}} />;
 };

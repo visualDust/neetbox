@@ -5,7 +5,7 @@ import { useAPI } from "../../hooks/useAPI";
 import { Link } from "react-router-dom";
 
 export default function ConsoleNavBar() {
-  const { isLoading, data, error } = useAPI("/status/list");
+  const { isLoading, data, error } = useAPI("/list");
   return (
     <Nav
       renderWrapper={(args) => {
