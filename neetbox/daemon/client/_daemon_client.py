@@ -23,7 +23,7 @@ __upload_thread: Union[Thread, None] = None
 def _upload_thread(daemon_config, base_addr, display_name):
     _ctr = 0
     _api_name = "sync"
-    _api_addr = f"{base_addr}/{CLIENT_API_ROOT}/{_api_name}/{display_name}"
+    _api_addr = f"{base_addr}{CLIENT_API_ROOT}/{_api_name}/{display_name}"
     _disconnect_flag = False
     _disconnect_retries = 10
     while True:
@@ -83,8 +83,6 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
     try:
         _check_daemon_alive(_base_addr)
         logger.ok(f"daemon alive at {_base_addr}")
-        # post init ws
-        connection._init_ws()
     except Exception as e:
         logger.err(e)
         return False

@@ -160,9 +160,10 @@ class _WebSocketLogWriter(LogWriter):
     connection = None  # connection should be assigned by neetbox.daemon.client._connection to avoid recursive import
 
     def write(self, raw_log: RawLog):
-        json_date = raw_log.json()
+        json_data = raw_log.json()
+
         if _WebSocketLogWriter.connection:
-            _WebSocketLogWriter.connection.ws_send(json_date)
+            _WebSocketLogWriter.connection.ws_send(event_type="log", payload=json_data)
 
 
 def _assign_connection_to_WebSocketLogWriter(conn):

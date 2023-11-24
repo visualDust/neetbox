@@ -7,18 +7,13 @@
 import os
 import sys
 import time
+from dataclasses import dataclass
 from threading import Thread
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 import setproctitle
 from flask import Flask, abort, json, request
-from flask_socketio import SocketIO
-from flask_socketio import emit as ws_emit
-from flask_socketio import send as ws_send
-
-from neetbox.config import get_module_level_config
-from neetbox.core import Registry
-from neetbox.logging import logger
+from websocket_server import WebsocketServer
 
 __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours
 __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
@@ -28,35 +23,39 @@ setproctitle.setproctitle(__DAEMON_NAME)
 FRONTEND_API_ROOT = "/web"
 CLIENT_API_ROOT = "/cli"
 
+EVENT_TYPE_NAME_KEY = "event-type"
+EVENT_ID_NAME_KEY = "event-id"
+EVENT_PAYLOAD_NAME_KEY = "payload"
 
-def daemon_process(cfg=None, debug=False):
-    # getting config
-    cfg = cfg or get_module_level_config()
 
+@dataclass
+class WsMsg:
+    event_type: str
+    payload: Any
+    event_id: int = -1
+
+    def json(self):
+        return {
+            EVENT_TYPE_NAME_KEY: self.event_type,
+            EVENT_ID_NAME_KEY: self.event_id,
+            EVENT_PAYLOAD_NAME_KEY: self.payload,
+        }
+
+
+def daemon_process(cfg, debug=False):
     # describe a client
-    class Client:
+    class Bridge:
         connected: bool
         name: str
         status: dict = {}
-        cli_ws_sid = None  # cli ws sid
-        web_ws_sids = (
+        cli_ws = None  # cli ws sid
+        web_ws_list = (
             []
         )  # frontend ws sids. client data should be able to be shown on multiple frontend
 
         def __init__(self, name) -> None:
             # initialize non-websocket things
             self.name = name
-            pass
-
-        def _ws_post_init(self, websocket):  # handle handshakes
-            # initialize websocket things
-            pass
-
-        @staticmethod
-        def from_ws(websocket):
-            new_client_connection = Client()
-            new_client_connection.cli_ws_sid = websocket
-            new_client_connection._ws_post_init(websocket)
 
         def handle_ws_recv(self):
             pass
@@ -72,8 +71,9 @@ def daemon_process(cfg=None, debug=False):
         app = APIFlask(__name__)
     else:
         app = Flask(__name__)
-    socketio = SocketIO(app, cors_allowed_origins="*")
-    __client_registry = Registry("__daemon_server")  # manage connections
+    # websocket server
+    ws_server = WebsocketServer(port=cfg["port"] + 1)
+    __BRIDGES = {}  # manage connections
     connected_clients: Dict(str, Tuple(str, str)) = {}  # {sid:(name,type)} store connection only
 
     # ========================  WS  SERVER  ===========================
@@ -125,79 +125,109 @@ def daemon_process(cfg=None, debug=False):
             -   forward message to client
     """
 
-    @socketio.on("connect")
-    def handle_ws_connect():
-        name = request.args.get("name")
-        path = request.path
-        path2type = {f"{FRONTEND_API_ROOT}": "web", f"{CLIENT_API_ROOT}": "cli"}
-        if not name or path not in path2type:
-            # connection args not valid, drop connection
-            return
-        # TODO (visualdust) check conn type for error handling
-        conn_type = path2type(path)
-        if name not in __client_registry:  # Client not found. create from websocket connection
-            # must be cli
-            client = Client(name=name)
-            __client_registry._register(what=client, name=name)  # manage clients
-        connected_clients[request.sid] = (
-            name,
-            conn_type,
-        )  # store connection sid for later disconnection handling
-        if conn_type == "cli":
-            # add to Client
-            if __client_registry[name].cli_ws_sid is not None:
-                # overwriting, show warning
-                logger.warn(f"cli conn with same name already exist, overwriting...")
-            __client_registry[name].cli_ws_sid = request.sid
-        if conn_type == "web":
-            # add to Client
-            __client_registry[name].web_ws_sids.append(request.sid)
-        logger.ok(f"Websocket ({conn_type}) connected for {name} via {path}")
+    def handle_ws_connect(client, server):
+        print(f"client {client} connected. waiting for assigning...")
 
-    @socketio.on("disconnect")
-    def handle_ws_disconnect():
+    def handle_ws_disconnect(client, server):
         name, conn_type = connected_clients[request.sid]
         # remove sid from Client entity
         if conn_type == "cli":  # remove client sid from Client
-            __client_registry[name].cli_ws_sid = None
+            __BRIDGES[name].cli_ws = None
         else:
-            __client_registry[name].web_ws_sids.remove(request.sid)
+            __BRIDGES[name].web_ws_list.remove(request.sid)
         del connected_clients[request.sid]
-        logger.info(f"Websocket ({conn_type}) for {name} disconnected")
+        # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
-    @socketio.on("json")
-    def handle_ws_json_message(data):
-        name, conn_type = connected_clients[request.sid]  # who
-        if conn_type == "cli":  # json data ws_send by client
-            for target_sid in __client_registry[name].web_ws_sids:
-                ws_send(data, to=target_sid)  # forward to every client under this name
-            # no ack, not necessary to ack
-        if conn_type == "web":  # json data ws_send by frontend
-            cli_ws_sid = __client_registry[name].cli_ws_sid
-            if cli_ws_sid is None:  # client ws disconnected:
-                # ack err
-                ws_send({"ack": "failed", "message": "client ws disconnected"}, to=request.sid)
-                logger.warn(
-                    f"frontend ({request.sid}) under name '{name}' tried to talk to a disconnected client ws."
+    def handle_ws_message(client, server: WebsocketServer, message):
+        print(message)  # debug
+        # handle event-type
+        _event_type = message["event-type"]
+        _payload = message["payload"]
+        _event_id = message["event-id"]
+        if _event_type == "handshake":  # handle handshake
+            # assign this client to a Bridge
+            _project_name = _payload["name"]
+            _who = _payload["who"]
+            if _who == "web":
+                # new connection from frontend
+                # check if Bridge with name exist
+                if _project_name not in __BRIDGES:  # there is no such bridge
+                    server.send_message(
+                        client=client,
+                        msg=WsMsg(
+                            event_type="ack",
+                            event_id=_event_id,
+                            payload={"result": "404", "reason": "name not found"},
+                        ),
+                    )
+                else:  # assign web to bridge
+                    _target_bridge = __BRIDGES[_project_name]
+                    _target_bridge.web_ws_list.append(client)
+                    server.send_message(
+                        client=client,
+                        msg=WsMsg(
+                            event_type="ack",
+                            event_id=_event_id,
+                            payload={"result": "200", "reason": "join success"},
+                        ),
+                    )
+            elif _who == "cli":
+                # new connection from cli
+                # check if Bridge with name exist
+                if _project_name not in __BRIDGES:  # there is no such bridge
+                    _target_bridge = Bridge(name=_project_name)  # create new bridge for this name
+                    __BRIDGES[_project_name] = _target_bridge
+                __BRIDGES[_project_name].cli_ws = client  # assign cli to bridge
+                server.send_message(
+                    client=client,
+                    msg=WsMsg(
+                        event_type="ack",
+                        event_id=_event_id,
+                        payload={"result": "200", "reason": "join success"},
+                    ),
                 )
-            else:  # forward to client
-                target_sid = __client_registry[name].cli_ws_sid
-                ws_send(data, to=target_sid)
+
+        elif _event_type == "log":  # handle log
+            # forward log to frontend
+            _project_name = _payload["name"]
+            if _project_name not in __BRIDGES:
+                # project name must exist
+                # drop anyway if not exist
+                return
+            else:
+                # forward to frontends
+                _target_bridge = __BRIDGES[_project_name]
+                _log_data = _payload["log"]
+                for web_ws in _target_bridge.web_ws_list:
+                    server.send_message(
+                        client=web_ws, msg=message
+                    )  # forward original message to frontend
+
+        elif _event_type == "action":
+            # todo forward action query to cli
+            pass
+        elif _event_type == "ack":
+            # todo forward ack to waiting acks
+            pass
+
+    ws_server.set_fn_new_client(handle_ws_connect)
+    ws_server.set_fn_client_left(handle_ws_disconnect)
+    ws_server.set_fn_message_received(handle_ws_message)
 
     # ======================== HTTP  SERVER ===========================
 
-    @app.route(f"{FRONTEND_API_ROOT}/wsforward/<name>", methods=["POST"])
-    def handle_json_forward_to_client_ws(name):  # forward frontend http json to client ws
-        data = request.json
-        if name in __client_registry:  # client name exist
-            target_sid = __client_registry[name].cli_ws_sid
-            if target_sid is None:  # no active cli ws connection for this name
-                logger.warn(
-                    f"frontend tried to talk to forward to a disconnected client ws with name {name}."
-                )
-                abort(404)
-            ws_send(data, to=target_sid)
-            return "ok"
+    # @app.route(f"{FRONTEND_API_ROOT}/wsforward/<name>", methods=["POST"])
+    # def handle_json_forward_to_client_ws(name):  # forward frontend http json to client ws
+    #     data = request.json
+    #     if name in __BRIDGES:  # client name exist
+    #         target_sid = __BRIDGES[name].cli_ws
+    #         if target_sid is None:  # no active cli ws connection for this name
+    #             # logger.warn(
+    #             #     f"frontend tried to talk to forward to a disconnected client ws with name {name}."
+    #             # )
+    #             abort(404)
+    #         ws_send(data, to=target_sid)
+    #         return "ok"
 
     @app.route("/hello", methods=["GET"])
     def just_send_hello():
@@ -207,8 +237,8 @@ def daemon_process(cfg=None, debug=False):
     def return_status_of(name):
         global __COUNT_DOWN
         __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
-        if name in __client_registry:
-            _returning_stat = __client_registry[name].status  # returning specific status
+        if name in __BRIDGES:
+            _returning_stat = __BRIDGES[name].status  # returning specific status
         else:
             abort(404)
         return _returning_stat
@@ -217,7 +247,7 @@ def daemon_process(cfg=None, debug=False):
     def return_names_of_status():
         global __COUNT_DOWN
         __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
-        _names = {"names": list(__client_registry.keys())}
+        _names = {"names": list(__BRIDGES.keys())}
         return _names
 
     @app.route(f"{CLIENT_API_ROOT}/sync/<name>", methods=["POST"])
@@ -225,9 +255,9 @@ def daemon_process(cfg=None, debug=False):
         global __COUNT_DOWN
         __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
         _json_data = request.get_json()
-        if name not in __client_registry:  # Client not found. create from sync request
-            __client_registry._register(what=Client(name=name), name=name)
-        __client_registry[name].status = _json_data
+        if name not in __BRIDGES:  # Client not found
+            __BRIDGES[name] = Bridge(name=name)  # Create from sync request
+        __BRIDGES[name].status = _json_data
         return "ok"
 
     @app.route(f"{FRONTEND_API_ROOT}/shutdown", methods=["POST"])
@@ -253,11 +283,19 @@ def daemon_process(cfg=None, debug=False):
     count_down_thread = Thread(target=_count_down_thread, daemon=True)
     count_down_thread.start()
 
-    socketio.run(app, host="0.0.0.0", port=cfg["port"], debug=debug)
+    ws_server.run_forever(threaded=True)
+    app.run(host="0.0.0.0", port=cfg["port"], debug=debug)
 
 
 if __name__ == "__main__":
-    import neetbox
-
-    cfg = get_module_level_config(neetbox.daemon)
+    cfg = {
+        "enable": True,
+        "host": "localhost",
+        "port": 20202,
+        "displayName": None,
+        "allowIpython": False,
+        "mute": True,
+        "mode": "detached",
+        "uploadInterval": 10,
+    }
     daemon_process(cfg, debug=True)
