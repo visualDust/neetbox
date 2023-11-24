@@ -298,4 +298,4 @@ def set_log_level(level: LogLevel):
         level = LogLevel(level)
     global _GLOBAL_LOG_LEVEL
     _GLOBAL_LOG_LEVEL = level
-    DEFAULT_LOGGER.log(f"global log level was set to {_GLOBAL_LOG_LEVEL}")
+    DEFAULT_LOGGER.debug(f"global log level was set to {_GLOBAL_LOG_LEVEL}")

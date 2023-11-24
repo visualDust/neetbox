@@ -83,6 +83,8 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
     try:
         _check_daemon_alive(_base_addr)
         logger.ok(f"daemon alive at {_base_addr}")
+        # post init ws
+        connection._init_ws()
     except Exception as e:
         logger.err(e)
         return False

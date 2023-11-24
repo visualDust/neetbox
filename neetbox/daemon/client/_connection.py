@@ -1,8 +1,9 @@
 import asyncio
 import functools
 import logging
+from dataclasses import dataclass
 from threading import Thread
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 import httpx
 import websocket
@@ -17,7 +18,22 @@ httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.ERROR)
 
 EVENT_TYPE_NAME_KEY = "event-type"
+EVENT_ID_NAME_KEY = "event-id"
 EVENT_PAYLOAD_NAME_KEY = "payload"
+
+
+@dataclass
+class WsMsg:
+    event_type: str
+    event_id: int = -1
+    payload: Any
+
+    def json(self):
+        return {
+            EVENT_TYPE_NAME_KEY: self.event_type,
+            EVENT_ID_NAME_KEY: self.event_id,
+            EVENT_PAYLOAD_NAME_KEY: self.payload,
+        }
 
 
 # singleton
@@ -27,7 +43,7 @@ class ClientConn(metaclass=Singleton):
     __ws_client: websocket.WebSocketApp = None  # _websocket_client
     __ws_subscription = Registry("__client_ws_subscription")  # { event-type-name : list(Callable)}
 
-    def _init_ws():
+    def __init__(self) -> None:
         cfg = get_module_level_config()
 
         def __load_http_client():
@@ -42,11 +58,16 @@ class ClientConn(metaclass=Singleton):
         # create htrtp client
         ClientConn.http = __load_http_client()
 
+    def _init_ws():
+        cfg = get_module_level_config()
+
         # ws server url
         ClientConn.ws_server_addr = f"ws://{cfg['host']}/{CLIENT_API_ROOT}"
 
         # todo wait for server online
         # create websocket app
+        logger.log("creating websocket connection...")
+        # todo does run_forever reconnect after close?
         websocket.WebSocketApp(
             ClientConn.ws_server_addr,
             on_open=ClientConn.__on_ws_open,
@@ -67,14 +88,24 @@ class ClientConn(metaclass=Singleton):
     def __on_ws_err(ws, msg):
         logger.err(f"client websocket {ws} encountered {msg}")
 
-    def __on_ws_close(ws):
-        ClientConn.__ws_client = None
+    def __on_ws_close(ws, close_status_code, close_msg):
         logger.warn(f"client websocket {ws} closed")
+        if close_status_code or close_msg:
+            logger.warn(f"ws close status code: {close_status_code}")
+            logger.warn("ws close message: {close_msg}")
+            ClientConn.__ws_client = None
 
     def __on_ws_message(ws, msg):
+        """EXAMPLE JSON
+        {
+            "event-type": "action",
+            "event-id": 111 (optional?)
+            "payload": ...
+        }
+        """
         logger.debug(f"ws received {msg}")
         # ack to sender
-        ws.send({"ack"})
+        ws.send(WsMsg(event_type="ack", payload="0"))
         # message should be json
         event_type_name = msg[EVENT_TYPE_NAME_KEY]
         if event_type_name not in ClientConn.__ws_subscription:
@@ -83,7 +114,7 @@ class ClientConn(metaclass=Singleton):
             )
         for subscriber in ClientConn._ws_subscribe[event_type_name]:
             try:
-                subscriber(msg[EVENT_PAYLOAD_NAME_KEY])  # pass payload message into subscriber
+                subscriber(msg)  # pass payload message into subscriber
             except Exception as e:
                 # subscriber throws error
                 logger.err(
@@ -92,8 +123,10 @@ class ClientConn(metaclass=Singleton):
 
     def ws_send(msg):
         logger.debug(f"ws sending {msg}")
-        # todo send to ws if ws is connected, otherwise drop message? idk
-        pass
+        if ClientConn.__ws_client:  # if ws client exist
+            ClientConn.__ws_client.send(msg)
+        else:
+            logger.debug("ws client not exist, message dropped.")
 
     def ws_subscribe(event_type_name: str):
         """let a function subscribe to ws messages with event type name.
@@ -114,5 +147,5 @@ class ClientConn(metaclass=Singleton):
 
 
 # singleton
-# ClientConn()  # !!! DO NOT run init. websocket client should be initialzed only after server is ready
+ClientConn()  # __init__ setup http client only
 connection = ClientConn

@@ -8,9 +8,8 @@ import json
 import subprocess
 import time
 
-import neetbox
-from neetbox.config import get_module_level_config
 from neetbox.daemon.client._action_agent import _NeetActionManager as NeetActionManager
+from neetbox.daemon.client._connection import connection
 from neetbox.daemon.client._daemon_client import connect_daemon
 from neetbox.daemon.server.daemonable_process import DaemonableProcess
 from neetbox.logging import logger
@@ -44,7 +43,6 @@ def __attach_daemon(daemon_config):
             f"No daemon running at {daemon_config['host']}:{daemon_config['port']}, trying to create daemon..."
         )
 
-        print(["--config", json.dumps(daemon_config)])
         popen = DaemonableProcess(
             target="neetbox.daemon.server._daemon_launcher",
             args=["--config", json.dumps(daemon_config)],
@@ -85,4 +83,5 @@ def _try_attach_daemon():
 
 
 action = NeetActionManager.register
-__all__ = ["watch", "listen", "action", "NeetActionManager", "_try_attach_daemon"]
+ws_subscribe = connection.ws_subscribe
+__all__ = ["watch", "listen", "action", "ws_subscribe", "NeetActionManager", "_try_attach_daemon"]

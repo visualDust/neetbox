@@ -134,7 +134,7 @@ def _listen(func: Callable, target: Union[str, Callable], name: Optional[str] = 
                 f"There is already a listener called '{name}' lisiting '{target}', overwriting."
             )
     _listen_queue_dict[target][name] = func
-    logger.log(f"{name} is now lisiting to {target}.")
+    logger.debug(f"{name} is now lisiting to {target}.")
     return func
 
 

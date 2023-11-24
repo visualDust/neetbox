@@ -25,7 +25,7 @@ base_addr = f"http://{daemon_address}"
 
 def get_status_of(name=None):
     name = name or ""
-    api_addr = f"{base_addr}/status"
+    api_addr = f"{base_addr}/web/list"
     logger.info(f"Fetching from {api_addr}")
     r = connection.http.get(api_addr)
     _data = r.json()

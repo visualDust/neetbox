@@ -155,21 +155,21 @@ class FileLogWriter(LogWriter):
 # ================== WS LOG WRITER =====================
 
 
-class __WebSocketLogWriter(LogWriter):
+class _WebSocketLogWriter(LogWriter):
     # class level statics
     connection = None  # connection should be assigned by neetbox.daemon.client._connection to avoid recursive import
 
     def write(self, raw_log: RawLog):
         json_date = raw_log.json()
-        if __WebSocketLogWriter.connection:
-            __WebSocketLogWriter.connection.ws_send(json_date)
+        if _WebSocketLogWriter.connection:
+            _WebSocketLogWriter.connection.ws_send(json_date)
 
 
 def _assign_connection_to_WebSocketLogWriter(conn):
-    __WebSocketLogWriter.connection = conn
+    _WebSocketLogWriter.connection = conn
 
 
-webSocketLogWriter = __WebSocketLogWriter()
+webSocketLogWriter = _WebSocketLogWriter()
 
 
 # ================== JSON LOG WRITER =====================
@@ -186,6 +186,6 @@ class JsonLogWriter(FileLogWriter):
 RawLog.name2writerType = {
     "stdout": __ConsoleLogWriter,
     "file": FileLogWriter,
-    "ws": __WebSocketLogWriter,
+    "ws": _WebSocketLogWriter,
     "json": JsonLogWriter,
 }
