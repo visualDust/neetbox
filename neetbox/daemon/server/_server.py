@@ -25,20 +25,23 @@ CLIENT_API_ROOT = "/cli"
 
 EVENT_TYPE_NAME_KEY = "event-type"
 EVENT_ID_NAME_KEY = "event-id"
-EVENT_PAYLOAD_NAME_KEY = "payload"
+PAYLOAD_NAME_KEY = "payload"
+NAME_NAME_KEY = "name"
 
 
 @dataclass
 class WsMsg:
+    name: str
     event_type: str
     payload: Any
     event_id: int = -1
 
     def json(self):
         return {
+            NAME_NAME_KEY: self.name,
             EVENT_TYPE_NAME_KEY: self.event_type,
             EVENT_ID_NAME_KEY: self.event_id,
-            EVENT_PAYLOAD_NAME_KEY: self.payload,
+            PAYLOAD_NAME_KEY: self.payload,
         }
 
 
@@ -74,7 +77,7 @@ def daemon_process(cfg, debug=False):
     # websocket server
     ws_server = WebsocketServer(port=cfg["port"] + 1)
     __BRIDGES = {}  # manage connections
-    connected_clients: Dict(str, Tuple(str, str)) = {}  # {sid:(name,type)} store connection only
+    connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
 
     # ========================  WS  SERVER  ===========================
 
@@ -129,24 +132,28 @@ def daemon_process(cfg, debug=False):
         print(f"client {client} connected. waiting for assigning...")
 
     def handle_ws_disconnect(client, server):
-        name, conn_type = connected_clients[request.sid]
-        # remove sid from Client entity
-        if conn_type == "cli":  # remove client sid from Client
-            __BRIDGES[name].cli_ws = None
-        else:
-            __BRIDGES[name].web_ws_list.remove(request.sid)
-        del connected_clients[request.sid]
+        _project_name, _who = connected_clients[client["id"]]
+        if _who == "cli":  # remove client from Bridge
+            __BRIDGES[_project_name].cli_ws = None
+        else:  # remove frontend from Bridge
+            _new_web_ws_list = [
+                c for c in __BRIDGES[_project_name].web_ws_list if c["id"] != client["id"]
+            ]
+            __BRIDGES[_project_name].web_ws_list = _new_web_ws_list
+        del connected_clients[client["id"]]
+        print(f"a {_who} disconnected with id {client['id']}")
         # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
     def handle_ws_message(client, server: WebsocketServer, message):
+        message = json.loads(message)
         print(message)  # debug
         # handle event-type
-        _event_type = message["event-type"]
-        _payload = message["payload"]
-        _event_id = message["event-id"]
+        _event_type = message[EVENT_TYPE_NAME_KEY]
+        _payload = message[PAYLOAD_NAME_KEY]
+        _event_id = message[EVENT_ID_NAME_KEY]
+        _project_name = message[NAME_NAME_KEY]
         if _event_type == "handshake":  # handle handshake
             # assign this client to a Bridge
-            _project_name = _payload["name"]
             _who = _payload["who"]
             if _who == "web":
                 # new connection from frontend
@@ -158,18 +165,19 @@ def daemon_process(cfg, debug=False):
                             event_type="ack",
                             event_id=_event_id,
                             payload={"result": "404", "reason": "name not found"},
-                        ),
+                        ).json(),
                     )
                 else:  # assign web to bridge
                     _target_bridge = __BRIDGES[_project_name]
                     _target_bridge.web_ws_list.append(client)
+                    connected_clients[client["id"]] = (_project_name, "web")
                     server.send_message(
                         client=client,
                         msg=WsMsg(
                             event_type="ack",
                             event_id=_event_id,
                             payload={"result": "200", "reason": "join success"},
-                        ),
+                        ).json(),
                     )
             elif _who == "cli":
                 # new connection from cli
@@ -178,18 +186,19 @@ def daemon_process(cfg, debug=False):
                     _target_bridge = Bridge(name=_project_name)  # create new bridge for this name
                     __BRIDGES[_project_name] = _target_bridge
                 __BRIDGES[_project_name].cli_ws = client  # assign cli to bridge
+                connected_clients[client["id"]] = (_project_name, "web")
                 server.send_message(
                     client=client,
                     msg=WsMsg(
+                        name="_project_name",
                         event_type="ack",
                         event_id=_event_id,
                         payload={"result": "200", "reason": "join success"},
-                    ),
+                    ).json(),
                 )
 
         elif _event_type == "log":  # handle log
             # forward log to frontend
-            _project_name = _payload["name"]
             if _project_name not in __BRIDGES:
                 # project name must exist
                 # drop anyway if not exist
@@ -197,7 +206,6 @@ def daemon_process(cfg, debug=False):
             else:
                 # forward to frontends
                 _target_bridge = __BRIDGES[_project_name]
-                _log_data = _payload["log"]
                 for web_ws in _target_bridge.web_ws_list:
                     server.send_message(
                         client=web_ws, msg=message

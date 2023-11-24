@@ -15,7 +15,7 @@ class WsMsg:
         return {
             EVENT_TYPE_NAME_KEY: self.event_type,
             EVENT_ID_NAME_KEY: self.event_id,
-            EVENT_PAYLOAD_NAME_KEY: self.payload,
+            PAYLOAD_NAME_KEY: self.payload,
         }
 ```
 
@@ -53,8 +53,8 @@ for instance, frontend connected to server. frontend should report connection ty
 ```json
 {
   "event-type": "handshake",
+  "name": "project name",
   "payload": {
-    "name": "project name",
     "who": "web"
   },
   "event-id": X
@@ -70,9 +70,9 @@ cli sents log(s) via websocket, server will receives and broadcast this message 
 ```json
 {
   "event-type": "log",
+  "name": "project name",
   "payload": {
-    "name" = "...",
-    "log" = {...json representing log data...}
+    "log" : {...json representing log data...}
   },
   "event-id": -1
 }
@@ -87,7 +87,10 @@ frontend send action request to server, and server will forwards the message to 
 ```json
 {
     "event-type" : "action",
-    "payload" : {...json representing action trigger...},
+    "name": "project name",
+    "payload" : {
+      "action" : {...json representing action trigger...}
+    },
     "event-id" : x
 }
 ```
@@ -101,7 +104,10 @@ cli execute action query(s) from frontend, and gives response by sending ack:
 ```json
 {
     "event-type" : "ack",
-    "payload" : {...json representing action result...},
+    "name": "project name",
+    "payload" : {
+      "action" : {...json representing action result...}
+    },
     "event-id" : x
 }
 ```

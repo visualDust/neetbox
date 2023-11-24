@@ -21,20 +21,23 @@ httpx_logger.setLevel(logging.ERROR)
 
 EVENT_TYPE_NAME_KEY = "event-type"
 EVENT_ID_NAME_KEY = "event-id"
-EVENT_PAYLOAD_NAME_KEY = "payload"
+NAME_NAME_KEY = "name"
+PAYLOAD_NAME_KEY = "payload"
 
 
 @dataclass
 class WsMsg:
+    name: str
     event_type: str
     payload: Any
     event_id: int = -1
 
     def json(self):
         return {
+            NAME_NAME_KEY: self.name,
             EVENT_TYPE_NAME_KEY: self.event_type,
             EVENT_ID_NAME_KEY: self.event_id,
-            EVENT_PAYLOAD_NAME_KEY: self.payload,
+            PAYLOAD_NAME_KEY: self.payload,
         }
 
 
@@ -72,7 +75,7 @@ class ClientConn(metaclass=Singleton):
         # create websocket app
         logger.log(f"creating websocket connection to {ClientConn.ws_server_addr}")
         # todo does run_forever reconnect after close?
-        ClientConn.__ws_client = websocket.WebSocketApp(
+        ws = websocket.WebSocketApp(
             ClientConn.ws_server_addr,
             on_open=ClientConn.__on_ws_open,
             on_message=ClientConn.__on_ws_message,
@@ -80,7 +83,7 @@ class ClientConn(metaclass=Singleton):
             on_close=ClientConn.__on_ws_close,
         )
 
-        Thread(target=ClientConn.__ws_client.run_forever, kwargs={"reconnect": True}).start()
+        Thread(target=ws.run_forever, kwargs={"reconnect": True}).start()
 
         # assign self to websocket log writer
         from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
@@ -88,17 +91,21 @@ class ClientConn(metaclass=Singleton):
         _assign_connection_to_WebSocketLogWriter(ClientConn)
 
     def __on_ws_open(ws: websocket.WebSocketApp):
-        logger.ok(f"client websocket connected")
+        _display_name = ClientConn._display_name
+        logger.ok(f"client websocket connected. sending handshake as '{_display_name}'...")
         ws.send(  # send handshake request
             json.dumps(
                 {
-                    "event-type": "handshake",
-                    "payload": {"name": {ClientConn._display_name}, "who": "cli"},
-                    "event-id": 0,
+                    NAME_NAME_KEY: {_display_name},
+                    EVENT_TYPE_NAME_KEY: "handshake",
+                    PAYLOAD_NAME_KEY: {"who": "cli"},
+                    EVENT_ID_NAME_KEY: 0,  # todo how does ack work
                 },
                 default=str,
             )
         )
+        logger.ok(f"handshake succeed.")
+        ClientConn.__ws_client = ws
 
     def __on_ws_err(ws: websocket.WebSocketApp, msg):
         logger.err(f"client websocket encountered {msg}")
@@ -119,8 +126,6 @@ class ClientConn(metaclass=Singleton):
         }
         """
         logger.debug(f"ws received {msg}")
-        # ack to sender
-        ws.send(WsMsg(event_type="ack", payload="0"))
         # message should be json
         event_type_name = msg[EVENT_TYPE_NAME_KEY]
         if event_type_name not in ClientConn.__ws_subscription:
@@ -142,8 +147,9 @@ class ClientConn(metaclass=Singleton):
             ClientConn.__ws_client.send(
                 json.dumps(
                     {
+                        NAME_NAME_KEY: ClientConn._display_name,
                         EVENT_TYPE_NAME_KEY: event_type,
-                        EVENT_PAYLOAD_NAME_KEY: payload,
+                        PAYLOAD_NAME_KEY: payload,
                         EVENT_ID_NAME_KEY: -1,  # todo
                     }
                 )
