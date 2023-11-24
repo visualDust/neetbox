@@ -305,7 +305,7 @@ if __name__ == "__main__":
     cfg = {
         "enable": True,
         "host": "localhost",
-        "port": 20202,
+        "port": 5000,
         "displayName": None,
         "allowIpython": False,
         "mute": True,
