@@ -75,7 +75,7 @@ class Logger:
     # global static
     __WHOM_2_LOGGER = {}
     __WHOM_2_STYLE = {}
-    
+
     def __init__(self, whom, style: Optional[LogStyle] = None):
         self.whom: Any = whom
         self.style: Optional[LogStyle] = style
@@ -123,6 +123,7 @@ class Logger:
         raw_log = RawLog(
             rich_msg=_pure_str_message,
             caller_identity=_caller_identity,
+            whom=self.whom,
             style=_style,
             prefix=prefix,
             datetime_format=datetime_format,

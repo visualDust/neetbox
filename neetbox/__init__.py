@@ -60,16 +60,17 @@ def init(path=None, load=False, **kwargs) -> bool:
         from neetbox.logging.logger import Logger
 
         logger = Logger("NEETBOX")  # builtin standalone logger
-        logger.ok(f"Loaded workspace config from {config_file_path}.")
+        logger.ok(f"found workspace config from {config_file_path}.")
         _try_attach_daemon()  # try attach daemon
+        logger.debug(f"running post init...")
         post_init()
         return True
     except Exception as e:
         from neetbox.logging.logger import Logger
 
         logger = Logger("NEETBOX")  # builtin standalone logger
-        logger.err(f"Failed to load config from {config_file_path}: {e}")
-        return False
+        logger.err(f"failed to load config from {config_file_path}: {e}")
+        raise e
 
 
 is_in_daemon_process = (

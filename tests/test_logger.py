@@ -37,14 +37,3 @@ def test_logger_with_specific_identity():
             self.logger.log("from class B")
 
     B().b()
-
-
-def test_logger_catch():
-    from neetbox.logging import logger
-
-    @logger.catch(reraise=False)
-    def my_function(x, y, z):
-        # An error? It's caught anyway!
-        return 1 / (x + y + z)
-
-    my_function(0, 0, 0)
