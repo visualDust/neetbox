@@ -2,7 +2,7 @@
 
 NEETBOX daemon consists of client side and server side. While client side syncs status of running project and platform information including hardware, server side provides apis for status monitoring and websocket forcasting between client and frontends.
 
-Basically neetbox will also launch a backend on localhost when a project launching configured with daemon server address at localhost. The server will run in background without any output, and you may want to run a server with output for debug purposes.
+Basically neetbox will also launch a backend on localhost when a project launching configured with daemon server address at localhost. The server will run in background without any output, and you may want to run a server with output for debug purposes.  
 
 ## How to test neetbox server
 
