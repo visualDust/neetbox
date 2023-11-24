@@ -3,9 +3,12 @@
 ## How to run server only
 
 at neetbox project root:
+
 ```bash
 python neetbox/daemon/server/_server.py
 ```
+
+script above should launch a server in debug mode on `localhost:5000`, it wont read the port in `neetbox.toml`. a swegger UI is provided at [localhost:5000/docs](http://127.0.0.1:5000/docs) in debug mode.
 
 ## WS message standard
 

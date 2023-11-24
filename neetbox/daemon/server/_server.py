@@ -17,8 +17,8 @@ from websocket_server import WebsocketServer
 
 __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours
 __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
-__DAEMON_NAME = "NEETBOX DAEMON"
-setproctitle.setproctitle(__DAEMON_NAME)
+__PROC_NAME = "NEETBOX SERVER"
+setproctitle.setproctitle(__PROC_NAME)
 
 FRONTEND_API_ROOT = "/web"
 CLIENT_API_ROOT = "/cli"
@@ -69,11 +69,13 @@ def daemon_process(cfg, debug=False):
     # ===============================================================
 
     if debug:
+        print("Running with debug, using APIFlask")
         from apiflask import APIFlask
 
-        app = APIFlask(__name__)
+        app = APIFlask(__PROC_NAME)
     else:
-        app = Flask(__name__)
+        print("Running in production mode, escaping APIFlask")
+        app = Flask(__PROC_NAME)
     # websocket server
     ws_server = WebsocketServer(port=cfg["port"] + 1)
     __BRIDGES = {}  # manage connections
@@ -292,7 +294,11 @@ def daemon_process(cfg, debug=False):
     count_down_thread.start()
 
     ws_server.run_forever(threaded=True)
-    app.run(host="0.0.0.0", port=cfg["port"], debug=debug)
+
+    if debug:
+        app.run(debug=debug)  # run apiflask on localhost:5000
+    else:  # run production mode on configured port
+        app.run(host="0.0.0.0", port=cfg["port"], debug=debug)
 
 
 if __name__ == "__main__":
