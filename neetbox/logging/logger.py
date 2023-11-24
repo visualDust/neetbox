@@ -52,23 +52,7 @@ class LogLevel(Enum):
         return self.value >= other.value
 
 
-_GLOBAL_LOG_LEVEL = LogLevel.INFO
-
-
-def set_log_level(level: LogLevel):
-    if type(level) is str:
-        level = {
-            "ALL": LogLevel.ALL,
-            "DEBUG": LogLevel.DEBUG,
-            "INFO": LogLevel.INFO,
-            "WARNING": LogLevel.WARNING,
-            "ERROR": LogLevel.ERROR,
-        }[level]
-    if type(level) is int:
-        assert level >= 0 and level <= 3
-        level = LogLevel(level)
-    global _GLOBAL_LOG_LEVEL
-    _GLOBAL_LOG_LEVEL = level
+_GLOBAL_LOG_LEVEL = LogLevel.ALL
 
 
 class Logger:
@@ -146,7 +130,7 @@ class Logger:
                 skip_writers=["file"],
                 traceback=3,
             )
-            self.log(*message, prefix=flag, skip_writers=["console"], traceback=3)
+            self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
         return self
 
     def debug(self, *message, flag="DEBUG"):
@@ -157,7 +141,7 @@ class Logger:
                 skip_writers=["file"],
                 traceback=3,
             )
-            self.log(*message, prefix=flag, skip_writers=["console"], traceback=3)
+            self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
         return self
 
     def info(self, *message, flag="INFO"):
@@ -168,7 +152,7 @@ class Logger:
                 skip_writers=["file"],
                 traceback=3,
             )
-            self.log(*message, prefix=flag, skip_writers=["console"], traceback=3)
+            self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
         return self
 
     def warn(self, *message, flag="WARNING"):
@@ -179,7 +163,7 @@ class Logger:
                 skip_writers=["file"],
                 traceback=3,
             )
-            self.log(*message, prefix=flag, skip_writers=["console"], traceback=3)
+            self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
         return self
 
     def err(self, err, flag="ERROR", reraise=False):
@@ -192,8 +176,8 @@ class Logger:
                 skip_writers=["file"],
                 traceback=3,
             )
-            self.log(str(err), prefix=flag, skip_writers=["console"], traceback=3)
-        if reraise:
+            self.log(str(err), prefix=flag, skip_writers=["stdout"], traceback=3)
+        if reraise or _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
             raise err
         return self
 
@@ -298,3 +282,20 @@ class Logger:
 
 
 DEFAULT_LOGGER = Logger(None)
+
+
+def set_log_level(level: LogLevel):
+    if type(level) is str:
+        level = {
+            "ALL": LogLevel.ALL,
+            "DEBUG": LogLevel.DEBUG,
+            "INFO": LogLevel.INFO,
+            "WARNING": LogLevel.WARNING,
+            "ERROR": LogLevel.ERROR,
+        }[level]
+    if type(level) is int:
+        assert level >= 0 and level <= 3
+        level = LogLevel(level)
+    global _GLOBAL_LOG_LEVEL
+    _GLOBAL_LOG_LEVEL = level
+    DEFAULT_LOGGER.log(f"global log level was set to {_GLOBAL_LOG_LEVEL}")

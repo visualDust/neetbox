@@ -1,10 +1,11 @@
 import asyncio
 import functools
 import logging
+from threading import Thread
 from typing import Callable, Optional
 
 import httpx
-import websockets
+import websocket
 
 from neetbox.config import get_module_level_config
 from neetbox.core import Registry
@@ -23,10 +24,10 @@ EVENT_PAYLOAD_NAME_KEY = "payload"
 class ClientConn(metaclass=Singleton):
     http: httpx.Client = None
 
-    __ws_client: None  # _websocket_client
+    __ws_client: websocket.WebSocketApp = None  # _websocket_client
     __ws_subscription = Registry("__client_ws_subscription")  # { event-type-name : list(Callable)}
 
-    def __init__(self) -> None:
+    def _init_ws():
         cfg = get_module_level_config()
 
         def __load_http_client():
@@ -41,8 +42,34 @@ class ClientConn(metaclass=Singleton):
         # create htrtp client
         ClientConn.http = __load_http_client()
 
-        ws_server_addr = f"ws://{cfg['host']}/{CLIENT_API_ROOT}"
-        # todo establishing socket connection
+        # ws server url
+        ClientConn.ws_server_addr = f"ws://{cfg['host']}/{CLIENT_API_ROOT}"
+
+        # todo wait for server online
+        # create websocket app
+        websocket.WebSocketApp(
+            ClientConn.ws_server_addr,
+            on_open=ClientConn.__on_ws_open,
+            on_message=ClientConn.__on_ws_message,
+            on_error=ClientConn.__on_ws_err,
+            on_close=ClientConn.__on_ws_close,
+        ).run_forever(reconnect=True)
+
+        # assign self to websocket log writer
+        from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
+
+        _assign_connection_to_WebSocketLogWriter(ClientConn)
+
+    def __on_ws_open(ws):
+        ClientConn.__ws_client = ws
+        logger.ok(f"client websocket {ws} connected")
+
+    def __on_ws_err(ws, msg):
+        logger.err(f"client websocket {ws} encountered {msg}")
+
+    def __on_ws_close(ws):
+        ClientConn.__ws_client = None
+        logger.warn(f"client websocket {ws} closed")
 
     def __on_ws_message(ws, msg):
         logger.debug(f"ws received {msg}")
@@ -87,5 +114,5 @@ class ClientConn(metaclass=Singleton):
 
 
 # singleton
-ClientConn()  # run init
+# ClientConn()  # !!! DO NOT run init. websocket client should be initialzed only after server is ready
 connection = ClientConn

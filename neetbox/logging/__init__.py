@@ -3,6 +3,7 @@ from neetbox.logging.logger import DEFAULT_LOGGER as logger
 from neetbox.logging.logger import set_log_level
 
 _cfg = get_module_level_config()
+print(_cfg)
 logger.set_log_dir(_cfg["logdir"])
 set_log_level(_cfg["level"])
 

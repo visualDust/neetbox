@@ -44,6 +44,7 @@ def __attach_daemon(daemon_config):
             f"No daemon running at {daemon_config['host']}:{daemon_config['port']}, trying to create daemon..."
         )
 
+        print(["--config", json.dumps(daemon_config)])
         popen = DaemonableProcess(
             target="neetbox.daemon.server._daemon_launcher",
             args=["--config", json.dumps(daemon_config)],
