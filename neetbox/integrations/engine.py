@@ -6,6 +6,7 @@
 
 import importlib
 from enum import Enum
+from functools import lru_cache
 from typing import List, Optional
 
 from neetbox.logging import logger
@@ -22,7 +23,7 @@ supported_engines: Optional[List] = None
 installed_engines: Optional[List] = None
 
 
-# todo migrate to python 3.9 after frameworks are supporting it
+@lru_cache
 def get_supported_engines():
     global supported_engines
     if not supported_engines:

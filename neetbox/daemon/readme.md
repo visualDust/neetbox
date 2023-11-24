@@ -1,5 +1,12 @@
 # DAEMON readme
 
+## How to run server only
+
+at neetbox project root:
+```bash
+python neetbox/daemon/server/_server.py
+```
+
 ## WS message standard
 
 websocke messages are described in json. There is a dataclass representing websocket message:

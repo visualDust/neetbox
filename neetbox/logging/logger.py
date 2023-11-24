@@ -98,11 +98,12 @@ class Logger:
 
         _style = self.style
         if not _style:  # if style not set
-            if _caller_identity in Logger.__WHOM_2_STYLE:  # check for previous style
-                _style = Logger.__WHOM_2_STYLE[_caller_identity]
+            _style_index = str(_caller_identity)
+            if _style_index in Logger.__WHOM_2_STYLE:  # check for previous style
+                _style = Logger.__WHOM_2_STYLE[_style_index]
             else:
                 _style = LogStyle().randcolor()
-                Logger.__WHOM_2_STYLE[_caller_identity] = _style
+                Logger.__WHOM_2_STYLE[_style_index] = _style
 
         raw_log = RawLog(
             rich_msg=_pure_str_message,

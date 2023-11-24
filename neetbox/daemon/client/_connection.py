@@ -69,10 +69,9 @@ class ClientConn(metaclass=Singleton):
         # ws server url
         ClientConn.ws_server_addr = f"ws://{cfg['host']}:{cfg['port'] + 1}{CLIENT_API_ROOT}"
 
-        # todo wait for server online
         # create websocket app
         logger.log(f"creating websocket connection to {ClientConn.ws_server_addr}")
-        # todo does run_forever reconnect after close?
+
         ws = websocket.WebSocketApp(
             ClientConn.ws_server_addr,
             on_open=ClientConn.__on_ws_open,
@@ -148,7 +147,7 @@ class ClientConn(metaclass=Singleton):
                         NAME_NAME_KEY: ClientConn._display_name,
                         EVENT_TYPE_NAME_KEY: event_type,
                         PAYLOAD_NAME_KEY: payload,
-                        EVENT_ID_NAME_KEY: -1,  # todo
+                        EVENT_ID_NAME_KEY: -1,  # todo how does ack work
                     }
                 )
             )
