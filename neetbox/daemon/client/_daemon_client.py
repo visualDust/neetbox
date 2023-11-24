@@ -91,9 +91,7 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
         global __upload_thread
         if __upload_thread is None or not __upload_thread.is_alive():
             __upload_thread = Thread(
-                target=_upload_thread,
-                daemon=True,
-                args=[cfg, _base_addr, _display_name],
+                target=_upload_thread, args=[cfg, _base_addr, _display_name], daemon=True
             )
             __upload_thread.start()
 

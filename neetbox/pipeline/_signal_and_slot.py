@@ -75,7 +75,9 @@ def __update_and_get(name, *args, **kwargs):
                 f"Watched value {_name} takes longer time({delta_t:.8f}s) to update than it was expected({expected_time_limit}s)."
             )
 
-    Thread(target=_so_update_and_ping_listen, args=(name, _the_value, _watch_config)).start()
+    Thread(
+        target=_so_update_and_ping_listen, args=(name, _the_value, _watch_config), daemon=True
+    ).start()
     return _the_value
 
 

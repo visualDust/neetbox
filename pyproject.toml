@@ -45,8 +45,8 @@ pytest = "^7.4.3"
 pyfiglet = "^1.0.2"
 httpx = "^0.24.0"
 flask = "^2.2.3"
-flask-socketio = "^5.3.6"
 websocket-client = "^1.6.4"
+websocket-server = "^0.6.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0.0"

@@ -49,10 +49,6 @@ class ClientConn(metaclass=Singleton):
     __ws_subscription = Registry("__client_ws_subscription")  # { event-type-name : list(Callable)}
 
     def __init__(self) -> None:
-        cfg = get_module_level_config()
-        _root_config = get_module_level_config("@")
-        ClientConn._display_name = cfg["displayName"] or _root_config["name"]
-
         def __load_http_client():
             __local_http_client = httpx.Client(
                 proxies={
@@ -67,6 +63,8 @@ class ClientConn(metaclass=Singleton):
 
     def _init_ws():
         cfg = get_module_level_config()
+        _root_config = get_module_level_config("@")
+        ClientConn._display_name = cfg["displayName"] or _root_config["name"]
 
         # ws server url
         ClientConn.ws_server_addr = f"ws://{cfg['host']}:{cfg['port'] + 1}{CLIENT_API_ROOT}"
@@ -83,7 +81,7 @@ class ClientConn(metaclass=Singleton):
             on_close=ClientConn.__on_ws_close,
         )
 
-        Thread(target=ws.run_forever, kwargs={"reconnect": True}).start()
+        Thread(target=ws.run_forever, kwargs={"reconnect": True}, daemon=True).start()
 
         # assign self to websocket log writer
         from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
