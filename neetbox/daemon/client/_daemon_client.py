@@ -23,7 +23,7 @@ __upload_thread: Union[Thread, None] = None
 def _upload_thread(daemon_config, base_addr, display_name):
     _ctr = 0
     _api_name = "sync"
-    _api_addr = f"{base_addr}/{CLIENT_API_ROOT}/{_api_name}/{display_name}"
+    _api_addr = f"{base_addr}{CLIENT_API_ROOT}/{_api_name}/{display_name}"
     _disconnect_flag = False
     _disconnect_retries = 10
     while True:
@@ -91,9 +91,7 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
         global __upload_thread
         if __upload_thread is None or not __upload_thread.is_alive():
             __upload_thread = Thread(
-                target=_upload_thread,
-                daemon=True,
-                args=[cfg, _base_addr, _display_name],
+                target=_upload_thread, args=[cfg, _base_addr, _display_name], daemon=True
             )
             __upload_thread.start()
 

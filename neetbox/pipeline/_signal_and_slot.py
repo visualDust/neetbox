@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 from functools import partial
 from threading import Thread
-from typing import Any, Callable
+from typing import Any, Callable, Optional, Union
 
 from neetbox.config import get_module_level_config
 from neetbox.core import Registry
@@ -75,11 +75,13 @@ def __update_and_get(name, *args, **kwargs):
                 f"Watched value {_name} takes longer time({delta_t:.8f}s) to update than it was expected({expected_time_limit}s)."
             )
 
-    Thread(target=_so_update_and_ping_listen, args=(name, _the_value, _watch_config)).start()
+    Thread(
+        target=_so_update_and_ping_listen, args=(name, _the_value, _watch_config), daemon=True
+    ).start()
     return _the_value
 
 
-def _watch(func: Callable, name: str, freq: float, initiative=False, force=False):
+def _watch(func: Callable, name: Optional[str], freq: float, initiative=False, force=False):
     """Function decorator to let the daemon watch a value of the function
 
     Args:
@@ -114,9 +116,9 @@ def watch(name=None, freq=None, initiative=False, force=False):
     return partial(_watch, name=name, freq=freq, initiative=initiative, force=force)
 
 
-def _listen(func: Callable, target: str, name: str = None, force=False):
+def _listen(func: Callable, target: Union[str, Callable], name: Optional[str] = None, force=False):
     name = name or func.__name__
-    if type(target) is not str:
+    if not isinstance(target, str):
         if type(target) is partial:
             if target.func in [__update_and_get, __get]:
                 target = target.args[0]
@@ -134,11 +136,11 @@ def _listen(func: Callable, target: str, name: str = None, force=False):
                 f"There is already a listener called '{name}' lisiting '{target}', overwriting."
             )
     _listen_queue_dict[target][name] = func
-    logger.log(f"{name} is now lisiting to {target}.")
+    logger.debug(f"{name} is now lisiting to {target}.")
     return func
 
 
-def listen(target, name: str = None, force=False):
+def listen(target, name: Optional[str] = None, force=False):
     return partial(_listen, target=target, name=name, force=force)
 
 
@@ -151,7 +153,7 @@ def _update_thread():
         for _vname, _watched_fun in _watch_queue_dict.items():
             _watch_config = _watched_fun.others
             if not _watch_config["initiative"] and _ctr % _watch_config["freq"] == 0:  # do update
-                _the_value = __update_and_get(_vname)
+                _ = __update_and_get(_vname)
 
 
 update_thread = Thread(target=_update_thread, daemon=True)

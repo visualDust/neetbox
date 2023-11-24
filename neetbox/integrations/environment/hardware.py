@@ -5,16 +5,6 @@
 # Date:   20230413
 
 
-from neetbox.utils import pkg
-from neetbox.utils.framing import get_frame_module_traceback
-
-module_name = get_frame_module_traceback().__name__
-assert pkg.is_installed(
-    "psutil", try_install_if_not=True
-), f"{module_name} requires psutil which is not installed"
-assert pkg.is_installed(
-    "GPUtil", try_install_if_not=True
-), f"{module_name} requires GPUtil which is not installed"
 import time
 from threading import Thread
 
@@ -23,7 +13,17 @@ import psutil
 from GPUtil import GPU
 
 from neetbox.pipeline import watch
+from neetbox.utils import pkg
+from neetbox.utils.framing import get_frame_module_traceback
 from neetbox.utils.mvc import Singleton
+
+module_name = get_frame_module_traceback().__name__  # type: ignore
+assert pkg.is_installed(
+    "psutil", try_install_if_not=True
+), f"{module_name} requires psutil which is not installed"
+assert pkg.is_installed(
+    "GPUtil", try_install_if_not=True
+), f"{module_name} requires GPUtil which is not installed"
 
 
 class _CPU_STAT(dict):
@@ -97,15 +97,11 @@ class _Hardware(dict, metaclass=Singleton):
                             freq=cpu_freq[index],
                         )
                     if do_update_gpus:
-                        env_instance["gpus"] = [
-                            _GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()
-                        ]
+                        env_instance["gpus"] = [_GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()]
                     env_instance[""] = psutil.cpu_stats()
                     time.sleep(env_instance._update_interval)
 
-            self._watcher = Thread(
-                target=watcher_fun, args=(self, self._with_gpu), daemon=True
-            )
+            self._watcher = Thread(target=watcher_fun, args=(self, self._with_gpu), daemon=True)
             self._watcher.start()
 
 

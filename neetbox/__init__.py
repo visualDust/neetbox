@@ -8,7 +8,7 @@ from neetbox.config._config import update_with
 from neetbox.daemon import _try_attach_daemon
 from neetbox.utils.framing import get_frame_module_traceback
 
-module = get_frame_module_traceback(1).__name__
+module = get_frame_module_traceback(1).__name__  # type: ignore
 config_file_name = f"{module}.toml"
 
 
@@ -17,6 +17,11 @@ def post_init():
 
     project_name = get_module_level_config()["name"]
     setproctitle.setproctitle(project_name)
+
+    from neetbox.daemon.client._connection import connection
+
+    # post init ws
+    connection._init_ws()
 
 
 def init(path=None, load=False, **kwargs) -> bool:
@@ -60,16 +65,16 @@ def init(path=None, load=False, **kwargs) -> bool:
         from neetbox.logging.logger import Logger
 
         logger = Logger("NEETBOX")  # builtin standalone logger
-        logger.ok(f"Loaded workspace config from {config_file_path}.")
+        logger.ok(f"found workspace config from {config_file_path}.")
         _try_attach_daemon()  # try attach daemon
-        post_init()
+        logger.debug(f"running post init...")
         return True
     except Exception as e:
         from neetbox.logging.logger import Logger
 
         logger = Logger("NEETBOX")  # builtin standalone logger
-        logger.err(f"Failed to load config from {config_file_path}: {e}")
-        return False
+        logger.err(f"failed to load config from {config_file_path}: {e}")
+        raise e
 
 
 is_in_daemon_process = (
@@ -80,3 +85,5 @@ if os.path.isfile(config_file_name) and not is_in_daemon_process:  # if in a wor
     success = init(load=True)  # init from config file
     if not success:
         os._exit(255)
+    # run post init
+    post_init()

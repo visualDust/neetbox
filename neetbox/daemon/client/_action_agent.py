@@ -62,6 +62,7 @@ class _NeetActionManager(metaclass=Singleton):
             Thread(
                 target=run_and_callback,
                 kwargs={"target_action": target_action, "params": params, "callback": callback},
+                daemon=True,
             ).start()
             return None
         else:  # blocking run
