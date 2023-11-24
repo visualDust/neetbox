@@ -1,6 +1,6 @@
 # DAEMON readme
 
-## How to run server only
+## How to test neetbox server
 
 at neetbox project root:
 
@@ -8,11 +8,16 @@ at neetbox project root:
 python neetbox/daemon/server/_server.py
 ```
 
-script above should launch a server in debug mode on `localhost:5000`, it wont read the port in `neetbox.toml`. a swegger UI is provided at [localhost:5000/docs](http://127.0.0.1:5000/docs) in debug mode.
+script above should launch a server in debug mode on `localhost:5000`, it wont read the port in `neetbox.toml`. a swegger UI is provided at [localhost:5000/docs](http://127.0.0.1:5000/docs) in debug mode. websocket server should run on port `5001`.
 
-websocket server should run on port `5001`.
+If you want to simulate a basic neetbox client sending message to server, at neetbox project root:
+```bash
+cd tests/client
+python test.py
+```
+script above should launch a simple case of neetbox project with some logs and status sending to server.
 
-## WS message standard
+## Websocket message standard
 
 websocke messages are described in json. There is a dataclass representing websocket message:
 
