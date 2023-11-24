@@ -14,7 +14,6 @@ from typing import Any, Optional, Union
 from rich import print as rprint
 from rich.panel import Panel
 
-from neetbox.core import Registry
 from neetbox.logging._writer import (
     FileLogWriter,
     JsonLogWriter,
@@ -53,8 +52,6 @@ class LogLevel(Enum):
         return self.value >= other.value
 
 
-__WHOM_2_LOGGER = Registry("__LOGGERS")
-
 _GLOBAL_LOG_LEVEL = LogLevel.INFO
 
 
@@ -75,6 +72,10 @@ def set_log_level(level: LogLevel):
 
 
 class Logger:
+    # global static
+    __WHOM_2_LOGGER = {}
+    __WHOM_2_STYLE = {}
+    
     def __init__(self, whom, style: Optional[LogStyle] = None):
         self.whom: Any = whom
         self.style: Optional[LogStyle] = style
@@ -86,10 +87,10 @@ class Logger:
     def __call__(self, whom: Any = None, style: Optional[LogStyle] = None) -> "Logger":
         if whom is None:
             return DEFAULT_LOGGER
-        if whom in __WHOM_2_LOGGER:
-            return __WHOM_2_LOGGER[whom]
-        __WHOM_2_LOGGER[whom] = Logger(whom=whom, style=style)
-        return __WHOM_2_LOGGER[whom]
+        if whom in Logger.__WHOM_2_LOGGER:
+            return Logger.__WHOM_2_LOGGER[whom]
+        Logger.__WHOM_2_LOGGER[whom] = Logger(whom=whom, style=style)
+        return Logger.__WHOM_2_LOGGER[whom]
 
     def log(
         self,
@@ -111,10 +112,18 @@ class Logger:
         if type(skip_writers) is str:
             skip_writers = [skip_writers]
 
+        _style = self.style
+        if not _style:  # if style not set
+            if _caller_identity in Logger.__WHOM_2_STYLE:  # check for previous style
+                _style = Logger.__WHOM_2_STYLE[_caller_identity]
+            else:
+                _style = LogStyle().randcolor()
+                Logger.__WHOM_2_STYLE[_caller_identity] = _style
+
         raw_log = RawLog(
             rich_msg=_pure_str_message,
             caller_identity=_caller_identity,
-            style=self.style,
+            style=_style,
             prefix=prefix,
             datetime_format=datetime_format,
             with_identifier=with_identifier,
@@ -133,10 +142,10 @@ class Logger:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'green')}]",
-                into_file=False,
+                skip_writers=["file"],
                 traceback=3,
             )
-            self.log(*message, prefix=flag, into_stdout=False, traceback=3)
+            self.log(*message, prefix=flag, skip_writers=["console"], traceback=3)
         return self
 
     def debug(self, *message, flag="DEBUG"):
@@ -144,10 +153,10 @@ class Logger:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'cyan')}]",
-                into_file=False,
+                skip_writers=["file"],
                 traceback=3,
             )
-            self.log(*message, prefix=flag, into_stdout=False, traceback=3)
+            self.log(*message, prefix=flag, skip_writers=["console"], traceback=3)
         return self
 
     def info(self, *message, flag="INFO"):
@@ -155,10 +164,10 @@ class Logger:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'white')}]",
-                into_file=False,
+                skip_writers=["file"],
                 traceback=3,
             )
-            self.log(*message, prefix=flag, into_stdout=False, traceback=3)
+            self.log(*message, prefix=flag, skip_writers=["console"], traceback=3)
         return self
 
     def warn(self, *message, flag="WARNING"):
@@ -166,10 +175,10 @@ class Logger:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'yellow')}]",
-                into_file=False,
+                skip_writers=["file"],
                 traceback=3,
             )
-            self.log(*message, prefix=flag, into_stdout=False, traceback=3)
+            self.log(*message, prefix=flag, skip_writers=["console"], traceback=3)
         return self
 
     def err(self, err, flag="ERROR", reraise=False):
@@ -179,10 +188,10 @@ class Logger:
             self.log(
                 str(err),
                 prefix=f"[{colored_text(flag,'red')}]",
-                into_file=False,
+                skip_writers=["file"],
                 traceback=3,
             )
-            self.log(str(err), prefix=flag, into_stdout=False, traceback=3)
+            self.log(str(err), prefix=flag, skip_writers=["console"], traceback=3)
         if reraise:
             raise err
         return self

@@ -1,10 +1,11 @@
-import datetime
 import inspect
 import io
+import json
 import os
 import pathlib
 from dataclasses import dataclass
 from datetime import date
+from datetime import datetime
 from typing import Any, Callable, Iterable, Optional, Union
 
 from rich import print as rprint
@@ -13,24 +14,10 @@ from neetbox.logging import formatting
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
 
 
-# declare type
+# Log writer interface
 class LogWriter:
-    pass
-
-
-# declare type
-class __ConsoleLogWriter:
-    pass
-
-
-# declare type
-class FileLogWriter:
-    pass
-
-
-# declare type
-class JsonLogWriter:
-    pass
+    def write(self, raw_log):
+        pass
 
 
 @dataclass
@@ -45,13 +32,8 @@ class RawLog:
     skip_writers: Optional[list[str]] = None
 
     def write_by(self, writer: LogWriter) -> bool:
-        name2writerType = {
-            "console": __ConsoleLogWriter,
-            "file": FileLogWriter,
-            "json": JsonLogWriter,
-        }
         for swr in self.skip_writers:
-            if isinstance(writer, name2writerType[swr]):
+            if isinstance(writer, RawLog.name2writerType[swr]):
                 return False  # skip this writer, do not write
         writer.write(self)
         return False
@@ -61,7 +43,7 @@ class RawLog:
         # prefix
         _prefix = self.prefix or _default_style.prefix
         # composing datetime
-        _with_datetime = _with_datetime or _default_style.with_datetime
+        _with_datetime = self.with_datetime or _default_style.with_datetime
         _datetime = ""
         if _with_datetime:
             _datetime_fmt = self.datetime_format or _default_style.datetime_format
@@ -96,23 +78,13 @@ class RawLog:
         return {"prefix": _prefix, "datetime": _datetime, "whom": _whom, "msg": self.rich_msg}
 
     def __repr__(self) -> str:
-        pass
-
-    def dumps(s: str):
-        # todo dump from str
-        pass
-
-
-# Log writer interface
-class LogWriter:
-    def write(self, raw_log: RawLog):
-        pass
+        return json.dumps(self.json(), default=str)
 
 
 # ================== CONSOLE LOG WRITER =====================
 
 
-class __ConsoleLogWriter(metaclass=LogWriter):
+class __ConsoleLogWriter(LogWriter):
     def write(self, raw_log: RawLog):
         _msg_dict = raw_log.json()
         _style = raw_log.style
@@ -121,8 +93,8 @@ class __ConsoleLogWriter(metaclass=LogWriter):
             + _msg_dict["datetime"]
             + _style.split_char_cmd * min(len(_msg_dict["datetime"]), 1)
             + styled_text(_msg_dict["whom"], style=_style)
-            + _style.split_char_cmd * min(len(_msg_dict["whom"]), 1),
-            +_msg_dict["msg"],
+            + _style.split_char_cmd * min(len(_msg_dict["whom"]), 1)
+            + _msg_dict["msg"],
         )
         rprint(rich_msg)
 
@@ -286,7 +258,7 @@ class _AutoSplitLogWriter(io.TextIOBase):
         return self._split_lock
 
 
-class FileLogWriter:
+class FileLogWriter(LogWriter):
     # class level static pool
     PATH_2_FILE_WRITER = {}
 
@@ -339,7 +311,7 @@ class JsonLogWriter(FileLogWriter):
 # ================== WS LOG WRITER =====================
 
 
-class __WebSocketLogWriter(metaclass=LogWriter):
+class __WebSocketLogWriter(LogWriter):
     def __init__(self) -> None:
         pass
 
@@ -348,3 +320,12 @@ class __WebSocketLogWriter(metaclass=LogWriter):
 
 
 webSocketLogWriter = __WebSocketLogWriter()
+
+
+# ================== POST INIT TYPE REF =====================
+
+RawLog.name2writerType = {
+    "console": __ConsoleLogWriter,
+    "file": FileLogWriter,
+    "json": JsonLogWriter,
+}
