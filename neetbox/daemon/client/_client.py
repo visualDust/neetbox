@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+from collections import defaultdict
 from threading import Thread
 from typing import Callable
 
@@ -8,7 +9,6 @@ import httpx
 import websocket
 
 from neetbox.config import get_module_level_config
-from neetbox.core import Registry
 from neetbox.daemon._protocol import *
 from neetbox.daemon.server._server import CLIENT_API_ROOT
 from neetbox.logging import logger
@@ -23,7 +23,7 @@ class ClientConn(metaclass=Singleton):
     http: httpx.Client = None
 
     __ws_client: websocket.WebSocketApp = None  # _websocket_client
-    __ws_subscription = Registry("__client_ws_subscription")  # { event-type-name : list(Callable)}
+    __ws_subscription = defaultdict(lambda: [])  # default to no subscribers
 
     def __init__(self) -> None:
         def __load_http_client():
@@ -49,7 +49,7 @@ class ClientConn(metaclass=Singleton):
         # create websocket app
         logger.log(f"creating websocket connection to {ClientConn.ws_server_addr}")
 
-        ws = websocket.WebSocketApp(
+        ClientConn.wsApp = websocket.WebSocketApp(
             ClientConn.ws_server_addr,
             on_open=ClientConn.__on_ws_open,
             on_message=ClientConn.__on_ws_message,
@@ -57,7 +57,7 @@ class ClientConn(metaclass=Singleton):
             on_close=ClientConn.__on_ws_close,
         )
 
-        Thread(target=ws.run_forever, kwargs={"reconnect": True}, daemon=True).start()
+        Thread(target=ClientConn.wsApp.run_forever, kwargs={"reconnect": True}, daemon=True).start()
 
         # assign self to websocket log writer
         from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
@@ -89,7 +89,7 @@ class ClientConn(metaclass=Singleton):
         if close_status_code or close_msg:
             logger.warn(f"ws close status code: {close_status_code}")
             logger.warn("ws close message: {close_msg}")
-            ClientConn.__ws_client = None
+        ClientConn.__ws_client = None
 
     def __on_ws_message(ws: websocket.WebSocketApp, msg):
         """EXAMPLE JSON
@@ -99,14 +99,15 @@ class ClientConn(metaclass=Singleton):
             "payload": ...
         }
         """
+        msg = json.loads(msg)  # message should be json
         logger.debug(f"ws received {msg}")
-        # message should be json
+
         event_type_name = msg[EVENT_TYPE_NAME_KEY]
         if event_type_name not in ClientConn.__ws_subscription:
             logger.warn(
                 f"Client received a(n) {event_type_name} event but nobody subscribes it. Ignoring anyway."
             )
-        for subscriber in ClientConn._ws_subscribe[event_type_name]:
+        for subscriber in ClientConn.__ws_subscription[event_type_name]:
             try:
                 subscriber(msg)  # pass payload message into subscriber
             except Exception as e:

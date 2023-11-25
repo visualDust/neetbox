@@ -136,7 +136,6 @@ def daemon_process(cfg, debug=False):
 
     def handle_ws_message(client, server: WebsocketServer, message):
         message = json.loads(message)
-        print(message)  # debug
         # handle event-type
         _event_type = message[EVENT_TYPE_NAME_KEY]
         _payload = message[PAYLOAD_NAME_KEY]
@@ -145,17 +144,21 @@ def daemon_process(cfg, debug=False):
         if _event_type == "handshake":  # handle handshake
             # assign this client to a Bridge
             _who = _payload["who"]
+            print(f"handling handshake for {_who} with name {_project_name}")
             if _who == "web":
                 # new connection from frontend
                 # check if Bridge with name exist
                 if _project_name not in __BRIDGES:  # there is no such bridge
                     server.send_message(
                         client=client,
-                        msg=WsMsg(
-                            event_type="ack",
-                            event_id=_event_id,
-                            payload={"result": "404", "reason": "name not found"},
-                        ).json(),
+                        msg=json.dumps(
+                            WsMsg(
+                                name=_project_name,
+                                event_type="ack",
+                                event_id=_event_id,
+                                payload={"result": "404", "reason": "name not found"},
+                            ).json()
+                        ),
                     )
                 else:  # assign web to bridge
                     _target_bridge = __BRIDGES[_project_name]
@@ -163,11 +166,14 @@ def daemon_process(cfg, debug=False):
                     connected_clients[client["id"]] = (_project_name, "web")
                     server.send_message(
                         client=client,
-                        msg=WsMsg(
-                            event_type="ack",
-                            event_id=_event_id,
-                            payload={"result": "200", "reason": "join success"},
-                        ).json(),
+                        msg=json.dumps(
+                            WsMsg(
+                                name=_project_name,
+                                event_type="ack",
+                                event_id=_event_id,
+                                payload={"result": "200", "reason": "join success"},
+                            ).json()
+                        ),
                     )
             elif _who == "cli":
                 # new connection from cli
@@ -179,12 +185,14 @@ def daemon_process(cfg, debug=False):
                 connected_clients[client["id"]] = (_project_name, "web")
                 server.send_message(
                     client=client,
-                    msg=WsMsg(
-                        name="_project_name",
-                        event_type="ack",
-                        event_id=_event_id,
-                        payload={"result": "200", "reason": "join success"},
-                    ).json(),
+                    msg=json.dumps(
+                        WsMsg(
+                            name=_project_name,
+                            event_type="ack",
+                            event_id=_event_id,
+                            payload={"result": "200", "reason": "join success"},
+                        ).json()
+                    ),
                 )
 
         elif _event_type == "log":  # handle log
