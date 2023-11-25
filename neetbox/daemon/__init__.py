@@ -9,8 +9,8 @@ import subprocess
 import time
 
 from neetbox.daemon.client._action_agent import _NeetActionManager as NeetActionManager
-from neetbox.daemon.client._connection import connection
-from neetbox.daemon.client._daemon_client import connect_daemon
+from neetbox.daemon.client._client import connection
+from neetbox.daemon.client._update_thread import connect_daemon
 from neetbox.daemon.server.daemonable_process import DaemonableProcess
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch

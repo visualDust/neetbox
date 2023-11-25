@@ -6,7 +6,7 @@
 
 
 from neetbox.config import get_module_level_config
-from neetbox.daemon.client._connection import connection
+from neetbox.daemon.client._client import connection
 from neetbox.logging import logger
 from neetbox.utils import pkg
 from neetbox.utils.framing import get_frame_module_traceback

@@ -11,38 +11,21 @@ from dataclasses import dataclass
 from threading import Thread
 from typing import Any, Dict, Tuple
 
+if __name__ == "__main__":
+    import ultraimport  # if run server solely, sssssssuse relative import, do not trigger neetbox init
+
+    _protocol = ultraimport("__dir__/../_protocol.py")
+    from _protocol import *
+else:
+    from neetbox.daemon._protocol import *
 import setproctitle
-from flask import Flask, abort, json, request
+from flask import abort, json, request
 from websocket_server import WebsocketServer
 
 __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours
 __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
 __PROC_NAME = "NEETBOX SERVER"
 setproctitle.setproctitle(__PROC_NAME)
-
-FRONTEND_API_ROOT = "/web"
-CLIENT_API_ROOT = "/cli"
-
-EVENT_TYPE_NAME_KEY = "event-type"
-EVENT_ID_NAME_KEY = "event-id"
-PAYLOAD_NAME_KEY = "payload"
-NAME_NAME_KEY = "name"
-
-
-@dataclass
-class WsMsg:
-    name: str
-    event_type: str
-    payload: Any
-    event_id: int = -1
-
-    def json(self):
-        return {
-            NAME_NAME_KEY: self.name,
-            EVENT_TYPE_NAME_KEY: self.event_type,
-            EVENT_ID_NAME_KEY: self.event_id,
-            PAYLOAD_NAME_KEY: self.payload,
-        }
 
 
 def daemon_process(cfg, debug=False):
@@ -75,7 +58,12 @@ def daemon_process(cfg, debug=False):
         app = APIFlask(__PROC_NAME)
     else:
         print("Running in production mode, escaping APIFlask")
+        from flask import Flask
+
         app = Flask(__PROC_NAME)
+
+    # app = APIFlask(__PROC_NAME)
+
     # websocket server
     ws_server = WebsocketServer(port=cfg["port"] + 1)
     __BRIDGES = {}  # manage connections
@@ -295,10 +283,7 @@ def daemon_process(cfg, debug=False):
 
     ws_server.run_forever(threaded=True)
 
-    if debug:
-        app.run(debug=debug)  # run apiflask on localhost:5000
-    else:  # run production mode on configured port
-        app.run(host="0.0.0.0", port=cfg["port"], debug=debug)
+    app.run(host="0.0.0.0", port=cfg["port"])
 
 
 if __name__ == "__main__":

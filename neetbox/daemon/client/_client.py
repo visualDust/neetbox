@@ -1,44 +1,21 @@
-import asyncio
 import functools
 import json
 import logging
-import time
-from dataclasses import dataclass
 from threading import Thread
-from typing import Any, Callable, Optional
+from typing import Callable
 
 import httpx
 import websocket
 
 from neetbox.config import get_module_level_config
 from neetbox.core import Registry
+from neetbox.daemon._protocol import *
 from neetbox.daemon.server._server import CLIENT_API_ROOT
 from neetbox.logging import logger
 from neetbox.utils.mvc import Singleton
 
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.ERROR)
-
-EVENT_TYPE_NAME_KEY = "event-type"
-EVENT_ID_NAME_KEY = "event-id"
-NAME_NAME_KEY = "name"
-PAYLOAD_NAME_KEY = "payload"
-
-
-@dataclass
-class WsMsg:
-    name: str
-    event_type: str
-    payload: Any
-    event_id: int = -1
-
-    def json(self):
-        return {
-            NAME_NAME_KEY: self.name,
-            EVENT_TYPE_NAME_KEY: self.event_type,
-            EVENT_ID_NAME_KEY: self.event_id,
-            PAYLOAD_NAME_KEY: self.payload,
-        }
 
 
 # singleton

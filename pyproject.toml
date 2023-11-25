@@ -54,6 +54,7 @@ black = "^23.9.1"
 isort = "^5.11.5"
 pre-commit = "^3"
 apiflask = "^2.0.2"
+ultraimport = "^0.0.7"
 
 [tool.poetry.extras]
 torch = ["torch", "torchvision", "torchaudio"]
