@@ -10,7 +10,7 @@ from neetbox.pipeline import watch
 from neetbox.utils.mvc import Singleton
 
 
-class PackedAction(Callable):
+class PackedAction:
     def __init__(self, function: Callable, name=None, blocking=False, **kwargs):
         super().__init__(**kwargs)
         self.function = function
@@ -29,22 +29,22 @@ class PackedAction(Callable):
 class _NeetActionManager(metaclass=Singleton):
     __ACTION_POOL: Registry = Registry("__NEET_ACTIONS")
 
+    @staticmethod
     def get_action_names():
-        action_names = _NeetActionManager.__ACTION_POOL.keys()
-        actions = {}
-        for n in action_names:
-            actions[n] = _NeetActionManager.__ACTION_POOL[n].argspec
-        return actions
+        return {
+            n: _NeetActionManager.__ACTION_POOL[n].argspec
+            for n in _NeetActionManager.__ACTION_POOL.keys()
+        }
 
+    @staticmethod
     def get_action_dict():
-        action_dict = {}
-        action_names = _NeetActionManager.__ACTION_POOL.keys()
-        for name in action_names:
-            action = _NeetActionManager.__ACTION_POOL[name]
-            action_dict[name] = action.argspec.args
-        return action_dict
+        return {
+            name: _NeetActionManager.__ACTION_POOL[name].argspec.args
+            for name in _NeetActionManager.__ACTION_POOL.keys()
+        }
 
-    def eval_call(name: str, params: dict, callback: None):
+    @staticmethod
+    def eval_call(name: str, params: dict, callback: Optional[Callable] = None):
         if name not in _NeetActionManager.__ACTION_POOL:
             logger.err(f"Could not find action with name {name}, action stopped.")
             return False
@@ -73,10 +73,12 @@ class _NeetActionManager(metaclass=Singleton):
         # for status updater
         return _NeetActionManager.get_action_dict()
 
+    @staticmethod
     def register(name: Optional[str] = None, blocking: bool = False):
         return functools.partial(_NeetActionManager._register, name=name, blocking=blocking)
 
-    def _register(function: Callable, name: str = None, blocking: bool = False):
+    @staticmethod
+    def _register(function: Callable, name: Optional[str] = None, blocking: bool = False):
         packed = PackedAction(function=function, name=name, blocking=blocking)
         _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, force=True)
         _NeetActionManager._update_action_dict()  # update for sync
