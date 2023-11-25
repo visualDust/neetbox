@@ -200,10 +200,14 @@ def daemon_process(cfg, debug=False):
             if _project_name not in __BRIDGES:
                 # project name must exist
                 # drop anyway if not exist
+                if debug:
+                    print(f"handle log. {_project_name} not found.")
                 return
             else:
                 # forward to frontends
                 _target_bridge = __BRIDGES[_project_name]
+                if debug:
+                    print(f"forward log to frontends on{_project_name}.")
                 for web_ws in _target_bridge.web_ws_list:
                     server.send_message(
                         client=web_ws, msg=message
