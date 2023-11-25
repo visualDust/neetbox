@@ -88,11 +88,18 @@ class _NeetActionManager(metaclass=Singleton):
         # for status updater
         return _NeetActionManager.get_action_dict()
 
-    def register(name: Optional[str] = None, blocking: bool = False):
-        return functools.partial(_NeetActionManager._register, name=name, blocking=blocking)
+    def register(name: Optional[str] = None, description: str = None, blocking: bool = False):
+        return functools.partial(
+            _NeetActionManager._register, name=name, description=description, blocking=blocking
+        )
 
-    def _register(function: Callable, name: str = None, blocking: bool = False):
-        packed = PackedAction(function=function, name=name, blocking=blocking)
+    def _register(
+        function: Callable, name: str = None, description: str = None, blocking: bool = False
+    ):
+        description = description or function.__doc__
+        packed = PackedAction(
+            function=function, name=name, description=description, blocking=blocking
+        )
         _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, overwrite=True)
         _NeetActionManager._update_action_dict()  # update for sync
         return function
