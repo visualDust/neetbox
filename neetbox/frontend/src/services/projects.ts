@@ -15,9 +15,25 @@ export interface ProjectStatus {
       id: number;
       percent: number;
       freq: [current: number, min: number, max: number];
-    }>;
+    }>,
+    gpus: Array<{
+      id: number;
+      name: string,
+      load: number;
+      memoryUtil: number;
+      memoryTotal: number;
+      memoryFree: number;
+      memoryUsed: number;
+      temperature: number;
+      driver: string;
+    }>
+    ram: {
+      total: number,
+      available: number,
+      used: number,
+      free: number,
+    }
   }>;
-  train: WithTimestamp<Record<string, unknown>>;
 }
 
 export interface WithTimestamp<T> {
