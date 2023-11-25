@@ -28,27 +28,27 @@ def log_with_some_prefix():
     logger.err("some error")
 
 
-@watch(freq=40)
+@watch(interval=40)
 def log_with_some_prefix_1():
     logger.ok("some ok")
 
 
-@watch(freq=50)
+@watch(interval=50)
 def log_with_some_prefix_2():
     logger.ok("some ok")
 
 
-@watch(freq=60)
+@watch(interval=60)
 def log_with_some_prefix_200():
     logger.ok("some ok")
 
 
-@watch(freq=88)
+@watch(interval=88)
 def log_with_some_prefix_333():
     logger.ok("some ok")
 
 
-@watch(freq=30)
+@watch(interval=30)
 def log_with_some_prefix_500():
     logger.ok("some ok")
 

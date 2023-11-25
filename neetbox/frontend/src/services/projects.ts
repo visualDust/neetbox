@@ -34,6 +34,9 @@ export interface ProjectStatus {
       free: number,
     }
   }>;
+  __action: WithTimestamp<Record<string, {
+    args: string[], blocking: boolean
+  }>>;
 }
 
 export interface WithTimestamp<T> {
