@@ -11,38 +11,21 @@ from dataclasses import dataclass
 from threading import Thread
 from typing import Any, Dict, Tuple
 
+if __name__ == "__main__":
+    import ultraimport  # if run server solely, sssssssuse relative import, do not trigger neetbox init
+
+    _protocol = ultraimport("__dir__/../_protocol.py")
+    from _protocol import *
+else:
+    from neetbox.daemon._protocol import *
 import setproctitle
-from flask import Flask, abort, json, request
+from flask import abort, json, request
 from websocket_server import WebsocketServer
 
 __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours
 __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
-__DAEMON_NAME = "NEETBOX DAEMON"
-setproctitle.setproctitle(__DAEMON_NAME)
-
-FRONTEND_API_ROOT = "/web"
-CLIENT_API_ROOT = "/cli"
-
-EVENT_TYPE_NAME_KEY = "event-type"
-EVENT_ID_NAME_KEY = "event-id"
-PAYLOAD_NAME_KEY = "payload"
-NAME_NAME_KEY = "name"
-
-
-@dataclass
-class WsMsg:
-    name: str
-    event_type: str
-    payload: Any
-    event_id: int = -1
-
-    def json(self):
-        return {
-            NAME_NAME_KEY: self.name,
-            EVENT_TYPE_NAME_KEY: self.event_type,
-            EVENT_ID_NAME_KEY: self.event_id,
-            PAYLOAD_NAME_KEY: self.payload,
-        }
+__PROC_NAME = "NEETBOX SERVER"
+setproctitle.setproctitle(__PROC_NAME)
 
 
 def daemon_process(cfg, debug=False):
@@ -69,11 +52,18 @@ def daemon_process(cfg, debug=False):
     # ===============================================================
 
     if debug:
+        print("Running with debug, using APIFlask")
         from apiflask import APIFlask
 
-        app = APIFlask(__name__)
+        app = APIFlask(__PROC_NAME)
     else:
-        app = Flask(__name__)
+        print("Running in production mode, escaping APIFlask")
+        from flask import Flask
+
+        app = Flask(__PROC_NAME)
+
+    # app = APIFlask(__PROC_NAME)
+
     # websocket server
     ws_server = WebsocketServer(port=cfg["port"] + 1)
     __BRIDGES = {}  # manage connections
@@ -146,7 +136,6 @@ def daemon_process(cfg, debug=False):
 
     def handle_ws_message(client, server: WebsocketServer, message):
         message = json.loads(message)
-        print(message)  # debug
         # handle event-type
         _event_type = message[EVENT_TYPE_NAME_KEY]
         _payload = message[PAYLOAD_NAME_KEY]
@@ -155,17 +144,21 @@ def daemon_process(cfg, debug=False):
         if _event_type == "handshake":  # handle handshake
             # assign this client to a Bridge
             _who = _payload["who"]
+            print(f"handling handshake for {_who} with name {_project_name}")
             if _who == "web":
                 # new connection from frontend
                 # check if Bridge with name exist
                 if _project_name not in __BRIDGES:  # there is no such bridge
                     server.send_message(
                         client=client,
-                        msg=WsMsg(
-                            event_type="ack",
-                            event_id=_event_id,
-                            payload={"result": "404", "reason": "name not found"},
-                        ).json(),
+                        msg=json.dumps(
+                            WsMsg(
+                                name=_project_name,
+                                event_type="handshake",
+                                event_id=_event_id,
+                                payload={"result": 404, "reason": "name not found"},
+                            ).json()
+                        ),
                     )
                 else:  # assign web to bridge
                     _target_bridge = __BRIDGES[_project_name]
@@ -173,11 +166,14 @@ def daemon_process(cfg, debug=False):
                     connected_clients[client["id"]] = (_project_name, "web")
                     server.send_message(
                         client=client,
-                        msg=WsMsg(
-                            event_type="ack",
-                            event_id=_event_id,
-                            payload={"result": "200", "reason": "join success"},
-                        ).json(),
+                        msg=json.dumps(
+                            WsMsg(
+                                name=_project_name,
+                                event_type="handshake",
+                                event_id=_event_id,
+                                payload={"result": 200, "reason": "join success"},
+                            ).json()
+                        ),
                     )
             elif _who == "cli":
                 # new connection from cli
@@ -189,12 +185,14 @@ def daemon_process(cfg, debug=False):
                 connected_clients[client["id"]] = (_project_name, "web")
                 server.send_message(
                     client=client,
-                    msg=WsMsg(
-                        name="_project_name",
-                        event_type="ack",
-                        event_id=_event_id,
-                        payload={"result": "200", "reason": "join success"},
-                    ).json(),
+                    msg=json.dumps(
+                        WsMsg(
+                            name=_project_name,
+                            event_type="handshake",
+                            event_id=_event_id,
+                            payload={"result": 200, "reason": "join success"},
+                        ).json()
+                    ),
                 )
 
         elif _event_type == "log":  # handle log
@@ -292,14 +290,15 @@ def daemon_process(cfg, debug=False):
     count_down_thread.start()
 
     ws_server.run_forever(threaded=True)
-    app.run(host="0.0.0.0", port=cfg["port"], debug=debug)
+
+    app.run(host="0.0.0.0", port=cfg["port"])
 
 
 if __name__ == "__main__":
     cfg = {
         "enable": True,
         "host": "localhost",
-        "port": 20202,
+        "port": 5000,
         "displayName": None,
         "allowIpython": False,
         "mute": True,

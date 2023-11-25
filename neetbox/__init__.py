@@ -12,18 +12,6 @@ module = get_frame_module_traceback(1).__name__  # type: ignore
 config_file_name = f"{module}.toml"
 
 
-def post_init():
-    import setproctitle
-
-    project_name = get_module_level_config()["name"]
-    setproctitle.setproctitle(project_name)
-
-    from neetbox.daemon.client._connection import connection
-
-    # post init ws
-    connection._init_ws()
-
-
 def init(path=None, load=False, **kwargs) -> bool:
     if path:
         os.chdir(path=path)
@@ -77,11 +65,24 @@ def init(path=None, load=False, **kwargs) -> bool:
         raise e
 
 
+def post_init():
+    import setproctitle
+
+    project_name = get_module_level_config()["name"]
+    setproctitle.setproctitle(project_name)
+
+    from neetbox.daemon.client._client import connection
+
+    # post init ws
+    connection._init_ws()
+
+
 is_in_daemon_process = (
     "NEETBOX_DAEMON_PROCESS" in os.environ and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
 )
 # print('prevent_daemon_loading =', is_in_daemon_process)
 if os.path.isfile(config_file_name) and not is_in_daemon_process:  # if in a workspace
+    # todo check if running in cli mode
     success = init(load=True)  # init from config file
     if not success:
         os._exit(255)

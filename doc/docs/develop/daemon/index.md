@@ -2,7 +2,7 @@
 
 NEETBOX daemon consists of client side and server side. While client side syncs status of running project and platform information including hardware, server side provides apis for status monitoring and websocket forcasting between client and frontends.
 
-Basically neetbox will also launch a backend on localhost when a project launching configured with daemon server address at localhost. The server will run in background without any output, and you may want to run a server with output for debug purposes.
+Basically neetbox will also launch a backend on localhost when a project launching configured with daemon server address at localhost. The server will run in background without any output, and you may want to run a server with output for debug purposes.  
 
 ## How to test neetbox server
 
@@ -15,12 +15,10 @@ python neetbox/daemon/server/_server.py
 script above should launch a server in debug mode on `localhost:5000`, it wont read the port in `neetbox.toml`. a swegger UI is provided at [localhost:5000/docs](http://127.0.0.1:5000/docs) in debug mode. websocket server should run on port `5001`.
 
 If you want to simulate a basic neetbox client sending message to server, at neetbox project root:
-
 ```bash
 cd tests/client
 python test.py
 ```
-
 script above should launch a simple case of neetbox project with some logs and status sending to server.
 
 ## Websocket message standard
@@ -112,8 +110,7 @@ frontend send action request to server, and server will forwards the message to 
     "event-type" : "action",
     "name": "project name",
     "payload" : {
-      "name" : <name of action>,
-      "args" : {...arg names and values...}
+      "action" : {...json representing action trigger...}
     },
     "event-id" : x
 }
@@ -127,22 +124,14 @@ cli execute action query(s) from frontend, and gives response by sending ack:
 
 ```json
 {
-    "event-type" : "action",
+    "event-type" : "ack",
     "name": "project name",
     "payload" : {
-      "name" : <name of action>,
-      "result" : <returned value of cation>
+      "action" : {...json representing action result...}
     },
     "event-id" : x
 }
 ```
-
-> CAUTION !
->
-> - frontend should look for list of actions via `/status` api instead of websocket.
-> - when **frontend** receive websocket message with `event-type` = `action`, it must be the action result returned from client.
-> - when **client** receive websocket message with `event-type` = `action`, it must be the action queried by frontend.
-> - only actions with `blocking` = `true` could return result to frontend.
 
 where `event-id` is same as received action query.
 

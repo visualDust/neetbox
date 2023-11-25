@@ -1,17 +1,15 @@
-import asyncio
 import functools
 import json
 import logging
-import time
-from dataclasses import dataclass
+from collections import defaultdict
 from threading import Thread
-from typing import Any, Callable, Optional
+from typing import Callable
 
 import httpx
 import websocket
 
 from neetbox.config import get_module_level_config
-from neetbox.core import Registry
+from neetbox.daemon._protocol import *
 from neetbox.daemon.server._server import CLIENT_API_ROOT
 from neetbox.logging import logger
 from neetbox.utils.mvc import Singleton
@@ -19,34 +17,31 @@ from neetbox.utils.mvc import Singleton
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.ERROR)
 
-EVENT_TYPE_NAME_KEY = "event-type"
-EVENT_ID_NAME_KEY = "event-id"
-NAME_NAME_KEY = "name"
-PAYLOAD_NAME_KEY = "payload"
-
-
-@dataclass
-class WsMsg:
-    name: str
-    event_type: str
-    payload: Any
-    event_id: int = -1
-
-    def json(self):
-        return {
-            NAME_NAME_KEY: self.name,
-            EVENT_TYPE_NAME_KEY: self.event_type,
-            EVENT_ID_NAME_KEY: self.event_id,
-            PAYLOAD_NAME_KEY: self.payload,
-        }
-
 
 # singleton
 class ClientConn(metaclass=Singleton):
     http: httpx.Client = None
 
     __ws_client: websocket.WebSocketApp = None  # _websocket_client
-    __ws_subscription = Registry("__client_ws_subscription")  # { event-type-name : list(Callable)}
+    __ws_subscription = defaultdict(lambda: {})  # default to no subscribers
+
+    def ws_subscribe(event_type_name: str, name: str = None):
+        """let a function subscribe to ws messages with event type name.
+        !!! dfor inner APIs only, do not use this in your code!
+        !!! developers should contorl blocking on their own functions
+
+        Args:
+            function (Callable): who is subscribing the event type
+            event_type_name (str, optional): Which event to listen. Defaults to None.
+        """
+        return functools.partial(
+            ClientConn._ws_subscribe, event_type_name=event_type_name, name=name
+        )
+
+    def _ws_subscribe(function: Callable, event_type_name: str, name=None):
+        name = name or function.__name__
+        ClientConn.__ws_subscription[event_type_name][name] = function
+        logger.debug(f"ws: {name} subscribed to '{event_type_name}")
 
     def __init__(self) -> None:
         def __load_http_client():
@@ -72,7 +67,7 @@ class ClientConn(metaclass=Singleton):
         # create websocket app
         logger.log(f"creating websocket connection to {ClientConn.ws_server_addr}")
 
-        ws = websocket.WebSocketApp(
+        ClientConn.wsApp = websocket.WebSocketApp(
             ClientConn.ws_server_addr,
             on_open=ClientConn.__on_ws_open,
             on_message=ClientConn.__on_ws_message,
@@ -80,7 +75,7 @@ class ClientConn(metaclass=Singleton):
             on_close=ClientConn.__on_ws_close,
         )
 
-        Thread(target=ws.run_forever, kwargs={"reconnect": True}, daemon=True).start()
+        Thread(target=ClientConn.wsApp.run_forever, kwargs={"reconnect": True}, daemon=True).start()
 
         # assign self to websocket log writer
         from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
@@ -101,8 +96,12 @@ class ClientConn(metaclass=Singleton):
                 default=str,
             )
         )
-        logger.ok(f"handshake succeed.")
-        ClientConn.__ws_client = ws
+
+        @ClientConn.ws_subscribe(event_type_name="handshake")
+        def _handle_handshake(msg):
+            assert msg[PAYLOAD_NAME_KEY]["result"] == 200
+            logger.ok(f"handshake succeed.")
+            ClientConn.__ws_client = ws
 
     def __on_ws_err(ws: websocket.WebSocketApp, msg):
         logger.err(f"client websocket encountered {msg}")
@@ -112,7 +111,7 @@ class ClientConn(metaclass=Singleton):
         if close_status_code or close_msg:
             logger.warn(f"ws close status code: {close_status_code}")
             logger.warn("ws close message: {close_msg}")
-            ClientConn.__ws_client = None
+        ClientConn.__ws_client = None
 
     def __on_ws_message(ws: websocket.WebSocketApp, msg):
         """EXAMPLE JSON
@@ -122,20 +121,21 @@ class ClientConn(metaclass=Singleton):
             "payload": ...
         }
         """
+        msg = json.loads(msg)  # message should be json
         logger.debug(f"ws received {msg}")
-        # message should be json
+
         event_type_name = msg[EVENT_TYPE_NAME_KEY]
         if event_type_name not in ClientConn.__ws_subscription:
             logger.warn(
                 f"Client received a(n) {event_type_name} event but nobody subscribes it. Ignoring anyway."
             )
-        for subscriber in ClientConn._ws_subscribe[event_type_name]:
+        for name, subscriber in ClientConn.__ws_subscription[event_type_name].items():
             try:
                 subscriber(msg)  # pass payload message into subscriber
             except Exception as e:
                 # subscriber throws error
                 logger.err(
-                    f"Subscriber {subscriber} crashed on message event {event_type_name}, ignoring."
+                    f"Subscriber {name} crashed on message event {event_type_name}, ignoring."
                 )
 
     def ws_send(event_type: str, payload):
@@ -153,23 +153,6 @@ class ClientConn(metaclass=Singleton):
             )
         else:
             logger.debug("ws client not exist, message dropped.")
-
-    def ws_subscribe(event_type_name: str):
-        """let a function subscribe to ws messages with event type name.
-        !!! dfor inner APIs only, do not use this in your code!
-        !!! developers should contorl blocking on their own functions
-
-        Args:
-            function (Callable): who is subscribing the event type
-            event_type_name (str, optional): Which event to listen. Defaults to None.
-        """
-        return functools.partial(ClientConn._ws_subscribe, event_type_name=event_type_name)
-
-    def _ws_subscribe(function: Callable, event_type_name: str):
-        if event_type_name not in ClientConn.__ws_subscription:
-            # create subscriber list for event-type name if not exist
-            ClientConn.__ws_subscription._register([], event_type_name)
-        ClientConn.__ws_subscription[event_type_name].append(function)
 
 
 # singleton

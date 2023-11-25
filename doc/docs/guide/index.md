@@ -10,12 +10,6 @@ sidebar_position: 1
 pip install neetbox
 ```
 
-If you want to enable torch-related feature, please try below:
-
-```bash
-pip install neetbox[torch]
-```
-
 Since NEETBOX is under ~~heavy~~ development, it's better to forcely reinstall the newest version:
 
 ```bash
