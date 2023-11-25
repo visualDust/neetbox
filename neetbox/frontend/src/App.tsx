@@ -1,15 +1,4 @@
-import {
-  Layout,
-  Button,
-  Space,
-  Toast,
-  Typography,
-  Nav,
-  Avatar,
-  Form,
-  Checkbox,
-} from "@douyinfe/semi-ui";
-import React from "react";
+import { Layout, Button, Space, Typography } from "@douyinfe/semi-ui";
 import SwitchColorMode from "./components/themeSwitcher";
 import { Link, Outlet } from "react-router-dom";
 import "./styles/global.css";
@@ -45,7 +34,7 @@ export default function AppLayout() {
           <Outlet />
         </Content>
       </Layout>
-      <Footer children={<FooterContent/>}/>
+      <Footer children={<FooterContent />} />
     </Layout>
   );
 }

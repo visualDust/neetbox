@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { styled } from "styled-components";
 import { LogData, useProjectLogs } from "../../../services/projects";
 import "./logs.css";
@@ -14,7 +14,7 @@ const LogsContainer = styled.div`
 
 export function Logs({ projectName }: Props) {
   const logs = useProjectLogs(projectName);
-  const containerRef = useRef<HTMLElement>(null!);
+  const containerRef = useRef<HTMLDivElement>(null!);
   useLayoutEffect(() => {
     containerRef.current.scroll({ top: containerRef.current.scrollHeight });
   }, [logs]);
