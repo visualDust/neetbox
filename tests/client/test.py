@@ -29,7 +29,7 @@ def log_with_some_prefix():
 
 
 @action(name="action-1")
-def action_1(text):
+def action_1(text: str):
     """take action 1
 
     Args:

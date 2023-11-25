@@ -29,6 +29,20 @@ class PackedAction(Callable):
         self.argspec = inspect.getfullargspec(self.function)
         self.blocking = blocking
 
+    def get_props_dict(self):
+        # _arg_dict = {
+        #     _arg_name: self.argspec.annotations.get(_arg_name, None)
+        #     for _arg_name in self.argspec.args
+        # }
+        _arg_anno_dict = self.function.__annotations__
+        _args = self.argspec.args
+        __arg_dict = {_arg_name: _arg_anno_dict.get(_arg_name, any).__name__ for _arg_name in _args}
+        return {
+            "description": self.description,
+            "args": __arg_dict,
+            "blocking": self.blocking,
+        }
+
     def __call__(self, **argv):
         self.function(argv)  # ignore blocking
 
@@ -52,11 +66,7 @@ class _NeetActionManager(metaclass=Singleton):
         action_names = _NeetActionManager.__ACTION_POOL.keys()
         for name in action_names:
             action: PackedAction = _NeetActionManager.__ACTION_POOL[name]
-            action_dict[name] = {
-                "description": action.description,
-                "args": action.argspec.args,
-                "blocking": action.blocking,
-            }
+            action_dict[name] = action.get_props_dict()
         return action_dict
 
     def eval_call(name: str, params: dict, callback: None):
