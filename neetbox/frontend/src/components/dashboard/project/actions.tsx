@@ -16,26 +16,44 @@ interface Props {
 }
 
 export function Actions({ actions }: Props) {
+  const [blocking, setBlocking] = useState(false);
   return (
     <Space>
       {Object.entries(actions.value).map(([actionName, actionOptions]) => (
-        <ActionItem name={actionName} actionOptions={actionOptions} />
+        <ActionItem
+          name={actionName}
+          actionOptions={actionOptions}
+          blocking={blocking}
+          setBlocking={setBlocking}
+        />
       ))}
     </Space>
   );
 }
 
+interface ActionItemProps {
+  name: string;
+  actionOptions: ProjectStatus["__action"]["value"][string];
+  blocking: boolean;
+  setBlocking: (blocking: boolean) => void;
+}
+
 export function ActionItem({
   name,
   actionOptions: options,
-}: {
-  name: string;
-  actionOptions: ProjectStatus["__action"]["value"][string];
-}) {
+  blocking,
+  setBlocking,
+}: ActionItemProps) {
   const [args, setArgs] = useState<Record<string, string>>({});
+  const [currentBlocking, setCurrentBlocking] = useState(false);
   const { projectName } = useContext(ProjectContext)!;
   const handleRun = () => {
-    getProject(projectName).sendAction(name, args);
+    setBlocking(true);
+    setCurrentBlocking(true);
+    getProject(projectName).sendAction(name, args, () => {
+      setBlocking(false);
+      setCurrentBlocking(false);
+    });
   };
   const renderContent = () => (
     <div style={{ padding: "10px", maxWidth: "400px" }}>
@@ -60,7 +78,11 @@ export function ActionItem({
             </Col>
           </Row>
         ))}
-        <Button style={{ width: "100px" }} onClick={handleRun}>
+        <Button
+          style={{ width: "100px" }}
+          onClick={handleRun}
+          disabled={blocking}
+        >
           Run
         </Button>
       </Space>
@@ -68,7 +90,9 @@ export function ActionItem({
   );
   return (
     <Popover trigger="click" content={renderContent()}>
-      <Button>{name}</Button>
+      <Button disabled={blocking && !currentBlocking} loading={currentBlocking}>
+        {name}
+      </Button>
     </Popover>
   );
 }
