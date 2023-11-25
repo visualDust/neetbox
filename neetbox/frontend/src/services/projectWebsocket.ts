@@ -1,0 +1,52 @@
+import { Project } from "./projects";
+
+interface WsMsg<Type extends string = string, Payload = any> {
+  "event-type": Type;
+  name: string;
+  payload: Payload;
+  "event-id": number;
+}
+
+export class WsClient {
+  ws: WebSocket;
+  nextId = ~~(Math.random() * 100000000) * 1000;
+  callbacks = new Map<number, (msg: WsMsg) => void>();
+  nextLogId = 1;
+
+  constructor(readonly project: Project) {
+    this.ws = new WebSocket("ws://127.0.0.1:5001/");
+    this.ws.onopen = () => {
+      console.info("ws open");
+      this.send({
+        "event-type": "handshake",
+        payload: {
+          who: "web",
+        },
+      });
+    };
+    this.ws.onmessage = (e) => {
+      console.info("ws", e.data);
+      const json = JSON.parse(e.data) as WsMsg;
+      const eventId = json["event-id"];
+      if (this.callbacks.has(eventId)) {
+        this.callbacks.get(eventId)!(json);
+        this.callbacks.delete(eventId);
+      } else if (json["event-type"] === "log") {
+        json.payload._id = this.nextLogId++;
+        project.handleLog(json.payload);;
+      }
+    };
+  }
+
+  send(msg: Omit<WsMsg, "name" | "event-id">, onReply?: (msg: WsMsg) => void) {
+    const eventId = this.nextId++;
+    this.ws.send(
+      JSON.stringify({
+        ...msg,
+        name: this.project.name,
+        "event-id": eventId,
+      })
+    );
+    if (onReply) this.callbacks.set(eventId, onReply);
+  }
+}

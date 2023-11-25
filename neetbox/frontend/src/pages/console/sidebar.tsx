@@ -2,9 +2,10 @@ import { Nav } from "@douyinfe/semi-ui";
 import React from "react";
 import { IconStar, IconSetting } from "@douyinfe/semi-icons";
 import { useAPI } from "../../hooks/useAPI";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function ConsoleNavBar() {
+  const location = useLocation();
   const { isLoading, data, error } = useAPI("/list");
   return (
     <Nav
@@ -33,6 +34,7 @@ export default function ConsoleNavBar() {
         },
       ]}
       defaultOpenKeys={["projects"]}
+      selectedKeys={[location.pathname]}
       onClick={(data) => console.log("trigger onClick: ", data)}
       footer={{
         collapseButton: true,

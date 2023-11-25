@@ -4,7 +4,8 @@ import * as echarts from "echarts";
 import { Typography } from "@douyinfe/semi-ui";
 import PlatformProps from "../../components/dashboard/project/platformProps";
 import { ECharts } from "../../components/echarts";
-import { ProjectData, useProjectData } from "../../services/projects";
+import { ProjectStatus, useProjectStatus } from "../../services/projects";
+import { Logs } from "../../components/dashboard/project/logs";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectName } = useParams();
@@ -13,17 +14,26 @@ export default function ProjectDashboardButRecreateOnRouteChange() {
 
 function ProjectDashboard() {
   const { projectName } = useParams();
-  const data = useProjectData(projectName!);
+  const data = useProjectStatus(projectName!);
 
   console.info("project", { projectName, data });
-  if (!data.data) return <div>Loading...</div>;
   return (
     <div style={{ padding: "10px" }}>
       <Typography.Title heading={2} style={{ textAlign: "center" }}>
         Project "{projectName}"
       </Typography.Title>
-      <Hardware hardwareData={data.history.map((x) => x.hardware)} />
-      <PlatformProps data={data.data.platform} />
+      <Typography.Title heading={3}>Logs</Typography.Title>
+      <Logs projectName={projectName!} />
+      {data.current ? (
+        <>
+          <Typography.Title heading={3}>Hardware</Typography.Title>
+          <Hardware hardwareData={data.history.map((x) => x.hardware)} />
+          <Typography.Title heading={3}>Platform</Typography.Title>
+          <PlatformProps data={data.current.platform} />
+        </>
+      ) : (
+        "Loading..."
+      )}
     </div>
   );
 }
@@ -31,11 +41,10 @@ function ProjectDashboard() {
 function Hardware({
   hardwareData,
 }: {
-  hardwareData: Array<ProjectData["hardware"]>;
+  hardwareData: Array<ProjectStatus["hardware"]>;
 }) {
   return (
     <div>
-      <Typography.Title heading={3}>Hardware</Typography.Title>
       <CPUGraph hardwareData={hardwareData} />
     </div>
   );
@@ -44,7 +53,7 @@ function Hardware({
 const CPUGraph = ({
   hardwareData,
 }: {
-  hardwareData: Array<ProjectData["hardware"]>;
+  hardwareData: Array<ProjectStatus["hardware"]>;
 }) => {
   const cpus = hardwareData[0].value.cpus;
   const initialOption = () => {

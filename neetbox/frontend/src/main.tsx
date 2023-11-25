@@ -1,10 +1,11 @@
-import React from "react";
+import React, { PropsWithChildren, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import AppLayout, { Home } from "./App";
 import LoginPage from "./pages/login";
 import "./index.css";
 import { consoleRoutes } from "./pages/console";
+import { startBackgroundTasks } from "./services/projects";
 
 const router = createBrowserRouter([
   {
@@ -24,8 +25,18 @@ const router = createBrowserRouter([
   },
 ]);
 
+function ServiceProvider({ children }: PropsWithChildren) {
+  useEffect(() => {
+    const tasks = startBackgroundTasks();
+    return () => tasks.stop();
+  });
+  return children;
+}
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ServiceProvider>
+      <RouterProvider router={router} />
+    </ServiceProvider>
   </React.StrictMode>
 );

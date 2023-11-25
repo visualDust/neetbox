@@ -16,6 +16,7 @@ module.exports = {
       'warn',
       { allowConstantExport: true },
     ],
-    'import/order': 'warn'
+    'import/order': 'warn',
+    '@typescript-eslint/no-explicit-any': 'warn',
   },
 }

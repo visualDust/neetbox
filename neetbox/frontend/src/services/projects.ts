@@ -1,12 +1,14 @@
-import { PrimitiveAtom, atom, getDefaultStore, useAtom } from "jotai";
+import { atom, useAtom } from "jotai";
+import { BetterAtom } from "../utils/betterAtom";
+import { WsClient } from "./projectWebsocket";
 
-interface WithTimestamp<T> {
-  value: T;
-  timestamp: number;
-  interval: number;
+export interface ProjectStatusHistory {
+  enablePolling: boolean;
+  current?: ProjectStatus;
+  history: Array<ProjectStatus>;
 }
 
-export interface ProjectData {
+export interface ProjectStatus {
   platform: WithTimestamp<Record<string, string | string[]>>;
   hardware: WithTimestamp<{
     cpus: Array<{
@@ -18,47 +20,88 @@ export interface ProjectData {
   train: WithTimestamp<Record<string, unknown>>;
 }
 
-interface ProjectPollData {
-  enablePolling: boolean;
-  data?: ProjectData;
-  history: Array<ProjectData>;
+export interface WithTimestamp<T> {
+  value: T;
+  timestamp: number;
+  interval: number;
 }
 
-const projects = new Map<string, PrimitiveAtom<ProjectPollData>>();
-const nullProjectAtom = atom<ProjectPollData>(null!);
+export interface LogData {
+  prefix: string;
+  datetime: string;
+  whom: string;
+  msg: string;
+  /** frontend only */
+  _id: number;
+}
 
-export function addProject(name: string) {
-  let projectAtom = projects.get(name);
-  if (!projectAtom) {
-    projectAtom = atom({
+const projects = new Map<string, Project>();
+const nullProjectAtom = atom<Project>(null!);
+
+export class Project {
+  wsClient: WsClient;
+  status: BetterAtom<ProjectStatusHistory>;
+  logs: BetterAtom<LogData[]>;
+
+  constructor(readonly name: string) {
+    this.wsClient = new WsClient(this);
+    this.status = new BetterAtom({
       enablePolling: true,
-      data: null,
+      current: undefined,
       history: [],
-    } as any);
-    projects.set(name, projectAtom);
+    } as ProjectStatusHistory);
+    this.logs = new BetterAtom([] as LogData[]);
   }
-  return projectAtom;
+
+  updateData() {
+    if (!this.status.value.enablePolling) return false;
+
+    fetch("/web/status/" + this.name).then(async (res) => {
+      const data = await res.json();
+      const projectData = { ...this.status.value };
+      projectData.current = data;
+      projectData.history = slideWindow(projectData.history, data, 60);
+      this.status.value = projectData;
+    });
+  }
+
+  handleLog(log: LogData) {
+    this.logs.value = slideWindow(this.logs.value, log, 200); // TODO
+  }
 }
 
-export function useProjectData(name: string | null | undefined) {
-  const projectAtom = name ? addProject(name) : nullProjectAtom;
-  const [data] = useAtom(projectAtom);
+export function getOrAddProject(name: string) {
+  let project = projects.get(name);
+  if (!project) {
+    project = new Project(name);
+    projects.set(name, project);
+  }
+  return project;
+}
+
+export function useProjectStatus(name: string) {
+  const project = getOrAddProject(name);
+  const [data] = useAtom(project?.status.atom ?? nullProjectAtom);
   return data;
 }
 
-function updateAllProjectsData() {
-  for (const [name, projectAtom] of projects) {
-    fetch("/web/status/" + name).then(async (res) => {
-      const data = await res.json();
-      const project = { ...getDefaultStore().get(projectAtom) };
-      project.data = data;
-      project.history = slideWindow(project.history, data, 60);
-      getDefaultStore().set(projectAtom, project);
-    });
-  }
+export function useProjectLogs(name: string) {
+  const project = getOrAddProject(name);
+  const [data] = useAtom(project?.logs.atom);
+  return data;
 }
 
-setInterval(updateAllProjectsData, 1000);
+export function startBackgroundTasks() {
+  function updateAllProjectsData() {
+    for (const project of projects.values()) {
+      project.updateData();
+    }
+  }
+  const timer = setInterval(updateAllProjectsData, 1000);
+  return {
+    stop: () => clearInterval(timer),
+  };
+}
 
 function slideWindow<T>(arr: T[], item: T, max: number) {
   arr = arr.slice(arr.length + 1 > max ? arr.length + 1 - max : 0);

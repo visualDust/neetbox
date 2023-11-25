@@ -28,6 +28,31 @@ def log_with_some_prefix():
     logger.err("some error")
 
 
+@watch(freq=40)
+def log_with_some_prefix_1():
+    logger.ok("some ok")
+
+
+@watch(freq=50)
+def log_with_some_prefix_2():
+    logger.ok("some ok")
+
+
+@watch(freq=60)
+def log_with_some_prefix_200():
+    logger.ok("some ok")
+
+
+@watch(freq=88)
+def log_with_some_prefix_333():
+    logger.ok("some ok")
+
+
+@watch(freq=30)
+def log_with_some_prefix_500():
+    logger.ok("some ok")
+
+
 @action(name="action-1")
 def action_1(text: str):
     """take action 1
