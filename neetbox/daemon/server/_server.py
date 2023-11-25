@@ -154,9 +154,9 @@ def daemon_process(cfg, debug=False):
                         msg=json.dumps(
                             WsMsg(
                                 name=_project_name,
-                                event_type="ack",
+                                event_type="handshake",
                                 event_id=_event_id,
-                                payload={"result": "404", "reason": "name not found"},
+                                payload={"result": 404, "reason": "name not found"},
                             ).json()
                         ),
                     )
@@ -169,9 +169,9 @@ def daemon_process(cfg, debug=False):
                         msg=json.dumps(
                             WsMsg(
                                 name=_project_name,
-                                event_type="ack",
+                                event_type="handshake",
                                 event_id=_event_id,
-                                payload={"result": "200", "reason": "join success"},
+                                payload={"result": 200, "reason": "join success"},
                             ).json()
                         ),
                     )
@@ -188,9 +188,9 @@ def daemon_process(cfg, debug=False):
                     msg=json.dumps(
                         WsMsg(
                             name=_project_name,
-                            event_type="ack",
+                            event_type="handshake",
                             event_id=_event_id,
-                            payload={"result": "200", "reason": "join success"},
+                            payload={"result": 200, "reason": "join success"},
                         ).json()
                     ),
                 )

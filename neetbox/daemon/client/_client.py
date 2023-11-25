@@ -23,7 +23,24 @@ class ClientConn(metaclass=Singleton):
     http: httpx.Client = None
 
     __ws_client: websocket.WebSocketApp = None  # _websocket_client
-    __ws_subscription = defaultdict(lambda: [])  # default to no subscribers
+    __ws_subscription = defaultdict(lambda: {})  # default to no subscribers
+
+    def ws_subscribe(event_type_name: str, name: str = None):
+        """let a function subscribe to ws messages with event type name.
+        !!! dfor inner APIs only, do not use this in your code!
+        !!! developers should contorl blocking on their own functions
+
+        Args:
+            function (Callable): who is subscribing the event type
+            event_type_name (str, optional): Which event to listen. Defaults to None.
+        """
+        return functools.partial(
+            ClientConn._ws_subscribe, event_type_name=event_type_name, name=name
+        )
+
+    def _ws_subscribe(function: Callable, event_type_name: str, name=None):
+        name = name or function.__name__
+        ClientConn.__ws_subscription[event_type_name][name] = function
 
     def __init__(self) -> None:
         def __load_http_client():
@@ -78,8 +95,12 @@ class ClientConn(metaclass=Singleton):
                 default=str,
             )
         )
-        logger.ok(f"handshake succeed.")
-        ClientConn.__ws_client = ws
+
+        @ClientConn.ws_subscribe(event_type_name="handshake")
+        def _handle_handshake(msg):
+            assert msg[PAYLOAD_NAME_KEY]["result"] == 200
+            logger.ok(f"handshake succeed.")
+            ClientConn.__ws_client = ws
 
     def __on_ws_err(ws: websocket.WebSocketApp, msg):
         logger.err(f"client websocket encountered {msg}")
@@ -107,13 +128,13 @@ class ClientConn(metaclass=Singleton):
             logger.warn(
                 f"Client received a(n) {event_type_name} event but nobody subscribes it. Ignoring anyway."
             )
-        for subscriber in ClientConn.__ws_subscription[event_type_name]:
+        for name, subscriber in ClientConn.__ws_subscription[event_type_name].items():
             try:
                 subscriber(msg)  # pass payload message into subscriber
             except Exception as e:
                 # subscriber throws error
                 logger.err(
-                    f"Subscriber {subscriber} crashed on message event {event_type_name}, ignoring."
+                    f"Subscriber {name} crashed on message event {event_type_name}, ignoring."
                 )
 
     def ws_send(event_type: str, payload):
@@ -131,23 +152,6 @@ class ClientConn(metaclass=Singleton):
             )
         else:
             logger.debug("ws client not exist, message dropped.")
-
-    def ws_subscribe(event_type_name: str):
-        """let a function subscribe to ws messages with event type name.
-        !!! dfor inner APIs only, do not use this in your code!
-        !!! developers should contorl blocking on their own functions
-
-        Args:
-            function (Callable): who is subscribing the event type
-            event_type_name (str, optional): Which event to listen. Defaults to None.
-        """
-        return functools.partial(ClientConn._ws_subscribe, event_type_name=event_type_name)
-
-    def _ws_subscribe(function: Callable, event_type_name: str):
-        if event_type_name not in ClientConn.__ws_subscription:
-            # create subscriber list for event-type name if not exist
-            ClientConn.__ws_subscription._register([], event_type_name)
-        ClientConn.__ws_subscription[event_type_name].append(function)
 
 
 # singleton

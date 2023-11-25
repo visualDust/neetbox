@@ -1,7 +1,3 @@
-import pytest
-
-pytest.skip(allow_module_level=True)
-
 from random import random
 from time import sleep
 
