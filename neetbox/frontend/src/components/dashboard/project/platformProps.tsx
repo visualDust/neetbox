@@ -58,6 +58,7 @@ function PropCard({ propName, propValue }): React.JSX.Element {
 export default function PlatformProps({ data }): React.JSX.Element {
   return (
     <div>
+      <Typography.Title heading={3}>Platform</Typography.Title>
       <CardGroup spacing={10}>
         {Object.entries(data.value).map(([key, value]) => (
           <PropCard propName={key} propValue={value} />

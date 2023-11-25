@@ -1,9 +1,10 @@
 import { useParams } from "react-router-dom";
-import { useRef, useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import * as echarts from "echarts";
-import { useAPI } from "../../hooks/useAPI";
+import { Typography } from "@douyinfe/semi-ui";
 import PlatformProps from "../../components/dashboard/project/platformProps";
 import { ECharts } from "../../components/echarts";
+import { ProjectData, useProjectData } from "../../services/projects";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectName } = useParams();
@@ -12,62 +13,40 @@ export default function ProjectDashboardButRecreateOnRouteChange() {
 
 function ProjectDashboard() {
   const { projectName } = useParams();
-  const { isLoading, data, error } = useAPI("/status/" + projectName, {
-    refreshInterval: 1000,
-  });
+  const data = useProjectData(projectName!);
 
-  console.info({ isLoading, data });
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{String(error)}</div>;
+  console.info("project", { projectName, data });
+  if (!data.data) return <div>Loading...</div>;
   return (
-    <div>
-      Dashboard for project {projectName}
-      <Hardware hardwareData={data.hardware} />
-      <PlatformProps data={data.platform} />
+    <div style={{ padding: "10px" }}>
+      <Typography.Title heading={2} style={{ textAlign: "center" }}>
+        Project "{projectName}"
+      </Typography.Title>
+      <Hardware hardwareData={data.history.map((x) => x.hardware)} />
+      <PlatformProps data={data.data.platform} />
     </div>
   );
 }
 
-function Hardware({ hardwareData }) {
+function Hardware({
+  hardwareData,
+}: {
+  hardwareData: Array<ProjectData["hardware"]>;
+}) {
   return (
-    <pre>
-      Hardware:
-      <CPUGraph
-        cpuData={hardwareData.value.cpus}
-        timestamp={hardwareData.timestamp}
-      />
-    </pre>
+    <div>
+      <Typography.Title heading={3}>Hardware</Typography.Title>
+      <CPUGraph hardwareData={hardwareData} />
+    </div>
   );
 }
 
-function slideWindow<T>(arr: T[], item: T, max: number) {
-  arr.push(item);
-  if (arr.length > max) {
-    arr.shift();
-  }
-  return arr;
-}
-
-const CPUGraph = ({ cpuData, timestamp }) => {
-  type RecordItem = Array<[timestamp: number, percent: number]>;
-  const [history, setHistory] = useState<Record<number, RecordItem>>({});
-  useEffect(() => {
-    setHistory(history =>
-      Object.fromEntries(
-        cpuData.map((cpu) => {
-          return [
-            cpu.id,
-            slideWindow(
-              history[cpu.id] ?? [],
-              [timestamp * 1000, cpu.percent],
-              20
-            ),
-          ];
-        })
-      )
-    );
-  }, [cpuData]);
-
+const CPUGraph = ({
+  hardwareData,
+}: {
+  hardwareData: Array<ProjectData["hardware"]>;
+}) => {
+  const cpus = hardwareData[0].value.cpus;
   const initialOption = () => {
     return {
       animation: false,
@@ -75,36 +54,47 @@ const CPUGraph = ({ cpuData, timestamp }) => {
         trigger: "axis",
       },
       legend: {
-        data: cpuData.map((cpu) => `CPU${cpu.id}`),
+        data: cpus.map((cpu) => `CPU${cpu.id}`),
       },
       xAxis: {
         type: "time",
       },
       yAxis: {
         type: "value",
-        max: cpuData.length * 100,
+        max: cpus.length * 100,
       },
       series: [],
     } as echarts.EChartsOption;
-  }
+  };
 
   const updatingOption = useMemo(() => {
+    const latestTime = hardwareData[hardwareData.length - 1].timestamp;
     const newOption = {
-      series: Object.keys(history).map((cpuid) => ({
-        name: `CPU${cpuid}`,
+      series: cpus.map((cpu) => ({
+        name: `CPU${cpu.id}`,
         type: "line",
         stack: "cpu",
         areaStyle: {},
         symbol: null,
-        data: history[cpuid],
+        data: hardwareData.map((x) => [
+          x.timestamp * 1000,
+          x.value.cpus[cpu.id].percent,
+        ]),
       })),
       xAxis: {
-        // max: timestamp,
+        min: (latestTime - 60) * 1000,
+        max: latestTime * 1000,
         data: new Array(10).fill(0).map((x, i) => i),
       },
     } as echarts.EChartsOption;
     return newOption;
-  }, [history]);
+  }, [hardwareData]);
 
-  return <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{height: '300px'}} />;
+  return (
+    <ECharts
+      initialOption={initialOption}
+      updatingOption={updatingOption}
+      style={{ height: "300px" }}
+    />
+  );
 };
