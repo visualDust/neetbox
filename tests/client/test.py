@@ -19,6 +19,15 @@ def print_to_console(metrix):
     logger.log(f"metrix from train: {metrix}")
 
 
+@watch("log-some-prefix", freq=50)
+def log_with_some_prefix():
+    logger.ok("some ok")
+    logger.info("some info")
+    logger.debug("some debug")
+    logger.warn("some warn")
+    logger.err("some error")
+
+
 @action(name="action-1")
 def action_1(text):
     logger.log(f"action 1 triggered. text = {text}")

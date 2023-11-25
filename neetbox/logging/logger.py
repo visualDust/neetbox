@@ -128,7 +128,7 @@ class Logger:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'green')}]",
-                skip_writers=["file"],
+                skip_writers=["file", "ws"],
                 traceback=3,
             )
             self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
@@ -139,7 +139,7 @@ class Logger:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'cyan')}]",
-                skip_writers=["file"],
+                skip_writers=["file", "ws"],
                 traceback=3,
             )
             self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
@@ -150,7 +150,7 @@ class Logger:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'white')}]",
-                skip_writers=["file"],
+                skip_writers=["file", "ws"],
                 traceback=3,
             )
             self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
@@ -161,7 +161,7 @@ class Logger:
             self.log(
                 *message,
                 prefix=f"[{colored_text(flag, 'yellow')}]",
-                skip_writers=["file"],
+                skip_writers=["file", "ws"],
                 traceback=3,
             )
             self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
@@ -174,7 +174,7 @@ class Logger:
             self.log(
                 str(err),
                 prefix=f"[{colored_text(flag,'red')}]",
-                skip_writers=["file"],
+                skip_writers=["file", "ws"],
                 traceback=3,
             )
             self.log(str(err), prefix=flag, skip_writers=["stdout"], traceback=3)
