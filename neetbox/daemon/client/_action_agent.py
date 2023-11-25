@@ -96,7 +96,24 @@ class _NeetActionManager(metaclass=Singleton):
     def _register(
         function: Callable, name: str = None, description: str = None, blocking: bool = False
     ):
-        description = description or function.__doc__
+        if (
+            description is None and function.__doc__ is not None
+        ):  # parse function doc as description
+            description = function.__doc__
+            if description:
+                _description_lines = []
+                for _line in description.split("\n"):
+                    if len(_line):  # remove empty lines
+                        _description_lines.append(_line)
+                # find shortest lstrip
+                min_lstrip = 99999
+                for _line in _description_lines[1:]:  # skip first line
+                    min_lstrip = min(len(_line) - len(_line.lstrip()), min_lstrip)
+                _parsed_description = _description_lines[0] + "\n"
+                for _line in _description_lines[1:]:
+                    _parsed_description += _line[min_lstrip:] + "\n"
+                description = _parsed_description
+
         packed = PackedAction(
             function=function, name=name, description=description, blocking=blocking
         )

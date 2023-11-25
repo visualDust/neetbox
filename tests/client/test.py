@@ -30,6 +30,11 @@ def log_with_some_prefix():
 
 @action(name="action-1")
 def action_1(text):
+    """take action 1
+
+    Args:
+        text (str): text to print
+    """
     logger.log(f"action 1 triggered. text = {text}")
 
 
