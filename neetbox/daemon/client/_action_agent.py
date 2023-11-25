@@ -5,6 +5,8 @@ from threading import Thread
 from typing import Callable, Optional
 
 from neetbox.core import Registry
+from neetbox.daemon._protocol import *
+from neetbox.daemon.client._client import connection
 from neetbox.logging import logger
 from neetbox.pipeline import watch
 from neetbox.utils.mvc import Singleton
@@ -41,7 +43,7 @@ class _NeetActionManager(metaclass=Singleton):
         action_names = _NeetActionManager.__ACTION_POOL.keys()
         for name in action_names:
             action = _NeetActionManager.__ACTION_POOL[name]
-            action_dict[name] = action.argspec.args
+            action_dict[name] = {"args": action.argspec.args, "blocking": action.blocking}
         return action_dict
 
     def eval_call(name: str, params: dict, callback: None):
@@ -81,6 +83,21 @@ class _NeetActionManager(metaclass=Singleton):
         _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, force=True)
         _NeetActionManager._update_action_dict()  # update for sync
         return function
+
+
+@connection.ws_subscribe(event_type_name="action")
+def __listen_to_actions(msg):
+    _payload = msg[PAYLOAD_NAME_KEY]
+    _event_id = msg[EVENT_ID_NAME_KEY]
+    _action_name = _payload["name"]
+    _action_args = _payload["args"]
+    _NeetActionManager.eval_call(
+        name=_action_name,
+        params=_action_args,
+        callback=lambda x: connection.ws_send(
+            event_type="action", payload={"name": _action_name, "result": x}, _event_id=_event_id
+        ),
+    )
 
 
 # example

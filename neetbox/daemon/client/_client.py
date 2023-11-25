@@ -41,6 +41,7 @@ class ClientConn(metaclass=Singleton):
     def _ws_subscribe(function: Callable, event_type_name: str, name=None):
         name = name or function.__name__
         ClientConn.__ws_subscription[event_type_name][name] = function
+        logger.debug(f"ws: {name} subscribed to '{event_type_name}")
 
     def __init__(self) -> None:
         def __load_http_client():

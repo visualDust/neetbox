@@ -15,10 +15,12 @@ python neetbox/daemon/server/_server.py
 script above should launch a server in debug mode on `localhost:5000`, it wont read the port in `neetbox.toml`. a swegger UI is provided at [localhost:5000/docs](http://127.0.0.1:5000/docs) in debug mode. websocket server should run on port `5001`.
 
 If you want to simulate a basic neetbox client sending message to server, at neetbox project root:
+
 ```bash
 cd tests/client
 python test.py
 ```
+
 script above should launch a simple case of neetbox project with some logs and status sending to server.
 
 ## Websocket message standard
@@ -110,7 +112,8 @@ frontend send action request to server, and server will forwards the message to 
     "event-type" : "action",
     "name": "project name",
     "payload" : {
-      "action" : {...json representing action trigger...}
+      "name" : <name of action>,
+      "args" : {...arg names and values...}
     },
     "event-id" : x
 }
@@ -124,14 +127,22 @@ cli execute action query(s) from frontend, and gives response by sending ack:
 
 ```json
 {
-    "event-type" : "ack",
+    "event-type" : "action",
     "name": "project name",
     "payload" : {
-      "action" : {...json representing action result...}
+      "name" : <name of action>,
+      "result" : <returned value of cation>
     },
     "event-id" : x
 }
 ```
+
+> CAUTION !
+>
+> - frontend should look for list of actions via `/status` api instead of websocket.
+> - when **frontend** receive websocket message with `event-type` = `action`, it must be the action result returned from client.
+> - when **client** receive websocket message with `event-type` = `action`, it must be the action queried by frontend.
+> - only actions with `blocking` = `true` could return result to frontend.
 
 where `event-id` is same as received action query.
 
