@@ -5,11 +5,19 @@
 # Date:   20230414
 
 import os
+
+from rich.console import Console
+
+console = Console()
+import logging
 import sys
 import time
 from dataclasses import dataclass
 from threading import Thread
 from typing import Any, Dict, Tuple
+
+werkzeug_log = logging.getLogger("werkzeug")
+werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 
 if __name__ == "__main__":
     import ultraimport  # if run server solely, sssssssuse relative import, do not trigger neetbox init
@@ -18,6 +26,7 @@ if __name__ == "__main__":
     from _protocol import *
 else:
     from neetbox.daemon._protocol import *
+
 import setproctitle
 from flask import abort, json, request
 from websocket_server import WebsocketServer
@@ -52,17 +61,15 @@ def daemon_process(cfg, debug=False):
     # ===============================================================
 
     if debug:
-        print("Running with debug, using APIFlask")
+        console.log(f"Running with debug, using APIFlask")
         from apiflask import APIFlask
 
         app = APIFlask(__PROC_NAME)
     else:
-        print("Running in production mode, escaping APIFlask")
+        console.log(f"Running in production mode, using Flask")
         from flask import Flask
 
         app = Flask(__PROC_NAME)
-
-    # app = APIFlask(__PROC_NAME)
 
     # websocket server
     ws_server = WebsocketServer(port=cfg["port"] + 1)
@@ -119,9 +126,11 @@ def daemon_process(cfg, debug=False):
     """
 
     def handle_ws_connect(client, server):
-        print(f"client {client} connected. waiting for assigning...")
+        console.log(f"client {client} connected. waiting for handshake...")
 
     def handle_ws_disconnect(client, server):
+        if client["id"] not in connected_clients:
+            return  # client disconnected before handshake, returning anyway
         _project_name, _who = connected_clients[client["id"]]
         if _who == "cli":  # remove client from Bridge
             __BRIDGES[_project_name].cli_ws = None
@@ -131,20 +140,25 @@ def daemon_process(cfg, debug=False):
             ]
             __BRIDGES[_project_name].web_ws_list = _new_web_ws_list
         del connected_clients[client["id"]]
-        print(f"a {_who} disconnected with id {client['id']}")
+        console.log(f"a {_who} disconnected with id {client['id']}")
         # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
     def handle_ws_message(client, server: WebsocketServer, message):
-        message = json.loads(message)
+        message_dict = json.loads(message)
         # handle event-type
-        _event_type = message[EVENT_TYPE_NAME_KEY]
-        _payload = message[PAYLOAD_NAME_KEY]
-        _event_id = message[EVENT_ID_NAME_KEY]
-        _project_name = message[NAME_NAME_KEY]
+        _event_type = message_dict[EVENT_TYPE_NAME_KEY]
+        _payload = message_dict[PAYLOAD_NAME_KEY]
+        _event_id = message_dict[EVENT_ID_NAME_KEY]
+        _project_name = message_dict[NAME_NAME_KEY]
         if _event_type == "handshake":  # handle handshake
+            if client["id"] in connected_clients:
+                # !!! cli/web could change their project name by handshake twice, this is a legal behavior
+                handle_ws_disconnect(
+                    client=client, server=server
+                )  # perform "software disconnect" before "software connect" again
             # assign this client to a Bridge
             _who = _payload["who"]
-            print(f"handling handshake for {_who} with name {_project_name}")
+            console.log(f"handling handshake for {_who} with name {_project_name}")
             if _who == "web":
                 # new connection from frontend
                 # check if Bridge with name exist
@@ -194,31 +208,63 @@ def daemon_process(cfg, debug=False):
                         ).json()
                     ),
                 )
+            return  # return after handling handshake
 
-        elif _event_type == "log":  # handle log
-            # forward log to frontend
+        if client["id"] not in connected_clients:
+            return  # !!! not handling messages from cli/web without handshake. handshake is a special case and should be handled anyway before this check.
+
+        _, _who = connected_clients[client["id"]]  # check if is web or cli
+
+        def send_to_frontends_of_name(name, message):
+            if name not in __BRIDGES:
+                if debug:
+                    console.log(
+                        f"cannot broadcast message to frontends under name {name}: name not found."
+                    )
+                return  # no such bridge
+            _target_bridge = __BRIDGES[name]
+            for web_ws in _target_bridge.web_ws_list:
+                server.send_message(
+                    client=web_ws, msg=message
+                )  # forward original message to frontend
+            return
+
+        def send_to_client_of_name(name, message):
+            if name not in __BRIDGES:
+                if debug:
+                    console.log(
+                        f"cannot forward message to client under name {name}: name not found."
+                    )
+                return  # no such bridge
+            _target_bridge = __BRIDGES[name]
+            _client = _target_bridge.cli_ws
+            server.send_message(client=_client, msg=message)  # forward original message to client
+            return
+
+        if _event_type == "log":  # handle log
+            # forward log to frontend. logs should only be sent by cli and only be received by frontends
             if _project_name not in __BRIDGES:
                 # project name must exist
                 # drop anyway if not exist
                 if debug:
-                    print(f"handle log. {_project_name} not found.")
+                    console.log(f"handle log. {_project_name} not found.")
                 return
             else:
-                # forward to frontends
-                _target_bridge = __BRIDGES[_project_name]
-                if debug:
-                    print(f"forward log to frontends on{_project_name}.")
-                for web_ws in _target_bridge.web_ws_list:
-                    server.send_message(
-                        client=web_ws, msg=message
-                    )  # forward original message to frontend
+                send_to_frontends_of_name(
+                    name=_project_name, message=message
+                )  # forward to frontends
+            return  # return after handling log forwarding
 
-        elif _event_type == "action":
-            # todo forward action query to cli
-            pass
-        elif _event_type == "ack":
+        if _event_type == "action":
+            if _who == "web":  # frontend send action query to client
+                send_to_frontends_of_name(_project_name, message=message)
+            else:  # _who == 'cli', client send action result back to frontend(s)
+                send_to_client_of_name(_project_name, message=message)
+            return  # return after handling action forwarding
+
+        if _event_type == "ack":
             # todo forward ack to waiting acks
-            pass
+            return  # return after handling ack
 
     ws_server.set_fn_new_client(handle_ws_connect)
     ws_server.set_fn_client_left(handle_ws_disconnect)
@@ -280,6 +326,7 @@ def daemon_process(cfg, debug=False):
             os._exit(0)
 
         Thread(target=__sleep_and_shutdown).start()  # shutdown after 3 seconds
+        console.log(f"BYE.")
         return f"shutdown in {3} seconds."
 
     def _count_down_thread():
@@ -293,8 +340,10 @@ def daemon_process(cfg, debug=False):
     count_down_thread = Thread(target=_count_down_thread, daemon=True)
     count_down_thread.start()
 
+    console.log(f"launching websocket server...")
     ws_server.run_forever(threaded=True)
 
+    console.log(f"launching flask server...")
     app.run(host="0.0.0.0", port=cfg["port"])
 
 

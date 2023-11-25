@@ -28,14 +28,22 @@ script above should launch a simple case of neetbox project with some logs and s
 websocke messages are described in json. There is a dataclass representing websocket message:
 
 ```python
+EVENT_TYPE_NAME_KEY = "event-type"
+EVENT_ID_NAME_KEY = "event-id"
+NAME_NAME_KEY = "name"
+PAYLOAD_NAME_KEY = "payload"
+
+
 @dataclass
 class WsMsg:
+    name: str
     event_type: str
     payload: Any
     event_id: int = -1
 
     def json(self):
         return {
+            NAME_NAME_KEY: self.name,
             EVENT_TYPE_NAME_KEY: self.event_type,
             EVENT_ID_NAME_KEY: self.event_id,
             PAYLOAD_NAME_KEY: self.payload,
@@ -44,14 +52,18 @@ class WsMsg:
 
 ```json
 {
+    "name" : ...,
     "event-type" : ...,
     "payload" : ...,
     "event-id" : ...
 }
 ```
 
+an simple websocket message should include:
+
 |    key     | value type |                      description                       |
 | :--------: | :--------: | :----------------------------------------------------: |
+|    name    |   string   |                      project name                      |
 | event-type |   string   |            indicate type of data in payload            |
 |  payload   |   string   |                      actual data                       |
 |  event-id  |    int     | for events who need ack. default -1 means no event id. |
