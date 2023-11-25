@@ -14,10 +14,18 @@ from neetbox.utils.mvc import Singleton
 
 
 class PackedAction(Callable):
-    def __init__(self, function: Callable, name=None, blocking=False, **kwargs):
+    def __init__(
+        self,
+        function: Callable,
+        name: str = None,
+        description: str = None,
+        blocking: bool = False,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.function = function
         self.name = name if name else function.__name__
+        self.description = description
         self.argspec = inspect.getfullargspec(self.function)
         self.blocking = blocking
 
@@ -43,8 +51,12 @@ class _NeetActionManager(metaclass=Singleton):
         action_dict = {}
         action_names = _NeetActionManager.__ACTION_POOL.keys()
         for name in action_names:
-            action = _NeetActionManager.__ACTION_POOL[name]
-            action_dict[name] = {"args": action.argspec.args, "blocking": action.blocking}
+            action: PackedAction = _NeetActionManager.__ACTION_POOL[name]
+            action_dict[name] = {
+                "description": action.description,
+                "args": action.argspec.args,
+                "blocking": action.blocking,
+            }
         return action_dict
 
     def eval_call(name: str, params: dict, callback: None):
