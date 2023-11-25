@@ -142,7 +142,7 @@ def __listen_to_actions(msg):
         name=_action_name,
         params=_action_args,
         callback=lambda x: connection.ws_send(
-            event_type="action", payload={"name": _action_name, "result": x}, _event_id=_event_id
+            event_type="action", payload={"name": _action_name, "result": x}, event_id=_event_id
         ),
     )
 

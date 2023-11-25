@@ -138,7 +138,7 @@ class ClientConn(metaclass=Singleton):
                     f"Subscriber {name} crashed on message event {event_type_name}, ignoring."
                 )
 
-    def ws_send(event_type: str, payload):
+    def ws_send(event_type: str, payload, event_id=-1):
         logger.debug(f"ws sending {payload}")
         if ClientConn.__ws_client:  # if ws client exist
             ClientConn.__ws_client.send(
@@ -147,7 +147,7 @@ class ClientConn(metaclass=Singleton):
                         NAME_NAME_KEY: ClientConn._display_name,
                         EVENT_TYPE_NAME_KEY: event_type,
                         PAYLOAD_NAME_KEY: payload,
-                        EVENT_ID_NAME_KEY: -1,  # todo how does ack work
+                        EVENT_ID_NAME_KEY: event_id,
                     }
                 )
             )
