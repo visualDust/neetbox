@@ -64,17 +64,20 @@ export function ActionItem({
             {options.description}
           </div>
         )}
-        {options.args.map((argName) => (
-          <Row align="middle" style={{ alignSelf: "stretch" }}>
-            <Col span={6}>
+        {Object.entries(options.args).map(([argName, argType]) => (
+          <Row align="middle" type="flex" justify="space-between" style={{ alignSelf: "stretch" }}>
+            <Col span={4}>
               <Typography.Text ellipsis>{argName}</Typography.Text>
             </Col>
-            <Col span={18}>
+            <Col span={16}>
               <Input
                 size="small"
                 value={args[argName]}
                 onChange={(val) => setArgs({ ...args, [argName]: val })}
               />
+            </Col>
+            <Col span={3}>
+              <Typography.Text ellipsis>({argType})</Typography.Text>
             </Col>
           </Row>
         ))}

@@ -196,7 +196,7 @@ def daemon_process(cfg, debug=False):
                     _target_bridge = Bridge(name=_project_name)  # create new bridge for this name
                     __BRIDGES[_project_name] = _target_bridge
                 __BRIDGES[_project_name].cli_ws = client  # assign cli to bridge
-                connected_clients[client["id"]] = (_project_name, "web")
+                connected_clients[client["id"]] = (_project_name, "cli")
                 server.send_message(
                     client=client,
                     msg=json.dumps(

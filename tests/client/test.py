@@ -1,4 +1,5 @@
 import os
+import time
 from random import random
 from time import sleep
 
@@ -72,6 +73,7 @@ def action_2(text1, text2):
 def action_2(sec):
     sec = int(sec)
     logger.log(f"wait for {sec} sec.")
+    time.sleep(sec)
 
 
 @action(name="shutdown", description="shutdown your process", blocking=True)

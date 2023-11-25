@@ -38,7 +38,7 @@ export interface ProjectStatus {
     Record<
       string,
       {
-        args: string[];
+        args: Record<string, string>;
         blocking: boolean;
         description: string;
       }
