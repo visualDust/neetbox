@@ -2,9 +2,9 @@ import { useRef, useEffect, HTMLAttributes } from "react";
 import * as echarts from "echarts";
 
 export interface EChartsProps {
-    initialOption: () => echarts.EChartsOption;
-    updatingOption: echarts.EChartsOption;
-    style?: HTMLAttributes<HTMLElement>['style'];
+  initialOption: () => echarts.EChartsOption;
+  updatingOption: echarts.EChartsOption;
+  style?: HTMLAttributes<HTMLElement>["style"];
 }
 
 export const ECharts = (props: EChartsProps) => {
@@ -17,7 +17,13 @@ export const ECharts = (props: EChartsProps) => {
     chart.setOption(props.initialOption());
     chartRef.current = chart;
 
+    const handleResize = () => {
+      chart.resize();
+    };
+    window.addEventListener("resize", handleResize);
+
     return () => {
+      window.removeEventListener("resize", handleResize);
       chart.dispose();
     };
   }, []);
