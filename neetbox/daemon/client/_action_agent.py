@@ -9,6 +9,7 @@ from neetbox.daemon._protocol import *
 from neetbox.daemon.client._client import connection
 from neetbox.logging import logger
 from neetbox.pipeline import watch
+from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils.mvc import Singleton
 
 
@@ -70,7 +71,7 @@ class _NeetActionManager(metaclass=Singleton):
         else:  # blocking run
             return target_action.eval_call(params)
 
-    @watch(initiative=True)
+    @watch(name="__action", initiative=True, _channel=SYSTEM_CHANNEL)
     def _update_action_dict():
         # for status updater
         return _NeetActionManager.get_action_dict()
@@ -80,7 +81,7 @@ class _NeetActionManager(metaclass=Singleton):
 
     def _register(function: Callable, name: str = None, blocking: bool = False):
         packed = PackedAction(function=function, name=name, blocking=blocking)
-        _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, force=True)
+        _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, overwrite=True)
         _NeetActionManager._update_action_dict()  # update for sync
         return function
 

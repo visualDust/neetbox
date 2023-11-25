@@ -21,5 +21,6 @@ def test_registry():
         pass
 
     print(f"Things in reg1: {reg1}")
+    print(f"Get not exist in reg1: {reg1.get('bbbbb', default='wow default value')}")
     print(f"Things in reg2: {reg2}")
     print(f"Finding functions: {Registry.find(tags='function')}")

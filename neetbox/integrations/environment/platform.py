@@ -10,6 +10,7 @@ import platform
 import subprocess
 
 from neetbox.pipeline import watch
+from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils.mvc import Singleton
 
 
@@ -55,7 +56,7 @@ platform = __Platform()
 
 
 # watch updates in daemon
-@watch(name="platform", initiative=True)
+@watch(name="platform", initiative=True, _channel=SYSTEM_CHANNEL)
 def update_env_stat():
     return dict(platform)
 

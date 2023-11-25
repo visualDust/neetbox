@@ -88,7 +88,7 @@ class ClientConn(metaclass=Singleton):
         ws.send(  # send handshake request
             json.dumps(
                 {
-                    NAME_NAME_KEY: {_display_name},
+                    NAME_NAME_KEY: _display_name,
                     EVENT_TYPE_NAME_KEY: "handshake",
                     PAYLOAD_NAME_KEY: {"who": "cli"},
                     EVENT_ID_NAME_KEY: 0,  # todo how does ack work
