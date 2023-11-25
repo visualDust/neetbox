@@ -257,9 +257,9 @@ def daemon_process(cfg, debug=False):
 
         if _event_type == "action":
             if _who == "web":  # frontend send action query to client
-                send_to_frontends_of_name(_project_name, message=message)
-            else:  # _who == 'cli', client send action result back to frontend(s)
                 send_to_client_of_name(_project_name, message=message)
+            else:  # _who == 'cli', client send action result back to frontend(s)
+                send_to_frontends_of_name(_project_name, message=message)
             return  # return after handling action forwarding
 
         if _event_type == "ack":
