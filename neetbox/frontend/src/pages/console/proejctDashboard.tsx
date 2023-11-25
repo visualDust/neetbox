@@ -6,6 +6,7 @@ import PlatformProps from "../../components/dashboard/project/platformProps";
 import { ECharts } from "../../components/echarts";
 import { ProjectStatus, useProjectStatus } from "../../services/projects";
 import { Logs } from "../../components/dashboard/project/logs";
+import { Actions } from "../../components/dashboard/project/actions";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectName } = useParams();
@@ -26,6 +27,8 @@ function ProjectDashboard() {
       <Logs projectName={projectName!} />
       {data.current ? (
         <>
+          <Typography.Title heading={3}>Actions</Typography.Title>
+          <Actions actions={data.current.__action} />
           <Typography.Title heading={3}>Hardware</Typography.Title>
           <Hardware hardwareData={data.history.map((x) => x.hardware)} />
           <Typography.Title heading={3}>Platform</Typography.Title>

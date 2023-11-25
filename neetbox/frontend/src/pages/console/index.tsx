@@ -10,7 +10,7 @@ export function consoleRoutes(): RouteObject {
     path: "console",
     element: <Console />,
     children: [
-      { path: "project/:projectName", element: <Dashboard /> },
+      { path: "project/:projectName", element: <Dashboard />, errorElement: <div>Error</div> },
       { path: "overview", element: <Overview /> },
     ],
   };

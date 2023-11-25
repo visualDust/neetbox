@@ -69,7 +69,7 @@ function LogItem({ data }: { data: LogData }) {
   return (
     <LogItemContainer>
       <span className="log-tag log-datetime">{data.datetime}</span>{" "}
-      <span className={"log-tag log-prefix log-prefix-" + prefix}>
+      <span className={`log-tag log-prefix log-prefix-${prefix}`}>
         {prefix}
       </span>{" "}
       <span
