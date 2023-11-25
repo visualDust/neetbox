@@ -79,7 +79,10 @@ class _NeetActionManager(metaclass=Singleton):
         )
 
         def run_and_callback():
-            returned_data = target_action.eval_call(params)
+            try:
+                returned_data = target_action.eval_call(params)
+            except Exception as e:
+                returned_data = e
             if callback:
                 callback(returned_data)
 
@@ -142,7 +145,9 @@ def __listen_to_actions(msg):
         name=_action_name,
         params=_action_args,
         callback=lambda x: connection.ws_send(
-            event_type="action", payload={"name": _action_name, "result": x}, event_id=_event_id
+            event_type="action",
+            payload={"name": _action_name, ("error" if isinstance(x, Exception) else "result"): x},
+            event_id=_event_id,
         ),
     )
 

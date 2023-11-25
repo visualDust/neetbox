@@ -148,7 +148,8 @@ class ClientConn(metaclass=Singleton):
                         EVENT_TYPE_NAME_KEY: event_type,
                         PAYLOAD_NAME_KEY: payload,
                         EVENT_ID_NAME_KEY: event_id,
-                    }
+                    },
+                    default=str,
                 )
             )
         else:
