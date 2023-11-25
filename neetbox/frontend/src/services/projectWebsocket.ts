@@ -25,7 +25,7 @@ export class WsClient {
       });
     };
     this.ws.onmessage = (e) => {
-      console.info("ws", e.data);
+      console.info("ws receive", e.data);
       const json = JSON.parse(e.data) as WsMsg;
       const eventId = json["event-id"];
       if (this.callbacks.has(eventId)) {
@@ -40,12 +40,14 @@ export class WsClient {
 
   send(msg: Omit<WsMsg, "name" | "event-id">, onReply?: (msg: WsMsg) => void) {
     const eventId = this.nextId++;
+    const json = {
+      ...msg,
+      name: this.project.name,
+      "event-id": eventId,
+    };
+    console.info('ws send', json);
     this.ws.send(
-      JSON.stringify({
-        ...msg,
-        name: this.project.name,
-        "event-id": eventId,
-      })
+      JSON.stringify(json)
     );
     if (onReply) this.callbacks.set(eventId, onReply);
   }

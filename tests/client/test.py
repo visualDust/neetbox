@@ -58,7 +58,7 @@ def action_1(text: str):
     """take action 1
 
     Args:
-        text (str): text to print
+        text (string): print this string to console as log
     """
     logger.log(f"action 1 triggered. text = {text}")
 
@@ -74,7 +74,7 @@ def action_2(sec):
     logger.log(f"wait for {sec} sec.")
 
 
-@action(name="shutdown", blocking=True)
+@action(name="shutdown", description="shutdown your process", blocking=True)
 def sys_exit():
     logger.log("shutdown received, shutting down immediately.")
     os._exit(0)

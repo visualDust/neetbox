@@ -15,10 +15,10 @@ export interface ProjectStatus {
       id: number;
       percent: number;
       freq: [current: number, min: number, max: number];
-    }>,
+    }>;
     gpus: Array<{
       id: number;
-      name: string,
+      name: string;
       load: number;
       memoryUtil: number;
       memoryTotal: number;
@@ -26,17 +26,24 @@ export interface ProjectStatus {
       memoryUsed: number;
       temperature: number;
       driver: string;
-    }>
+    }>;
     ram: {
-      total: number,
-      available: number,
-      used: number,
-      free: number,
-    }
+      total: number;
+      available: number;
+      used: number;
+      free: number;
+    };
   }>;
-  __action: WithTimestamp<Record<string, {
-    args: string[], blocking: boolean
-  }>>;
+  __action: WithTimestamp<
+    Record<
+      string,
+      {
+        args: string[];
+        blocking: boolean;
+        description: string;
+      }
+    >
+  >;
 }
 
 export interface WithTimestamp<T> {
@@ -87,9 +94,22 @@ export class Project {
   handleLog(log: LogData) {
     this.logs.value = slideWindow(this.logs.value, log, 200); // TODO
   }
+
+  sendAction(action: string, args: Record<string, string>, onReply?: () => void) {
+    this.wsClient.send(
+      {
+        "event-type": "action",
+        payload: {
+          name: action,
+          args,
+        },
+      },
+      onReply
+    );
+  }
 }
 
-export function getOrAddProject(name: string) {
+export function getProject(name: string) {
   let project = projects.get(name);
   if (!project) {
     project = new Project(name);
@@ -99,13 +119,13 @@ export function getOrAddProject(name: string) {
 }
 
 export function useProjectStatus(name: string) {
-  const project = getOrAddProject(name);
+  const project = getProject(name);
   const [data] = useAtom(project?.status.atom ?? nullProjectAtom);
   return data;
 }
 
 export function useProjectLogs(name: string) {
-  const project = getOrAddProject(name);
+  const project = getProject(name);
   const [data] = useAtom(project?.logs.atom);
   return data;
 }
