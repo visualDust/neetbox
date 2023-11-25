@@ -65,7 +65,7 @@ export function ActionItem({
           </div>
         )}
         {Object.entries(options.args).map(([argName, argType]) => (
-          <Row align="middle" type="flex" justify="space-between" style={{ alignSelf: "stretch" }}>
+          <Row key={argName} align="middle" type="flex" justify="space-between" style={{ alignSelf: "stretch" }}>
             <Col span={4}>
               <Typography.Text ellipsis>{argName}</Typography.Text>
             </Col>
