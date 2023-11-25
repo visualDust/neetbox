@@ -77,21 +77,21 @@ class _NeetActionManager(metaclass=Singleton):
         logger.log(
             f"Agent runs function '{target_action.name}', blocking = {target_action.blocking}"
         )
+
+        def run_and_callback():
+            returned_data = target_action.eval_call(params)
+            if callback:
+                callback(returned_data)
+
         if not target_action.blocking:  # non-blocking run in thread
-
-            def run_and_callback(target_action, params, callback):
-                returned_data = target_action.eval_call(params)
-                if callback:
-                    callback(returned_data)
-
             Thread(
                 target=run_and_callback,
-                kwargs={"target_action": target_action, "params": params, "callback": callback},
                 daemon=True,
             ).start()
-            return None
+            return
         else:  # blocking run
-            return target_action.eval_call(params)
+            run_and_callback()
+            return
 
     @watch(name="__action", initiative=True, _channel=SYSTEM_CHANNEL)
     def _update_action_dict():
