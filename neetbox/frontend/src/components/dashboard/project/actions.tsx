@@ -7,8 +7,8 @@ import {
   Space,
   Typography,
 } from "@douyinfe/semi-ui";
-import { ProjectStatus, getProject } from "../../../services/projects";
 import { useContext, useState } from "react";
+import { ProjectStatus, getProject } from "../../../services/projects";
 import { ProjectContext } from "../../../pages/console/proejctDashboard";
 
 interface Props {

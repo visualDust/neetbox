@@ -1,6 +1,6 @@
 import { Layout, Button, Space, Typography } from "@douyinfe/semi-ui";
-import SwitchColorMode from "./components/themeSwitcher";
 import { Link, Outlet } from "react-router-dom";
+import SwitchColorMode from "./components/themeSwitcher";
 import "./styles/global.css";
 import FooterContent from "./components/Footer";
 

@@ -1,8 +1,8 @@
 import { Nav } from "@douyinfe/semi-ui";
 import React from "react";
 import { IconStar, IconSetting } from "@douyinfe/semi-icons";
-import { useAPI } from "../../services/api";
 import { Link, useLocation } from "react-router-dom";
+import { useAPI } from "../../services/api";
 
 export default function ConsoleNavBar() {
   const location = useLocation();
@@ -10,7 +10,8 @@ export default function ConsoleNavBar() {
   return (
     <Nav
       renderWrapper={(args) => {
-        if (!args.props.itemKey.startsWith("/")) return args.itemElement;
+        if (!(args.props.itemKey as string).startsWith("/"))
+          return args.itemElement;
         return (
           <Link
             to={args.props.itemKey as string}
