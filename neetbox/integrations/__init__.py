@@ -7,8 +7,6 @@
 import importlib
 import pkgutil
 
-from traitlets import Callable
-
 from neetbox.core import Registry
 from neetbox.integrations.engine import Engine as engine
 from neetbox.integrations.engine import get_installed_engines, get_supported_engines
