@@ -1,7 +1,7 @@
 import { Nav } from "@douyinfe/semi-ui";
 import React from "react";
 import { IconStar, IconSetting } from "@douyinfe/semi-icons";
-import { useAPI } from "../../hooks/useAPI";
+import { useAPI } from "../../services/api";
 import { Link, useLocation } from "react-router-dom";
 
 export default function ConsoleNavBar() {

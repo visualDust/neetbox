@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useAPI } from "../../hooks/useAPI";
+import { useAPI } from "../../services/api";
 
 export default function Overview() {
   // const { projectName } = useParams();

@@ -1,3 +1,4 @@
+import { WEBSOCKET_URL } from "./api";
 import { Project } from "./projects";
 
 interface WsMsg<Type extends string = string, Payload = any> {
@@ -14,7 +15,7 @@ export class WsClient {
   nextLogId = 1;
 
   constructor(readonly project: Project) {
-    this.ws = new WebSocket("ws://127.0.0.1:5001/");
+    this.ws = new WebSocket(WEBSOCKET_URL);
     this.ws.onopen = () => {
       console.info("ws open");
       this.send({
@@ -33,7 +34,7 @@ export class WsClient {
         this.callbacks.delete(eventId);
       } else if (json["event-type"] === "log") {
         json.payload._id = this.nextLogId++;
-        project.handleLog(json.payload);;
+        project.handleLog(json.payload);
       }
     };
   }
@@ -45,10 +46,8 @@ export class WsClient {
       name: this.project.name,
       "event-id": eventId,
     };
-    console.info('ws send', json);
-    this.ws.send(
-      JSON.stringify(json)
-    );
+    console.info("ws send", json);
+    this.ws.send(JSON.stringify(json));
     if (onReply) this.callbacks.set(eventId, onReply);
   }
 }
