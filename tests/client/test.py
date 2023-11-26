@@ -4,7 +4,6 @@ from random import random
 from time import sleep
 
 from neetbox.daemon import action
-from neetbox.integrations.environment import hardware, platform
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 
@@ -20,38 +19,13 @@ def print_to_console(metrix):
     logger.log(f"metrix from train: {metrix}")
 
 
-@watch("log-some-prefix", interval=50)
+@watch("log-some-prefix", interval=5.0)
 def log_with_some_prefix():
     logger.ok("some ok")
     logger.info("some info")
     logger.debug("some debug")
     logger.warn("some warn")
     logger.err("some error")
-
-
-@watch(interval=40)
-def log_with_some_prefix_1():
-    logger.ok("some ok")
-
-
-@watch(interval=50)
-def log_with_some_prefix_2():
-    logger.ok("some ok")
-
-
-@watch(interval=60)
-def log_with_some_prefix_200():
-    logger.ok("some ok")
-
-
-@watch(interval=88)
-def log_with_some_prefix_333():
-    logger.ok("some ok")
-
-
-@watch(interval=30)
-def log_with_some_prefix_500():
-    logger.ok("some ok")
 
 
 @action(name="action-1")

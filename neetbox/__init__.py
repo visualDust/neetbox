@@ -3,6 +3,8 @@ import sys
 
 import toml
 
+import neetbox.daemon as daemon
+import neetbox.integrations as integrations
 from neetbox.config import default as default_config
 from neetbox.config._config import update_workspace_config_with
 from neetbox.logging.formatting import LogStyle
@@ -30,6 +32,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
                     _config["name"] = os.path.basename(os.path.normpath(os.getcwd()))
                 toml.dump(_config, config_file)
             logger.ok(f"Workspace config created as {config_file_path}.")
+            return True
         except Exception as e:
             logger.err(f"Failed to create {config_file_path}: {e}")
             return False
@@ -61,14 +64,13 @@ is_in_daemon_process = (
 )
 
 
-def _load_workspace_and_attach_daemon():
+def _load_workspace_as_a_project():
     success = _load_workspace()  # init from config file
     if not success:  # failed to load workspace config, exiting
         os._exit(255)
-    # try attach daemon
-    from neetbox.daemon import _try_attach_daemon
-
-    _try_attach_daemon()
+    # post init
+    integrations._post_init_workspace()
+    daemon._try_attach_daemon()
 
 
 def _is_in_workspace():
@@ -79,4 +81,4 @@ if len(sys.argv) > 0 and sys.argv[0].endswith("neet") or is_in_daemon_process:
     # running in cli or daemon process, do not load workspace
     pass
 elif _is_in_workspace():  # if a config file exist and not running in cli
-    _load_workspace_and_attach_daemon()
+    _load_workspace_as_a_project()

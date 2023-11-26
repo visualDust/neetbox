@@ -8,6 +8,7 @@ import collections
 import time
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 from functools import partial
 from threading import Thread
 from typing import Any, Callable, Optional, Union
@@ -17,8 +18,8 @@ from neetbox.config import get_module_level_config
 from neetbox.core import Registry
 from neetbox.logging import logger
 
-__TIME_CTR_MAX_CYCLE = 9999999
-__TIME_UNIT_SEC = 0.1
+__TIME_CTR_MAX_CYCLE = Decimal("99999.0")
+__TIME_UNIT_SEC = Decimal("0.1")
 
 _WATCH_QUERY_DICT = Registry("__pipeline_watch")
 _LISTEN_QUERY_DICT = collections.defaultdict(lambda: {})
@@ -33,7 +34,7 @@ SYSTEM_CHANNEL = "__system"  # values on this channel will upload via http clien
 @dataclass
 class _WatchConfig(dict):
     name: str
-    interval: int
+    interval: Decimal
     initiative: bool
     channel: str = _DEFAULT_CHANNEL  # use channel to distinct those values to upload via http
 
@@ -63,26 +64,35 @@ def __update_and_get(name: str, *args, **kwargs):
     _watch_config = _watched_fun.cfg
     _channel = _watch_config.channel
     _the_value = _watched_fun(*args, **kwargs)
-    _UPDATE_VALUE_DICT[_channel][name] = {
-        "value": _the_value,
-        "timestamp": datetime.timestamp(datetime.now()),
-        "interval": (_watch_config.interval * __TIME_UNIT_SEC),
-    }
 
-    def __call_listeners(_name: str, _value, _cfg: _WatchConfig):
-        t0 = time.perf_counter()
-        for _listener_name, _listener_func in _LISTEN_QUERY_DICT[_name].items():
-            _listener_func(_value)
-        t1 = time.perf_counter()
-        delta_t = t1 - t0
-        _update_interval = _cfg.interval
-        expected_time_limit = _update_interval * __TIME_UNIT_SEC
-        if not _cfg.initiative >= 0 and delta_t > expected_time_limit:
-            logger.warn(
-                f"Watched value {_name} takes longer time({delta_t:.8f}s) to update than it was expected({expected_time_limit}s)."
-            )
+    def _inside_thread():
+        _UPDATE_VALUE_DICT[_channel][name] = {
+            "value": _the_value,
+            "timestamp": datetime.timestamp(datetime.now()),
+            "interval": None
+            if _watch_config.interval is None
+            else (_watch_config.interval * __TIME_UNIT_SEC),
+        }
 
-    Thread(target=__call_listeners, args=(name, _the_value, _watch_config), daemon=True).start()
+        def __call_listeners(_name: str, _value, _cfg: _WatchConfig):
+            t0 = time.perf_counter()
+            for _listener_name, _listener_func in _LISTEN_QUERY_DICT[_name].items():
+                _listener_func(_value)
+            t1 = time.perf_counter()
+            delta_t = t1 - t0
+            if _cfg.initiative:
+                return
+            _update_interval = _cfg.interval
+            expected_time_limit = _update_interval * __TIME_UNIT_SEC
+            if delta_t > expected_time_limit:
+                logger.warn(
+                    f"Watched value {_name} takes longer time({delta_t:.8f}s) to update than it was expected    ({expected_time_limit}s)."
+                )
+
+        Thread(target=__call_listeners, args=(name, _the_value, _watch_config), daemon=True).start()
+
+    Thread(target=_inside_thread, daemon=True).start()
+
     return _the_value
 
 
@@ -100,7 +110,12 @@ def _watch(
         name=name,
         what=_WatchedFun(
             func=func,
-            cfg=_WatchConfig(name, interval=interval, initiative=initiative, channel=_channel),
+            cfg=_WatchConfig(
+                name,
+                interval=None if interval is None else Decimal(str(interval)),
+                initiative=initiative,
+                channel=_channel,
+            ),
         ),
         overwrite=overwrite,
         tags=_channel,
@@ -111,8 +126,9 @@ def _watch(
         )
         return partial(__update_and_get, name)
     else:
+        _update_latency = Decimal(str(interval)) * __TIME_UNIT_SEC
         logger.debug(
-            f"added {name} to daemon monitor. It will update every {interval*__TIME_UNIT_SEC} second(s)."
+            f"added {name} to daemon monitor. It will update every {_update_latency} second(s)."
         )
         return partial(__get, name, _channel)
 
@@ -124,10 +140,8 @@ def watch(
     overwrite: bool = False,
     _channel: str = None,
 ):
-    if not initiative:  # passively update
-        interval = interval or get_module_level_config()["updateInterval"]
-    else:
-        interval = -1
+    # set interval to None if passively update
+    interval = None if initiative else (interval or get_module_level_config()["updateInterval"])
     return partial(
         _watch,
         name=name,
@@ -174,13 +188,15 @@ def listen(target: Union[str, Any], listener_name: Optional[str] = None, overwri
 
 def _update_thread():
     # update values
-    _ctr = 0
+    _ctr = Decimal("0.0")
     while True:
-        _ctr = (_ctr + 1) % __TIME_CTR_MAX_CYCLE
-        time.sleep(__TIME_UNIT_SEC)
+        _ctr = (_ctr + __TIME_UNIT_SEC) % __TIME_CTR_MAX_CYCLE
+        time.sleep(float(__TIME_UNIT_SEC))
         for _vname, _watched_fun in _WATCH_QUERY_DICT.items():
             _watch_config = _watched_fun.cfg
-            if not _watch_config.initiative and _ctr % _watch_config.interval == 0:  # do update
+            if not _watch_config.initiative and _ctr % _watch_config.interval == Decimal(
+                "0.0"
+            ):  # do update
                 _ = __update_and_get(_vname)
 
 

@@ -78,7 +78,6 @@ def init(name: str):
     """initialize current folder as workspace and generate the config file from defaults"""
     try:
         if neetbox._init_workspace(name=name):
-            logger.skip_lines(2)
             logger.console_banner("neetbox", font="ansishadow")
             logger.log("Welcome to NEETBOX")
     except Exception as e:

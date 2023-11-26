@@ -9,10 +9,10 @@ DEFAULT_WORKSPACE_CONFIG = {
     "version": None,
     "logging": {"level": "INFO", "logdir": None},
     "pipeline": {
-        "updateInterval": 10,
+        "updateInterval": 0.5,
     },
     "integrations": {
-        "environment": {"hardware": {"monit": "true"}, "platform": {"monit": "true"}},
+        "environment": {"hardware": {"monit": True, "interval": 0.5}, "platform": {"monit": True}},
     },
     "daemon": {
         "enable": True,
@@ -22,7 +22,7 @@ DEFAULT_WORKSPACE_CONFIG = {
         "allowIpython": False,
         "mute": True,
         "mode": "detached",
-        "uploadInterval": 10,
+        "uploadInterval": 0.5,
     },
 }
 WORKSPACE_CONFIG: dict = DEFAULT_WORKSPACE_CONFIG.copy()

@@ -12,6 +12,8 @@ import GPUtil
 import psutil
 from GPUtil import GPU
 
+from neetbox.config import get_module_level_config
+from neetbox.integrations import call_on_workspace_load
 from neetbox.pipeline import watch
 from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils import pkg
@@ -82,13 +84,13 @@ class _Hardware(dict, metaclass=Singleton):
             "free": ram_stat[4] / 1e9,
         }
         # the environment shoube be imported in the __init__.py of the outer module. And the watcher thread should be auto started
-        self.set_update_intervel()
+        # self.set_update_intervel() # do not watch by default
 
     def json(self):
         return {"cpus": self["cpus"], "ram": self["ram"], "gpus": self["gpus"]}
 
     def set_update_intervel(self, intervel=1.0) -> None:
-        if intervel < 1.0:
+        if intervel < 0:
             self._do_watch = False
             return
         self._do_watch = True
@@ -131,6 +133,13 @@ hardware = _Hardware()
 
 
 # watch updates in daemon
-@watch(name="hardware", _channel=SYSTEM_CHANNEL)
-def update_env_stat():
-    return hardware.json()
+@call_on_workspace_load(name="hardware-monit")
+def load_monit_hardware():
+    cfg = get_module_level_config()
+    if cfg["monit"]:  # if do monit hardware
+        hardware.set_update_intervel(cfg["interval"])
+
+        # watch updates in daemon
+        @watch(name="hardware", _channel=SYSTEM_CHANNEL, interval=cfg["interval"])
+        def update_env_stat():
+            return hardware.json()

@@ -32,8 +32,6 @@ import setproctitle
 from flask import abort, json, request, send_from_directory
 from websocket_server import WebsocketServer
 
-__DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours
-__COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
 __PROC_NAME = "NEETBOX SERVER"
 setproctitle.setproctitle(__PROC_NAME)
 
@@ -306,8 +304,6 @@ def server_process(cfg, debug=False):
 
     @app.route(f"{FRONTEND_API_ROOT}/status/<name>", methods=["GET"])
     def return_status_of(name):
-        global __COUNT_DOWN
-        __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
         if name in __BRIDGES:
             _returning_stat = __BRIDGES[name].status  # returning specific status
         else:
@@ -316,26 +312,22 @@ def server_process(cfg, debug=False):
 
     @app.route(f"{FRONTEND_API_ROOT}/list", methods=["GET"])
     def return_names_of_status():
-        global __COUNT_DOWN
-        __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
         _names = {"names": list(__BRIDGES.keys())}
         return _names
 
     @app.route(f"{CLIENT_API_ROOT}/sync/<name>", methods=["POST"])
     def sync_status_of(name):  # client side function
-        global __COUNT_DOWN
-        __COUNT_DOWN = __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC
+        print("on sync")
         _json_data = request.get_json()
         if name not in __BRIDGES:  # Client not found
             __BRIDGES[name] = Bridge(name=name)  # Create from sync request
         __BRIDGES[name].status = _json_data
+        print("on done")
+
         return "ok"
 
     @app.route(f"{FRONTEND_API_ROOT}/shutdown", methods=["POST"])
     def shutdown():
-        global __COUNT_DOWN
-        __COUNT_DOWN = -1
-
         def __sleep_and_shutdown(secs=3):
             time.sleep(secs)
             os._exit(0)
