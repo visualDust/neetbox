@@ -83,7 +83,10 @@ export class Project {
     if (!this.status.value.enablePolling) return false;
 
     fetch("/web/status/" + this.name).then(async (res) => {
-      const data = await res.json();
+      const data = (await res.json()) as ProjectStatus;
+      data.hardware.value.cpus.forEach((cpu, idx) => {
+        if (typeof cpu.id != "number" || cpu.id < 0) cpu.id = idx;
+      });
       const projectData = { ...this.status.value };
       projectData.current = data;
       projectData.history = slideWindow(projectData.history, data, 60);
@@ -95,7 +98,11 @@ export class Project {
     this.logs.value = slideWindow(this.logs.value, log, 200); // TODO
   }
 
-  sendAction(action: string, args: Record<string, string>, onReply?: () => void) {
+  sendAction(
+    action: string,
+    args: Record<string, string>,
+    onReply?: () => void,
+  ) {
     this.wsClient.send(
       {
         "event-type": "action",
@@ -104,7 +111,7 @@ export class Project {
           args,
         },
       },
-      onReply
+      onReply,
     );
   }
 }
