@@ -7,8 +7,11 @@ import { ECharts } from "../../components/echarts";
 import { ProjectStatus, useProjectStatus } from "../../services/projects";
 import { Logs } from "../../components/dashboard/project/logs";
 import { Actions } from "../../components/dashboard/project/actions";
+import Loading from "../../components/loading";
 
-export const ProjectContext = createContext<{ projectName: string } | null>(null);
+export const ProjectContext = createContext<{ projectName: string } | null>(
+  null
+);
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectName } = useParams();
@@ -47,7 +50,7 @@ function ProjectDashboard() {
             <PlatformProps data={data.current.platform} />
           </>
         ) : (
-          "Loading..."
+          <Loading />
         )}
       </div>
     </ProjectContext.Provider>
