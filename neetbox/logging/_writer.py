@@ -3,6 +3,7 @@ import io
 import json
 import os
 import pathlib
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Callable, Iterable, Optional, Union
@@ -13,8 +14,8 @@ from neetbox.logging.formatting import LogStyle, colored_text, styled_text
 from neetbox.utils import formatting
 
 
-# Log writer interface
-class LogWriter:
+class LogWriter(ABC):
+    @abstractmethod
     def write(self, raw_log):
         pass
 
