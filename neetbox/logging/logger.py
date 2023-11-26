@@ -14,6 +14,7 @@ from typing import Any, Optional, Union
 from rich import print as rprint
 from rich.panel import Panel
 
+from neetbox.config import get_module_level_config
 from neetbox.logging._writer import (
     FileLogWriter,
     JsonLogWriter,
@@ -55,6 +56,22 @@ class LogLevel(Enum):
 _GLOBAL_LOG_LEVEL = LogLevel.ALL
 
 
+def set_log_level(level: LogLevel):
+    if type(level) is str:
+        level = {
+            "ALL": LogLevel.ALL,
+            "DEBUG": LogLevel.DEBUG,
+            "INFO": LogLevel.INFO,
+            "WARNING": LogLevel.WARNING,
+            "ERROR": LogLevel.ERROR,
+        }[level]
+    if type(level) is int:
+        assert level >= 0 and level <= 3
+        level = LogLevel(level)
+    global _GLOBAL_LOG_LEVEL
+    _GLOBAL_LOG_LEVEL = level
+
+
 class Logger:
     # global static
     __WHOM_2_LOGGER = {}
@@ -69,6 +86,10 @@ class Logger:
         self.console_writer = consoleLogWriter
         self.ws_writer = webSocketLogWriter
         self.file_writer = None
+
+        _cfg = get_module_level_config()
+        self.set_log_dir(_cfg["logdir"])
+        set_log_level(_cfg["level"])
 
     def __call__(self, whom: Any = None, style: Optional[LogStyle] = None) -> "Logger":
         if whom is None:
@@ -378,20 +399,3 @@ class Logger:
 
 
 DEFAULT_LOGGER = Logger(None)
-
-
-def set_log_level(level: LogLevel):
-    if type(level) is str:
-        level = {
-            "ALL": LogLevel.ALL,
-            "DEBUG": LogLevel.DEBUG,
-            "INFO": LogLevel.INFO,
-            "WARNING": LogLevel.WARNING,
-            "ERROR": LogLevel.ERROR,
-        }[level]
-    if type(level) is int:
-        assert level >= 0 and level <= 3
-        level = LogLevel(level)
-    global _GLOBAL_LOG_LEVEL
-    _GLOBAL_LOG_LEVEL = level
-    DEFAULT_LOGGER.debug(f"global log level was set to {_GLOBAL_LOG_LEVEL}")

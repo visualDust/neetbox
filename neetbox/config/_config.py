@@ -28,7 +28,7 @@ DEFAULT_WORKSPACE_CONFIG = {
 WORKSPACE_CONFIG: dict = DEFAULT_WORKSPACE_CONFIG.copy()
 
 
-def update_with(cfg: dict):
+def update_workspace_config_with(cfg: dict):
     def _update_dict_recursively(self: dict, the_other: dict):
         for _k, _v in the_other.items():
             if type(_v) is dict:  # currently resolving a dict child

@@ -9,9 +9,11 @@ from neetbox.config import get_module_level_config
 from neetbox.daemon._protocol import *
 from neetbox.daemon.client._client import connection
 
-__cfg = get_module_level_config()
-daemon_address = f"{__cfg['host']}:{__cfg['port']}"
-base_addr = f"http://{daemon_address}/"
+
+def get_base_addr():
+    __cfg = get_module_level_config()
+    daemon_address = f"{__cfg['host']}:{__cfg['port']}"
+    return f"http://{daemon_address}/"
 
 
 def _fetch(url):
@@ -21,10 +23,10 @@ def _fetch(url):
 
 
 def get_list():
-    api_addr = f"{base_addr}{FRONTEND_API_ROOT}/list"
+    api_addr = f"{get_base_addr()}{FRONTEND_API_ROOT}/list"
     return _fetch(api_addr)
 
 
 def get_status_of(name):
-    api_addr = f"{base_addr}{FRONTEND_API_ROOT}/status/{name}"
+    api_addr = f"{get_base_addr()}{FRONTEND_API_ROOT}/status/{name}"
     return _fetch(api_addr)

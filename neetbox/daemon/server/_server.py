@@ -6,6 +6,7 @@
 
 import os
 
+import werkzeug
 from rich.console import Console
 
 console = Console()
@@ -28,7 +29,7 @@ else:
     from neetbox.daemon._protocol import *
 
 import setproctitle
-from flask import abort, json, request
+from flask import abort, json, request, send_from_directory
 from websocket_server import WebsocketServer
 
 __DAEMON_SHUTDOWN_IF_NO_UPLOAD_TIMEOUT_SEC = 60 * 60 * 12  # 12 Hours
@@ -37,7 +38,7 @@ __PROC_NAME = "NEETBOX SERVER"
 setproctitle.setproctitle(__PROC_NAME)
 
 
-def daemon_process(cfg, debug=False):
+def server_process(cfg, debug=False):
     # describe a client
     class Bridge:
         connected: bool
@@ -60,6 +61,7 @@ def daemon_process(cfg, debug=False):
 
     # ===============================================================
 
+    print()
     if debug:
         console.log(f"Running with debug, using APIFlask")
         from apiflask import APIFlask
@@ -285,6 +287,19 @@ def daemon_process(cfg, debug=False):
     #         ws_send(data, to=target_sid)
     #         return "ok"
 
+    front_end_dist_path = os.path.join(os.path.dirname(__file__), "../../frontend/dist")
+
+    @app.route("/")
+    def static_serve_root():
+        return send_from_directory(front_end_dist_path, "index.html")
+
+    @app.route("/<path:name>")
+    def static_serve(name):
+        try:
+            return send_from_directory(front_end_dist_path, name)
+        except werkzeug.exceptions.NotFound:
+            return send_from_directory(front_end_dist_path, "index.html")
+
     @app.route("/hello", methods=["GET"])
     def just_send_hello():
         return json.dumps({"hello": "hello"})
@@ -329,22 +344,12 @@ def daemon_process(cfg, debug=False):
         console.log(f"BYE.")
         return f"shutdown in {3} seconds."
 
-    def _count_down_thread():
-        global __COUNT_DOWN
-        while True:
-            __COUNT_DOWN -= 1
-            if not __COUNT_DOWN:
-                sys.exit(0)
-            time.sleep(1)
-
-    count_down_thread = Thread(target=_count_down_thread, daemon=True)
-    count_down_thread.start()
-
     console.log(f"launching websocket server...")
     ws_server.run_forever(threaded=True)
 
-    console.log(f"launching flask server...")
-    app.run(host="0.0.0.0", port=cfg["port"])
+    _port = cfg["port"]
+    console.log(f"visit server at http://localhost:{_port}")
+    app.run(host="0.0.0.0", port=_port)
 
 
 if __name__ == "__main__":
@@ -358,4 +363,4 @@ if __name__ == "__main__":
         "mode": "detached",
         "uploadInterval": 10,
     }
-    daemon_process(cfg, debug=True)
+    server_process(cfg, debug=True)

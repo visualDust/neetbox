@@ -14,7 +14,6 @@ from neetbox.daemon.client._update_thread import connect_daemon
 from neetbox.daemon.server.daemonable_process import DaemonableProcess
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
-from neetbox.pipeline import listen, watch
 
 logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
@@ -42,7 +41,7 @@ def __attach_daemon(daemon_config):
             )
             return False
 
-        logger.warn(
+        logger.log(
             f"No daemon running at {daemon_config['host']}:{daemon_config['port']}, trying to create daemon..."
         )
 
@@ -87,4 +86,4 @@ def _try_attach_daemon():
 
 action = NeetActionManager.register
 ws_subscribe = connection.ws_subscribe
-__all__ = ["watch", "listen", "action", "ws_subscribe", "NeetActionManager", "_try_attach_daemon"]
+__all__ = ["action", "ws_subscribe", "NeetActionManager", "_try_attach_daemon"]
