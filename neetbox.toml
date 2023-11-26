@@ -1,10 +1,13 @@
 name = "neetbox"
 
 [logging]
-level = "DEBUG"
+level = "INFO"
 
 [pipeline]
-updateInterval = 10
+updateInterval = 0.5
+
+[integrations]
+autoload = false
 
 [daemon]
 enable = true
@@ -13,10 +16,11 @@ port = 20202
 allowIpython = false
 mute = true
 mode = "detached"
-uploadInterval = 10
+uploadInterval = 0.5
 
 [integrations.environment.hardware]
-monit = "true"
+monit = true
+interval = 0.5
 
 [integrations.environment.platform]
-monit = "true"
+monit = true

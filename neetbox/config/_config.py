@@ -12,6 +12,7 @@ DEFAULT_WORKSPACE_CONFIG = {
         "updateInterval": 0.5,
     },
     "integrations": {
+        "autoload": True,
         "environment": {"hardware": {"monit": True, "interval": 0.5}, "platform": {"monit": True}},
     },
     "daemon": {

@@ -7,6 +7,7 @@
 import importlib
 import pkgutil
 
+from neetbox.config import get_module_level_config
 from neetbox.core import Registry
 from neetbox.integrations.engine import Engine as engine
 from neetbox.integrations.engine import get_installed_engines, get_supported_engines
@@ -28,6 +29,9 @@ def _iter_import_sub_modules():
 
 
 def _post_init_workspace():
+    _cfg = get_module_level_config()
+    if not _cfg["autoload"]:
+        return  # do not load if auto load is disabled
     _iter_import_sub_modules()
     for name, fun in _QUERY_AFTER_LOAD_WORKSPACE.items():
         fun()
