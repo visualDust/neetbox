@@ -35,10 +35,10 @@ class RawLog:
     skip_writers: Optional[list[str]] = None
 
     def write_by(self, writer: LogWriter) -> bool:
-        if self.skip_writers:  # if skipping any writers
-            for swr in self.skip_writers:
-                if isinstance(writer, RawLog.name2writerType[swr]):
-                    return False  # skip this writer, do not write
+        _skip_writers = (self.style.skip_writers or []) + (self.skip_writers or [])
+        for swr in _skip_writers:
+            if isinstance(writer, RawLog.name2writerType[swr]):
+                return False  # skip this writer, do not write
         writer.write(self)
         return False
 

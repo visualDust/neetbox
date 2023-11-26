@@ -6,6 +6,8 @@ from neetbox.config import default as default_config
 from neetbox.config import get_module_level_config
 from neetbox.config._config import update_with
 from neetbox.daemon import _try_attach_daemon
+from neetbox.logging.formatting import LogStyle
+from neetbox.logging.logger import Logger
 from neetbox.utils.framing import get_frame_module_traceback
 
 module = get_frame_module_traceback(1).__name__  # type: ignore
@@ -17,11 +19,8 @@ def init(path=None, load=False, **kwargs) -> bool:
         os.chdir(path=path)
     current_path = os.getcwd()
     config_file_path = os.path.join(current_path, config_file_name)
-
+    logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws"]))
     if not load:
-        from neetbox.logging.logger import Logger
-
-        logger = Logger("NEETBOX")  # builtin standalone logger
         if not os.path.isfile(config_file_path):  # config file not exist
             try:  # creating config file using default config
                 with open(config_file_path, "w+") as config_file:
@@ -41,26 +40,17 @@ def init(path=None, load=False, **kwargs) -> bool:
             return False
     else:  # if load only
         if not os.path.isfile(config_file_path):  # but config file not exist
-            from neetbox.logging.logger import Logger
-
-            logger = Logger("NEETBOX")  # builtin standalone logger
             logger.err(f"Config file {config_file_path} not exists.")
             return False
 
     try:  # do load only
         load_config = toml.load(config_file_path)
         update_with(load_config)
-        from neetbox.logging.logger import Logger
-
-        logger = Logger("NEETBOX")  # builtin standalone logger
         logger.ok(f"found workspace config from {config_file_path}.")
         _try_attach_daemon()  # try attach daemon
         logger.debug(f"running post init...")
         return True
     except Exception as e:
-        from neetbox.logging.logger import Logger
-
-        logger = Logger("NEETBOX")  # builtin standalone logger
         logger.err(f"failed to load config from {config_file_path}: {e}")
         raise e
 
@@ -70,11 +60,6 @@ def post_init():
 
     project_name = get_module_level_config()["name"]
     setproctitle.setproctitle(project_name)
-
-    from neetbox.daemon.client._client import connection
-
-    # post init ws
-    connection._init_ws()
 
 
 is_in_daemon_process = (

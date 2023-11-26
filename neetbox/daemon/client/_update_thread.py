@@ -12,8 +12,11 @@ from typing import Union
 from neetbox.config import get_module_level_config
 from neetbox.daemon.client._client import connection
 from neetbox.daemon.server._server import CLIENT_API_ROOT
-from neetbox.logging import logger
+from neetbox.logging.formatting import LogStyle
+from neetbox.logging.logger import Logger
 from neetbox.pipeline._signal_and_slot import _UPDATE_VALUE_DICT, SYSTEM_CHANNEL
+
+logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 __TIME_UNIT_SEC = 0.1
 

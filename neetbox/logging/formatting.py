@@ -21,6 +21,7 @@ class LogStyle:
     split_char_cmd = " > "
     split_char_identity = "/"
     split_char_txt = " | "
+    skip_writers: list[str] = None
 
     @classmethod
     def get_supported_colors(cls):

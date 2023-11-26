@@ -10,17 +10,32 @@ import websocket
 
 from neetbox.config import get_module_level_config
 from neetbox.daemon._protocol import *
-from neetbox.daemon.server._server import CLIENT_API_ROOT
-from neetbox.logging import logger
+from neetbox.logging.formatting import LogStyle
+from neetbox.logging.logger import Logger
 from neetbox.utils.mvc import Singleton
+
+logger = Logger(whom=None, style=LogStyle(skip_writers=["ws"]))
 
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.ERROR)
 
+_ws_initialized = False  # indicate whether websocket has been initialized
+
+
+def _load_http_client():
+    __local_http_client = httpx.Client(
+        proxies={
+            "http://": None,
+            "https://": None,
+        }
+    )  # type: ignore
+    return __local_http_client
+
 
 # singleton
 class ClientConn(metaclass=Singleton):
-    http: httpx.Client = None
+    # http client
+    http: httpx.Client = _load_http_client()
 
     __ws_client: websocket.WebSocketApp = None  # _websocket_client
     __ws_subscription = defaultdict(lambda: {})  # default to no subscribers
@@ -43,30 +58,22 @@ class ClientConn(metaclass=Singleton):
         ClientConn.__ws_subscription[event_type_name][name] = function
         logger.debug(f"ws: {name} subscribed to '{event_type_name}")
 
-    def __init__(self) -> None:
-        def __load_http_client():
-            __local_http_client = httpx.Client(
-                proxies={
-                    "http://": None,
-                    "https://": None,
-                }
-            )  # type: ignore
-            return __local_http_client
-
-        # create htrtp client
-        ClientConn.http = __load_http_client()
-
     def _init_ws():
+        global _ws_initialized
+        if _ws_initialized:
+            return
+
         cfg = get_module_level_config()
         _root_config = get_module_level_config("@")
         ClientConn._display_name = cfg["displayName"] or _root_config["name"]
 
         # ws server url
-        ClientConn.ws_server_addr = f"ws://{cfg['host']}:{cfg['port'] + 1}{CLIENT_API_ROOT}"
+        ClientConn.ws_server_addr = f"ws://{cfg['host']}:{cfg['port'] + 1}"
 
         # create websocket app
-        logger.log(f"creating websocket connection to {ClientConn.ws_server_addr}")
-
+        logger.log(
+            f"creating websocket connection to {ClientConn.ws_server_addr}", skip_writers=["ws"]
+        )
         ClientConn.wsApp = websocket.WebSocketApp(
             ClientConn.ws_server_addr,
             on_open=ClientConn.__on_ws_open,
@@ -75,12 +82,11 @@ class ClientConn(metaclass=Singleton):
             on_close=ClientConn.__on_ws_close,
         )
 
-        Thread(target=ClientConn.wsApp.run_forever, kwargs={"reconnect": True}, daemon=True).start()
+        Thread(
+            target=ClientConn.wsApp.run_forever, kwargs={"reconnect": True}, daemon=True
+        ).start()  # initialize and start ws thread
 
-        # assign self to websocket log writer
-        from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
-
-        _assign_connection_to_WebSocketLogWriter(ClientConn)
+        _ws_initialized = True
 
     def __on_ws_open(ws: websocket.WebSocketApp):
         _display_name = ClientConn._display_name
@@ -139,7 +145,6 @@ class ClientConn(metaclass=Singleton):
                 )
 
     def ws_send(event_type: str, payload, event_id=-1):
-        logger.debug(f"ws sending {payload}")
         if ClientConn.__ws_client:  # if ws client exist
             ClientConn.__ws_client.send(
                 json.dumps(
@@ -153,9 +158,12 @@ class ClientConn(metaclass=Singleton):
                 )
             )
         else:
-            logger.debug("ws client not exist, message dropped.")
+            if not _ws_initialized:  # ws not intialized
+                ClientConn._init_ws()
 
 
-# singleton
-ClientConn()  # __init__ setup http client only
+# assign this connection to websocket log writer
+from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
+
+_assign_connection_to_WebSocketLogWriter(ClientConn)
 connection = ClientConn

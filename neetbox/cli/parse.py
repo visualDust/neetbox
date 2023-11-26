@@ -3,13 +3,11 @@ import json
 import click
 
 import neetbox
-from neetbox.daemon.client._client_apis import get_status_of
+from neetbox.daemon.client._client_apis import *
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 
-_log_style = LogStyle()
-_log_style.with_datetime = False
-logger = Logger("NEETBOX", style=_log_style)  # builtin standalone logger
+logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 
 @click.group()
@@ -26,12 +24,23 @@ def main(ctx, verbose: bool):
     ctx.obj["verbose"] = verbose
 
 
-@main.command()
-def status():
+@main.command(name="list")
+def list_command():
+    """Show list of connected project names"""
+    try:
+        _list_json = get_list()
+        click.echo(json.dumps(_list_json))
+    except Exception as e:  # noqa
+        logger.log("Could not fetch data. Is there any project with NEETBOX running?")
+
+
+@main.command(name="status")
+@click.argument("name")
+def status_command(name):
     """Show the working tree status"""
     _stat_json = None
     try:
-        _stat_json = get_status_of()
+        _stat_json = get_status_of(name)
         click.echo(json.dumps(_stat_json))
     except Exception as e:  # noqa
         logger.log("Could not fetch data. Is there any project with NEETBOX running?")
@@ -44,36 +53,10 @@ def init(name: str):
     try:
         if neetbox.init(name=name):
             logger.skip_lines(2)
-            logger.banner("neetbox", font="ansishadow")
+            logger.console_banner("neetbox", font="ansishadow")
             logger.log("Welcome to NEETBOX")
     except Exception as e:
         logger.err(f"Failed to init here: {e}")
-
-
-@main.command()
-@click.option(
-    "--message",
-    "-m",
-    help="Use the given <msg> as the commit message",
-    metavar="message",
-    required=True,
-)
-@click.option(
-    "--delete",
-    "-d",
-    help="Delete files after archive done.",
-    default=False,
-    required=False,
-)
-def archive(message: str, delete: bool):
-    """Record changes to the repository"""
-    pass
-
-
-@main.command()
-def list():
-    """List all the resources connected to NEETBOX"""
-    pass
 
 
 if __name__ == "__main__":
