@@ -12,8 +12,11 @@ from neetbox.daemon.client._action_agent import _NeetActionManager as NeetAction
 from neetbox.daemon.client._client import connection
 from neetbox.daemon.client._update_thread import connect_daemon
 from neetbox.daemon.server.daemonable_process import DaemonableProcess
-from neetbox.logging import logger
+from neetbox.logging.formatting import LogStyle
+from neetbox.logging.logger import Logger
 from neetbox.pipeline import listen, watch
+
+logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 
 def __attach_daemon(daemon_config):
@@ -29,7 +32,7 @@ def __attach_daemon(daemon_config):
             )
             return False  # ignore if debugging in ipython
     _is_daemon_server_online = connect_daemon()  # try to connect daemon
-    logger.log("daemon connection status: " + str(_is_daemon_server_online))
+    logger.debug("daemon connection status: " + str(_is_daemon_server_online))
     if not _is_daemon_server_online:  # if no daemon online
         # check if possible to launch
         if daemon_config["host"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:

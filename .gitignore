@@ -1,6 +1,5 @@
 .vscode
 .pytest_cache
-neetbox.toml
 __pycache__/
 dist/
 poetry.lock

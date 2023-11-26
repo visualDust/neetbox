@@ -13,6 +13,7 @@ import psutil
 from GPUtil import GPU
 
 from neetbox.pipeline import watch
+from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils import pkg
 from neetbox.utils.framing import get_frame_module_traceback
 from neetbox.utils.mvc import Singleton
@@ -46,6 +47,7 @@ class _GPU_STAT(dict):
         _instance = _GPU_STAT()
         _instance["id"] = gpu.id
         _instance["name"] = gpu.name
+        _instance["load"] = gpu.load
         _instance["memoryUtil"] = gpu.memoryUtil
         _instance["memoryTotal"] = gpu.memoryTotal
         _instance["memoryFree"] = gpu.memoryFree
@@ -72,9 +74,18 @@ class _Hardware(dict, metaclass=Singleton):
         self["cpus"] = [_CPU_STAT() for _ in range(psutil.cpu_count(logical=True))]
         self["gpus"] = [_GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()]
         self._with_gpu = False if len(self["gpus"]) == 0 else True
-
+        ram_stat = psutil.virtual_memory()
+        self["ram"] = {
+            "total": ram_stat[0] / 1e9,
+            "available": ram_stat[1] / 1e9,
+            "used": ram_stat[3] / 1e9,
+            "free": ram_stat[4] / 1e9,
+        }
         # the environment shoube be imported in the __init__.py of the outer module. And the watcher thread should be auto started
         self.set_update_intervel()
+
+    def json(self):
+        return {"cpus": self["cpus"], "ram": self["ram"], "gpus": self["gpus"]}
 
     def set_update_intervel(self, intervel=1.0) -> None:
         if intervel < 1.0:
@@ -86,6 +97,7 @@ class _Hardware(dict, metaclass=Singleton):
 
             def watcher_fun(env_instance: _Hardware, do_update_gpus: bool):
                 while env_instance._do_watch:
+                    # update cpu usage
                     cpu_percent = psutil.cpu_percent(percpu=True)
                     cpu_freq = psutil.cpu_freq(percpu=True)
                     if len(cpu_freq) == 1:
@@ -96,6 +108,15 @@ class _Hardware(dict, metaclass=Singleton):
                             percent=cpu_percent[index],
                             freq=cpu_freq[index],
                         )
+                    # update memory usage
+                    ram_stat = psutil.virtual_memory()
+                    self["ram"] = {
+                        "total": ram_stat[0] / 1e9,
+                        "available": ram_stat[1] / 1e9,
+                        "used": ram_stat[3] / 1e9,
+                        "free": ram_stat[4] / 1e9,
+                    }
+                    # update gpu usage
                     if do_update_gpus:
                         env_instance["gpus"] = [_GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()]
                     env_instance[""] = psutil.cpu_stats()
@@ -110,6 +131,6 @@ hardware = _Hardware()
 
 
 # watch updates in daemon
-@watch(name="hardware")
+@watch(name="hardware", _channel=SYSTEM_CHANNEL)
 def update_env_stat():
-    return dict(hardware)
+    return hardware.json()

@@ -26,6 +26,9 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
+exclude = ["neetbox/frontend"]
+include = ["neetbox/frontend/dist"]
+
 # [[tool.poetry.source]]
 # name = "pypi"
 # url = "https://pypi.org/simple"

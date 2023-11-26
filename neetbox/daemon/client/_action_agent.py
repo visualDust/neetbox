@@ -5,18 +5,42 @@ from threading import Thread
 from typing import Callable, Optional
 
 from neetbox.core import Registry
+from neetbox.daemon._protocol import *
+from neetbox.daemon.client._client import connection
 from neetbox.logging import logger
 from neetbox.pipeline import watch
+from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils.mvc import Singleton
 
-
-class PackedAction:
-    def __init__(self, function: Callable, name=None, blocking=False, **kwargs):
+class PackedAction(Callable):
+    def __init__(
+        self,
+        function: Callable,
+        name: str = None,
+        description: str = None,
+        blocking: bool = False,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.function = function
         self.name = name if name else function.__name__
+        self.description = description
         self.argspec = inspect.getfullargspec(self.function)
         self.blocking = blocking
+
+    def get_props_dict(self):
+        # _arg_dict = {
+        #     _arg_name: self.argspec.annotations.get(_arg_name, None)
+        #     for _arg_name in self.argspec.args
+        # }
+        _arg_anno_dict = self.function.__annotations__
+        _args = self.argspec.args
+        __arg_dict = {_arg_name: _arg_anno_dict.get(_arg_name, any).__name__ for _arg_name in _args}
+        return {
+            "description": self.description,
+            "args": __arg_dict,
+            "blocking": self.blocking,
+        }
 
     def __call__(self, **argv):
         self.function(argv)  # ignore blocking
@@ -39,7 +63,7 @@ class _NeetActionManager(metaclass=Singleton):
     @staticmethod
     def get_action_dict():
         return {
-            name: _NeetActionManager.__ACTION_POOL[name].argspec.args
+            name: _NeetActionManager.__ACTION_POOL[name].get_props_dict()
             for name in _NeetActionManager.__ACTION_POOL.keys()
         }
 
@@ -52,37 +76,79 @@ class _NeetActionManager(metaclass=Singleton):
         logger.log(
             f"Agent runs function '{target_action.name}', blocking = {target_action.blocking}"
         )
-        if not target_action.blocking:  # non-blocking run in thread
 
-            def run_and_callback(target_action, params, callback):
+        def run_and_callback():
+            try:
                 returned_data = target_action.eval_call(params)
-                if callback:
-                    callback(returned_data)
+            except Exception as e:
+                returned_data = e
+            if callback:
+                callback(returned_data)
 
+        if not target_action.blocking:  # non-blocking run in thread
             Thread(
                 target=run_and_callback,
-                kwargs={"target_action": target_action, "params": params, "callback": callback},
                 daemon=True,
             ).start()
-            return None
+            return
         else:  # blocking run
-            return target_action.eval_call(params)
+            run_and_callback()
+            return
 
-    @watch(initiative=True)
+    @watch(name="__action", initiative=True, _channel=SYSTEM_CHANNEL)
     def _update_action_dict():
         # for status updater
         return _NeetActionManager.get_action_dict()
 
-    @staticmethod
-    def register(name: Optional[str] = None, blocking: bool = False):
-        return functools.partial(_NeetActionManager._register, name=name, blocking=blocking)
+    def register(name: Optional[str] = None, description: str = None, blocking: bool = False):
+        return functools.partial(
+            _NeetActionManager._register, name=name, description=description, blocking=blocking
+        )
 
-    @staticmethod
-    def _register(function: Callable, name: Optional[str] = None, blocking: bool = False):
-        packed = PackedAction(function=function, name=name, blocking=blocking)
-        _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, force=True)
+    def _register(
+        function: Callable, name: str = None, description: str = None, blocking: bool = False
+    ):
+        if (
+            description is None and function.__doc__ is not None
+        ):  # parse function doc as description
+            description = function.__doc__
+            if description:
+                _description_lines = []
+                for _line in description.split("\n"):
+                    if len(_line):  # remove empty lines
+                        _description_lines.append(_line)
+                # find shortest lstrip
+                min_lstrip = 99999
+                for _line in _description_lines[1:]:  # skip first line
+                    min_lstrip = min(len(_line) - len(_line.lstrip()), min_lstrip)
+                _parsed_description = _description_lines[0] + "\n"
+                for _line in _description_lines[1:]:
+                    _parsed_description += _line[min_lstrip:] + "\n"
+                description = _parsed_description
+
+        packed = PackedAction(
+            function=function, name=name, description=description, blocking=blocking
+        )
+        _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, overwrite=True)
         _NeetActionManager._update_action_dict()  # update for sync
         return function
+
+
+@connection.ws_subscribe(event_type_name="action")
+def __listen_to_actions(msg):
+    _payload = msg[PAYLOAD_NAME_KEY]
+    _event_id = msg[EVENT_ID_NAME_KEY]
+    _action_name = _payload["name"]
+    _action_args = _payload["args"]
+    _NeetActionManager.eval_call(
+        name=_action_name,
+        params=_action_args,
+        callback=lambda x: connection.ws_send(
+            event_type="action",
+            payload={"name": _action_name, ("error" if isinstance(x, Exception) else "result"): x},
+            event_id=_event_id,
+        ),
+    )
 
 
 # example

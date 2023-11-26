@@ -12,8 +12,11 @@ from typing import Union
 from neetbox.config import get_module_level_config
 from neetbox.daemon.client._client import connection
 from neetbox.daemon.server._server import CLIENT_API_ROOT
-from neetbox.logging import logger
-from neetbox.pipeline._signal_and_slot import _update_value_dict
+from neetbox.logging.formatting import LogStyle
+from neetbox.logging.logger import Logger
+from neetbox.pipeline._signal_and_slot import _UPDATE_VALUE_DICT, SYSTEM_CHANNEL
+
+logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 __TIME_UNIT_SEC = 0.1
 
@@ -33,7 +36,7 @@ def _upload_thread(daemon_config, base_addr, display_name):
         if _ctr % _upload_interval:  # not zero
             continue
         # dump status as json
-        _data = json.dumps(_update_value_dict, default=str)
+        _data = json.dumps(_UPDATE_VALUE_DICT[SYSTEM_CHANNEL], default=str)
         _headers = {"Content-Type": "application/json"}
         try:
             # upload data
