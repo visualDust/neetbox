@@ -6,7 +6,7 @@ import { Link, useLocation } from "react-router-dom";
 
 export default function ConsoleNavBar() {
   const location = useLocation();
-  const { isLoading, data, error } = useAPI("/list");
+  const { isLoading, data, error } = useAPI("/list", { refreshInterval: 5000 });
   return (
     <Nav
       renderWrapper={(args) => {

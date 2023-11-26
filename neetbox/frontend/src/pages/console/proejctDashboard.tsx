@@ -39,7 +39,7 @@ function ProjectDashboard() {
           Project "{projectName}"
         </Typography.Title>
         <Typography.Title heading={3}>Logs</Typography.Title>
-        <Logs projectName={projectName!} />
+        <Logs projectName={projectName} />
         {data.current ? (
           <>
             <Typography.Title heading={3}>Actions</Typography.Title>
