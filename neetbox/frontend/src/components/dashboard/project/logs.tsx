@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { styled } from "styled-components";
 import { LogData, useProjectLogs } from "../../../services/projects";
 import "./logs.css";
@@ -7,25 +7,49 @@ interface Props {
   projectName: string;
 }
 
-const LogsContainer = styled.div`
-  height: 40vh;
-  overflow-y: auto;
-`;
-
-export function Logs({ projectName }: Props) {
-  const logs = useProjectLogs(projectName);
+function AutoScrolling({
+  style,
+  children,
+}: React.PropsWithChildren<{ style: React.CSSProperties }>) {
   const containerRef = useRef<HTMLDivElement>(null!);
+  const [following, setFollowing] = useState(true);
+  const [renderingElement, setRenderingElement] = useState(children);
+  useEffect(() => {
+    const dom = containerRef.current;
+    if (dom) {
+      setFollowing(
+        Math.abs(dom.scrollHeight - dom.clientHeight - dom.scrollTop) < 5
+      );
+    }
+    setRenderingElement(children);
+  }, [children]);
   useLayoutEffect(() => {
-    containerRef.current.scroll({ top: containerRef.current.scrollHeight });
-  }, [logs]);
+    const dom = containerRef.current;
+    if (following) {
+      dom.scroll({ top: dom.scrollHeight });
+    }
+  }, [renderingElement, following]);
   return (
-    <LogsContainer ref={containerRef}>
-      {logs.map((x) => (
-        <LogItem key={x._id} data={x} />
-      ))}
-    </LogsContainer>
+    <div style={style} ref={containerRef}>
+      {renderingElement}
+    </div>
   );
 }
+
+export const Logs = React.memo(({ projectName }: Props) => {
+  const logs = useProjectLogs(projectName);
+  return (
+    <AutoScrolling
+      style={{ overflowY: "auto", height: "40vh" }}
+      children={<LogItems logs={logs} />}
+    />
+  );
+});
+
+const LogItems = ({ logs }: { logs: LogData[] }) => {
+  console.info("logitems render logs count", logs.length);
+  return logs.map((x) => <LogItem key={x._id} data={x} />);
+};
 
 const LogItemContainer = styled.div`
   margin-bottom: 5px;
@@ -63,7 +87,7 @@ function getColorFromWhom(whom: string) {
   return `hsl(${hue}, 70%, 80%)`;
 }
 
-function LogItem({ data }: { data: LogData }) {
+const LogItem = React.memo(({ data }: { data: LogData }) => {
   let { prefix } = data;
   if (!prefix) prefix = "LOG";
   return (
@@ -81,4 +105,4 @@ function LogItem({ data }: { data: LogData }) {
       {data.msg}
     </LogItemContainer>
   );
-}
+});

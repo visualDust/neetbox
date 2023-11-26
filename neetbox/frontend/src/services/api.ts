@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 
 export const API_BASEURL = "/web";
 export const WEBSOCKET_URL = import.meta.env.DEV
@@ -12,13 +11,5 @@ async function fetcher(url: string) {
 }
 
 export function useAPI(url: string, options?: { refreshInterval?: number }) {
-  useEffect(() => {
-    if (options?.refreshInterval) {
-      const timer = setInterval(() => {
-        mutate(url);
-      }, options.refreshInterval);
-      return () => clearInterval(timer);
-    }
-  }, [url, options?.refreshInterval]);
-  return useSWR(url, fetcher);
+  return useSWR(url, fetcher, options);
 }
