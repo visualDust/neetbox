@@ -11,7 +11,7 @@ from typing import Optional
 
 @dataclass
 class LogStyle:
-    color: Optional[str] = None
+    console_color: Optional[str] = None
     prefix: str = ""
     text_style: Optional[str] = None
     datetime_format: str = "%Y-%m-%d-%H:%M:%S"
@@ -59,7 +59,7 @@ class LogStyle:
         #     index_offset = int(random() * len(colors) / 2)
         # self.back = colors[(split_index + index_offset) % len(colors)]
         # self.fore = colors[(split_index - index_offset) % len(colors)]
-        self.color = colors[int(random() * len(colors))]
+        self.console_color = colors[int(random() * len(colors))]
         return self
 
 
@@ -68,8 +68,8 @@ DEFAULT_STYLE = LogStyle()
 
 def styled_text(text, style: LogStyle):
     attributes = []
-    if style.color:
-        attributes.append(style.color)
+    if style.console_color:
+        attributes.append(style.console_color)
     if style.text_style:
         attributes.append(style.text_style)
     render_stack = []

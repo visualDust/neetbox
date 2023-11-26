@@ -32,7 +32,7 @@ def __attach_daemon(daemon_config):
             )
             return False  # ignore if debugging in ipython
     _is_daemon_server_online = connect_daemon()  # try to connect daemon
-    logger.log("daemon connection status: " + str(_is_daemon_server_online))
+    logger.debug("daemon connection status: " + str(_is_daemon_server_online))
     if not _is_daemon_server_online:  # if no daemon online
         # check if possible to launch
         if daemon_config["host"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:

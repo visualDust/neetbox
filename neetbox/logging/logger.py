@@ -62,6 +62,8 @@ class Logger:
 
     def __init__(self, whom=None, style: Optional[LogStyle] = None):
         self.whom: Any = whom
+        if style and style.console_color is None:
+            style.randcolor()
         self.style: Optional[LogStyle] = style
         # default writing to console and ws
         self.console_writer = consoleLogWriter
