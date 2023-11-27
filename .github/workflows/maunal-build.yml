@@ -34,6 +34,6 @@ jobs:
       - name: Build and publish to pypi
         uses: JRubics/poetry-publish@v1.17
         with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
+          pypi_token: ${{ secrets.TEST_PYPI_TOKEN }}
           repository_name: "neetbox"
           repository_url: "https://test.pypi.org/legacy/"
