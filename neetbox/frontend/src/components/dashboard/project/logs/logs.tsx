@@ -17,7 +17,7 @@ function AutoScrolling({
     const dom = containerRef.current;
     if (dom) {
       setFollowing(
-        Math.abs(dom.scrollHeight - dom.clientHeight - dom.scrollTop) < 5
+        Math.abs(dom.scrollHeight - dom.clientHeight - dom.scrollTop) < 30,
       );
     }
     setRenderingElement(children);

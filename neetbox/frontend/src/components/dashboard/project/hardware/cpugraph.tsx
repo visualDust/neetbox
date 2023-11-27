@@ -10,20 +10,34 @@ export const CPUGraph = ({
   const cpus = hardwareData[0].value.cpus;
   const initialOption = () => {
     return {
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
       animation: false,
       tooltip: {
         trigger: "axis",
       },
-      legend: {
-        data: cpus.map((cpu) => `CPU${cpu.id}`),
+      grid: {
+        top: 30,
+        bottom: 30,
       },
+      title: {
+        text: `CPU Load (${cpus.length} threads)`,
+        left: "center",
+        textStyle: {
+          fontSize: 14,
+        },
+      },
+      // legend: {
+      //   data: cpus.map((cpu) => `CPU${cpu.id}`),
+      // },
       xAxis: {
         type: "time",
       },
       yAxis: {
         type: "value",
         max: cpus.length * 100,
+        axisLabel: {
+          formatter: (x) => x + " %",
+        },
       },
       series: [],
     } as echarts.EChartsOption;
@@ -56,7 +70,7 @@ export const CPUGraph = ({
     <ECharts
       initialOption={initialOption}
       updatingOption={updatingOption}
-      style={{ height: "300px" }}
+      style={{ height: "200px" }}
     />
   );
 };

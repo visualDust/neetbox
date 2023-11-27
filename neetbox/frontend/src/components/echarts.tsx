@@ -26,9 +26,10 @@ export const ECharts = (props: EChartsProps) => {
       const chart = echartsModule.init(
         chartContainerRef.current,
         darkMode ? "dark" : null,
+        // { renderer: "svg" },
       );
 
-      chart.setOption(props.initialOption());
+      chart.setOption(props.initialOption(), false, true);
       chart.setOption(props.updatingOption);
       chartRef.current = chart;
 
