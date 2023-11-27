@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Manually Build Python Package
+name: Manually Build and Publish to TEST.PyPi
 
 on:
   workflow_dispatch:
