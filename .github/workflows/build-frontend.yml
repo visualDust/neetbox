@@ -1,6 +1,13 @@
 name: Frontend Build & Lint
 
-on: ["pull_request", "push"]
+on:
+  push:
+    paths:
+      - 'neetbox/frontend/**'
+  pull_request:
+    paths:
+      - 'neetbox/frontend/**'
+
 
 jobs:
   build:
