@@ -10,7 +10,11 @@ export function consoleRoutes(): RouteObject {
     path: "console",
     element: <Console />,
     children: [
-      { path: "project/:projectName", element: <Dashboard />, errorElement: <div>Error</div> },
+      {
+        path: "project/:projectName",
+        element: <Dashboard />,
+        errorElement: <div>Error</div>,
+      },
       { path: "overview", element: <Overview /> },
     ],
   };
@@ -22,7 +26,7 @@ export default class Console extends Component {
     return (
       <Layout>
         <Sider style={{ background: "var(--semi-color-fill-2)" }}>
-          <ConsoleNavBar></ConsoleNavBar>
+          <ConsoleNavBar />
         </Sider>
         <Content>
           <Outlet />

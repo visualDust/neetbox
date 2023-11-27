@@ -24,7 +24,7 @@ export default function AppLayout() {
           <Space>
             <SwitchColorMode></SwitchColorMode>
             <Link to="/login">
-              <Button>Login</Button>
+              <Button disabled>Login</Button>
             </Link>
           </Space>
         </div>

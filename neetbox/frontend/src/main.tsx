@@ -4,7 +4,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import AppLayout, { Home } from "./App";
 import LoginPage from "./pages/login";
 import "./index.css";
-import { consoleRoutes } from "./pages/console";
+import Console, { consoleRoutes } from "./pages/console";
 import { startBackgroundTasks } from "./services/projects";
 
 const router = createBrowserRouter([
@@ -14,7 +14,8 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <Home />,
+        // element: <Home />,
+        element: <Console />,
       },
       consoleRoutes(),
       {
