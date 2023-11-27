@@ -21,8 +21,14 @@ export const GPUGraph = ({
         top: 30,
         bottom: 30,
       },
+      title: {
+        text: `GPU${gpuId}: ${gpus[gpuId].name}`,
+        textStyle: {
+          fontSize: 12,
+        },
+      },
       legend: {
-        data: [`GPU${gpuId} Load`, `GPU${gpuId} Memory`],
+        data: [`Load`, `Memory`],
       },
       xAxis: {
         type: "time",
@@ -54,7 +60,7 @@ export const GPUGraph = ({
     const newOption = {
       series: [
         {
-          name: `GPU${gpuId} Load`,
+          name: `Load`,
           type: "line",
           areaStyle: null,
           symbol: null,
@@ -64,7 +70,7 @@ export const GPUGraph = ({
           ]),
         },
         {
-          name: `GPU${gpuId} Memory`,
+          name: `Memory`,
           type: "line",
           areaStyle: {},
           symbol: null,

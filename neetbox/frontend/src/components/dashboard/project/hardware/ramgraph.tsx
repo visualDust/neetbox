@@ -14,6 +14,12 @@ export const RAMGraph = ({
       tooltip: {
         trigger: "axis",
       },
+      title: {
+        text: `RAM`,
+        textStyle: {
+          fontSize: 12,
+        },
+      },
       grid: {
         top: 30,
         bottom: 30,
@@ -27,7 +33,7 @@ export const RAMGraph = ({
       yAxis: [
         {
           type: "value",
-          position: 'right',
+          position: "right",
           axisLabel: {
             formatter: (x) => x.toFixed(1) + " GB",
           },
@@ -47,10 +53,7 @@ export const RAMGraph = ({
           type: "line",
           areaStyle: {},
           symbol: null,
-          data: hardwareData.map((x) => [
-            x.timestamp * 1000,
-            x.value.ram.used,
-          ]),
+          data: hardwareData.map((x) => [x.timestamp * 1000, x.value.ram.used]),
         },
       ],
       xAxis: {
