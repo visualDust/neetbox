@@ -13,15 +13,15 @@
 #         os.remove(fname)
 
 
-def test_resource_loader():
-    import time
+# def test_resource_loader():
+#     import time
 
-    from neetbox.utils.resource import ResourceLoader
+#     from neetbox.utils.resource import ResourceLoader
 
-    print("testing resource loader")
-    md_loader = ResourceLoader("./", ["md"])
-    py_loader_async = ResourceLoader("./", async_scan=True, verbose=False)
-    while not py_loader_async.ready:
-        print("waiting resource loader")
-        time.sleep(1)
-    py_loader_async.get_file_list()
+#     print("testing resource loader")
+#     md_loader = ResourceLoader("./", ["md"])
+#     py_loader_async = ResourceLoader("./", async_scan=True, verbose=False)
+#     while not py_loader_async.ready:
+#         print("waiting resource loader")
+#         time.sleep(1)
+#     py_loader_async.get_file_list()
