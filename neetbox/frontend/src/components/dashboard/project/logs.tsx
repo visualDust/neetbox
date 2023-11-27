@@ -1,5 +1,4 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { styled } from "styled-components";
 import { LogData, useProjectLogs } from "../../../services/projects";
 import "./logs.css";
 
@@ -51,34 +50,6 @@ const LogItems = ({ logs }: { logs: LogData[] }) => {
   return logs.map((x) => <LogItem key={x._id} data={x} />);
 };
 
-const LogItemContainer = styled.div`
-  margin-bottom: 5px;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 13px;
-
-  .log-tag {
-    display: inline-block;
-    background-color: #ddd;
-    padding: 0 3px;
-    border-radius: 5px;
-  }
-  .log-prefix-info {
-    background-color: #bbcffc;
-  }
-  .log-prefix-ok {
-    background-color: #a2ffae;
-  }
-  .log-prefix-warning {
-    background-color: #ede483;
-  }
-  .log-prefix-debug {
-    background-color: #c483ed;
-  }
-  .log-prefix-error {
-    background-color: #ffa2a2;
-  }
-`;
-
 function getColorFromWhom(whom: string) {
   const hue =
     50 +
@@ -87,14 +58,14 @@ function getColorFromWhom(whom: string) {
       .reduce((prev, char) => ((prev * 11) % 360) + char.charCodeAt(0), 0) *
       233) %
       200);
-  return `hsl(${hue}, 70%, 80%)`;
+  return `hsl(${hue}, 70%, var(--log-tag-bg-l))`;
 }
 
 const LogItem = React.memo(({ data }: { data: LogData }) => {
   let { prefix } = data;
   if (!prefix) prefix = "log";
   return (
-    <LogItemContainer>
+    <div className="log-item">
       <span className="log-tag log-datetime">{data.datetime}</span>{" "}
       <span className={`log-tag log-prefix log-prefix-${prefix}`}>
         {prefix}
@@ -106,6 +77,6 @@ const LogItem = React.memo(({ data }: { data: LogData }) => {
         {data.whom}
       </span>{" "}
       {data.msg}
-    </LogItemContainer>
+    </div>
   );
 });
