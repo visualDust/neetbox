@@ -27,6 +27,7 @@ classifiers = [
 ]
 
 exclude = ["neetbox/frontend"]
+include = ["neetbox/frontend_dist"]
 
 # [[tool.poetry.source]]
 # name = "pypi"
