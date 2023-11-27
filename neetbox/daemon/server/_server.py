@@ -311,12 +311,10 @@ def server_process(cfg, debug=False):
 
     @app.route(f"{CLIENT_API_ROOT}/sync/<name>", methods=["POST"])
     def sync_status_of(name):  # client side function
-        print("on sync")
         _json_data = request.get_json()
         if name not in __BRIDGES:  # Client not found
             __BRIDGES[name] = Bridge(name=name)  # Create from sync request
         __BRIDGES[name].status = _json_data
-        print("on done")
 
         return "ok"
 
