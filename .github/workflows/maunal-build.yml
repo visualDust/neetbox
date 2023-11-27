@@ -32,4 +32,4 @@ jobs:
       - run: yarn build
         working-directory: neetbox/frontend
       - name: Build and publish to pypi
-        run: ls ${{github.workspace}}
+        run: ls ${{github.workspace}}/neetbox
