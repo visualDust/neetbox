@@ -12,7 +12,7 @@ export const ECharts = (props: EChartsProps) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef<echarts.ECharts>(null!);
   const [echartsModule, setEchartsModule] = useState<typeof echarts | null>(
-    null
+    null,
   );
 
   useEffect(() => {

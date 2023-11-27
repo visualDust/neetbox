@@ -1,13 +1,12 @@
 import { useParams } from "react-router-dom";
 import { createContext, useMemo } from "react";
-import * as echarts from "echarts";
 import { Typography } from "@douyinfe/semi-ui";
 import PlatformProps from "../../components/dashboard/project/platformProps";
-import { ECharts } from "../../components/echarts";
-import { ProjectStatus, useProjectStatus } from "../../services/projects";
-import { Logs } from "../../components/dashboard/project/logs";
+import { useProjectStatus } from "../../services/projects";
+import { Logs } from "../../components/dashboard/project/logs/logs";
 import { Actions } from "../../components/dashboard/project/actions";
 import Loading from "../../components/loading";
+import { Hardware } from "../../components/dashboard/project/hardware";
 
 export const ProjectContext = createContext<{ projectName: string } | null>(
   null,
@@ -56,77 +55,3 @@ function ProjectDashboard() {
     </ProjectContext.Provider>
   );
 }
-
-function Hardware({
-  hardwareData,
-}: {
-  hardwareData: Array<ProjectStatus["hardware"]>;
-}) {
-  return (
-    <div>
-      {hardwareData.every((x) => x.value.cpus) ? (
-        <CPUGraph hardwareData={hardwareData} />
-      ) : (
-        <Typography.Text>No CPU Info</Typography.Text>
-      )}
-    </div>
-  );
-}
-
-const CPUGraph = ({
-  hardwareData,
-}: {
-  hardwareData: Array<ProjectStatus["hardware"]>;
-}) => {
-  const cpus = hardwareData[0].value.cpus;
-  const initialOption = () => {
-    return {
-      animation: false,
-      tooltip: {
-        trigger: "axis",
-      },
-      legend: {
-        data: cpus.map((cpu) => `CPU${cpu.id}`),
-      },
-      xAxis: {
-        type: "time",
-      },
-      yAxis: {
-        type: "value",
-        max: cpus.length * 100,
-      },
-      series: [],
-    } as echarts.EChartsOption;
-  };
-
-  const updatingOption = useMemo(() => {
-    const latestTime = hardwareData[hardwareData.length - 1].timestamp;
-    const newOption = {
-      series: cpus.map((cpu) => ({
-        name: `CPU${cpu.id}`,
-        type: "line",
-        stack: "cpu",
-        areaStyle: {},
-        symbol: null,
-        data: hardwareData.map((x) => [
-          x.timestamp * 1000,
-          x.value.cpus[cpu.id].percent,
-        ]),
-      })),
-      xAxis: {
-        min: (latestTime - 60) * 1000,
-        max: latestTime * 1000,
-        data: new Array(10).fill(0).map((x, i) => i),
-      },
-    } as echarts.EChartsOption;
-    return newOption;
-  }, [hardwareData]);
-
-  return (
-    <ECharts
-      initialOption={initialOption}
-      updatingOption={updatingOption}
-      style={{ height: "300px" }}
-    />
-  );
-};
