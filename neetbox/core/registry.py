@@ -27,6 +27,16 @@ class _RegEndpoint:
         return f"{self.what} with tags: {self.tags}"
 
 
+def _tags_match(search_tags, in_tags) -> bool:
+    # check if all tags in f_tags are listed in s_tags
+    if type(search_tags) is not list:
+        search_tags = [search_tags]
+    for _t in search_tags:
+        if _t not in in_tags:
+            return False
+    return True
+
+
 class Registry(dict):
 
     """Register Helper Class
@@ -39,6 +49,7 @@ class Registry(dict):
 
     def __new__(cls, name: str) -> "Registry":
         assert is_pure_ansi(name), "Registry name should not contain non-ansi char."
+        name = name.replace(" ", "-")
         if name in cls._registry_pool:
             return cls._registry_pool[name]
         # logger.log(f"Creating Registry for '{name}'")
@@ -56,7 +67,7 @@ class Registry(dict):
         self,
         what: Any,
         name: Optional[str] = None,
-        force: bool = True,
+        overwrite: bool = True,
         tags: Optional[Union[str, Sequence[str]]] = None,
     ):
         # if not (inspect.isfunction(what) or inspect.isclass(what)):
@@ -66,12 +77,12 @@ class Registry(dict):
             tags = [tags]
         _endp = _RegEndpoint(what, tags)
         if name in self.keys():
-            if not force:
+            if not overwrite:
                 logger.warn(
-                    f"{name} already exists in Registry:{self.name}. If you want to overwrite, try to register with 'force=True'"
+                    f"{name} already exists in Registry:{self.name}. If you want to overwrite, try to register with 'overwrite=True'"
                 )
             else:
-                logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
+                # logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
                 self[name] = _endp
         else:
             self[name] = _endp
@@ -81,10 +92,10 @@ class Registry(dict):
         self,
         *,
         name: Optional[str] = None,
-        force: bool = True,
+        overwrite: bool = True,
         tags: Optional[Union[str, Sequence[str]]] = None,
     ):
-        return functools.partial(self._register, name=name, force=force, tags=tags)
+        return functools.partial(self._register, name=name, overwrite=overwrite, tags=tags)
 
     @classmethod
     def find(
@@ -108,17 +119,16 @@ class Registry(dict):
                     results.append((name, reg[name]))
 
         # filter tags
-        if type(tags) is str:
+        if type(tags) is not list:
             tags = [tags]
 
-        def _tags_match(f_tags, s_tags) -> bool:
-            # check if all tags in f_tags are listed in s_tags
-            for _t in f_tags:
-                if _t not in s_tags:
-                    return False
-            return True
-
         results = {_name: _endp.what for _name, _endp in results if _tags_match(tags, _endp.tags)}
+        return results
+
+    def filter(self, tags: Optional[Union[str, Sequence[str]]] = None):
+        results = {
+            _name: _endp.what for _name, _endp in self._items() if _tags_match(tags, _endp.tags)
+        }
         return results
 
     def __getitem__(self, __key: str) -> Any:
@@ -126,6 +136,18 @@ class Registry(dict):
         if type(_v) is _RegEndpoint:
             _v = _v.what
         return _v
+
+    def get(self, key: str, **kwargs):
+        if key in self.__dict__:
+            _v = self.__dict__[key]
+            if type(_v) is _RegEndpoint:
+                _v = _v.what
+            return _v
+        else:
+            if "default" in kwargs:
+                return kwargs["default"]
+            else:
+                raise RuntimeError(f"key {key} not found")
 
     def __setitem__(self, k, v) -> None:
         assert is_pure_ansi(k), "Only ANSI chars are allowed for registering things."
@@ -153,6 +175,12 @@ class Registry(dict):
         _legal_items = [_item for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
         if _real_type:
             _legal_items = [(_k, _v.what) for _k, _v in _legal_items if type(_v) is _RegEndpoint]
+        return _legal_items
+
+    def _items(self, _real_type=True):
+        _legal_items = [_item for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
+        if _real_type:
+            _legal_items = [(_k, _v) for _k, _v in _legal_items if type(_v) is _RegEndpoint]
         return _legal_items
 
     def pop(self, *args):

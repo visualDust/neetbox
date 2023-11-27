@@ -12,12 +12,15 @@
 #     for fname, furl in urls.items():
 #         os.remove(fname)
 
+
 # def test_resource_loader():
-#     from neetbox.integrations.resource import ResourceLoader
 #     import time
+
+#     from neetbox.utils.resource import ResourceLoader
+
 #     print("testing resource loader")
-#     md_loader = ResourceLoader('./',['md'])
-#     py_loader_async = ResourceLoader('./', async_scan=True,verbose=True)
+#     md_loader = ResourceLoader("./", ["md"])
+#     py_loader_async = ResourceLoader("./", async_scan=True, verbose=False)
 #     while not py_loader_async.ready:
 #         print("waiting resource loader")
 #         time.sleep(1)

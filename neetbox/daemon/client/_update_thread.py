@@ -12,28 +12,21 @@ from typing import Union
 from neetbox.config import get_module_level_config
 from neetbox.daemon.client._client import connection
 from neetbox.daemon.server._server import CLIENT_API_ROOT
-from neetbox.logging import logger
-from neetbox.pipeline._signal_and_slot import _update_value_dict
+from neetbox.logging.formatting import LogStyle
+from neetbox.logging.logger import Logger
+from neetbox.pipeline._signal_and_slot import _UPDATE_VALUE_DICT, SYSTEM_CHANNEL, watch
 
-__TIME_UNIT_SEC = 0.1
-
-__upload_thread: Union[Thread, None] = None
+logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 
-def _upload_thread(daemon_config, base_addr, display_name):
-    _ctr = 0
+def _add_upload_thread_to_watch(daemon_config, base_addr, display_name):
     _api_name = "sync"
     _api_addr = f"{base_addr}{CLIENT_API_ROOT}/{_api_name}/{display_name}"
-    _disconnect_flag = False
-    _disconnect_retries = 10
-    while True:
-        _ctr = (_ctr + 1) % 99999999
-        _upload_interval = daemon_config["uploadInterval"]
-        time.sleep(__TIME_UNIT_SEC)
-        if _ctr % _upload_interval:  # not zero
-            continue
+
+    @watch(interval=daemon_config["uploadInterval"], overwrite=True)
+    def upload_via_http():
         # dump status as json
-        _data = json.dumps(_update_value_dict, default=str)
+        _data = json.dumps(_UPDATE_VALUE_DICT[SYSTEM_CHANNEL], default=str)
         _headers = {"Content-Type": "application/json"}
         try:
             # upload data
@@ -41,25 +34,7 @@ def _upload_thread(daemon_config, base_addr, display_name):
             if resp.is_error:  # upload failed
                 raise IOError(f"Failed to upload data to daemon. ({resp.status_code})")
         except Exception as e:
-            if _disconnect_flag:  # already in retries
-                _disconnect_retries -= 1
-                if not _disconnect_retries:  # retry count down exceeded
-                    logger.err(
-                        "Failed to reconnect to daemon after {10} retries, Trying to launch new daemon..."
-                    )
-                    from neetbox.daemon import _try_attach_daemon
-
-                    _try_attach_daemon()
-                    time.sleep(__TIME_UNIT_SEC)
-                continue
             logger.warn(f"Failed to upload data to daemon cause {e}. Waiting for reconnect...")
-            _disconnect_flag = True
-        else:
-            if not _disconnect_flag:
-                continue
-            logger.ok("Successfully reconnected to daemon.")
-            _disconnect_flag = False
-            _disconnect_retries = 10
 
 
 def connect_daemon(cfg=None, launch_upload_thread=True):
@@ -88,11 +63,8 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
         return False
 
     if launch_upload_thread:
-        global __upload_thread
-        if __upload_thread is None or not __upload_thread.is_alive():
-            __upload_thread = Thread(
-                target=_upload_thread, args=[cfg, _base_addr, _display_name], daemon=True
-            )
-            __upload_thread.start()
+        _add_upload_thread_to_watch(
+            daemon_config=cfg, base_addr=_base_addr, display_name=_display_name
+        )
 
     return True

@@ -5,6 +5,10 @@ on: ["pull_request","push"]
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 3
+      matrix:
+        python-version: ["3.9","3.10","3.11"]
     steps:
       #----------------------------------------------
       #       check-out repo and set-up python
@@ -15,7 +19,7 @@ jobs:
         id: setup-python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: ${{ matrix.python-version }}
       #----------------------------------------------
       #  -----  install & configure poetry  -----
       #----------------------------------------------

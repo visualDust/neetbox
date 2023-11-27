@@ -3,6 +3,7 @@ import io
 import json
 import os
 import pathlib
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Callable, Iterable, Optional, Union
@@ -13,8 +14,8 @@ from neetbox.logging.formatting import LogStyle, colored_text, styled_text
 from neetbox.utils import formatting
 
 
-# Log writer interface
-class LogWriter:
+class LogWriter(ABC):
+    @abstractmethod
     def write(self, raw_log):
         pass
 
@@ -35,10 +36,10 @@ class RawLog:
     skip_writers: Optional[list[str]] = None
 
     def write_by(self, writer: LogWriter) -> bool:
-        if self.skip_writers:  # if skipping any writers
-            for swr in self.skip_writers:
-                if isinstance(writer, RawLog.name2writerType[swr]):
-                    return False  # skip this writer, do not write
+        _skip_writers = (self.style.skip_writers or []) + (self.skip_writers or [])
+        for swr in _skip_writers:
+            if isinstance(writer, RawLog.name2writerType[swr]):
+                return False  # skip this writer, do not write
         writer.write(self)
         return False
 
@@ -47,7 +48,9 @@ class RawLog:
         # prefix
         _prefix = self.prefix or _default_style.prefix
         # composing datetime
-        _with_datetime = self.with_datetime or _default_style.with_datetime
+        _with_datetime = (
+            _default_style.with_datetime if self.with_datetime is None else self.with_datetime
+        )
         _datetime = ""
         if _with_datetime:
             _datetime_fmt = self.datetime_format or _default_style.datetime_format
@@ -55,7 +58,9 @@ class RawLog:
 
         # composing identifier
         _whom = ""
-        _with_identifier = self.with_identifier or _default_style.with_identifier
+        _with_identifier = (
+            _default_style.with_identifier if self.with_identifier is None else self.with_identifier
+        )
         if _with_identifier:
             _caller_identity = self.caller_identity
             _whom = str(self.whom)  # check identity

@@ -11,6 +11,7 @@ name: Upload Python Package
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -20,7 +21,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "yarn"
+          cache-dependency-path: "neetbox/frontend/yarn.lock"
+      - name: setup yarn
+        run: corepack enable
+        working-directory: neetbox/frontend
+      - run: yarn install --frozen-lockfile
+        working-directory: neetbox/frontend
+      - run: yarn build
+        working-directory: neetbox/frontend
       - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v1.16
+        uses: JRubics/poetry-publish@v1.17
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}

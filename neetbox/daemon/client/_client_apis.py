@@ -6,27 +6,27 @@
 
 
 from neetbox.config import get_module_level_config
+from neetbox.daemon._protocol import *
 from neetbox.daemon.client._client import connection
-from neetbox.logging import logger
-from neetbox.utils import pkg
-from neetbox.utils.framing import get_frame_module_traceback
-
-module_name = get_frame_module_traceback().__name__  # type: ignore
-assert pkg.is_installed(
-    "httpx", try_install_if_not=True
-), f"{module_name} requires httpx which is not installed"
-
-logger = logger("NEETBOX DAEMON API")
-
-__cfg = get_module_level_config()
-daemon_address = f"{__cfg['host']}:{__cfg['port']}"
-base_addr = f"http://{daemon_address}"
 
 
-def get_status_of(name=None):
-    name = name or ""
-    api_addr = f"{base_addr}/web/list"
-    logger.info(f"Fetching from {api_addr}")
-    r = connection.http.get(api_addr)
+def get_base_addr():
+    __cfg = get_module_level_config()
+    daemon_address = f"{__cfg['host']}:{__cfg['port']}"
+    return f"http://{daemon_address}/"
+
+
+def _fetch(url):
+    r = connection.http.get(url)
     _data = r.json()
     return _data
+
+
+def get_list():
+    api_addr = f"{get_base_addr()}{FRONTEND_API_ROOT}/list"
+    return _fetch(api_addr)
+
+
+def get_status_of(name):
+    api_addr = f"{get_base_addr()}{FRONTEND_API_ROOT}/status/{name}"
+    return _fetch(api_addr)

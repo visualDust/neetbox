@@ -14,6 +14,7 @@ from typing import Any, Optional, Union
 from rich import print as rprint
 from rich.panel import Panel
 
+from neetbox.config import get_module_level_config
 from neetbox.logging._writer import (
     FileLogWriter,
     JsonLogWriter,
@@ -55,18 +56,40 @@ class LogLevel(Enum):
 _GLOBAL_LOG_LEVEL = LogLevel.ALL
 
 
+def set_log_level(level: LogLevel):
+    if type(level) is str:
+        level = {
+            "ALL": LogLevel.ALL,
+            "DEBUG": LogLevel.DEBUG,
+            "INFO": LogLevel.INFO,
+            "WARNING": LogLevel.WARNING,
+            "ERROR": LogLevel.ERROR,
+        }[level]
+    if type(level) is int:
+        assert level >= 0 and level <= 3
+        level = LogLevel(level)
+    global _GLOBAL_LOG_LEVEL
+    _GLOBAL_LOG_LEVEL = level
+
+
 class Logger:
     # global static
     __WHOM_2_LOGGER = {}
     __WHOM_2_STYLE = {}
 
-    def __init__(self, whom, style: Optional[LogStyle] = None):
+    def __init__(self, whom=None, style: Optional[LogStyle] = None):
         self.whom: Any = whom
+        if style and style.console_color is None:
+            style.randcolor()
         self.style: Optional[LogStyle] = style
         # default writing to console and ws
         self.console_writer = consoleLogWriter
         self.ws_writer = webSocketLogWriter
         self.file_writer = None
+
+        _cfg = get_module_level_config()
+        self.set_log_dir(_cfg["logdir"])
+        set_log_level(_cfg["level"])
 
     def __call__(self, whom: Any = None, style: Optional[LogStyle] = None) -> "Logger":
         if whom is None:
@@ -83,7 +106,7 @@ class Logger:
         datetime_format: Optional[str] = None,
         with_identifier: Optional[bool] = None,
         with_datetime: Optional[bool] = None,
-        skip_writers: Optional[Union[list[str], str]] = None,
+        skip_writers: list[str] = [],
         traceback=2,
     ):
         _caller_identity = get_caller_identity_traceback(traceback=traceback)
@@ -123,61 +146,152 @@ class Logger:
 
         return self
 
-    def ok(self, *message, flag="OK"):
+    def ok(
+        self,
+        *content,
+        datetime_format: Optional[str] = None,
+        with_identifier: Optional[bool] = None,
+        with_datetime: Optional[bool] = None,
+        skip_writers: list[str] = [],
+    ):
         if _GLOBAL_LOG_LEVEL >= LogLevel.INFO:
             self.log(
-                *message,
-                prefix=f"[{colored_text(flag, 'green')}]",
-                skip_writers=["file"],
+                *content,
+                prefix=f"[{colored_text('ok', 'green')}]",
+                skip_writers=["file", "ws"] + skip_writers,
                 traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
             )
-            self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
+            self.log(
+                *content,
+                prefix="ok",
+                skip_writers=["stdout"] + skip_writers,
+                traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
+            )
         return self
 
-    def debug(self, *message, flag="DEBUG"):
+    def debug(
+        self,
+        *content,
+        datetime_format: Optional[str] = None,
+        with_identifier: Optional[bool] = None,
+        with_datetime: Optional[bool] = None,
+        skip_writers: list[str] = [],
+    ):
         if _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
             self.log(
-                *message,
-                prefix=f"[{colored_text(flag, 'cyan')}]",
-                skip_writers=["file"],
+                *content,
+                prefix=f"[{colored_text('debug', 'cyan')}]",
+                skip_writers=["file", "ws"] + skip_writers,
                 traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
             )
-            self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
+            self.log(
+                *content,
+                prefix="debug",
+                skip_writers=["stdout"] + skip_writers,
+                traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
+            )
         return self
 
-    def info(self, *message, flag="INFO"):
+    def info(
+        self,
+        *message,
+        datetime_format: Optional[str] = None,
+        with_identifier: Optional[bool] = None,
+        with_datetime: Optional[bool] = None,
+        skip_writers: list[str] = [],
+    ):
         if _GLOBAL_LOG_LEVEL >= LogLevel.INFO:
             self.log(
                 *message,
-                prefix=f"[{colored_text(flag, 'white')}]",
-                skip_writers=["file"],
+                prefix=f"[{colored_text('info', 'white')}]",
+                skip_writers=["file", "ws"] + skip_writers,
                 traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
             )
-            self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
+            self.log(
+                *message,
+                prefix="info",
+                skip_writers=["stdout"] + skip_writers,
+                traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
+            )
         return self
 
-    def warn(self, *message, flag="WARNING"):
+    def warn(
+        self,
+        *message,
+        datetime_format: Optional[str] = None,
+        with_identifier: Optional[bool] = None,
+        with_datetime: Optional[bool] = None,
+        skip_writers: list[str] = [],
+    ):
         if _GLOBAL_LOG_LEVEL >= LogLevel.WARNING:
             self.log(
                 *message,
-                prefix=f"[{colored_text(flag, 'yellow')}]",
-                skip_writers=["file"],
+                prefix=f"[{colored_text('warning', 'yellow')}]",
+                skip_writers=["file", "ws"] + skip_writers,
                 traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
             )
-            self.log(*message, prefix=flag, skip_writers=["stdout"], traceback=3)
+            self.log(
+                *message,
+                prefix="warning",
+                skip_writers=["stdout"],
+                traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
+            )
         return self
 
-    def err(self, err, flag="ERROR", reraise=False):
+    def err(
+        self,
+        err,
+        datetime_format: Optional[str] = None,
+        with_identifier: Optional[bool] = None,
+        with_datetime: Optional[bool] = None,
+        skip_writers: list[str] = [],
+        reraise=False,
+    ):
         if type(err) is not Exception:
             err = RuntimeError(str(err))
         if _GLOBAL_LOG_LEVEL >= LogLevel.ERROR:
             self.log(
                 str(err),
-                prefix=f"[{colored_text(flag,'red')}]",
-                skip_writers=["file"],
+                prefix=f"[{colored_text('error','red')}]",
+                skip_writers=["file", "ws"] + skip_writers,
                 traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
             )
-            self.log(str(err), prefix=flag, skip_writers=["stdout"], traceback=3)
+            self.log(
+                str(err),
+                prefix="error",
+                skip_writers=["stdout"],
+                traceback=3,
+                datetime_format=datetime_format,
+                with_identifier=with_identifier,
+                with_datetime=with_datetime,
+            )
         if reraise or _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
             raise err
         return self
@@ -190,7 +304,7 @@ class Logger:
 
         return with_logging
 
-    def banner(self, text, font: Optional[str] = None):
+    def console_banner(self, text, font: Optional[str] = None):
         from pyfiglet import Figlet, FigletFont
 
         builtin_font_list = [
@@ -227,7 +341,7 @@ class Logger:
         rprint(Panel.fit(f"{rendered_text}", border_style="green"))
         return self
 
-    def skip_lines(self, line_cnt=1):
+    def skip_lines(self, line_cnt=1, skip_writers: list[str] = []):
         """Let the logger log some empty lines
 
         Args:
@@ -236,16 +350,18 @@ class Logger:
         Returns:
             _Logger : the logger instance itself
         """
-        self.log("\n" * line_cnt, with_datetime=False, with_identifier=False)
+        self.log(
+            "\n" * line_cnt, with_datetime=False, with_identifier=False, skip_writers=skip_writers
+        )
         return self
 
-    def log_txt_file(self, file):
+    def log_txt_file(self, file, skip_writers: list[str] = []):
         if isinstance(file, str):
             file = open(file)
         context = ""
         for line in file.readlines():
             context += line
-        self.log(context, with_datetime=False, with_identifier=False)
+        self.log(context, with_datetime=False, with_identifier=False, skip_writers=skip_writers)
         return self
 
     def set_log_dir(self, path, independent=False):
@@ -283,20 +399,3 @@ class Logger:
 
 
 DEFAULT_LOGGER = Logger(None)
-
-
-def set_log_level(level: LogLevel):
-    if type(level) is str:
-        level = {
-            "ALL": LogLevel.ALL,
-            "DEBUG": LogLevel.DEBUG,
-            "INFO": LogLevel.INFO,
-            "WARNING": LogLevel.WARNING,
-            "ERROR": LogLevel.ERROR,
-        }[level]
-    if type(level) is int:
-        assert level >= 0 and level <= 3
-        level = LogLevel(level)
-    global _GLOBAL_LOG_LEVEL
-    _GLOBAL_LOG_LEVEL = level
-    DEFAULT_LOGGER.debug(f"global log level was set to {_GLOBAL_LOG_LEVEL}")

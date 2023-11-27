@@ -9,7 +9,10 @@ import locale
 import platform
 import subprocess
 
+from neetbox.config import get_module_level_config
+from neetbox.integrations import call_on_workspace_load
 from neetbox.pipeline import watch
+from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils.mvc import Singleton
 
 
@@ -55,9 +58,13 @@ platform = __Platform()
 
 
 # watch updates in daemon
-@watch(name="platform", initiative=True)
-def update_env_stat():
-    return dict(platform)
+@call_on_workspace_load(name="show-platform-information")
+def load_monit_hardware():
+    cfg = get_module_level_config()
+    if cfg["monit"]:  # if do monit hardware
+        # watch updates in daemon
+        @watch(name="platform", initiative=True, _channel=SYSTEM_CHANNEL)
+        def update_env_stat():
+            return dict(platform)
 
-
-update_env_stat()
+        update_env_stat()  # call once

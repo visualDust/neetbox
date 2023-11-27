@@ -1,0 +1,23 @@
+name = "neet_test"
+
+[logging]
+level = "DEBUG"
+
+[pipeline]
+updateInterval = 0.6
+
+[daemon]
+enable = true
+host = "localhost"
+port = 5000
+allowIpython = false
+mute = true
+mode = "detached"
+uploadInterval = 0.6
+
+[integrations.environment.hardware]
+monit = true
+interval = 0.5
+
+[integrations.environment.platform]
+monit = true
