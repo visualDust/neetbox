@@ -10,7 +10,7 @@ import { Actions } from "../../components/dashboard/project/actions";
 import Loading from "../../components/loading";
 
 export const ProjectContext = createContext<{ projectName: string } | null>(
-  null
+  null,
 );
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
@@ -29,7 +29,7 @@ function ProjectDashboard() {
     () => ({
       projectName,
     }),
-    [projectName]
+    [projectName],
   );
 
   return (
@@ -64,7 +64,11 @@ function Hardware({
 }) {
   return (
     <div>
-      <CPUGraph hardwareData={hardwareData} />
+      {hardwareData.every((x) => x.value.cpus) ? (
+        <CPUGraph hardwareData={hardwareData} />
+      ) : (
+        <Typography.Text>No CPU Info</Typography.Text>
+      )}
     </div>
   );
 }

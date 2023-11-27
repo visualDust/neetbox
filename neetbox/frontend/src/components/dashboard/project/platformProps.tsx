@@ -44,7 +44,7 @@ function PropCard({ propName, propValue }): React.JSX.Element {
               () => {
                 // copy failed
                 Toast.error("Failed to copy");
-              }
+              },
             );
           }}
         ></Button>
@@ -59,9 +59,10 @@ export default function PlatformProps({ data }): React.JSX.Element {
   return (
     <div>
       <CardGroup spacing={10}>
-        {Object.entries(data.value).map(([key, value]) => (
-          <PropCard key={key} propName={key} propValue={value} />
-        ))}
+        {(data?.value &&
+          Object.entries(data.value).map(([key, value]) => (
+            <PropCard key={key} propName={key} propValue={value} />
+          ))) || <Typography.Text>No Platform Info</Typography.Text>}
       </CardGroup>
     </div>
   );

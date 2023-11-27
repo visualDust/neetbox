@@ -17,16 +17,27 @@ interface Props {
 
 export function Actions({ actions }: Props) {
   const [blocking, setBlocking] = useState(false);
+  const actionList = Object.entries(actions?.value ?? {});
   return (
     <Space>
-      {Object.entries(actions.value).map(([actionName, actionOptions]) => (
-        <ActionItem
-          name={actionName}
-          actionOptions={actionOptions}
-          blocking={blocking}
-          setBlocking={setBlocking}
-        />
-      ))}
+      {actionList.length ? (
+        actionList.map(([actionName, actionOptions]) => (
+          <ActionItem
+            name={actionName}
+            actionOptions={actionOptions}
+            blocking={blocking}
+            setBlocking={setBlocking}
+          />
+        ))
+      ) : (
+        <Typography.Text>
+          No actions (
+          <a target="_blank" href="https://neetbox.550w.host/docs/guide/">
+            docs
+          </a>
+          )
+        </Typography.Text>
+      )}
     </Space>
   );
 }
@@ -65,7 +76,13 @@ export function ActionItem({
           </div>
         )}
         {Object.entries(options.args).map(([argName, argType]) => (
-          <Row key={argName} align="middle" type="flex" justify="space-between" style={{ alignSelf: "stretch" }}>
+          <Row
+            key={argName}
+            align="middle"
+            type="flex"
+            justify="space-between"
+            style={{ alignSelf: "stretch" }}
+          >
             <Col span={4}>
               <Typography.Text ellipsis>{argName}</Typography.Text>
             </Col>
