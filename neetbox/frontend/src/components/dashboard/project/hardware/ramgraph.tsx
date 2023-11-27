@@ -2,14 +2,11 @@ import { useMemo } from "react";
 import { ECharts } from "../../../echarts";
 import { ProjectStatus } from "../../../../services/projects";
 
-export const GPUGraph = ({
+export const RAMGraph = ({
   hardwareData,
-  gpuId,
 }: {
   hardwareData: Array<ProjectStatus["hardware"]>;
-  gpuId: number;
 }) => {
-  const gpus = hardwareData[0].value.gpus;
   const initialOption = () => {
     return {
       backgroundColor: "transparent",
@@ -22,7 +19,7 @@ export const GPUGraph = ({
         bottom: 30,
       },
       legend: {
-        data: [`GPU${gpuId} Load`, `GPU${gpuId} Memory`],
+        data: [`RAM Used`],
       },
       xAxis: {
         type: "time",
@@ -30,19 +27,11 @@ export const GPUGraph = ({
       yAxis: [
         {
           type: "value",
-          max: 100,
-          axisLabel: {
-            formatter: (x) => x + " %",
-          },
-        },
-        {
-          type: "value",
-          position: "right",
-          splitLine: null,
+          position: 'right',
           axisLabel: {
             formatter: (x) => x.toFixed(1) + " GB",
           },
-          max: gpus[gpuId].memoryTotal / 1024,
+          max: hardwareData[0].value.ram.total,
         },
       ],
       series: [],
@@ -54,24 +43,13 @@ export const GPUGraph = ({
     const newOption = {
       series: [
         {
-          name: `GPU${gpuId} Load`,
-          type: "line",
-          areaStyle: null,
-          symbol: null,
-          data: hardwareData.map((x) => [
-            x.timestamp * 1000,
-            x.value.gpus[gpuId].load * 100,
-          ]),
-        },
-        {
-          name: `GPU${gpuId} Memory`,
+          name: `RAM Used`,
           type: "line",
           areaStyle: {},
           symbol: null,
-          yAxisIndex: 1,
           data: hardwareData.map((x) => [
             x.timestamp * 1000,
-            x.value.gpus[gpuId].memoryUsed / 1024,
+            x.value.ram.used,
           ]),
         },
       ],

@@ -23,7 +23,7 @@ export const CPUGraph = ({
         text: `CPU Load (${cpus.length} threads)`,
         left: "center",
         textStyle: {
-          fontSize: 14,
+          fontSize: 12,
         },
       },
       // legend: {
