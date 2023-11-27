@@ -29,6 +29,7 @@ export const ECharts = (props: EChartsProps) => {
       );
 
       chart.setOption(props.initialOption());
+      chart.setOption(props.updatingOption);
       chartRef.current = chart;
 
       const handleResize = () => {
