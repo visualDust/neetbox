@@ -6,6 +6,7 @@ import LoginPage from "./pages/login";
 import "./index.css";
 import Console, { consoleRoutes } from "./pages/console";
 import { startBackgroundTasks } from "./services/projects";
+import { ThemeContextProvider } from "./components/themeSwitcher";
 
 const router = createBrowserRouter([
   {
@@ -36,8 +37,10 @@ function ServiceProvider({ children }: PropsWithChildren) {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ServiceProvider>
-      <RouterProvider router={router} />
-    </ServiceProvider>
-  </React.StrictMode>
+    <ThemeContextProvider>
+      <ServiceProvider>
+        <RouterProvider router={router} />
+      </ServiceProvider>
+    </ThemeContextProvider>
+  </React.StrictMode>,
 );

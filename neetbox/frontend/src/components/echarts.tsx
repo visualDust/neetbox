@@ -1,6 +1,7 @@
 import { useRef, useEffect, HTMLAttributes, useState } from "react";
 import type * as echarts from "echarts";
 import Loading from "./loading";
+import { useTheme } from "./themeSwitcher";
 
 export interface EChartsProps {
   initialOption: () => echarts.EChartsOption;
@@ -14,6 +15,7 @@ export const ECharts = (props: EChartsProps) => {
   const [echartsModule, setEchartsModule] = useState<typeof echarts | null>(
     null,
   );
+  const { darkMode } = useTheme();
 
   useEffect(() => {
     import("echarts").then((mod) => setEchartsModule(mod));
@@ -21,7 +23,10 @@ export const ECharts = (props: EChartsProps) => {
 
   useEffect(() => {
     if (echartsModule) {
-      const chart = echartsModule.init(chartContainerRef.current);
+      const chart = echartsModule.init(
+        chartContainerRef.current,
+        darkMode ? "dark" : null,
+      );
 
       chart.setOption(props.initialOption());
       chartRef.current = chart;
@@ -37,7 +42,7 @@ export const ECharts = (props: EChartsProps) => {
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [echartsModule]);
+  }, [echartsModule, darkMode]);
 
   useEffect(() => {
     if (chartRef.current) {

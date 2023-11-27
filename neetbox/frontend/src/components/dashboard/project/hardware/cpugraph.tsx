@@ -10,6 +10,7 @@ export const CPUGraph = ({
   const cpus = hardwareData[0].value.cpus;
   const initialOption = () => {
     return {
+      backgroundColor: 'transparent',
       animation: false,
       tooltip: {
         trigger: "axis",
