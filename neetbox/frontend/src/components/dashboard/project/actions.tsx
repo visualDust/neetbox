@@ -19,7 +19,7 @@ export function Actions({ actions }: Props) {
   const [blocking, setBlocking] = useState(false);
   const actionList = Object.entries(actions?.value ?? {});
   return (
-    <Space>
+    <Space style={{ marginBottom: "20px" }}>
       {actionList.length ? (
         actionList.map(([actionName, actionOptions]) => (
           <ActionItem
@@ -68,7 +68,7 @@ export function ActionItem({
   };
   const renderContent = () => (
     <div style={{ padding: "10px", maxWidth: "400px" }}>
-      <Space vertical spacing={"tight"}>
+      <Space vertical spacing={"medium"}>
         <Typography.Title heading={5}>{name}</Typography.Title>
         {options.description && (
           <div style={{ margin: 0, whiteSpace: "pre-wrap" }}>
@@ -101,6 +101,8 @@ export function ActionItem({
         <Button
           style={{ width: "100px" }}
           onClick={handleRun}
+          type="warning"
+          theme="solid"
           disabled={blocking}
         >
           Run

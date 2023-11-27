@@ -46,7 +46,6 @@ export const Logs = React.memo(({ projectName }: Props) => {
 });
 
 const LogItems = ({ logs }: { logs: LogData[] }) => {
-  console.info("logitems render logs count", logs.length);
   return logs.map((x) => <LogItem key={x._id} data={x} />);
 };
 
