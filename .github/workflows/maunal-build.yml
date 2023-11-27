@@ -32,4 +32,8 @@ jobs:
       - run: yarn build
         working-directory: neetbox/frontend
       - name: Build and publish to pypi
-        run: ls ${{github.workspace}}/neetbox/frontend_dist
+        uses: JRubics/poetry-publish@v1.17
+        with:
+          pypi_token: ${{ secrets.PYPI_TOKEN }}
+          repository_name: "neetbox"
+          repository_url: "https://test.pypi.org/legacy/"
