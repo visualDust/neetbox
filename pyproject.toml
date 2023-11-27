@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neetbox"
-version = "0.2.0"
+version = "0.2.1"
 description = "NEETBox contains useless CV code snippets."
 license = "MIT"
 authors = ["VisualDust <gavin@gong.host>"]
@@ -27,7 +27,6 @@ classifiers = [
 ]
 
 exclude = ["neetbox/frontend"]
-include = ["neetbox/frontend/dist"]
 
 # [[tool.poetry.source]]
 # name = "pypi"
@@ -37,25 +36,22 @@ include = ["neetbox/frontend/dist"]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
 toml = ">0.10"
-injector = ">=0.20"
 setproctitle = ">=1.0"
 rich = ">=13"
-numpy = "^1.26.0"
-pillow = "^10.0.1"
-pre-commit = ">=3.4.0"
 click = "^8.1.7"
-pytest = "^7.4.3"
 pyfiglet = "^1.0.2"
 httpx = "^0.24.0"
 flask = "^2.2.3"
 websocket-client = "^1.6.4"
 websocket-server = "^0.6.4"
+gputil = "^1.4.0"
+psutil = "^5.9.6"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.0.0"
+pytest = "^7.4.3"
 black = "^23.9.1"
 isort = "^5.11.5"
-pre-commit = "^3"
+pre-commit = ">=3.4.0"
 apiflask = "^2.0.2"
 ultraimport = "^0.0.7"
 

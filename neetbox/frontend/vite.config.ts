@@ -20,5 +20,8 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/ws\//, ''),
       }
     }
+  },
+  build: {
+    outDir: "../frontend_dist"
   }
 })

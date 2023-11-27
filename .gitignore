@@ -2,6 +2,7 @@
 .pytest_cache
 __pycache__/
 dist/
+frontend_dist/
 poetry.lock
 test/optional
 build_and_reinstall_wheel.cmd

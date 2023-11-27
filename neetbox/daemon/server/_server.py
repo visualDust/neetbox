@@ -20,17 +20,11 @@ from typing import Any, Dict, Tuple
 werkzeug_log = logging.getLogger("werkzeug")
 werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 
-if __name__ == "__main__":
-    import ultraimport  # if run server solely, sssssssuse relative import, do not trigger neetbox init
-
-    _protocol = ultraimport("__dir__/../_protocol.py")
-    from _protocol import *
-else:
-    from neetbox.daemon._protocol import *
-
 import setproctitle
 from flask import abort, json, request, send_from_directory
 from websocket_server import WebsocketServer
+
+from neetbox.daemon._protocol import *
 
 __PROC_NAME = "NEETBOX SERVER"
 setproctitle.setproctitle(__PROC_NAME)
@@ -285,7 +279,7 @@ def server_process(cfg, debug=False):
     #         ws_send(data, to=target_sid)
     #         return "ok"
 
-    front_end_dist_path = os.path.join(os.path.dirname(__file__), "../../frontend/dist")
+    front_end_dist_path = os.path.join(os.path.dirname(__file__), "../../frontend_dist")
 
     @app.route("/")
     def static_serve_root():
