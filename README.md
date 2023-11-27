@@ -1,6 +1,6 @@
 # NEETBOX
 
-[![wakatime](https://wakatime.com/badge/user/b93a26b6-8ea1-44ef-99ed-bcb6e2c732f1/project/8f99904d-dbb1-49e4-814d-8d18bf1e6d1c.svg)](https://wakatime.com/badge/user/b93a26b6-8ea1-44ef-99ed-bcb6e2c732f1/project/8f99904d-dbb1-49e4-814d-8d18bf1e6d1c)
+[![wakatime](https://wakatime.com/badge/user/b93a26b6-8ea1-44ef-99ed-bcb6e2c732f1/project/8f99904d-dbb1-49e4-814d-8d18bf1e6d1c.svg)](https://wakatime.com/badge/user/b93a26b6-8ea1-44ef-99ed-bcb6e2c732f1/project/8f99904d-dbb1-49e4-814d-8d18bf1e6d1c) [![Run pytest](https://github.com/visualDust/neetbox/actions/workflows/poetry-pytest.yml/badge.svg)](https://github.com/visualDust/neetbox/actions/workflows/poetry-pytest.yml) [![PyPI version](https://badge.fury.io/py/neetbox.svg)](https://badge.fury.io/py/neetbox)
 
 ![](./doc/static/img/readme.png)
 

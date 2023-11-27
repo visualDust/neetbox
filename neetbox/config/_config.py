@@ -17,7 +17,7 @@ DEFAULT_WORKSPACE_CONFIG = {
     },
     "daemon": {
         "enable": True,
-        "host": "localhost",
+        "host": "127.0.0.1",
         "port": 20202,
         "displayName": None,
         "allowIpython": False,
