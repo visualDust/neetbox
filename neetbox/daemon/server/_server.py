@@ -66,7 +66,7 @@ def server_process(cfg, debug=False):
         app = Flask(__PROC_NAME)
 
     # websocket server
-    ws_server = WebsocketServer(port=cfg["port"] + 1)
+    ws_server = WebsocketServer(host="0.0.0.0", port=cfg["port"] + 1)
     __BRIDGES = {}  # manage connections
     connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
 

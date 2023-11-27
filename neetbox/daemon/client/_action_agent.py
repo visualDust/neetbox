@@ -12,6 +12,7 @@ from neetbox.pipeline import watch
 from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils.mvc import Singleton
 
+
 class PackedAction(Callable):
     def __init__(
         self,
@@ -35,10 +36,13 @@ class PackedAction(Callable):
         # }
         _arg_anno_dict = self.function.__annotations__
         _args = self.argspec.args
-        __arg_dict = {_arg_name: _arg_anno_dict.get(_arg_name, any).__name__ for _arg_name in _args}
+        _arg_dict = {}
+        for _arg_name in _args:
+            _arg_type = _arg_anno_dict.get(_arg_name, any)
+            _arg_dict[_arg_name] = _arg_type if isinstance(_arg_type, str) else _arg_type.__name__
         return {
             "description": self.description,
-            "args": __arg_dict,
+            "args": _arg_dict,
             "blocking": self.blocking,
         }
 
