@@ -62,16 +62,19 @@ const LogItemContainer = styled.div`
     padding: 0 3px;
     border-radius: 5px;
   }
-  .log-prefix-INFO {
+  .log-prefix-info {
     background-color: #bbcffc;
   }
-  .log-prefix-OK {
+  .log-prefix-ok {
     background-color: #a2ffae;
   }
-  .log-prefix-WARNING {
+  .log-prefix-warning {
     background-color: #ede483;
   }
-  .log-prefix-ERROR {
+  .log-prefix-debug {
+    background-color: #c483ed;
+  }
+  .log-prefix-error {
     background-color: #ffa2a2;
   }
 `;
@@ -89,7 +92,7 @@ function getColorFromWhom(whom: string) {
 
 const LogItem = React.memo(({ data }: { data: LogData }) => {
   let { prefix } = data;
-  if (!prefix) prefix = "LOG";
+  if (!prefix) prefix = "log";
   return (
     <LogItemContainer>
       <span className="log-tag log-datetime">{data.datetime}</span>{" "}
