@@ -1,6 +1,7 @@
 .log-item {
   margin-bottom: 5px;
   font-family: "Courier New", Courier, monospace;
+  white-space: pre-wrap;
   font-size: 13px;
 
   .log-tag {
