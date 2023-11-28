@@ -17,7 +17,7 @@ cur_direction = (1, 0)
 
 game_running = False
 
-logger.info("starting")
+# logger.info("starting")
 
 
 @action(blocking=False)

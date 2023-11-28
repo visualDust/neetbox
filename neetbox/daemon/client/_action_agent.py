@@ -105,6 +105,7 @@ class _NeetActionManager(metaclass=Singleton):
         return _NeetActionManager.get_action_dict()
 
     def register(name: Optional[str] = None, description: str = None, blocking: bool = False):
+        connection._init_ws()
         return functools.partial(
             _NeetActionManager._register, name=name, description=description, blocking=blocking
         )
