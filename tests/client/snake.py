@@ -22,19 +22,16 @@ game_running = False
 
 @action(blocking=False)
 def start_game():
-    def thread():
-        global game_running
-        if game_running:
-            logger.err("game already running")
-            return
-        game_running = True
-        try:
-            game()
-        except Exception as e:
-            logger.err(e)
-        game_running = False
-
-    Thread(target=thread).start()
+    global game_running
+    if game_running:
+        logger.err("game already running")
+        return
+    game_running = True
+    try:
+        game()
+    except Exception as e:
+        logger.err(e)
+    game_running = False
 
 
 @action()
@@ -82,6 +79,7 @@ def game():
             next_thing = get_map(next_pos)
             if next_thing in [BODY, None]:
                 logger.err("GAME OVER")
+                logger.info(f"SCORE = {len(bodies)}")
                 break
 
             put_head(next_pos)
@@ -118,10 +116,10 @@ def game():
         gamemap[y][x] = val
 
     def print_map():
-        logger.info("+" + " ".join("-" * MAP_WIDTH) + "+")
+        logger.info("+ " + " ".join("-" * MAP_WIDTH) + " +")
         for y in range(MAP_HEIGHT):
-            logger.info("|" + " ".join(gamemap[y]) + "|")
-        logger.info("+" + " ".join("-" * MAP_WIDTH) + "+")
+            logger.info("| " + " ".join(gamemap[y]) + " |")
+        logger.info("+ " + " ".join("-" * MAP_WIDTH) + " +")
 
     main()
 

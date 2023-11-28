@@ -56,13 +56,13 @@ export function ActionItem({
   setBlocking,
 }: ActionItemProps) {
   const [args, setArgs] = useState<Record<string, string>>({});
-  const [currentBlocking, setCurrentBlocking] = useState(false);
+  const [running, setCurrentBlocking] = useState(false);
   const { projectName } = useContext(ProjectContext)!;
   const handleRun = () => {
-    setBlocking(true);
+    if (options.blocking) setBlocking(true);
     setCurrentBlocking(true);
     getProject(projectName).sendAction(name, args, () => {
-      setBlocking(false);
+      if (options.blocking) setBlocking(false);
       setCurrentBlocking(false);
     });
   };
@@ -112,7 +112,7 @@ export function ActionItem({
   );
   return (
     <Popover trigger="click" content={renderContent()}>
-      <Button disabled={blocking && !currentBlocking} loading={currentBlocking}>
+      <Button disabled={blocking && !running} loading={running}>
         {name}
       </Button>
     </Popover>
