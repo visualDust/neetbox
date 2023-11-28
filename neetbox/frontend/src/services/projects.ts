@@ -101,7 +101,7 @@ export class Project {
   sendAction(
     action: string,
     args: Record<string, string>,
-    onReply?: () => void,
+    onReply?: (result: any) => void
   ) {
     this.wsClient.send(
       {
@@ -111,7 +111,10 @@ export class Project {
           args,
         },
       },
-      onReply,
+      onReply &&
+        ((msg) => {
+          onReply(msg.payload);
+        })
     );
   }
 }

@@ -39,6 +39,12 @@ def action_1(text: str):
     logger.log(f"action 1 triggered. text = {text}")
 
 
+@action()
+def action_bool(enable: bool):
+    logger.info(f"action_bool triggered. enable = {enable}")
+    return {"enable": enable}
+
+
 val = 0
 
 
