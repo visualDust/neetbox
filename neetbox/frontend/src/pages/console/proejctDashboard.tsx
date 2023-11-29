@@ -51,7 +51,7 @@ function ProjectDashboard() {
             <PlatformProps data={data.current.platform} />
           </>
         ) : (
-          <Loading />
+          <Loading size="large" />
         )}
       </div>
     </ProjectContext.Provider>

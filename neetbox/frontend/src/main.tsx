@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import AppLayout from "./App";
+import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/login";
 import "./index.css";
 import Console, { consoleRoutes } from "./pages/console";

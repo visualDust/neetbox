@@ -12,7 +12,7 @@ function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: Rea
   const [following, setFollowing] = useState(true);
   const [renderingElement, setRenderingElement] = useState(children);
   const [height, setHeight] = useState(0);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const observer = new ResizeObserver(() => {
       setHeight(containerRef.current!.clientHeight);
     });

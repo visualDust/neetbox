@@ -4,6 +4,7 @@ import { Outlet, RouteObject } from "react-router-dom";
 import ConsoleNavBar from "./sidebar";
 import Dashboard from "./proejctDashboard";
 import Overview from "./overview";
+import AppFooter from "../../components/layout/AppFooter";
 
 export function consoleRoutes(): RouteObject {
   return {
@@ -24,12 +25,13 @@ export default class Console extends Component {
   render() {
     const { Sider, Content } = Layout;
     return (
-      <Layout>
+      <Layout style={{ height: "100%" }}>
         <Sider style={{ background: "var(--semi-color-fill-2)" }}>
           <ConsoleNavBar />
         </Sider>
-        <Content>
+        <Content style={{ height: "100%", overflow: "auto" }}>
           <Outlet />
+          <AppFooter />
         </Content>
       </Layout>
     );

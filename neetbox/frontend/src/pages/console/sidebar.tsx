@@ -3,6 +3,7 @@ import React from "react";
 import { IconStar, IconSetting } from "@douyinfe/semi-icons";
 import { Link, useLocation } from "react-router-dom";
 import { useAPI } from "../../services/api";
+import Loading from "../../components/loading";
 
 export default function ConsoleNavBar() {
   const location = useLocation();
@@ -10,6 +11,7 @@ export default function ConsoleNavBar() {
   return (
     <Nav
       renderWrapper={(args) => {
+        if (args.props.itemKey === "loading") return <Loading height="60px" />;
         if (!(args.props.itemKey as string).startsWith("/")) return args.itemElement;
         return (
           <Link to={args.props.itemKey as string} style={{ textDecoration: "none" }}>
@@ -17,7 +19,7 @@ export default function ConsoleNavBar() {
           </Link>
         );
       }}
-      bodyStyle={{ height: 320 }}
+      style={{ height: "100%", overflowY: "auto" }}
       items={[
         { itemKey: "/console/overview", text: "Overview", icon: <IconStar /> },
         {
@@ -27,7 +29,7 @@ export default function ConsoleNavBar() {
           items: data?.names.map((name: string) => ({
             text: name,
             itemKey: "/console/project/" + name,
-          })) ?? ["(loading...)"],
+          })) ?? [{ text: "", itemKey: "loading" }],
         },
       ]}
       defaultOpenKeys={["projects"]}
