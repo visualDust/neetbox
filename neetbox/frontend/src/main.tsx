@@ -4,9 +4,10 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/login";
 import "./index.css";
-import Console, { consoleRoutes } from "./pages/console";
+import { consoleRoutes } from "./pages/console";
 import { ThemeContextProvider } from "./components/themeSwitcher";
 import { ServiceProvider } from "./services/serviceProvider";
+import ConsoleLayout from "./components/layout/ConsoleLayout";
 
 const router = createBrowserRouter([
   {
@@ -16,7 +17,7 @@ const router = createBrowserRouter([
       {
         path: "",
         // element: <Home />,
-        element: <Console />,
+        element: <ConsoleLayout />,
       },
       consoleRoutes(),
       {
