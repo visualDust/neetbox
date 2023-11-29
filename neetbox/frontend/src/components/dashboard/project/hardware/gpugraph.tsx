@@ -64,10 +64,7 @@ export const GPUGraph = ({
           type: "line",
           areaStyle: null,
           symbol: null,
-          data: hardwareData.map((x) => [
-            x.timestamp * 1000,
-            x.value.gpus[gpuId].load * 100,
-          ]),
+          data: hardwareData.map((x) => [x.timestamp * 1000, x.value.gpus[gpuId].load * 100]),
         },
         {
           name: `Memory`,
@@ -75,10 +72,7 @@ export const GPUGraph = ({
           areaStyle: {},
           symbol: null,
           yAxisIndex: 1,
-          data: hardwareData.map((x) => [
-            x.timestamp * 1000,
-            x.value.gpus[gpuId].memoryUsed / 1024,
-          ]),
+          data: hardwareData.map((x) => [x.timestamp * 1000, x.value.gpus[gpuId].memoryUsed / 1024]),
         },
       ],
       xAxis: {
@@ -90,10 +84,6 @@ export const GPUGraph = ({
   }, [hardwareData]);
 
   return (
-    <ECharts
-      initialOption={initialOption}
-      updatingOption={updatingOption}
-      style={{ height: "200px" }}
-    />
+    <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />
   );
 };

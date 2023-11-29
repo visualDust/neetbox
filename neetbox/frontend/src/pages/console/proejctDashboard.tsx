@@ -9,9 +9,7 @@ import Loading from "../../components/loading";
 import { Hardware } from "../../components/dashboard/project/hardware";
 import { SectionTitle } from "../../components/sectionTitle";
 
-export const ProjectContext = createContext<{ projectName: string } | null>(
-  null
-);
+export const ProjectContext = createContext<{ projectName: string } | null>(null);
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectName } = useParams();
@@ -29,7 +27,7 @@ function ProjectDashboard() {
     () => ({
       projectName,
     }),
-    [projectName]
+    [projectName],
   );
 
   return (

@@ -30,3 +30,5 @@ jobs:
         if: '!cancelled()'
       - run: yarn lint
         if: '!cancelled()'
+      - run: yarn prettier-check
+        if: '!cancelled()'

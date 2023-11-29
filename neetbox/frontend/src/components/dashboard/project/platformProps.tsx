@@ -5,13 +5,7 @@ import { useMemoJSON } from "../../../hooks/useMemoJSON";
 import { ProjectStatus } from "../../../services/projects";
 
 const PropCard = memo(
-  ({
-    propName,
-    propValue,
-  }: {
-    propName: string;
-    propValue: ProjectStatus["platform"]["value"][string];
-  }) => {
+  ({ propName, propValue }: { propName: string; propValue: ProjectStatus["platform"]["value"][string] }) => {
     const { Text } = Typography;
     const content = Array.isArray(propValue) ? propValue.join(" ") : propValue;
     const nameMapping = {
@@ -65,11 +59,7 @@ const PropCard = memo(
   },
 );
 
-export default function PlatformProps({
-  data,
-}: {
-  data: ProjectStatus["platform"];
-}): React.JSX.Element {
+export default function PlatformProps({ data }: { data: ProjectStatus["platform"] }): React.JSX.Element {
   const memoData = useMemoJSON(data?.value);
   return (
     <div>

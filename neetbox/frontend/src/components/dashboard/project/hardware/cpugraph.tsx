@@ -2,11 +2,7 @@ import { useMemo } from "react";
 import { ECharts } from "../../../echarts";
 import { ProjectStatus } from "../../../../services/projects";
 
-export const CPUGraph = ({
-  hardwareData,
-}: {
-  hardwareData: Array<ProjectStatus["hardware"]>;
-}) => {
+export const CPUGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["hardware"]> }) => {
   const cpus = hardwareData[0].value.cpus;
   const initialOption = () => {
     return {
@@ -51,10 +47,7 @@ export const CPUGraph = ({
         stack: "cpu",
         areaStyle: {},
         symbol: null,
-        data: hardwareData.map((x) => [
-          x.timestamp * 1000,
-          x.value.cpus[cpu.id].percent,
-        ]),
+        data: hardwareData.map((x) => [x.timestamp * 1000, x.value.cpus[cpu.id].percent]),
       })),
       xAxis: {
         min: (latestTime - 60) * 1000,
@@ -66,10 +59,6 @@ export const CPUGraph = ({
   }, [hardwareData]);
 
   return (
-    <ECharts
-      initialOption={initialOption}
-      updatingOption={updatingOption}
-      style={{ height: "200px" }}
-    />
+    <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />
   );
 };

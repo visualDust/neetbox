@@ -4,17 +4,11 @@ import { CPUGraph } from "./cpugraph";
 import { GPUGraph } from "./gpugraph";
 import { RAMGraph } from "./ramgraph";
 
-export function Hardware({
-  hardwareData,
-}: {
-  hardwareData: Array<ProjectStatus["hardware"]>;
-}) {
+export function Hardware({ hardwareData }: { hardwareData: Array<ProjectStatus["hardware"]> }) {
   return (
     <div>
       {hardwareData.every((x) => x.value.gpus.length) ? (
-        hardwareData[0].value.gpus.map((_, i) => (
-          <GPUGraph key={i} hardwareData={hardwareData} gpuId={i} />
-        ))
+        hardwareData[0].value.gpus.map((_, i) => <GPUGraph key={i} hardwareData={hardwareData} gpuId={i} />)
       ) : (
         <NoInfoLabel text="No GPU Info" />
       )}

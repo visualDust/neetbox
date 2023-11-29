@@ -10,13 +10,9 @@ export default function ConsoleNavBar() {
   return (
     <Nav
       renderWrapper={(args) => {
-        if (!(args.props.itemKey as string).startsWith("/"))
-          return args.itemElement;
+        if (!(args.props.itemKey as string).startsWith("/")) return args.itemElement;
         return (
-          <Link
-            to={args.props.itemKey as string}
-            style={{ textDecoration: "none" }}
-          >
+          <Link to={args.props.itemKey as string} style={{ textDecoration: "none" }}>
             {args.itemElement}
           </Link>
         );

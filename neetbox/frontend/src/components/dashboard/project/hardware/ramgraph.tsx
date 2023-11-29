@@ -2,11 +2,7 @@ import { useMemo } from "react";
 import { ECharts } from "../../../echarts";
 import { ProjectStatus } from "../../../../services/projects";
 
-export const RAMGraph = ({
-  hardwareData,
-}: {
-  hardwareData: Array<ProjectStatus["hardware"]>;
-}) => {
+export const RAMGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["hardware"]> }) => {
   const initialOption = () => {
     return {
       backgroundColor: "transparent",
@@ -65,10 +61,6 @@ export const RAMGraph = ({
   }, [hardwareData]);
 
   return (
-    <ECharts
-      initialOption={initialOption}
-      updatingOption={updatingOption}
-      style={{ height: "200px" }}
-    />
+    <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />
   );
 };

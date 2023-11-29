@@ -7,19 +7,14 @@ interface Props {
   projectName: string;
 }
 
-function AutoScrolling({
-  style,
-  children,
-}: React.PropsWithChildren<{ style: React.CSSProperties }>) {
+function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: React.CSSProperties }>) {
   const containerRef = useRef<HTMLDivElement>(null!);
   const [following, setFollowing] = useState(true);
   const [renderingElement, setRenderingElement] = useState(children);
   useEffect(() => {
     const dom = containerRef.current;
     if (dom) {
-      setFollowing(
-        Math.abs(dom.scrollHeight - dom.clientHeight - dom.scrollTop) < 30,
-      );
+      setFollowing(Math.abs(dom.scrollHeight - dom.clientHeight - dom.scrollTop) < 30);
     }
     setRenderingElement(children);
   }, [children]);
@@ -38,12 +33,7 @@ function AutoScrolling({
 
 export const Logs = React.memo(({ projectName }: Props) => {
   const logs = useProjectLogs(projectName);
-  return (
-    <AutoScrolling
-      style={{ overflowY: "auto", height: "40vh" }}
-      children={<LogItems logs={logs} />}
-    />
-  );
+  return <AutoScrolling style={{ overflowY: "auto", height: "40vh" }} children={<LogItems logs={logs} />} />;
 });
 
 const LogItems = ({ logs }: { logs: LogData[] }) => {
@@ -52,12 +42,7 @@ const LogItems = ({ logs }: { logs: LogData[] }) => {
 
 function getColorFromWhom(whom: string) {
   const hue =
-    50 +
-    ((whom
-      .split("")
-      .reduce((prev, char) => ((prev * 11) % 360) + char.charCodeAt(0), 0) *
-      233) %
-      200);
+    50 + ((whom.split("").reduce((prev, char) => ((prev * 11) % 360) + char.charCodeAt(0), 0) * 233) % 200);
   return `hsl(${hue}, 70%, var(--log-tag-bg-l))`;
 }
 
@@ -67,13 +52,8 @@ const LogItem = React.memo(({ data }: { data: LogData }) => {
   return (
     <div className="log-item">
       <span className="log-tag log-datetime">{data.datetime}</span>{" "}
-      <span className={`log-tag log-prefix log-prefix-${prefix}`}>
-        {prefix}
-      </span>{" "}
-      <span
-        className="log-tag log-whom"
-        style={{ backgroundColor: getColorFromWhom(data.whom) }}
-      >
+      <span className={`log-tag log-prefix log-prefix-${prefix}`}>{prefix}</span>{" "}
+      <span className="log-tag log-whom" style={{ backgroundColor: getColorFromWhom(data.whom) }}>
         {data.whom}
       </span>{" "}
       {data.msg}

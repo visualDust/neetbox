@@ -31,9 +31,5 @@ export function ThemeContextProvider(props: React.PropsWithChildren) {
     }
   }, [darkMode]);
 
-  return (
-    <ThemeContext.Provider value={{ darkMode, setDarkMode }}>
-      {props.children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ darkMode, setDarkMode }}>{props.children}</ThemeContext.Provider>;
 }

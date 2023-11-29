@@ -97,11 +97,7 @@ export class Project {
     this.logs.value = slideWindow(this.logs.value, log, 200); // TODO
   }
 
-  sendAction(
-    action: string,
-    args: Record<string, string>,
-    onReply?: (result: any) => void
-  ) {
+  sendAction(action: string, args: Record<string, string>, onReply?: (result: any) => void) {
     this.wsClient.send(
       {
         "event-type": "action",
@@ -113,7 +109,7 @@ export class Project {
       onReply &&
         ((msg) => {
           onReply(msg.payload);
-        })
+        }),
     );
   }
 }

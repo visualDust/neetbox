@@ -12,9 +12,7 @@ export interface EChartsProps {
 export const ECharts = (props: EChartsProps) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef<echarts.ECharts>(null!);
-  const [echartsModule, setEchartsModule] = useState<typeof echarts | null>(
-    null
-  );
+  const [echartsModule, setEchartsModule] = useState<typeof echarts | null>(null);
   const { darkMode } = useTheme();
 
   useEffect(() => {
@@ -25,7 +23,7 @@ export const ECharts = (props: EChartsProps) => {
     if (echartsModule) {
       const chart = echartsModule.init(
         chartContainerRef.current,
-        darkMode ? "dark" : null
+        darkMode ? "dark" : null,
         // { renderer: "svg" },
       );
 
