@@ -5,8 +5,8 @@ import AppLayout, { Home } from "./App";
 import LoginPage from "./pages/login";
 import "./index.css";
 import Console, { consoleRoutes } from "./pages/console";
-import { startBackgroundTasks } from "./services/projects";
 import { ThemeContextProvider } from "./components/themeSwitcher";
+import { ServiceProvider } from "./services/serviceProvider";
 
 const router = createBrowserRouter([
   {
@@ -27,14 +27,6 @@ const router = createBrowserRouter([
   },
 ]);
 
-function ServiceProvider({ children }: PropsWithChildren) {
-  useEffect(() => {
-    const tasks = startBackgroundTasks();
-    return () => tasks.stop();
-  });
-  return children;
-}
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeContextProvider>
@@ -42,5 +34,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <RouterProvider router={router} />
       </ServiceProvider>
     </ThemeContextProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

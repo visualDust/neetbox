@@ -24,6 +24,7 @@ export function Actions({ actions }: Props) {
       {actionList.length ? (
         actionList.map(([actionName, actionOptions]) => (
           <ActionItem
+            key={actionName}
             name={actionName}
             actionOptions={actionOptions}
             blocking={blocking}
@@ -101,7 +102,9 @@ export function ActionItem({
           style={{ alignSelf: "stretch" }}
         >
           <Col span={6}>
-            <Typography.Text ellipsis>{argName}</Typography.Text>
+            <Typography.Text ellipsis={{ showTooltip: true }}>
+              {argName}
+            </Typography.Text>
           </Col>
           <Col span={12}>
             {argType == "bool" ? (
@@ -125,7 +128,9 @@ export function ActionItem({
             )}
           </Col>
           <Col span={6}>
-            <Typography.Text ellipsis>({argType})</Typography.Text>
+            <Typography.Text ellipsis={{ showTooltip: true }}>
+              ({argType})
+            </Typography.Text>
           </Col>
         </Row>
       ))}

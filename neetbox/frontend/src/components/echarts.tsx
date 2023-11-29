@@ -1,7 +1,7 @@
 import { useRef, useEffect, HTMLAttributes, useState } from "react";
 import type * as echarts from "echarts";
+import { useTheme } from "../hooks/useTheme";
 import Loading from "./loading";
-import { useTheme } from "./themeSwitcher";
 
 export interface EChartsProps {
   initialOption: () => echarts.EChartsOption;
@@ -13,7 +13,7 @@ export const ECharts = (props: EChartsProps) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef<echarts.ECharts>(null!);
   const [echartsModule, setEchartsModule] = useState<typeof echarts | null>(
-    null,
+    null
   );
   const { darkMode } = useTheme();
 
@@ -25,7 +25,7 @@ export const ECharts = (props: EChartsProps) => {
     if (echartsModule) {
       const chart = echartsModule.init(
         chartContainerRef.current,
-        darkMode ? "dark" : null,
+        darkMode ? "dark" : null
         // { renderer: "svg" },
       );
 

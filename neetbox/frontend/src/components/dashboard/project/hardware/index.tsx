@@ -11,23 +11,31 @@ export function Hardware({
 }) {
   return (
     <div>
-      {hardwareData.every((x) => x.value.gpus) ? (
+      {hardwareData.every((x) => x.value.gpus.length) ? (
         hardwareData[0].value.gpus.map((_, i) => (
           <GPUGraph key={i} hardwareData={hardwareData} gpuId={i} />
         ))
       ) : (
-        <Typography.Text>No GPU Info</Typography.Text>
+        <NoInfoLabel text="No GPU Info" />
       )}
-      {hardwareData.every((x) => x.value.cpus) ? (
+      {hardwareData.every((x) => x.value.cpus.length) ? (
         <CPUGraph hardwareData={hardwareData} />
       ) : (
-        <Typography.Text>No CPU Info</Typography.Text>
+        <NoInfoLabel text="No CPU Info" />
       )}
       {hardwareData.every((x) => x.value.ram) ? (
         <RAMGraph hardwareData={hardwareData} />
       ) : (
-        <Typography.Text>No RAM Info</Typography.Text>
+        <NoInfoLabel text="No RAM Info" />
       )}
     </div>
+  );
+}
+
+function NoInfoLabel({ text }: { text: string }) {
+  return (
+    <Typography.Text style={{ marginLeft: "5px" }} type="tertiary">
+      {text}
+    </Typography.Text>
   );
 }

@@ -62,7 +62,6 @@ export interface LogData {
 }
 
 const projects = new Map<string, Project>();
-const nullProjectAtom = atom<Project>(null!);
 
 export class Project {
   wsClient: WsClient;
@@ -89,7 +88,7 @@ export class Project {
       });
       const projectData = { ...this.status.value };
       projectData.current = data;
-      projectData.history = slideWindow(projectData.history, data, 60);
+      projectData.history = slideWindow(projectData.history, data, 70);
       this.status.value = projectData;
     });
   }
@@ -128,18 +127,6 @@ export function getProject(name: string) {
   return project;
 }
 
-export function useProjectStatus(name: string) {
-  const project = getProject(name);
-  const [data] = useAtom(project?.status.atom ?? nullProjectAtom);
-  return data;
-}
-
-export function useProjectLogs(name: string) {
-  const project = getProject(name);
-  const [data] = useAtom(project?.logs.atom);
-  return data;
-}
-
 export function startBackgroundTasks() {
   function updateAllProjectsData() {
     for (const project of projects.values()) {
@@ -148,7 +135,13 @@ export function startBackgroundTasks() {
   }
   const timer = setInterval(updateAllProjectsData, 1000);
   return {
-    stop: () => clearInterval(timer),
+    dispose: () => {
+      clearInterval(timer);
+      for (const [name, project] of projects) {
+        projects.delete(name);
+        project.wsClient.ws.close();
+      }
+    },
   };
 }
 

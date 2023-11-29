@@ -45,18 +45,18 @@ def action_bool(enable: bool):
     return {"enable": enable}
 
 
-val = 0
+@action()
+def action_very_long_name(arg_with_very_long_long_name: int):
+    return {"very_long_long_result_key": arg_with_very_long_long_name}
 
 
-def def_plus_1():
+def def_plus_1(val):
     @action(name="plus1", description=f"val={val}")
     def plus_1():
-        global val
-        val += 1
-        def_plus_1()
+        def_plus_1(val + 1)
 
 
-def_plus_1()
+def_plus_1(0)
 
 
 @action(name="action-2")
@@ -64,10 +64,17 @@ def action_2(text1, text2):
     logger.log(f"action 2 triggered. text1 = {text1}, text2 = {text2}")
 
 
-@action(name="wait-for-sec", blocking=True)
-def action_2(sec):
+@action(name="wait-for-sec", blocking=False)
+def wait_for_sec(sec):
     sec = int(sec)
     logger.log(f"wait for {sec} sec.")
+    time.sleep(sec)
+
+
+@action(name="block-for-sec", blocking=True)
+def block_for_sec(sec):
+    sec = int(sec)
+    logger.log(f"block for {sec} sec.")
     time.sleep(sec)
 
 

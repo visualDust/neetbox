@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { createContext, useMemo } from "react";
 import { Divider, Typography } from "@douyinfe/semi-ui";
 import PlatformProps from "../../components/dashboard/project/platformProps";
-import { useProjectStatus } from "../../services/projects";
+import { useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/dashboard/project/logs/logs";
 import { Actions } from "../../components/dashboard/project/actions";
 import Loading from "../../components/loading";
@@ -10,7 +10,7 @@ import { Hardware } from "../../components/dashboard/project/hardware";
 import { SectionTitle } from "../../components/sectionTitle";
 
 export const ProjectContext = createContext<{ projectName: string } | null>(
-  null,
+  null
 );
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
@@ -29,7 +29,7 @@ function ProjectDashboard() {
     () => ({
       projectName,
     }),
-    [projectName],
+    [projectName]
   );
 
   return (

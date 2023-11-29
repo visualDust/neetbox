@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { LogData, useProjectLogs } from "../../../../services/projects";
+import { LogData } from "../../../../services/projects";
 import "./logs.css";
+import { useProjectLogs } from "../../../../hooks/useProject";
 
 interface Props {
   projectName: string;

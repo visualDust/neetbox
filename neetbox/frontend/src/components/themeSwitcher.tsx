@@ -1,19 +1,13 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@douyinfe/semi-ui";
+import { ThemeContext, useTheme } from "../hooks/useTheme";
 
-const Context = createContext<{
-  darkMode: boolean;
-  setDarkMode: (val: boolean) => void;
-}>(null!);
-
-export function useTheme() {
-  return useContext(Context);
+export default function SwitchColorMode(): React.JSX.Element {
+  const { darkMode, setDarkMode } = useTheme();
+  const switchMode = () => {
+    setDarkMode(!darkMode);
+  };
+  return <Button onClick={switchMode}>Switch Mode</Button>;
 }
 
 export function ThemeContextProvider(props: React.PropsWithChildren) {
@@ -38,16 +32,8 @@ export function ThemeContextProvider(props: React.PropsWithChildren) {
   }, [darkMode]);
 
   return (
-    <Context.Provider value={{ darkMode, setDarkMode }}>
+    <ThemeContext.Provider value={{ darkMode, setDarkMode }}>
       {props.children}
-    </Context.Provider>
+    </ThemeContext.Provider>
   );
-}
-
-export default function SwitchColorMode(): React.JSX.Element {
-  const { darkMode, setDarkMode } = useTheme();
-  const switchMode = () => {
-    setDarkMode(!darkMode);
-  };
-  return <Button onClick={switchMode}>Switch Mode</Button>;
 }
