@@ -87,13 +87,23 @@ export class Project {
       });
       const projectData = { ...this.status.value };
       projectData.current = data;
-      projectData.history = slideWindow(projectData.history, data, 70);
+      projectData.history = slideWindow(projectData.history, [data], 70);
       this.status.value = projectData;
     });
   }
 
+  private _logQueue: LogData[] | null = null;
+  private _logFlush = () => {
+    this.logs.value = slideWindow(this.logs.value, this._logQueue!, 1000); // TODO
+    this._logQueue = null;
+  };
+
   handleLog(log: LogData) {
-    this.logs.value = slideWindow(this.logs.value, log, 200); // TODO
+    if (!this._logQueue) {
+      this._logQueue = [];
+      setTimeout(this._logFlush, 60);
+    }
+    this._logQueue.push(log);
   }
 
   sendAction(action: string, args: Record<string, string>, onReply?: (result: any) => void) {
@@ -140,8 +150,8 @@ export function startBackgroundTasks() {
   };
 }
 
-function slideWindow<T>(arr: T[], item: T, max: number) {
-  arr = arr.slice(arr.length + 1 > max ? arr.length + 1 - max : 0);
-  arr.push(item);
+function slideWindow<T>(arr: T[], items: T[], max: number) {
+  arr = arr.slice(arr.length + items.length > max ? arr.length + items.length - max : 0);
+  arr.push(...items);
   return arr;
 }

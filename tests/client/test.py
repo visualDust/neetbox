@@ -7,6 +7,8 @@ from neetbox.daemon import action
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 
+import snake
+
 
 @watch("train", initiative=True)
 def train(epoch):
@@ -27,6 +29,12 @@ def log_with_some_prefix():
     logger.warn("some warn")
     logger.err("some error")
 
+@action()
+def log_perf_test(interval: int, count: int):
+    for i in range(count):
+        sleep(interval)
+        logger.info(f'log_perf_test {i + 1}/{count}')
+    
 
 @action(name="action-1")
 def action_1(text: str):

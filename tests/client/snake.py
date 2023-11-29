@@ -13,15 +13,13 @@ FOOD = "x"
 
 MAP_WIDTH, MAP_HEIGHT = 20, 10
 
-cur_direction = (1, 0)
-
 game_running = False
 
 # logger.info("starting")
 
 
 @action(blocking=False)
-def start_game():
+def snake_game():
     global game_running
     if game_running:
         logger.err("game already running")
@@ -34,36 +32,32 @@ def start_game():
     game_running = False
 
 
-@action()
-def left():
-    global cur_direction
-    cur_direction = (-1, 0)
-
-
-@action()
-def down():
-    global cur_direction
-    cur_direction = (0, 1)
-
-
-@action()
-def up():
-    global cur_direction
-    cur_direction = (0, -1)
-
-
-@action()
-def right():
-    global cur_direction
-    cur_direction = (1, 0)
-
-
 def game():
-    global cur_direction
     cur_direction = (1, 0)
     gamemap = [[EMPTY for _ in range(MAP_WIDTH)] for _ in range(MAP_HEIGHT)]
     bodies = []
     cur_head = 3, 3
+    cur_direction = (1, 0)
+
+    @action()
+    def left():
+        nonlocal cur_direction
+        cur_direction = (-1, 0)
+
+    @action()
+    def down():
+        nonlocal cur_direction
+        cur_direction = (0, 1)
+
+    @action()
+    def up():
+        nonlocal cur_direction
+        cur_direction = (0, -1)
+
+    @action()
+    def right():
+        nonlocal cur_direction
+        cur_direction = (1, 0)
 
     def main():
         logger.info("===================snake game===================")
@@ -124,6 +118,6 @@ def game():
     main()
 
 
-while True:
-    sleep(1000)
-    game_running = True
+if __name__ == "__main__":
+    while True:
+        sleep(1000)
