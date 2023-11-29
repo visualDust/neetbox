@@ -56,7 +56,7 @@ export const CPUGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["
       },
     } as echarts.EChartsOption;
     return newOption;
-  }, [hardwareData]);
+  }, [cpus, hardwareData]);
 
   return (
     <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />

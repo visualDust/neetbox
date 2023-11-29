@@ -6,7 +6,7 @@ import { useAPI } from "../../services/api";
 
 export default function ConsoleNavBar() {
   const location = useLocation();
-  const { isLoading, data, error } = useAPI("/list", { refreshInterval: 5000 });
+  const { data } = useAPI("/list", { refreshInterval: 5000 });
   return (
     <Nav
       renderWrapper={(args) => {

@@ -1,4 +1,3 @@
-import { atom, useAtom } from "jotai";
 import { BetterAtom } from "../utils/betterAtom";
 import { WsClient } from "./projectWebsocket";
 

@@ -81,7 +81,7 @@ export const GPUGraph = ({
       },
     } as echarts.EChartsOption;
     return newOption;
-  }, [hardwareData]);
+  }, [gpuId, hardwareData]);
 
   return (
     <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />

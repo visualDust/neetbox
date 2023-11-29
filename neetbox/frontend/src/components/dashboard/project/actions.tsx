@@ -83,7 +83,7 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
             {argType == "bool" ? (
               <Checkbox
                 checked={args[argName] == "True"}
-                onChange={(val) =>
+                onChange={() =>
                   setArgs({
                     ...args,
                     [argName]: args[argName] == "True" ? "False" : "True",

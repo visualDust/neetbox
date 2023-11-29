@@ -1,7 +1,7 @@
-import React, { PropsWithChildren, useEffect } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import AppLayout, { Home } from "./App";
+import AppLayout from "./App";
 import LoginPage from "./pages/login";
 import "./index.css";
 import Console, { consoleRoutes } from "./pages/console";
