@@ -21,7 +21,7 @@ function ProjectDashboard() {
   if (!projectName) throw new Error("projectName required");
 
   const data = useProjectStatus(projectName);
-  console.info("project", { projectName, data });
+  // console.info("project", { projectName, data });
 
   const projectContextData = useMemo(
     () => ({

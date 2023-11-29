@@ -1,14 +1,16 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Button } from "@douyinfe/semi-ui";
+import { IconAlignBottom } from "@douyinfe/semi-icons";
 import { LogData } from "../../../../services/projects";
 import "./logs.css";
 import { useProjectLogs } from "../../../../hooks/useProject";
-
 interface Props {
   projectName: string;
 }
 
 function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: React.CSSProperties }>) {
   const containerRef = useRef<HTMLDivElement>(null!);
+  const scrollerRef = useRef<HTMLDivElement>(null!);
   const [following, setFollowing] = useState(true);
   const [renderingElement, setRenderingElement] = useState(children);
   const [height, setHeight] = useState(0);
@@ -18,35 +20,47 @@ function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: Rea
     });
     observer.observe(containerRef.current!, { box: "border-box" });
     return () => observer.disconnect();
-  });
+  }, []);
   useEffect(() => {
-    const dom = containerRef.current;
+    const dom = scrollerRef.current;
     if (dom) {
-      setFollowing(Math.abs(dom.scrollHeight - dom.clientHeight - dom.scrollTop) < 30);
+      setFollowing(Math.abs(dom.scrollHeight - dom.clientHeight - dom.scrollTop) < 10);
     }
     setRenderingElement(children);
   }, [children]);
   useLayoutEffect(() => {
-    const dom = containerRef.current;
+    const dom = scrollerRef.current;
     if (following) {
       dom.scroll({ top: dom.scrollHeight });
     }
   }, [renderingElement, following, height]);
   return (
-    <div style={style} ref={containerRef}>
-      {renderingElement}
+    <div style={{ position: "relative", ...style }} ref={containerRef}>
+      <div style={{ overflowY: "auto", height: "100%" }} ref={scrollerRef}>
+        {renderingElement}
+      </div>
+      {!following && (
+        <Button
+          theme="solid"
+          style={{ position: "absolute", bottom: "10px", left: "50%", transform: "translate(-50%, 0)" }}
+          icon={<IconAlignBottom />}
+          onClick={() => setFollowing(true)}
+        >
+          New Logs
+        </Button>
+      )}
     </div>
   );
 }
 
 export const Logs = React.memo(({ projectName }: Props) => {
   const logs = useProjectLogs(projectName);
-  return <AutoScrolling style={{ overflowY: "auto", height: "40vh" }} children={<LogItems logs={logs} />} />;
+  return <AutoScrolling style={{ height: "40vh" }} children={<LogItems logs={logs} />} />;
 });
 
-const LogItems = ({ logs }: { logs: LogData[] }) => {
+const LogItems = memo(({ logs }: { logs: LogData[] }) => {
   return logs.map((x) => <LogItem key={x._id} data={x} />);
-};
+});
 
 function getColorFromWhom(whom: string) {
   const hue =

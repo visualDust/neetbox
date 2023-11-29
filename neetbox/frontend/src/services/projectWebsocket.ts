@@ -26,7 +26,7 @@ export class WsClient {
       });
     };
     this.ws.onmessage = (e) => {
-      console.info("ws receive", e.data);
+      // console.info("ws receive", e.data);
       const json = JSON.parse(e.data) as WsMsg;
       const eventId = json["event-id"];
       if (this.callbacks.has(eventId)) {
