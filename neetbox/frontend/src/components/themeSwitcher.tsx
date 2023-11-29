@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Button } from "@douyinfe/semi-ui";
+import { Switch } from "@douyinfe/semi-ui";
 import { ThemeContext, useTheme } from "../hooks/useTheme";
 
 export default function SwitchColorMode(): React.JSX.Element {
@@ -7,7 +7,7 @@ export default function SwitchColorMode(): React.JSX.Element {
   const switchMode = () => {
     setDarkMode(!darkMode);
   };
-  return <Button onClick={switchMode}>Switch Mode</Button>;
+  return <Switch size="large" checkedText="☀️" checked={!darkMode} onChange={switchMode}></Switch>;
 }
 
 export function ThemeContextProvider(props: React.PropsWithChildren) {
