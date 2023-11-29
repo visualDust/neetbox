@@ -1,6 +1,6 @@
 import { Nav } from "@douyinfe/semi-ui";
 import React from "react";
-import { IconStar, IconSetting } from "@douyinfe/semi-icons";
+import { IconHome, IconListView } from "@douyinfe/semi-icons";
 import { Link, useLocation } from "react-router-dom";
 import { useAPI } from "../../services/api";
 import Loading from "../../components/loading";
@@ -21,10 +21,10 @@ export default function ConsoleNavBar() {
       }}
       style={{ height: "100%", overflowY: "auto" }}
       items={[
-        { itemKey: "/console/overview", text: "Overview", icon: <IconStar /> },
+        { itemKey: "/console/overview", text: "Overview", icon: <IconHome /> },
         {
           text: "Projects",
-          icon: <IconSetting />,
+          icon: <IconListView />,
           itemKey: "projects",
           items: data?.names.map((name: string) => ({
             text: name,

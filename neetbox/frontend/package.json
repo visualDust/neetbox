@@ -26,6 +26,7 @@
     "vite-plugin-semi-theme": "^0.5.0"
   },
   "devDependencies": {
+    "@douyinfe/semi-icons": "^2.47.1",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@typescript-eslint/eslint-plugin": "^6.10.0",

@@ -293,6 +293,13 @@
   dependencies:
     classnames "^2.2.6"
 
+"@douyinfe/semi-icons@^2.47.1":
+  version "2.47.1"
+  resolved "https://registry.yarnpkg.com/@douyinfe/semi-icons/-/semi-icons-2.47.1.tgz#100883e71a7eab9ca2abb91110f48a348b9ad895"
+  integrity sha512-+gC22MWuOCKSRwB5Yxq55+NUgoO9b7stYvIkuCmPuD3kYgjFhhGRR+o9dscQmDa8Wjd98wY05zI01S4BV/ptLw==
+  dependencies:
+    classnames "^2.2.6"
+
 "@douyinfe/semi-illustrations@2.47.0":
   version "2.47.0"
   resolved "https://mirrors.huaweicloud.com/repository/npm/@douyinfe/semi-illustrations/-/semi-illustrations-2.47.0.tgz#8d63af6f943eaf830a1df77fc7c5fa84a5a5d434"

@@ -1,5 +1,6 @@
 import { Button, Checkbox, Col, Input, Popover, Row, Space, Typography } from "@douyinfe/semi-ui";
 import { memo, useContext, useState } from "react";
+import { IconChevronDown, IconPlay } from "@douyinfe/semi-icons";
 import { ProjectStatus, getProject } from "../../../services/projects";
 import { ProjectContext } from "../../../pages/console/proejctDashboard";
 import { useMemoJSON } from "../../../hooks/useMemoJSON";
@@ -105,15 +106,22 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
           </Col>
         </Row>
       ))}
-      <Button style={{ width: "100px" }} onClick={handleRun} type="warning" theme="solid" disabled={blocking}>
+      <Button
+        style={{ width: "100px" }}
+        onClick={handleRun}
+        type="warning"
+        theme="solid"
+        disabled={blocking}
+        icon={<IconPlay />}
+      >
         Run
       </Button>
       {result && <div style={{ margin: 0, whiteSpace: "pre-wrap" }}>{result}</div>}
     </Space>
   );
   return (
-    <Popover trigger="click" content={renderContent}>
-      <Button disabled={blocking && !running} loading={running}>
+    <Popover trigger="click" content={renderContent} showArrow autoAdjustOverflow>
+      <Button disabled={blocking && !running} icon={<IconChevronDown />} loading={running}>
         {name}
       </Button>
     </Popover>
