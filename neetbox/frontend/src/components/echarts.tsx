@@ -34,10 +34,11 @@ export const ECharts = (props: EChartsProps) => {
       const handleResize = () => {
         chart?.resize();
       };
-      window.addEventListener("resize", handleResize);
+      const resizeObserver = new ResizeObserver(handleResize);
+      resizeObserver.observe(chartContainerRef.current!);
 
       return () => {
-        window.removeEventListener("resize", handleResize);
+        resizeObserver.disconnect();
         chart?.dispose();
       };
     }

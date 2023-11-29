@@ -11,6 +11,14 @@ function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: Rea
   const containerRef = useRef<HTMLDivElement>(null!);
   const [following, setFollowing] = useState(true);
   const [renderingElement, setRenderingElement] = useState(children);
+  const [height, setHeight] = useState(0);
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      setHeight(containerRef.current!.clientHeight);
+    });
+    observer.observe(containerRef.current!, { box: "border-box" });
+    return () => observer.disconnect();
+  });
   useEffect(() => {
     const dom = containerRef.current;
     if (dom) {
@@ -23,7 +31,7 @@ function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: Rea
     if (following) {
       dom.scroll({ top: dom.scrollHeight });
     }
-  }, [renderingElement, following]);
+  }, [renderingElement, following, height]);
   return (
     <div style={style} ref={containerRef}>
       {renderingElement}
