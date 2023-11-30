@@ -140,6 +140,6 @@ def load_monit_hardware():
         hardware.set_update_intervel(cfg["interval"])
 
         # watch updates in daemon
-        @watch(name="hardware", _channel=SYSTEM_CHANNEL, interval=cfg["interval"])
+        @watch(name="hardware", _channel=SYSTEM_CHANNEL, interval=cfg["interval"], initiative=False)
         def update_env_stat():
             return hardware.json()

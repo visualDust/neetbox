@@ -21,7 +21,7 @@ def print_to_console(metrix):
     logger.log(f"metrix from train: {metrix}")
 
 
-@watch("log-some-prefix", interval=5.0)
+@watch("log-some-prefix",initiative=False, interval=5.0)
 def log_with_some_prefix():
     logger.ok("some ok")
     logger.info("some info")

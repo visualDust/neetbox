@@ -99,7 +99,7 @@ class _NeetActionManager(metaclass=Singleton):
             run_and_callback()
             return
 
-    @watch(name="__action", initiative=True, _channel=SYSTEM_CHANNEL)
+    @watch(name="__action", _channel=SYSTEM_CHANNEL,initiative=True)
     def _update_action_dict():
         # for status updater
         return _NeetActionManager.get_action_dict()

@@ -23,7 +23,7 @@ def _add_upload_thread_to_watch(daemon_config, base_addr, display_name):
     _api_name = "sync"
     _api_addr = f"{base_addr}{CLIENT_API_ROOT}/{_api_name}/{display_name}"
 
-    @watch(interval=daemon_config["uploadInterval"], overwrite=True)
+    @watch(interval=daemon_config["uploadInterval"], overwrite=True, initiative=False)
     def upload_via_http():
         # dump status as json
         _data = json.dumps(_UPDATE_VALUE_DICT[SYSTEM_CHANNEL], default=str)

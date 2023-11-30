@@ -136,7 +136,7 @@ def _watch(
 def watch(
     name: str = None,
     interval: float = None,
-    initiative: bool = False,
+    initiative: bool = True,
     overwrite: bool = False,
     _channel: str = None,
 ):
