@@ -6,6 +6,7 @@
 
 DEFAULT_WORKSPACE_CONFIG = {
     "name": None,
+    "workspace-id": None,
     "version": None,
     "logging": {"level": "INFO", "logdir": None},
     "pipeline": {
@@ -42,6 +43,7 @@ def update_workspace_config_with(cfg: dict):
 
     global WORKSPACE_CONFIG
     _update_dict_recursively(WORKSPACE_CONFIG, cfg)
+    return WORKSPACE_CONFIG
 
 
 def get_current():

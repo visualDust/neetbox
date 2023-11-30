@@ -1,4 +1,5 @@
 name = "neetbox"
+workspace-id = "b42c4749-1fa8-4a9d-ae30-80e2c69309f8"
 
 [logging]
 level = "INFO"
@@ -7,11 +8,11 @@ level = "INFO"
 updateInterval = 0.5
 
 [integrations]
-autoload = false
+autoload = true
 
 [daemon]
 enable = true
-host = "localhost"
+host = "127.0.0.1"
 port = 20202
 allowIpython = false
 mute = true

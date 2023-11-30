@@ -8,6 +8,7 @@ from typing import Callable
 import httpx
 import websocket
 
+import neetbox
 from neetbox.config import get_module_level_config
 from neetbox.daemon._protocol import *
 from neetbox.logging.formatting import LogStyle
@@ -64,9 +65,6 @@ class ClientConn(metaclass=Singleton):
             return
 
         cfg = get_module_level_config()
-        _root_config = get_module_level_config("@")
-        ClientConn._display_name = cfg["displayName"] or _root_config["name"]
-
         # ws server url
         ClientConn.ws_server_addr = f"ws://{cfg['host']}:{cfg['port'] + 1}"
 
@@ -89,12 +87,11 @@ class ClientConn(metaclass=Singleton):
         _ws_initialized = True
 
     def __on_ws_open(ws: websocket.WebSocketApp):
-        _display_name = ClientConn._display_name
-        logger.ok(f"client websocket connected. sending handshake as '{_display_name}'...")
+        logger.ok(f"client websocket connected. sending handshake as '{neetbox.WORKSPACE_ID}'...")
         ws.send(  # send handshake request
             json.dumps(
                 {
-                    NAME_NAME_KEY: _display_name,
+                    WORKSPACE_ID_KEY: neetbox.WORKSPACE_ID,
                     EVENT_TYPE_NAME_KEY: "handshake",
                     PAYLOAD_NAME_KEY: {"who": "cli"},
                     EVENT_ID_NAME_KEY: 0,  # todo how does ack work
@@ -149,7 +146,7 @@ class ClientConn(metaclass=Singleton):
             ClientConn.__ws_client.send(
                 json.dumps(
                     {
-                        NAME_NAME_KEY: ClientConn._display_name,
+                        WORKSPACE_ID_KEY: neetbox.WORKSPACE_ID,
                         EVENT_TYPE_NAME_KEY: event_type,
                         PAYLOAD_NAME_KEY: payload,
                         EVENT_ID_NAME_KEY: event_id,

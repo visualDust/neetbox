@@ -1,11 +1,13 @@
 import os
 import sys
+import uuid
 
 import toml
 
 import neetbox.daemon as daemon
 import neetbox.integrations as integrations
 from neetbox.config import default as default_config
+from neetbox.config import get_module_level_config
 from neetbox.config._config import update_workspace_config_with
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
@@ -15,6 +17,7 @@ logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws
 
 MODULE_NAME = get_frame_module_traceback(1).__name__  # type: ignore
 CONFIG_FILE_NAME = f"{MODULE_NAME}.toml"
+WORKSPACE_ID: str = None
 
 
 def _init_workspace(path=None, **kwargs) -> bool:
@@ -30,6 +33,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
                     _config["name"] = kwargs["name"]
                 else:  # using the folder name
                     _config["name"] = os.path.basename(os.path.normpath(os.getcwd()))
+                _config["workspace-id"] = str(uuid.uuid4())
                 toml.dump(_config, config_file)
             logger.ok(f"Workspace config created as {config_file_path}.")
             return True
@@ -42,6 +46,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
 
 
 def _load_workspace(path=None) -> bool:
+    global WORKSPACE_ID
     if path:
         os.chdir(path=path)
     current_path = os.getcwd()
@@ -50,8 +55,9 @@ def _load_workspace(path=None) -> bool:
         logger.err(f"Config file {config_file_path} not exists.")
         return False
     try:  # do load
-        load_config = toml.load(config_file_path)
-        update_workspace_config_with(load_config)
+        _config_loaded_from_file = toml.load(config_file_path)
+        update_workspace_config_with(_config_loaded_from_file)
+        WORKSPACE_ID = get_module_level_config()["workspace-id"]
         logger.ok(f"workspace config loaded from {config_file_path}.")
         return True
     except Exception as e:
