@@ -64,13 +64,14 @@ is_in_daemon_process = (
 )
 
 
-def _load_workspace_as_a_project():
+def _load_workspace_as_a_project(connect_daemon=False):
     success = _load_workspace()  # init from config file
     if not success:  # failed to load workspace config, exiting
         os._exit(255)
     # post init
     integrations._post_init_workspace()
-    daemon._try_attach_daemon()
+    if connect_daemon:
+        daemon.connect()
 
 
 def _is_in_workspace():
@@ -81,4 +82,4 @@ if len(sys.argv) > 0 and sys.argv[0].endswith("neet") or is_in_daemon_process:
     # running in cli or daemon process, do not load workspace
     pass
 elif _is_in_workspace():  # if a config file exist and not running in cli
-    _load_workspace_as_a_project()
+    _load_workspace_as_a_project(connect_daemon=True)

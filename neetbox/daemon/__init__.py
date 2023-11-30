@@ -7,10 +7,11 @@
 import json
 import subprocess
 import time
+from neetbox.config import get_module_level_config
 
-from neetbox.daemon.client._action_agent import _NeetActionManager as NeetActionManager
+from neetbox.daemon.client._client_action_agent import _NeetActionManager as NeetActionManager
 from neetbox.daemon.client._client import connection
-from neetbox.daemon.client._update_thread import connect_daemon
+from neetbox.daemon.client._client_http_upload_thread import connect_daemon
 from neetbox.daemon.server.daemonable_process import DaemonableProcess
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
@@ -18,7 +19,8 @@ from neetbox.logging.logger import Logger
 logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 
-def __attach_daemon(daemon_config):
+def connect():
+    daemon_config = get_module_level_config()
     if not daemon_config["allowIpython"]:
         try:
             eval("__IPYTHON__")
@@ -76,14 +78,6 @@ def __attach_daemon(daemon_config):
         return False
 
 
-def _try_attach_daemon():
-    from neetbox.config import get_module_level_config
-
-    _cfg = get_module_level_config()
-    if _cfg["enable"]:
-        __attach_daemon(_cfg)
-
-
 action = NeetActionManager.register
 ws_subscribe = connection.ws_subscribe
-__all__ = ["action", "ws_subscribe", "NeetActionManager", "_try_attach_daemon"]
+__all__ = ["action", "ws_subscribe", "NeetActionManager"]

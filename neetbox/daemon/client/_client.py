@@ -157,9 +157,6 @@ class ClientConn(metaclass=Singleton):
                     default=str,
                 )
             )
-        else:
-            if not _ws_initialized:  # ws not intialized
-                ClientConn._init_ws()
 
 
 # assign this connection to websocket log writer

@@ -26,9 +26,6 @@ from websocket_server import WebsocketServer
 
 from neetbox.daemon._protocol import *
 
-__PROC_NAME = "NEETBOX SERVER"
-setproctitle.setproctitle(__PROC_NAME)
-
 
 def server_process(cfg, debug=False):
     # describe a client
@@ -53,7 +50,9 @@ def server_process(cfg, debug=False):
 
     # ===============================================================
 
-    print()
+    __PROC_NAME = "NEETBOX SERVER"
+    setproctitle.setproctitle(__PROC_NAME)
+
     if debug:
         console.log(f"Running with debug, using APIFlask")
         from apiflask import APIFlask

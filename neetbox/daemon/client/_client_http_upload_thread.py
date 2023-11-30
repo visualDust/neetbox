@@ -67,4 +67,5 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
             daemon_config=cfg, base_addr=_base_addr, display_name=_display_name
         )
 
+    connection._init_ws()
     return True
