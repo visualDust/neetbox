@@ -11,11 +11,9 @@ from rich.console import Console
 
 console = Console()
 import logging
-import sys
 import time
-from dataclasses import dataclass
 from threading import Thread
-from typing import Any, Dict, Tuple
+from typing import Dict, Tuple
 
 werkzeug_log = logging.getLogger("werkzeug")
 werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
@@ -319,13 +317,13 @@ def server_process(cfg, debug=False):
 
     @app.route(f"{FRONTEND_API_ROOT}/shutdown", methods=["POST"])
     def shutdown():
-        def __sleep_and_shutdown(secs=3):
+        def __sleep_and_shutdown(secs=1):
             time.sleep(secs)
             os._exit(0)
 
         Thread(target=__sleep_and_shutdown).start()  # shutdown after 3 seconds
         console.log(f"BYE.")
-        return f"shutdown in {3} seconds."
+        return f"shutdown in 1 seconds."
 
     console.log(f"launching websocket server...")
     ws_server.run_forever(threaded=True)
