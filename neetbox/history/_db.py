@@ -171,9 +171,19 @@ class DBConnection:
         _, lastrowid = self._execute(sql_query, _timestamp, json_data, blob_data)
         return lastrowid
 
-    def read(self, table_name: str, condition: QueryCondition = None):
+    def read_json(self, table_name: str, condition: QueryCondition = None):
+        return self.read(table_name, ("id", "timestamp", "data"), condition)
+
+    def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
+        return self.read(
+            table_name,
+            ("id", "timestamp", "json", *(("data",) if not meta_only else ())),
+            condition,
+        )
+
+    def read(self, table_name: str, columns: Tuple[str], condition: QueryCondition = None):
         condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT id, timestamp, data FROM {table_name} {condition}"
+        sql_query = f"SELECT {', '.join(columns)} FROM {table_name} {condition}"
         result, _ = self._execute(sql_query, fetch=FetchType.ALL)
         return result
 
@@ -192,7 +202,7 @@ if __name__ == "__main__":
             "uploadInterval": 10,
         },
     )
-    for item in conn.read(
+    for item in conn.read_json(
         table_name="test_log",
         condition=QueryCondition(
             timestamp_range=(datetime.now() - timedelta(days=1)).strftime(DATETIME_FORMAT)

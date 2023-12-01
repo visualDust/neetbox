@@ -19,7 +19,7 @@ werkzeug_log = logging.getLogger("werkzeug")
 werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 
 import setproctitle
-from flask import abort, json, request, send_from_directory
+from flask import Response, abort, json, request, send_from_directory
 from websocket_server import WebsocketServer
 
 from neetbox.daemon._protocol import *
@@ -348,18 +348,26 @@ def server_process(cfg, debug=False):
         lastrowid = save_blob_to_history(
             project_id=project_id, table_name="image", json_data=_json_data, blob_data=image_bytes
         )
-        # ws_send_to_frontends_of_id() # todo
+        ws_send_to_frontends_of_id(
+            project_id,
+            json.dumps({"event-type": "image", "imageId": lastrowid, "metadata": _json_data}),
+        )
         return {"result": "ok", "id": lastrowid}
 
     @app.route(f"/image/<project_id>/<image_id>", methods=["GET"])
     def get_image_of_id(project_id, image_id: int):
         if project_id not in __BRIDGES:
             return  # cannot operate history if client is not connected
-        _, _, _json_data, _blob_data = __BRIDGES[project_id].historyDB.read(
-            table_name="image", condition=QueryCondition(id_range=image_id)
+        meta = request.args.get("meta") is not None
+        [(_, _, json, image)] = __BRIDGES[project_id].historyDB.read_blob(
+            table_name="image", condition=QueryCondition(id_range=image_id), meta_only=meta
         )
-        _json_data["image"] = _blob_data
-        return _json_data
+
+        return (
+            Response(json, mimetype="application/json")
+            if meta
+            else Response(image, mimetype="image")
+        )
 
     @app.route(f"{FRONTEND_API_ROOT}/shutdown", methods=["POST"])
     def shutdown():

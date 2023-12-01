@@ -114,10 +114,13 @@ def sys_exit():
     os._exit(0)
 
 
-from PIL import Image
+@action()
+def send_image():
+    from PIL import Image
 
-logo_image = Image.open("logo.png")
-plotting.impost(logo_image, name="logo")
+    with Image.open("logo.png") as logo_image:
+        plotting.impost(logo_image, name="logo")
+
 
 for i in range(99999):
     sleep(1)

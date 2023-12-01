@@ -35,6 +35,8 @@ export class WsClient {
       } else if (json["event-type"] === "log") {
         json.payload._id = this.nextLogId++;
         project.handleLog(json.payload);
+      } else {
+        console.warn("ws unhandled message", json);
       }
     };
   }
