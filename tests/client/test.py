@@ -3,11 +3,12 @@ import time
 from random import random
 from time import sleep
 
+import snake
+
+import neetbox.plotting as plotting
 from neetbox.daemon import action
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
-
-import snake
 
 
 @watch("train", initiative=True)
@@ -21,7 +22,7 @@ def print_to_console(metrix):
     logger.log(f"metrix from train: {metrix}")
 
 
-@watch("log-some-prefix",initiative=False, interval=5.0)
+@watch("log-some-prefix", initiative=False, interval=5.0)
 def log_with_some_prefix():
     logger.ok("some ok")
     logger.info("some info")
@@ -29,12 +30,13 @@ def log_with_some_prefix():
     logger.warn("some warn")
     logger.err("some error")
 
+
 @action()
 def log_perf_test(interval: int, count: int):
     for i in range(count):
         sleep(interval)
-        logger.info(f'log_perf_test {i + 1}/{count}')
-    
+        logger.info(f"log_perf_test {i + 1}/{count}")
+
 
 @action(name="action-1")
 def action_1(text: str):
@@ -111,6 +113,11 @@ def sys_exit():
     logger.log("shutdown received, shutting down immediately.")
     os._exit(0)
 
+
+from PIL import Image
+
+logo_image = Image.open("logo.png")
+plotting.impost(logo_image, name="logo")
 
 for i in range(99999):
     sleep(1)

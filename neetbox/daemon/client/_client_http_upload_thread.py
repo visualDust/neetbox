@@ -22,7 +22,7 @@ logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 def _add_upload_thread_to_watch(daemon_config, base_addr, workspace_id):
     _api_name = "sync"
-    _api_addr = f"{base_addr}{CLIENT_API_ROOT}/{_api_name}/{workspace_id}"
+    _api = f"{CLIENT_API_ROOT}/{_api_name}/{workspace_id}"
 
     @watch(interval=daemon_config["uploadInterval"], overwrite=True, initiative=False)
     def upload_via_http():
@@ -31,7 +31,7 @@ def _add_upload_thread_to_watch(daemon_config, base_addr, workspace_id):
         _headers = {"Content-Type": "application/json"}
         try:
             # upload data
-            resp = connection.http.post(_api_addr, json=_data, headers=_headers)
+            resp = connection.post(api=_api, json=_data, headers=_headers)
             if resp.is_error:  # upload failed
                 raise IOError(f"Failed to upload data to daemon. ({resp.status_code})")
         except Exception as e:

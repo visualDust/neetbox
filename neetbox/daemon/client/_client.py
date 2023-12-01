@@ -33,10 +33,32 @@ def _load_http_client():
     return __local_http_client
 
 
+@functools.lru_cache()
+def addr_of_api(api):
+    _cfg = get_module_level_config()
+    _daemon_server_address = f"{_cfg['host']}:{_cfg['port']}"
+    _base_addr = f"http://{_daemon_server_address}"
+    if not api.startswith("/"):
+        api = f"/{api}"
+    return f"{_base_addr}{api}"
+
+
 # singleton
 class ClientConn(metaclass=Singleton):
     # http client
     http: httpx.Client = _load_http_client()
+
+    def post(api: str, *args, **kwargs):
+        return ClientConn.http.post(addr_of_api(api), *args, **kwargs)
+
+    def get(api: str, *args, **kwargs):
+        return ClientConn.http.post(addr_of_api(api), *args, **kwargs)
+
+    def put(api: str, *args, **kwargs):
+        return ClientConn.http.put(addr_of_api(api), *args, **kwargs)
+
+    def delete(api: str, *args, **kwargs):
+        return ClientConn.http.delete(addr_of_api(api), *args, **kwargs)
 
     __ws_client: websocket.WebSocketApp = None  # _websocket_client
     __ws_subscription = defaultdict(lambda: {})  # default to no subscribers
@@ -91,7 +113,7 @@ class ClientConn(metaclass=Singleton):
         ws.send(  # send handshake request
             json.dumps(
                 {
-                    WORKSPACE_ID_KEY: neetbox.WORKSPACE_ID,
+                    PROJECT_ID_KEY: neetbox.WORKSPACE_ID,
                     EVENT_TYPE_NAME_KEY: "handshake",
                     PAYLOAD_NAME_KEY: {"who": "cli"},
                     EVENT_ID_NAME_KEY: 0,  # todo how does ack work
@@ -146,7 +168,7 @@ class ClientConn(metaclass=Singleton):
             ClientConn.__ws_client.send(
                 json.dumps(
                     {
-                        WORKSPACE_ID_KEY: neetbox.WORKSPACE_ID,
+                        PROJECT_ID_KEY: neetbox.WORKSPACE_ID,
                         EVENT_TYPE_NAME_KEY: event_type,
                         PAYLOAD_NAME_KEY: payload,
                         EVENT_ID_NAME_KEY: event_id,

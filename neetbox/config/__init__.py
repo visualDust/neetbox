@@ -4,7 +4,6 @@
 # URL:    https://gong.host
 # Date:   20230413
 
-
 import inspect
 
 from neetbox.config._config import DEFAULT_WORKSPACE_CONFIG as default

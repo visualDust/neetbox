@@ -73,10 +73,21 @@ def server_process(cfg, debug=False):
     __BRIDGES: Dict[str, Bridge] = {}  # manage connections
     connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
 
-    def save_json_to_history(project_id, table_name, data):
+    def save_json_to_history(project_id, table_name, json_data):
         if project_id not in __BRIDGES:
-            return  # todo also load not connected data from history
-        __BRIDGES[project_id].historyDB.write_json(table_name=table_name, data=data)
+            return  # cannot operate history if client is not connected
+        lastrowid = __BRIDGES[project_id].historyDB.write_json(
+            table_name=table_name, json_data=json_data
+        )
+        return lastrowid
+
+    def save_blob_to_history(project_id, table_name, json_data, blob_data):
+        if project_id not in __BRIDGES:
+            return  # cannot operate history if client is not connected
+        lastrowid = __BRIDGES[project_id].historyDB.write_blob(
+            table_name=table_name, json_data=json_data, blob_data=blob_data
+        )
+        return lastrowid
 
     # ========================  WS  SERVER  ===========================
 
@@ -127,7 +138,7 @@ def server_process(cfg, debug=False):
             -   forward message to client
     """
 
-    def send_to_frontends_of_id(server, project_id, message):
+    def ws_send_to_frontends_of_id(project_id, message):
         if project_id not in __BRIDGES:
             if debug:
                 console.log(
@@ -136,10 +147,12 @@ def server_process(cfg, debug=False):
             return  # no such bridge
         _target_bridge = __BRIDGES[project_id]
         for web_ws in _target_bridge.web_ws_list:
-            server.send_message(client=web_ws, msg=message)  # forward original message to frontend
+            ws_server.send_message(
+                client=web_ws, msg=message
+            )  # forward original message to frontend
         return
 
-    def send_to_client_of_id(server, project_id, message):
+    def ws_send_to_client_of_id(project_id, message):
         if project_id not in __BRIDGES:
             if debug:
                 console.log(
@@ -148,7 +161,7 @@ def server_process(cfg, debug=False):
             return  # no such bridge
         _target_bridge = __BRIDGES[project_id]
         _client = _target_bridge.cli_ws
-        server.send_message(client=_client, msg=message)  # forward original message to client
+        ws_server.send_message(client=_client, msg=message)  # forward original message to client
         return
 
     def handle_ws_connect(client, server):
@@ -172,7 +185,7 @@ def server_process(cfg, debug=False):
     def on_event_type_handshake(client, server, message_dict, message):
         _payload = message_dict[PAYLOAD_NAME_KEY]
         _event_id = message_dict[EVENT_ID_NAME_KEY]
-        _project_id = message_dict[WORKSPACE_ID_KEY]
+        _project_id = message_dict[PROJECT_ID_KEY]
         if client["id"] in connected_clients:
             # !!! cli/web could change their project name by handshake twice, this is a legal behavior
             handle_ws_disconnect(
@@ -233,26 +246,24 @@ def server_process(cfg, debug=False):
 
     def on_event_type_log(client, server, message_dict, message):
         # forward log to frontend. logs should only be sent by cli and only be received by frontends
-        _project_id = message_dict[WORKSPACE_ID_KEY]
+        _project_id = message_dict[PROJECT_ID_KEY]
         if _project_id not in __BRIDGES:
             # project id must exist
             # drop anyway if not exist
             if debug:
                 console.log(f"handle log. {_project_id} not found.")
             return
-        send_to_frontends_of_id(
-            server=server, project_id=_project_id, message=message
-        )  # forward to frontends
-        save_json_to_history(project_id=_project_id, table_name="log", data=message)
+        ws_send_to_frontends_of_id(project_id=_project_id, message=message)  # forward to frontends
+        save_json_to_history(project_id=_project_id, table_name="log", json_data=message)
         return  # return after handling log forwarding
 
     def on_event_type_action(client, server, message_dict, message):
-        _project_id = message_dict[WORKSPACE_ID_KEY]
+        _project_id = message_dict[PROJECT_ID_KEY]
         _, _who = connected_clients[client["id"]]  # check if is web or cli
         if _who == "web":  # frontend send action query to client
-            send_to_client_of_id(server, _project_id, message=message)
+            ws_send_to_client_of_id(_project_id, message=message)
         else:  # _who == 'cli', client send action result back to frontend(s)
-            send_to_frontends_of_id(server, _project_id, message=message)
+            ws_send_to_frontends_of_id(_project_id, message=message)
         return  # return after handling action forwarding
 
     def handle_ws_message(client, server: WebsocketServer, message):
@@ -304,7 +315,7 @@ def server_process(cfg, debug=False):
 
     @app.route("/hello", methods=["GET"])
     def just_send_hello():
-        return json.dumps({"hello": "hello"})
+        return {"hello": "hello"}
 
     @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>", methods=["GET"])
     def return_status_of(project_id):
@@ -327,8 +338,28 @@ def server_process(cfg, debug=False):
         if project_id not in __BRIDGES:  # Client not found
             __BRIDGES[project_id] = Bridge(project_id=project_id)  # Create from sync request
         __BRIDGES[project_id].set_status(_json_data)
-        save_json_to_history(project_id=project_id, table_name="status", data=_json_data)
-        return "ok"
+        save_json_to_history(project_id=project_id, table_name="status", json_data=_json_data)
+        return {"result": "ok"}
+
+    @app.route(f"/image/<project_id>", methods=["PUT"])
+    def upload_image(project_id):
+        _json_data = request.form.to_dict()
+        image_bytes = request.files["image"].read()
+        lastrowid = save_blob_to_history(
+            project_id=project_id, table_name="image", json_data=_json_data, blob_data=image_bytes
+        )
+        # ws_send_to_frontends_of_id() # todo
+        return {"result": "ok", "id": lastrowid}
+
+    @app.route(f"/image/<project_id>/<image_id>", methods=["GET"])
+    def get_image_of_id(project_id, image_id: int):
+        if project_id not in __BRIDGES:
+            return  # cannot operate history if client is not connected
+        _, _, _json_data, _blob_data = __BRIDGES[project_id].historyDB.read(
+            table_name="image", condition=QueryCondition(id_range=image_id)
+        )
+        _json_data["image"] = _blob_data
+        return _json_data
 
     @app.route(f"{FRONTEND_API_ROOT}/shutdown", methods=["POST"])
     def shutdown():

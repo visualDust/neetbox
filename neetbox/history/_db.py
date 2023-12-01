@@ -55,7 +55,7 @@ class QueryCondition:
         if self.id_range[0]:
             _id_0, _id_1 = self.id_range
             _id_cond = (
-                f"{ID_COLUMN_NAME}>={_id_0}"
+                f"{ID_COLUMN_NAME}=={_id_0}"
                 if _id_1 is None
                 else f"{ID_COLUMN_NAME} BETWEEN {_id_0} AND {_id_1}"
             )
@@ -128,50 +128,61 @@ class DBConnection:
                 result = result.fetchmany(kwargs["many"])
         if save_immediately:
             self.connection.commit()
-        return result
+        return result, cur.lastrowid
 
     def get_table_names(self):
         sql_query = "SELECT name FROM sqlite_master;"
-        table_names = self._execute(sql_query, fetch=FetchType.ALL)
+        table_names, _ = self._execute(sql_query, fetch=FetchType.ALL)
         return table_names
 
     def get_db_version(self):
         # create if there is no version table
-        sql_query = "CREATE TABLE IF NOT EXISTS version ( version );"
+        sql_query = "CREATE TABLE IF NOT EXISTS version ( version TEXT NON NULL );"
         self._execute(sql_query)
         sql_query = "SELECT version FROM version"
-        _version = self._execute(sql_query, fetch=FetchType.ONE)
+        _version, _ = self._execute(sql_query, fetch=FetchType.ONE)
         if _version is None:
             sql_query = f"INSERT INTO version VALUES (?);"
             self._execute(sql_query, NEETBOX_VERSION)
             return NEETBOX_VERSION
         return _version[0]
 
-    def write_json(self, table_name, data, timestamp=None):
+    def write_json(self, table_name, json_data, timestamp=None):
         # create if there is no version table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY, timestamp text non null, data text non null );"
+        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, data TEXT NON NULL );"
         self._execute(sql_query)
         _timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
         sql_query = f"INSERT INTO {table_name}(timestamp, data) VALUES (?, ?)"
-        if not isinstance(data, str):
-            data = json.dumps(data)
-        self._execute(sql_query, _timestamp, data)
+        if not isinstance(json_data, str):
+            json_data = json.dumps(json_data)
+        _, lastrowid = self._execute(sql_query, _timestamp, json_data)
+        return lastrowid
 
-    def read_json(self, table_name: str, condition: QueryCondition = None):
+    def write_blob(self, table_name, json_data, blob_data, timestamp=None):
+        if isinstance(blob_data, bytes):
+            blob_data = bytearray(blob_data)
+        if not isinstance(json_data, str):
+            json_data = json.dumps(json_data)
+        # create if there is no version table
+        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, json TEXT, data BLOB NON NULL );"
+        self._execute(sql_query)
+        _timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
+        sql_query = f"INSERT INTO {table_name}(timestamp, json, data) VALUES (?, ?, ?)"
+        _, lastrowid = self._execute(sql_query, _timestamp, json_data, blob_data)
+        return lastrowid
+
+    def read(self, table_name: str, condition: QueryCondition = None):
         condition = condition.dumps() if condition else ""
-        print(condition)
         sql_query = f"SELECT id, timestamp, data FROM {table_name} {condition}"
-        return self._execute(sql_query, fetch=FetchType.ALL)
-
-    def write_image(self, table_name, data):
-        pass  # todo (VisualDust)
+        result, _ = self._execute(sql_query, fetch=FetchType.ALL)
+        return result
 
 
 if __name__ == "__main__":
     conn = DBConnection(path=".ignore/some.db")
     conn.write_json(
         table_name="test_log",
-        data={
+        json_data={
             "enable": True,
             "host": "localhost",
             "port": 5000,
@@ -181,7 +192,7 @@ if __name__ == "__main__":
             "uploadInterval": 10,
         },
     )
-    for item in conn.read_json(
+    for item in conn.read(
         table_name="test_log",
         condition=QueryCondition(
             timestamp_range=(datetime.now() - timedelta(days=1)).strftime(DATETIME_FORMAT)

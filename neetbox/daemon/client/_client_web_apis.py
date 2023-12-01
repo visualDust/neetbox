@@ -9,14 +9,14 @@ from neetbox.daemon._protocol import *
 from neetbox.daemon.client._client import connection
 
 
-def _get(url):
-    r = connection.http.get(url)
+def _get(api):
+    r = connection.get(api=api)
     _data = r.json()
     return _data
 
 
-def _post(url, data=None):
-    r = connection.http.post(url, json=data)
+def _post(api, data=None):
+    r = connection.post(api=api, json=data)
     return r
 
 
