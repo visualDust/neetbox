@@ -111,13 +111,16 @@ class DBConnection:
             else f"{HISTORY_FILE_ROOT}/{workspace_id}.neethistory"
         )
         # connect to sqlite
-        self.connection = sqlite3.connect(db_file, isolation_level=None)
+        self.connection = sqlite3.connect(db_file)
         # check neetbox version
         _db_file_version = self.get_db_version()
         if NEETBOX_VERSION != _db_file_version:
             logger.warn(
                 f"History file version not match: reading from version {_db_file_version} with neetbox version {NEETBOX_VERSION}"
             )
+        logger.info(
+            f"History file '{db_file}'(version={_db_file_version}) attached for id {workspace_id}"
+        )
 
     def _execute(self, query, *args, fetch: FetchType = None, save_immediately=False, **kwargs):
         cur = self.connection.cursor()
@@ -169,6 +172,11 @@ class DBConnection:
 
     def write_image(self, table_name, data):
         pass  # todo (VisualDust)
+
+
+def get_history_db(project_id):
+    conn = DBConnection(workspace_id=project_id)
+    return conn
 
 
 if __name__ == "__main__":

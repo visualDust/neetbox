@@ -23,29 +23,10 @@ from flask import abort, json, request, send_from_directory
 from websocket_server import WebsocketServer
 
 from neetbox.daemon._protocol import *
+from neetbox.daemon.server._history import *
 
 
 def server_process(cfg, debug=False):
-    # describe a client
-    class Bridge:
-        connected: bool
-        name: str
-        status: dict = {}
-        cli_ws = None  # cli ws sid
-        web_ws_list = (
-            []
-        )  # frontend ws sids. client data should be able to be shown on multiple frontend
-
-        def __init__(self, name) -> None:
-            # initialize non-websocket things
-            self.name = name
-
-        def handle_ws_recv(self):
-            pass
-
-        def ws_send(self):
-            pass
-
     # ===============================================================
 
     __PROC_NAME = "NEETBOX SERVER"
@@ -66,6 +47,26 @@ def server_process(cfg, debug=False):
     ws_server = WebsocketServer(host="0.0.0.0", port=cfg["port"] + 1)
     __BRIDGES = {}  # manage connections
     connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
+
+    # describe a client
+    class Bridge:
+        connected: bool
+        id: str
+        status: dict = {}
+        cli_ws = None  # cli ws sid
+        historyDB = None
+        web_ws_list = (
+            []
+        )  # frontend ws sids. client data should be able to be shown on multiple frontend
+
+        def set_status(self, status):
+            self.status = status
+            self.historyDB.write_json(table_name="status", data=status)
+
+        def __init__(self, project_id) -> None:
+            # initialize non-websocket things
+            self.id = project_id
+            self.historyDB = get_history_db(project_id=project_id)
 
     # ========================  WS  SERVER  ===========================
 
@@ -184,7 +185,9 @@ def server_process(cfg, debug=False):
                 # new connection from cli
                 # check if Bridge with name exist
                 if _project_id not in __BRIDGES:  # there is no such bridge
-                    _target_bridge = Bridge(name=_project_id)  # create new bridge for this name
+                    _target_bridge = Bridge(
+                        project_id=_project_id
+                    )  # create new bridge for this name
                     __BRIDGES[_project_id] = _target_bridge
                 __BRIDGES[_project_id].cli_ws = client  # assign cli to bridge
                 connected_clients[client["id"]] = (_project_id, "cli")
@@ -297,7 +300,7 @@ def server_process(cfg, debug=False):
     def sync_status_of(project_id):  # client side function
         _json_data = request.get_json()
         if project_id not in __BRIDGES:  # Client not found
-            __BRIDGES[project_id] = Bridge(name=project_id)  # Create from sync request
+            __BRIDGES[project_id] = Bridge(project_id=project_id)  # Create from sync request
         __BRIDGES[project_id].status = _json_data
 
         return "ok"

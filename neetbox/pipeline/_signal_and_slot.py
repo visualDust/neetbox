@@ -25,6 +25,8 @@ _WATCH_QUERY_DICT = Registry("__pipeline_watch")
 _LISTEN_QUERY_DICT = collections.defaultdict(lambda: {})
 _UPDATE_VALUE_DICT = collections.defaultdict(lambda: {})
 
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.SSS
+
 _DEFAULT_CHANNEL = str(
     uuid4()
 )  # default watch and listen channel. users use this channel by default. default channel name varies on each start
@@ -66,7 +68,7 @@ def __update_and_get(name: str, *args, **kwargs):
     _the_value = _watched_fun(*args, **kwargs)
     _UPDATE_VALUE_DICT[_channel][name] = {
         "value": _the_value,
-        "timestamp": datetime.timestamp(datetime.now()),
+        "timestamp": datetime.now().strftime(DATETIME_FORMAT),
         "interval": None
         if _watch_config.interval is None
         else (_watch_config.interval * __TIME_UNIT_SEC),
