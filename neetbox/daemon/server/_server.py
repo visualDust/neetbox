@@ -57,7 +57,6 @@ def server_process(cfg, debug=False):
         )  # frontend ws sids. client data should be able to be shown on multiple frontend
 
         def set_status(self, status):
-            self.historyDB.write_json(table_name="status", data=status)
             status = json.loads(status) if isinstance(status, str) else status
             self.status = status
 
@@ -73,6 +72,11 @@ def server_process(cfg, debug=False):
 
     __BRIDGES: Dict[str, Bridge] = {}  # manage connections
     connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
+
+    def save_json_to_history(project_id, table_name, data):
+        if project_id not in __BRIDGES:
+            return  # todo also load not connected data from history
+        __BRIDGES[project_id].historyDB.write_json(table_name=table_name, data=data)
 
     # ========================  WS  SERVER  ===========================
 
@@ -123,6 +127,30 @@ def server_process(cfg, debug=False):
             -   forward message to client
     """
 
+    def send_to_frontends_of_id(server, project_id, message):
+        if project_id not in __BRIDGES:
+            if debug:
+                console.log(
+                    f"cannot broadcast message to frontends under name {project_id}: name not found."
+                )
+            return  # no such bridge
+        _target_bridge = __BRIDGES[project_id]
+        for web_ws in _target_bridge.web_ws_list:
+            server.send_message(client=web_ws, msg=message)  # forward original message to frontend
+        return
+
+    def send_to_client_of_id(server, project_id, message):
+        if project_id not in __BRIDGES:
+            if debug:
+                console.log(
+                    f"cannot forward message to client under name {project_id}: name not found."
+                )
+            return  # no such bridge
+        _target_bridge = __BRIDGES[project_id]
+        _client = _target_bridge.cli_ws
+        server.send_message(client=_client, msg=message)  # forward original message to client
+        return
+
     def handle_ws_connect(client, server):
         console.log(f"client {client} connected. waiting for handshake...")
 
@@ -141,126 +169,117 @@ def server_process(cfg, debug=False):
         console.log(f"a {_who} disconnected with id {client['id']}")
         # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
-    def handle_ws_message(client, server: WebsocketServer, message):
-        message_dict = json.loads(message)
-        # handle event-type
-        _event_type = message_dict[EVENT_TYPE_NAME_KEY]
+    def on_event_type_handshake(client, server, message_dict, message):
         _payload = message_dict[PAYLOAD_NAME_KEY]
         _event_id = message_dict[EVENT_ID_NAME_KEY]
         _project_id = message_dict[WORKSPACE_ID_KEY]
-        if _event_type == "handshake":  # handle handshake
-            if client["id"] in connected_clients:
-                # !!! cli/web could change their project name by handshake twice, this is a legal behavior
-                handle_ws_disconnect(
-                    client=client, server=server
-                )  # perform "software disconnect" before "software connect" again
-            # assign this client to a Bridge
-            _who = _payload["who"]
-            console.log(f"handling handshake for {_who} with name {_project_id}")
-            if _who == "web":
-                # new connection from frontend
-                # check if Bridge with name exist
-                if _project_id not in __BRIDGES:  # there is no such bridge
-                    server.send_message(
-                        client=client,
-                        msg=json.dumps(
-                            WsMsg(
-                                name=_project_id,
-                                event_type="handshake",
-                                event_id=_event_id,
-                                payload={"result": 404, "reason": "name not found"},
-                            ).json()
-                        ),
-                    )
-                else:  # assign web to bridge
-                    _target_bridge = __BRIDGES[_project_id]
-                    _target_bridge.web_ws_list.append(client)
-                    connected_clients[client["id"]] = (_project_id, "web")
-                    server.send_message(
-                        client=client,
-                        msg=json.dumps(
-                            WsMsg(
-                                name=_project_id,
-                                event_type="handshake",
-                                event_id=_event_id,
-                                payload={"result": 200, "reason": "join success"},
-                            ).json()
-                        ),
-                    )
-            elif _who == "cli":
-                # new connection from cli
-                # check if Bridge with name exist
-                if _project_id not in __BRIDGES:  # there is no such bridge
-                    _target_bridge = Bridge(
-                        project_id=_project_id
-                    )  # create new bridge for this name
-                    __BRIDGES[_project_id] = _target_bridge
-                __BRIDGES[_project_id].cli_ws = client  # assign cli to bridge
-                connected_clients[client["id"]] = (_project_id, "cli")
+        if client["id"] in connected_clients:
+            # !!! cli/web could change their project name by handshake twice, this is a legal behavior
+            handle_ws_disconnect(
+                client=client, server=server
+            )  # perform "software disconnect" before "software connect" again
+        # assign this client to a Bridge
+        _who = _payload["who"]
+        console.log(f"handling handshake for {_who} with name {_project_id}")
+        if _who == "web":
+            # new connection from frontend
+            # check if Bridge with name exist
+            if _project_id not in __BRIDGES:  # there is no such bridge
                 server.send_message(
                     client=client,
                     msg=json.dumps(
                         WsMsg(
-                            name=_project_id,
+                            project_id=_project_id,
+                            event_type="handshake",
+                            event_id=_event_id,
+                            payload={"result": 404, "reason": "name not found"},
+                        ).json()
+                    ),
+                )
+            else:  # assign web to bridge
+                _target_bridge = __BRIDGES[_project_id]
+                _target_bridge.web_ws_list.append(client)
+                connected_clients[client["id"]] = (_project_id, "web")
+                server.send_message(
+                    client=client,
+                    msg=json.dumps(
+                        WsMsg(
+                            project_id=_project_id,
                             event_type="handshake",
                             event_id=_event_id,
                             payload={"result": 200, "reason": "join success"},
                         ).json()
                     ),
                 )
+        elif _who == "cli":
+            # new connection from cli
+            # check if Bridge with name exist
+            if _project_id not in __BRIDGES:  # there is no such bridge
+                _target_bridge = Bridge(project_id=_project_id)  # create new bridge for this name
+                __BRIDGES[_project_id] = _target_bridge
+            __BRIDGES[_project_id].cli_ws = client  # assign cli to bridge
+            connected_clients[client["id"]] = (_project_id, "cli")
+            server.send_message(
+                client=client,
+                msg=json.dumps(
+                    WsMsg(
+                        project_id=_project_id,
+                        event_type="handshake",
+                        event_id=_event_id,
+                        payload={"result": 200, "reason": "join success"},
+                    ).json()
+                ),
+            )
+
+    def on_event_type_log(client, server, message_dict, message):
+        # forward log to frontend. logs should only be sent by cli and only be received by frontends
+        _project_id = message_dict[WORKSPACE_ID_KEY]
+        if _project_id not in __BRIDGES:
+            # project id must exist
+            # drop anyway if not exist
+            if debug:
+                console.log(f"handle log. {_project_id} not found.")
+            return
+        send_to_frontends_of_id(
+            server=server, project_id=_project_id, message=message
+        )  # forward to frontends
+        save_json_to_history(project_id=_project_id, table_name="log", data=message)
+        return  # return after handling log forwarding
+
+    def on_event_type_action(client, server, message_dict, message):
+        _project_id = message_dict[WORKSPACE_ID_KEY]
+        _, _who = connected_clients[client["id"]]  # check if is web or cli
+        if _who == "web":  # frontend send action query to client
+            send_to_client_of_id(server, _project_id, message=message)
+        else:  # _who == 'cli', client send action result back to frontend(s)
+            send_to_frontends_of_id(server, _project_id, message=message)
+        return  # return after handling action forwarding
+
+    def handle_ws_message(client, server: WebsocketServer, message):
+        message_dict = json.loads(message)
+        # handle event-type
+        _event_type = message_dict[EVENT_TYPE_NAME_KEY]
+
+        if _event_type == "handshake":  # handle handshake
+            on_event_type_handshake(
+                client=client, server=server, message_dict=message_dict, message=message
+            )
             return  # return after handling handshake
 
         if client["id"] not in connected_clients:
             return  # !!! not handling messages from cli/web without handshake. handshake is a special case and should be handled anyway before this check.
 
-        _, _who = connected_clients[client["id"]]  # check if is web or cli
-
-        def send_to_frontends_of_name(name, message):
-            if name not in __BRIDGES:
-                if debug:
-                    console.log(
-                        f"cannot broadcast message to frontends under name {name}: name not found."
-                    )
-                return  # no such bridge
-            _target_bridge = __BRIDGES[name]
-            for web_ws in _target_bridge.web_ws_list:
-                server.send_message(
-                    client=web_ws, msg=message
-                )  # forward original message to frontend
-            return
-
-        def send_to_client_of_name(name, message):
-            if name not in __BRIDGES:
-                if debug:
-                    console.log(
-                        f"cannot forward message to client under name {name}: name not found."
-                    )
-                return  # no such bridge
-            _target_bridge = __BRIDGES[name]
-            _client = _target_bridge.cli_ws
-            server.send_message(client=_client, msg=message)  # forward original message to client
-            return
-
         if _event_type == "log":  # handle log
-            # forward log to frontend. logs should only be sent by cli and only be received by frontends
-            if _project_id not in __BRIDGES:
-                # project name must exist
-                # drop anyway if not exist
-                if debug:
-                    console.log(f"handle log. {_project_id} not found.")
-                return
-            else:
-                send_to_frontends_of_name(name=_project_id, message=message)  # forward to frontends
-            return  # return after handling log forwarding
+            on_event_type_log(
+                client=client, server=server, message_dict=message_dict, message=message
+            )
 
-        if _event_type == "action":
-            if _who == "web":  # frontend send action query to client
-                send_to_client_of_name(_project_id, message=message)
-            else:  # _who == 'cli', client send action result back to frontend(s)
-                send_to_frontends_of_name(_project_id, message=message)
-            return  # return after handling action forwarding
+        elif _event_type == "action":
+            on_event_type_action(
+                client=client, server=server, message_dict=message_dict, message=message
+            )
 
-        if _event_type == "ack":
+        elif _event_type == "ack":
             # todo forward ack to waiting acks?
             return  # return after handling ack
 
@@ -308,7 +327,7 @@ def server_process(cfg, debug=False):
         if project_id not in __BRIDGES:  # Client not found
             __BRIDGES[project_id] = Bridge(project_id=project_id)  # Create from sync request
         __BRIDGES[project_id].set_status(_json_data)
-
+        save_json_to_history(project_id=project_id, table_name="status", data=_json_data)
         return "ok"
 
     @app.route(f"{FRONTEND_API_ROOT}/shutdown", methods=["POST"])
