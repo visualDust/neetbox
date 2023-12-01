@@ -1,5 +1,6 @@
 .vscode
 .pytest_cache
+.ignore
 __pycache__/
 dist/
 frontend_dist/

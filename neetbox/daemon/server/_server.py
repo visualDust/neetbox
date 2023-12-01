@@ -290,7 +290,7 @@ def server_process(cfg, debug=False):
     def return_list_of_connected_project_ids():
         result = []
         for id in __BRIDGES.keys():
-            result.append({id: json.loads(__BRIDGES[id].status)["config"]})
+            result.append({"id": id, "config": json.loads(__BRIDGES[id].status)["config"]})
         return result
 
     @app.route(f"{CLIENT_API_ROOT}/sync/<project_id>", methods=["POST"])

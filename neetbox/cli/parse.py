@@ -2,6 +2,8 @@ import json
 import os
 
 import click
+from rich.console import Console
+from rich.table import Table
 
 import neetbox
 import neetbox.daemon as daemon_module
@@ -10,6 +12,8 @@ from neetbox.daemon.client._client_web_apis import *
 from neetbox.daemon.server._server import server_process
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
+
+console = Console()
 
 logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
@@ -60,9 +64,22 @@ def list_command(port):
     _try_load_workspace_if_applicable()
     try:
         _response = get_list(base_addr=get_base_addr(port=port))
-        click.echo(json.dumps(_response))
+
+        table = Table(title="Running NEETBOX Projects")
+
+        table.add_column("name", justify="center", style="cyan")
+        table.add_column("workspace-id", justify="center", style="magenta", no_wrap=True)
+        table.add_column("config", justify="center", style="green")
+
+        for pjt in _response:
+            config = pjt["config"]["value"]
+            table.add_row(config["name"], pjt["id"], json.dumps(config))
+
+        console.print(table)
+
     except Exception as e:  # noqa
         logger.log("Could not fetch data. Is there any project with NEETBOX running?")
+        raise e
 
 
 @main.command(name="status")
@@ -80,7 +97,7 @@ def status_command(name, port):
     _try_load_workspace_if_applicable()
     _response = None
     try:
-        _response = get_status_of(base_addr=get_base_addr(port=port), name=name)
+        _response = get_status_of(base_addr=get_base_addr(port=port), workspace_id=name)
         click.echo(json.dumps(_response))
     except Exception as e:  # noqa
         logger.log("Could not fetch data. Is there any project with NEETBOX running?")
