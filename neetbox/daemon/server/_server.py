@@ -23,7 +23,7 @@ from flask import abort, json, request, send_from_directory
 from websocket_server import WebsocketServer
 
 from neetbox.daemon._protocol import *
-from neetbox.history._history import *
+from neetbox.history import *
 
 
 def server_process(cfg, debug=False):
@@ -68,7 +68,7 @@ def server_process(cfg, debug=False):
         def __init__(self, project_id) -> None:
             # initialize non-websocket things
             self.id = project_id
-            self.historyDB = get_history_db(project_id=project_id)
+            self.historyDB = get_history_db_of_id(project_id=project_id)
 
     __BRIDGES: Dict[str, Bridge] = {}  # manage connections
     connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only

@@ -14,6 +14,7 @@ logger = logger("NEETBOX HISTORY", LogStyle(skip_writers=["ws", "file"]))
 
 NEETBOX_VERSION = version("neetbox")
 HISTORY_FILE_ROOT = "history"
+HISTORY_FILE_TYPE_NAME = "neethistory"
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.SSS
 
 
@@ -95,19 +96,12 @@ class DBConnection:
     connection = None
 
     def __init__(self, workspace_id=None, **kwargs):
-        if not os.path.exists(HISTORY_FILE_ROOT):
-            # create history root dir
-            os.mkdir(HISTORY_FILE_ROOT)
-        # check if is dir
-        if not os.path.isdir(HISTORY_FILE_ROOT):
-            raise RuntimeError(f"{HISTORY_FILE_ROOT} is not a directory.")
-
         if "path" not in kwargs and workspace_id is None:
             raise RuntimeError("please specify workspace id or db file path")
         db_file = (
             kwargs["path"]
             if "path" in kwargs
-            else f"{HISTORY_FILE_ROOT}/{workspace_id}.neethistory"
+            else f"{HISTORY_FILE_ROOT}/{workspace_id}.{HISTORY_FILE_TYPE_NAME}"
         )
         # connect to sqlite
         self.connection = sqlite3.connect(db_file, check_same_thread=False)
@@ -171,12 +165,6 @@ class DBConnection:
 
     def write_image(self, table_name, data):
         pass  # todo (VisualDust)
-
-
-def get_history_db(project_id):
-    # todo handle thread safe things(?)
-    conn = DBConnection(workspace_id=project_id)
-    return conn
 
 
 if __name__ == "__main__":
