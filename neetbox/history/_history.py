@@ -2,7 +2,6 @@ import functools
 import json
 import os
 import sqlite3
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from importlib.metadata import version

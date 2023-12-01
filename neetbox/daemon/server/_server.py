@@ -23,7 +23,7 @@ from flask import abort, json, request, send_from_directory
 from websocket_server import WebsocketServer
 
 from neetbox.daemon._protocol import *
-from neetbox.daemon.server._history import *
+from neetbox.history._history import *
 
 
 def server_process(cfg, debug=False):
