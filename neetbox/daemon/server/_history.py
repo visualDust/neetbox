@@ -111,7 +111,7 @@ class DBConnection:
             else f"{HISTORY_FILE_ROOT}/{workspace_id}.neethistory"
         )
         # connect to sqlite
-        self.connection = sqlite3.connect(db_file)
+        self.connection = sqlite3.connect(db_file, check_same_thread=False)
         # check neetbox version
         _db_file_version = self.get_db_version()
         if NEETBOX_VERSION != _db_file_version:
@@ -122,7 +122,7 @@ class DBConnection:
             f"History file '{db_file}'(version={_db_file_version}) attached for id {workspace_id}"
         )
 
-    def _execute(self, query, *args, fetch: FetchType = None, save_immediately=False, **kwargs):
+    def _execute(self, query, *args, fetch: FetchType = None, save_immediately=True, **kwargs):
         cur = self.connection.cursor()
         # logger.info(f"executing sql='{query}', params={args}")
         result = cur.execute(query, args)
@@ -150,7 +150,7 @@ class DBConnection:
         _version = self._execute(sql_query, fetch=FetchType.ONE)
         if _version is None:
             sql_query = f"INSERT INTO version VALUES (?);"
-            self._execute(sql_query, NEETBOX_VERSION, save_immediately=True)
+            self._execute(sql_query, NEETBOX_VERSION)
             return NEETBOX_VERSION
         return _version[0]
 
@@ -175,6 +175,7 @@ class DBConnection:
 
 
 def get_history_db(project_id):
+    # todo handle thread safe things(?)
     conn = DBConnection(workspace_id=project_id)
     return conn
 

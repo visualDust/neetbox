@@ -45,12 +45,9 @@ def server_process(cfg, debug=False):
 
     # websocket server
     ws_server = WebsocketServer(host="0.0.0.0", port=cfg["port"] + 1)
-    __BRIDGES = {}  # manage connections
-    connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
 
     # describe a client
     class Bridge:
-        connected: bool
         id: str
         status: dict = {}
         cli_ws = None  # cli ws sid
@@ -60,13 +57,22 @@ def server_process(cfg, debug=False):
         )  # frontend ws sids. client data should be able to be shown on multiple frontend
 
         def set_status(self, status):
-            self.status = status
             self.historyDB.write_json(table_name="status", data=status)
+            status = json.loads(status) if isinstance(status, str) else status
+            self.status = status
+
+        def get_status(self):
+            status = self.status
+            status["online"] = self.cli_ws is not None
+            return status
 
         def __init__(self, project_id) -> None:
             # initialize non-websocket things
             self.id = project_id
             self.historyDB = get_history_db(project_id=project_id)
+
+    __BRIDGES: Dict[str, Bridge] = {}  # manage connections
+    connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
 
     # ========================  WS  SERVER  ===========================
 
@@ -255,7 +261,7 @@ def server_process(cfg, debug=False):
             return  # return after handling action forwarding
 
         if _event_type == "ack":
-            # todo forward ack to waiting acks
+            # todo forward ack to waiting acks?
             return  # return after handling ack
 
     ws_server.set_fn_new_client(handle_ws_connect)
@@ -284,7 +290,7 @@ def server_process(cfg, debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>", methods=["GET"])
     def return_status_of(project_id):
         if project_id in __BRIDGES:
-            _returning_stat = __BRIDGES[project_id].status  # returning specific status
+            _returning_stat = __BRIDGES[project_id].get_status()  # returning specific status
         else:
             abort(404)
         return _returning_stat
@@ -293,7 +299,7 @@ def server_process(cfg, debug=False):
     def return_list_of_connected_project_ids():
         result = []
         for id in __BRIDGES.keys():
-            result.append({"id": id, "config": json.loads(__BRIDGES[id].status)["config"]})
+            result.append({"id": id, "config": __BRIDGES[id].get_status()["config"]})
         return result
 
     @app.route(f"{CLIENT_API_ROOT}/sync/<project_id>", methods=["POST"])
@@ -301,7 +307,7 @@ def server_process(cfg, debug=False):
         _json_data = request.get_json()
         if project_id not in __BRIDGES:  # Client not found
             __BRIDGES[project_id] = Bridge(project_id=project_id)  # Create from sync request
-        __BRIDGES[project_id].status = _json_data
+        __BRIDGES[project_id].set_status(_json_data)
 
         return "ok"
 
