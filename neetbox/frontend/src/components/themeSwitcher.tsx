@@ -7,7 +7,15 @@ export default function SwitchColorMode(): React.JSX.Element {
   const switchMode = () => {
     setDarkMode(!darkMode);
   };
-  return <Switch size="large" checkedText="😎"  uncheckedText="🌚" checked={!darkMode} onChange={switchMode}></Switch>;
+  return (
+    <Switch
+      size="large"
+      checkedText="😎"
+      uncheckedText="🌚"
+      checked={!darkMode}
+      onChange={switchMode}
+    ></Switch>
+  );
 }
 
 export function ThemeContextProvider(props: React.PropsWithChildren) {
