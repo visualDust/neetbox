@@ -20,7 +20,6 @@ DEFAULT_WORKSPACE_CONFIG = {
         "enable": True,
         "host": "127.0.0.1",
         "port": 20202,
-        "displayName": None,
         "allowIpython": False,
         "mute": True,
         "mode": "detached",
