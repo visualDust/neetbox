@@ -1,14 +1,14 @@
 import { useAtom } from "jotai";
 import { getProject } from "../services/projects";
 
-export function useProjectStatus(name: string) {
-  const project = getProject(name);
+export function useProjectStatus(id: string) {
+  const project = getProject(id);
   const [data] = useAtom(project.status.atom);
   return data;
 }
 
-export function useProjectLogs(name: string) {
-  const project = getProject(name);
+export function useProjectLogs(id: string) {
+  const project = getProject(id);
   const [data] = useAtom(project?.logs.atom);
   return data;
 }

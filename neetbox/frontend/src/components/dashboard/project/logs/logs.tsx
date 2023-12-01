@@ -1,11 +1,11 @@
 import React, { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@douyinfe/semi-ui";
 import { IconAlignBottom } from "@douyinfe/semi-icons";
-import { LogData } from "../../../../services/projects";
+import { LogData } from "../../../../services/types";
 import "./logs.css";
 import { useProjectLogs } from "../../../../hooks/useProject";
 interface Props {
-  projectName: string;
+  projectId: string;
 }
 
 function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: React.CSSProperties }>) {
@@ -53,8 +53,8 @@ function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: Rea
   );
 }
 
-export const Logs = React.memo(({ projectName }: Props) => {
-  const logs = useProjectLogs(projectName);
+export const Logs = React.memo(({ projectId }: Props) => {
+  const logs = useProjectLogs(projectId);
   return <AutoScrolling style={{ height: "40vh" }} children={<LogItems logs={logs} />} />;
 });
 

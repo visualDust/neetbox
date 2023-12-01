@@ -1,64 +1,6 @@
 import { BetterAtom } from "../utils/betterAtom";
 import { WsClient } from "./projectWebsocket";
-
-export interface ProjectStatusHistory {
-  enablePolling: boolean;
-  current?: ProjectStatus;
-  history: Array<ProjectStatus>;
-}
-
-export interface ProjectStatus {
-  platform: WithTimestamp<Record<string, string | string[]>>;
-  hardware: WithTimestamp<{
-    cpus: Array<{
-      id: number;
-      percent: number;
-      freq: [current: number, min: number, max: number];
-    }>;
-    gpus: Array<{
-      id: number;
-      name: string;
-      load: number;
-      memoryUtil: number;
-      memoryTotal: number;
-      memoryFree: number;
-      memoryUsed: number;
-      temperature: number;
-      driver: string;
-    }>;
-    ram: {
-      total: number;
-      available: number;
-      used: number;
-      free: number;
-    };
-  }>;
-  __action: WithTimestamp<
-    Record<
-      string,
-      {
-        args: Record<string, string>;
-        blocking: boolean;
-        description: string;
-      }
-    >
-  >;
-}
-
-export interface WithTimestamp<T> {
-  value: T;
-  timestamp: number;
-  interval: number;
-}
-
-export interface LogData {
-  prefix: string;
-  datetime: string;
-  whom: string;
-  msg: string;
-  /** frontend only */
-  _id: number;
-}
+import { ProjectStatusHistory, LogData, ProjectStatus } from "./types";
 
 const projects = new Map<string, Project>();
 
@@ -67,7 +9,7 @@ export class Project {
   status: BetterAtom<ProjectStatusHistory>;
   logs: BetterAtom<LogData[]>;
 
-  constructor(readonly name: string) {
+  constructor(readonly id: string) {
     this.wsClient = new WsClient(this);
     this.status = new BetterAtom({
       enablePolling: true,
@@ -80,7 +22,7 @@ export class Project {
   updateData() {
     if (!this.status.value.enablePolling) return false;
 
-    fetch("/web/status/" + this.name).then(async (res) => {
+    fetch("/web/status/" + this.id).then(async (res) => {
       const data = (await res.json()) as ProjectStatus;
       data.hardware.value.cpus.forEach((cpu, idx) => {
         if (typeof cpu.id != "number" || cpu.id < 0) cpu.id = idx;
@@ -89,6 +31,7 @@ export class Project {
       projectData.current = data;
       projectData.history = slideWindow(projectData.history, [data], 70);
       this.status.value = projectData;
+      console.info({ projectData });
     });
   }
 
@@ -123,11 +66,11 @@ export class Project {
   }
 }
 
-export function getProject(name: string) {
-  let project = projects.get(name);
+export function getProject(id: string) {
+  let project = projects.get(id);
   if (!project) {
-    project = new Project(name);
-    projects.set(name, project);
+    project = new Project(id);
+    projects.set(id, project);
   }
   return project;
 }

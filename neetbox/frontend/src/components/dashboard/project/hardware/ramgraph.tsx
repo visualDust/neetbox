@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { ECharts } from "../../../echarts";
-import { ProjectStatus } from "../../../../services/projects";
+import { ProjectStatus } from "../../../../services/types";
+import { getTimeAxisOptions } from "./utils";
 
 export const RAMGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["hardware"]> }) => {
   const initialOption = () => {
@@ -41,7 +42,6 @@ export const RAMGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["
   };
 
   const updatingOption = useMemo(() => {
-    const latestTime = hardwareData[hardwareData.length - 1].timestamp;
     const newOption = {
       series: [
         {
@@ -49,13 +49,10 @@ export const RAMGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["
           type: "line",
           areaStyle: {},
           symbol: null,
-          data: hardwareData.map((x) => [x.timestamp * 1000, x.value.ram.used]),
+          data: hardwareData.map((x) => [new Date(x.timestamp), x.value.ram.used]),
         },
       ],
-      xAxis: {
-        min: (latestTime - 60) * 1000,
-        max: latestTime * 1000,
-      },
+      xAxis: getTimeAxisOptions(hardwareData),
     } as echarts.EChartsOption;
     return newOption;
   }, [hardwareData]);

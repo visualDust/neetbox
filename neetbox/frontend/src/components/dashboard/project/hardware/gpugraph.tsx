@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { ECharts } from "../../../echarts";
-import { ProjectStatus } from "../../../../services/projects";
+import { ProjectStatus } from "../../../../services/types";
+import { getTimeAxisOptions } from "./utils";
 
 export const GPUGraph = ({
   hardwareData,
@@ -56,7 +57,6 @@ export const GPUGraph = ({
   };
 
   const updatingOption = useMemo(() => {
-    const latestTime = hardwareData[hardwareData.length - 1].timestamp;
     const newOption = {
       series: [
         {
@@ -64,7 +64,7 @@ export const GPUGraph = ({
           type: "line",
           areaStyle: null,
           symbol: null,
-          data: hardwareData.map((x) => [x.timestamp * 1000, x.value.gpus[gpuId].load * 100]),
+          data: hardwareData.map((x) => [new Date(x.timestamp), x.value.gpus[gpuId].load * 100]),
         },
         {
           name: `Memory`,
@@ -72,13 +72,10 @@ export const GPUGraph = ({
           areaStyle: {},
           symbol: null,
           yAxisIndex: 1,
-          data: hardwareData.map((x) => [x.timestamp * 1000, x.value.gpus[gpuId].memoryUsed / 1024]),
+          data: hardwareData.map((x) => [new Date(x.timestamp), x.value.gpus[gpuId].memoryUsed / 1024]),
         },
       ],
-      xAxis: {
-        min: (latestTime - 60) * 1000,
-        max: latestTime * 1000,
-      },
+      xAxis: getTimeAxisOptions(hardwareData),
     } as echarts.EChartsOption;
     return newOption;
   }, [gpuId, hardwareData]);

@@ -26,15 +26,16 @@ export default function ConsoleNavBar() {
           text: "Projects",
           icon: <IconListView />,
           itemKey: "projects",
-          items: data?.names.map((name: string) => ({
-            text: name,
-            itemKey: "/console/project/" + name,
-          })) ?? [{ text: "", itemKey: "loading" }],
+          items: data
+            ? data.map(({ id, config }) => ({
+                text: config.value.name,
+                itemKey: "/console/project/" + id,
+              }))
+            : [{ text: "", itemKey: "loading" }],
         },
       ]}
       defaultOpenKeys={["projects"]}
       selectedKeys={[location.pathname]}
-      onClick={(data) => console.log("trigger onClick: ", data)}
       footer={{
         collapseButton: true,
       }}

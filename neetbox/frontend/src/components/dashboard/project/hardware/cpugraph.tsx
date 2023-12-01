@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { ECharts } from "../../../echarts";
-import { ProjectStatus } from "../../../../services/projects";
+import { ProjectStatus } from "../../../../services/types";
+import { getTimeAxisOptions } from "./utils";
 
 export const CPUGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["hardware"]> }) => {
   const cpus = hardwareData[0].value.cpus;
+  console.info({ hardwareData });
   const initialOption = () => {
     return {
       backgroundColor: "transparent",
@@ -39,7 +41,6 @@ export const CPUGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["
   };
 
   const updatingOption = useMemo(() => {
-    const latestTime = hardwareData[hardwareData.length - 1].timestamp;
     const newOption = {
       series: cpus.map((cpu) => ({
         name: `CPU${cpu.id}`,
@@ -47,13 +48,9 @@ export const CPUGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["
         stack: "cpu",
         areaStyle: {},
         symbol: null,
-        data: hardwareData.map((x) => [x.timestamp * 1000, x.value.cpus[cpu.id].percent]),
+        data: hardwareData.map((x) => [new Date(x.timestamp), x.value.cpus[cpu.id].percent]),
       })),
-      xAxis: {
-        min: (latestTime - 60) * 1000,
-        max: latestTime * 1000,
-        data: new Array(10).fill(0).map((x, i) => i),
-      },
+      xAxis: getTimeAxisOptions(hardwareData),
     } as echarts.EChartsOption;
     return newOption;
   }, [cpus, hardwareData]);

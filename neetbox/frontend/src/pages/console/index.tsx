@@ -9,7 +9,7 @@ export function consoleRoutes(): RouteObject {
     element: <ConsoleLayout />,
     children: [
       {
-        path: "project/:projectName",
+        path: "project/:projectId",
         element: <Dashboard />,
         errorElement: <div>Error</div>,
       },

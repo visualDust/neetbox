@@ -1,5 +1,5 @@
 import { Typography } from "@douyinfe/semi-ui";
-import { ProjectStatus } from "../../../../services/projects";
+import { ProjectStatus } from "../../../../services/types";
 import { CPUGraph } from "./cpugraph";
 import { GPUGraph } from "./gpugraph";
 import { RAMGraph } from "./ramgraph";

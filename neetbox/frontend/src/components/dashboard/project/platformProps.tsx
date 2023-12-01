@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { Toast, Button, Card, CardGroup, Typography } from "@douyinfe/semi-ui";
 import { IconCopy } from "@douyinfe/semi-icons";
 import { useMemoJSON } from "../../../hooks/useMemoJSON";
-import { ProjectStatus } from "../../../services/projects";
+import { ProjectStatus } from "../../../services/types";
 
 const PropCard = memo(
   ({ propName, propValue }: { propName: string; propValue: ProjectStatus["platform"]["value"][string] }) => {

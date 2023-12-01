@@ -9,35 +9,38 @@ import Loading from "../../components/loading";
 import { Hardware } from "../../components/dashboard/project/hardware";
 import { SectionTitle } from "../../components/sectionTitle";
 
-export const ProjectContext = createContext<{ projectName: string } | null>(null);
+export const ProjectContext = createContext<{ projectId: string; projectName?: string } | null>(null);
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
-  const { projectName } = useParams();
-  return <ProjectDashboard key={projectName} />;
+  const { projectId } = useParams();
+  return <ProjectDashboard key={projectId} />;
 }
 
 function ProjectDashboard() {
-  const { projectName } = useParams();
-  if (!projectName) throw new Error("projectName required");
+  const { projectId } = useParams();
+  if (!projectId) throw new Error("projectId required");
 
-  const data = useProjectStatus(projectName);
-  // console.info("project", { projectName, data });
+  const data = useProjectStatus(projectId);
+  // console.info("project", { projectId, data });
+
+  const projectName = data.current?.config.value.name;
 
   const projectContextData = useMemo(
     () => ({
+      projectId,
       projectName,
     }),
-    [projectName],
+    [projectId, projectName],
   );
 
   return (
     <ProjectContext.Provider value={projectContextData}>
       <div style={{ padding: "20px" }}>
         <Typography.Title heading={2} style={{ textAlign: "center" }}>
-          Project "{projectName}"
+          Project "{projectName ?? projectId}"
         </Typography.Title>
         <SectionTitle title="Logs" />
-        <Logs projectName={projectName} />
+        <Logs projectId={projectId} />
         <Divider />
         {data.current ? (
           <>
