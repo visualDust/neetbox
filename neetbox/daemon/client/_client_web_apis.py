@@ -26,7 +26,12 @@ def get_list(base_addr):
 
 
 def get_status_of(base_addr, name):
-    api_addr = f"{base_addr}{FRONTEND_API_ROOT}/status/{name}"
+    id2name = get_list(base_addr)
+    name2id = {v: k for k, v in id2name}  # todo resolve dup name
+    if name not in name2id:
+        return None
+    _id = name2id[name]
+    api_addr = f"{base_addr}{FRONTEND_API_ROOT}/status/{_id}"
     return _get(api_addr)
 
 

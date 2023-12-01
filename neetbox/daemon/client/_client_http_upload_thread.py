@@ -9,6 +9,7 @@ import time
 from threading import Thread
 from typing import Union
 
+import neetbox
 from neetbox.config import get_module_level_config
 from neetbox.daemon.client._client import connection
 from neetbox.daemon.server._server import CLIENT_API_ROOT
@@ -19,9 +20,9 @@ from neetbox.pipeline._signal_and_slot import _UPDATE_VALUE_DICT, SYSTEM_CHANNEL
 logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 
-def _add_upload_thread_to_watch(daemon_config, base_addr, display_name):
+def _add_upload_thread_to_watch(daemon_config, base_addr, workspace_id):
     _api_name = "sync"
-    _api_addr = f"{base_addr}{CLIENT_API_ROOT}/{_api_name}/{display_name}"
+    _api_addr = f"{base_addr}{CLIENT_API_ROOT}/{_api_name}/{workspace_id}"
 
     @watch(interval=daemon_config["uploadInterval"], overwrite=True, initiative=False)
     def upload_via_http():
@@ -38,13 +39,9 @@ def _add_upload_thread_to_watch(daemon_config, base_addr, display_name):
 
 
 def connect_daemon(cfg=None, launch_upload_thread=True):
-    cfg = cfg or get_module_level_config()
-    _display_name = get_module_level_config()["displayName"]
-    _launch_config = get_module_level_config("@")
-    _display_name = _display_name or _launch_config["name"]
-
-    logger.log(f"Connecting to daemon at {cfg['host']}:{cfg['port']} ...")
-    _daemon_server_address = f"{cfg['host']}:{cfg['port']}"
+    _cfg = cfg or get_module_level_config()
+    logger.log(f"Connecting to daemon at {_cfg['host']}:{_cfg['port']} ...")
+    _daemon_server_address = f"{_cfg['host']}:{_cfg['port']}"
     _base_addr = f"http://{_daemon_server_address}"
 
     # check if daemon is alive
@@ -64,7 +61,7 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
 
     if launch_upload_thread:
         _add_upload_thread_to_watch(
-            daemon_config=cfg, base_addr=_base_addr, display_name=_display_name
+            daemon_config=_cfg, base_addr=_base_addr, workspace_id=neetbox.WORKSPACE_ID
         )
 
     connection._init_ws()
