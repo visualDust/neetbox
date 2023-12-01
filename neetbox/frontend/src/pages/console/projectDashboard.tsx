@@ -1,15 +1,14 @@
 import { useParams } from "react-router-dom";
-import { createContext, useMemo } from "react";
+import { useMemo } from "react";
 import { Divider, Typography } from "@douyinfe/semi-ui";
 import PlatformProps from "../../components/dashboard/project/platformProps";
-import { useProjectStatus } from "../../hooks/useProject";
+import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/dashboard/project/logs/logs";
 import { Actions } from "../../components/dashboard/project/actions";
 import Loading from "../../components/loading";
 import { Hardware } from "../../components/dashboard/project/hardware";
 import { SectionTitle } from "../../components/sectionTitle";
-
-export const ProjectContext = createContext<{ projectId: string; projectName?: string } | null>(null);
+import { Images } from "../../components/dashboard/project/images";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
@@ -40,7 +39,9 @@ function ProjectDashboard() {
           Project "{projectName ?? projectId}"
         </Typography.Title>
         <SectionTitle title="Logs" />
-        <Logs projectId={projectId} />
+        <Logs />
+        <SectionTitle title="Images" />
+        <Images />
         <Divider />
         {data.current ? (
           <>

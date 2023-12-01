@@ -63,3 +63,8 @@ export interface LogData {
   /** frontend only */
   _id: number;
 }
+
+export interface ImageMetadata {
+  imageId: number;
+  metadata: any;
+}

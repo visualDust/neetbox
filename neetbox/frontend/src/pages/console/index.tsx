@@ -1,6 +1,6 @@
 import { RouteObject } from "react-router-dom";
 import ConsoleLayout from "../../components/layout/ConsoleLayout";
-import Dashboard from "./proejctDashboard";
+import Dashboard from "./projectDashboard";
 import Overview from "./overview";
 
 export function consoleRoutes(): RouteObject {

@@ -2,9 +2,9 @@ import { Button, Checkbox, Col, Input, Popover, Row, Space, Typography } from "@
 import { memo, useContext, useState } from "react";
 import { IconChevronDown, IconPlay } from "@douyinfe/semi-icons";
 import { getProject } from "../../../services/projects";
-import { ProjectContext } from "../../../pages/console/proejctDashboard";
 import { useMemoJSON } from "../../../hooks/useMemoJSON";
 import { ProjectStatus } from "../../../services/types";
+import { useCurrentProject } from "../../../hooks/useProject";
 
 interface Props {
   actions: ProjectStatus["__action"];
@@ -56,7 +56,7 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
   );
   const [running, setCurrentBlocking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const { projectId } = useContext(ProjectContext)!;
+  const { projectId } = useCurrentProject()!;
   const handleRun = () => {
     if (options.blocking) setBlocking(true);
     setCurrentBlocking(true);

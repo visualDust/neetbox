@@ -1,22 +1,21 @@
 import { BetterAtom } from "../utils/betterAtom";
 import { WsClient } from "./projectWebsocket";
-import { ProjectStatusHistory, LogData, ProjectStatus } from "./types";
+import { ProjectStatusHistory, LogData, ProjectStatus, ImageMetadata } from "./types";
 
 const projects = new Map<string, Project>();
 
 export class Project {
   wsClient: WsClient;
-  status: BetterAtom<ProjectStatusHistory>;
-  logs: BetterAtom<LogData[]>;
+  status = new BetterAtom<ProjectStatusHistory>({
+    enablePolling: true,
+    current: undefined,
+    history: [],
+  });
+  logs = new BetterAtom<LogData[]>([]);
+  images = new BetterAtom<ImageMetadata[]>([]);
 
   constructor(readonly id: string) {
     this.wsClient = new WsClient(this);
-    this.status = new BetterAtom({
-      enablePolling: true,
-      current: undefined,
-      history: [],
-    } as ProjectStatusHistory);
-    this.logs = new BetterAtom([] as LogData[]);
   }
 
   updateData() {
@@ -47,6 +46,10 @@ export class Project {
       setTimeout(this._logFlush, 60);
     }
     this._logQueue.push(log);
+  }
+
+  handleImage(image: ImageMetadata) {
+    this.images.value = [...this.images.value, image];
   }
 
   sendAction(action: string, args: Record<string, string>, onReply?: (result: any) => void) {

@@ -354,7 +354,7 @@ def server_process(cfg, debug=False):
         )
         return {"result": "ok", "id": lastrowid}
 
-    @app.route(f"/image/<project_id>/<image_id>", methods=["GET"])
+    @app.route(f"{FRONTEND_API_ROOT}/image/<project_id>/<image_id>", methods=["GET"])
     def get_image_of_id(project_id, image_id: int):
         if project_id not in __BRIDGES:
             return  # cannot operate history if client is not connected

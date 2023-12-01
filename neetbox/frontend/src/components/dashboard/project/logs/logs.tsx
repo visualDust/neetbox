@@ -3,7 +3,7 @@ import { Button } from "@douyinfe/semi-ui";
 import { IconAlignBottom } from "@douyinfe/semi-icons";
 import { LogData } from "../../../../services/types";
 import "./logs.css";
-import { useProjectLogs } from "../../../../hooks/useProject";
+import { useCurrentProject, useProjectLogs } from "../../../../hooks/useProject";
 interface Props {
   projectId: string;
 }
@@ -53,7 +53,8 @@ function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: Rea
   );
 }
 
-export const Logs = React.memo(({ projectId }: Props) => {
+export const Logs = React.memo(() => {
+  const { projectId } = useCurrentProject()!;
   const logs = useProjectLogs(projectId);
   return <AutoScrolling style={{ height: "40vh" }} children={<LogItems logs={logs} />} />;
 });
