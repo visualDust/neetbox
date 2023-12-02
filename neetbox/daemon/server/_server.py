@@ -7,7 +7,9 @@
 import os
 
 import werkzeug
+from rich import box
 from rich.console import Console
+from rich.table import Table
 
 console = Console()
 import logging
@@ -58,12 +60,10 @@ def server_process(cfg, debug=False):
 
         # instance vars
         project_id: str
-        status: dict = {}
-        cli_ws = None  # cli ws sid
-        historyDB: DBConnection = None
-        web_ws_list: list = (
-            []
-        )  # frontend ws sids. client data should be able to be shown on multiple frontend
+        status: dict
+        cli_ws: dict
+        web_ws_list: list
+        historyDB: DBConnection
 
         def __new__(cls, project_id: str, **kwargs) -> None:
             """Create Bridge of project id, return the old one if already exist
@@ -77,9 +77,13 @@ def server_process(cfg, debug=False):
             if project_id not in cls._id2bridge:
                 new_bridge = super().__new__(cls)
                 new_bridge.project_id = project_id
+                new_bridge.cli_ws: dict = None  # cli ws sid
+                new_bridge.web_ws_list: list = (
+                    []
+                )  # frontend ws sids. client data should be able to be shown on multiple frontend
                 flag_auto_load_db = kwargs["auto_load_db"] if "auto_load_db" in kwargs else True
-                if flag_auto_load_db:
-                    new_bridge.historyDB = get_db_of_id(project_id)
+                new_bridge.historyDB = get_db_of_id(project_id) if flag_auto_load_db else None
+                new_bridge.status = {}
                 cls._id2bridge[project_id] = new_bridge
                 logger.info(f"created new Bridge for project id '{project_id}'")
             return cls._id2bridge[project_id]
@@ -218,9 +222,12 @@ def server_process(cfg, debug=False):
             return  # no such bridge
         _target_bridge = Bridge.of_id(project_id)
         for web_ws in _target_bridge.web_ws_list:
-            ws_server.send_message(
-                client=web_ws, msg=message
-            )  # forward original message to frontend
+            try:
+                ws_server.send_message(
+                    client=web_ws, msg=message
+                )  # forward original message to frontend
+            except Exception as e:
+                logger.err(e)
         return
 
     def ws_send_to_client_of_id(project_id, message):
@@ -232,11 +239,16 @@ def server_process(cfg, debug=False):
             return  # no such bridge
         _target_bridge = Bridge.of_id(project_id)
         _client = _target_bridge.cli_ws
-        ws_server.send_message(client=_client, msg=message)  # forward original message to client
+        try:
+            ws_server.send_message(
+                client=_client, msg=message
+            )  # forward original message to client
+        except Exception as e:
+            logger.err(e)
         return
 
     def handle_ws_connect(client, server):
-        console.log(f"client {client} connected. waiting for handshake...")
+        logger.info(f"client {client} connected. waiting for handshake...")
 
     def handle_ws_disconnect(client, server):
         if client["id"] not in connected_clients:
@@ -244,16 +256,36 @@ def server_process(cfg, debug=False):
         project_id, who = connected_clients[client["id"]]
         if who == "cli":  # remove client from Bridge
             Bridge.of_id(project_id).cli_ws = None
-        else:  # remove frontend from Bridge
+        elif who == "web":  # remove frontend from Bridge
             _new_web_ws_list = [
                 c for c in Bridge.of_id(project_id).web_ws_list if c["id"] != client["id"]
             ]
             Bridge.of_id(project_id).web_ws_list = _new_web_ws_list
         del connected_clients[client["id"]]
-        console.log(f"a {who} disconnected with id {client['id']}")
+        logger.info(
+            f"a {who}(ws client id {client['id']}) disconnected from project '{project_id}'"
+        )
         # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
     def on_event_type_handshake(client, server, message_dict, message):
+        if client["id"] in connected_clients:  # client cannot handshake again
+            _client_id = client["id"]
+            logger.warn(
+                f"websocket client(id={_client_id}) issued a duplicated handshake, ignoring..."
+            )
+            server.send_message(
+                client=client,
+                msg=json.dumps(
+                    WsMsg(
+                        project_id=project_id,
+                        event_type="handshake",
+                        event_id=_event_id,
+                        payload={"result": 400, "reason": "name not found"},
+                    ).json()
+                ),
+            )
+            return  # client cannot handshake again
+
         _payload = message_dict[PAYLOAD_NAME_KEY]
         _event_id = message_dict[EVENT_ID_NAME_KEY]
         project_id = message_dict[PROJECT_ID_KEY]
@@ -308,6 +340,26 @@ def server_process(cfg, debug=False):
                     ).json()
                 ),
             )
+        else:
+            logger.warn(f"unknown type({who}) of websocket trying to handshake")
+        if debug:
+            table = Table(
+                title="Connected Websockets", box=box.MINIMAL_DOUBLE_HEAD, show_lines=True
+            )
+
+            table.add_column("project-id", justify="center", style="magenta", no_wrap=True)
+            table.add_column("who", justify="center", style="cyan")
+            table.add_column("ws client", justify="center", style="green")
+
+            for _, _bridge in Bridge.items():
+                table.add_row(_bridge.project_id, "", "")
+                if _bridge.cli_ws:
+                    table.add_row("", "client", str(_bridge.cli_ws))
+                for ws_web in _bridge.web_ws_list:
+                    table.add_row("", "web", str(ws_web))
+
+            console.print(table)
+        return
 
     def on_event_type_log(client, server, message_dict, message):
         # forward log to frontend. logs should only be sent by cli and only be received by frontends

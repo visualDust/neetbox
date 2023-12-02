@@ -268,9 +268,9 @@ class Logger:
                 with_datetime=with_datetime,
             )
         if type(err) is Exception:
-            if reraise or _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
+            if reraise:
                 raise err
-            else:
+            elif _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
                 Logger._console.print_exception(err)
         return self
 
