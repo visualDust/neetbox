@@ -8,7 +8,7 @@ level = "INFO"
 updateInterval = 0.5
 
 [extension]
-autoload = false
+autoload = true
 
 [daemon]
 enable = true

@@ -13,7 +13,7 @@ DEFAULT_WORKSPACE_CONFIG = {
         "updateInterval": 0.5,
     },
     "extension": {
-        "autoload": False,
+        "autoload": True,
         "environment": {"hardware": {"monit": True, "interval": 0.5}, "platform": {"monit": True}},
     },
     "daemon": {
