@@ -8,7 +8,7 @@
 
 ## docs & quick start
 
-Logging/Debugging/Tracing/Managing/Facilitating your deep learning projects. A small part of the documentation at [neetbox.550w.host](https://neetbox.550w.host). (We are not ready for the doc yet)
+Logging/Debugging/Tracing/Managing/Facilitating long running python projects, especially a replacement of tensorboard for deep learning projects [neetbox.550w.host](https://neetbox.550w.host). (APIs are ready but we are not ready for the doc yet)
 
 ## installation
 
