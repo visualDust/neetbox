@@ -1,5 +1,5 @@
 # def test_download():
-#     from neetbox.integrations.resource import download
+#     from neetbox.utils.resource import download
 
 #     print("testing download")
 #     urls = {

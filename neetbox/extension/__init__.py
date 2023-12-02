@@ -9,8 +9,6 @@ import pkgutil
 
 from neetbox.config import get_module_level_config
 from neetbox.core import Registry
-from neetbox.integrations.engine import Engine as engine
-from neetbox.integrations.engine import get_installed_engines, get_supported_engines
 from neetbox.utils.framing import get_frame_module_traceback
 
 __all__ = [

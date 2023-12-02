@@ -27,7 +27,7 @@ from rich.progress import (
     TransferSpeedColumn,
 )
 
-from neetbox.integrations import engine
+from neetbox.extension import engine
 from neetbox.logging import logger
 from neetbox.utils import pkg
 

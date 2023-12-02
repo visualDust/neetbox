@@ -1,4 +1,4 @@
-from neetbox.plotting._image import impost
+from ._image import impost
 
 __all__ = [
     "impost",

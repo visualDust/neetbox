@@ -6,7 +6,7 @@ from importlib.metadata import version
 import toml
 
 import neetbox.daemon as daemon
-import neetbox.integrations as integrations
+import neetbox.extension as extension
 from neetbox.config import default as default_config
 from neetbox.config import get_module_level_config
 from neetbox.config._config import update_workspace_config_with
@@ -77,7 +77,7 @@ def _load_workspace_as_a_project(connect_daemon=False):
     if not success:  # failed to load workspace config, exiting
         os._exit(255)
     # post init
-    integrations._post_init_workspace()
+    extension._post_init_workspace()
     if connect_daemon:
         daemon.connect()
 

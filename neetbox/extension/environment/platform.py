@@ -10,7 +10,7 @@ import platform
 import subprocess
 
 from neetbox.config import get_module_level_config
-from neetbox.integrations import call_on_workspace_load
+from neetbox.extension import call_on_workspace_load
 from neetbox.pipeline import watch
 from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils.mvc import Singleton

@@ -1,6 +1,8 @@
 import os
 
-from neetbox.history._db import (
+from neetbox.utils.resource import ResourceLoader
+
+from ._db import (
     HISTORY_FILE_ROOT,
     HISTORY_FILE_TYPE_NAME,
     DBConnection,
@@ -8,7 +10,6 @@ from neetbox.history._db import (
     QueryCondition,
     SortType,
 )
-from neetbox.utils.resource import ResourceLoader
 
 if not os.path.exists(HISTORY_FILE_ROOT):
     # create history root dir
