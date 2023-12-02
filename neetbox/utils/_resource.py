@@ -15,7 +15,6 @@ from threading import Event
 from typing import Dict, List, Union
 from urllib.request import urlopen
 
-from PIL import Image
 from rich.progress import (
     BarColumn,
     DownloadColumn,
