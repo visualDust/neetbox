@@ -11,6 +11,12 @@ from neetbox.daemon.client._client import connection
 
 
 def impost(image: Union[np.array, Image.Image], name: str):
+    """send an image to frontend display
+
+    Args:
+        image (Union[np.array, Image.Image]): image from cv2 and PIL.Image are supported
+        name (str): name of the image, used in frontend display
+    """
     if isinstance(image, np.ndarray):  # convert ndarray to bytes
         _, im_buf_arr = cv2.imencode(".png", image)
         image_bytes = im_buf_arr.tobytes()

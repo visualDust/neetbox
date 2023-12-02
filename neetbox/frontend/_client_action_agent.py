@@ -105,6 +105,16 @@ class _NeetActionManager(metaclass=Singleton):
         return _NeetActionManager.get_action_dict()
 
     def register(name: Optional[str] = None, description: str = None, blocking: bool = False):
+        """register function as action visiable on frontend page
+
+        Args:
+            name (Optional[str], optional): name of the action. Defaults to None(neetbox will use the function name when set to None).
+            description (str, optional): description of the action. Defaults to None(neetbox will use function docs as default when set to None).
+            blocking (bool, optional): whether to run the action in a blocked query. Defaults to False.
+
+        Returns:
+            Callable: the function itself.
+        """
         return functools.partial(
             _NeetActionManager._register, name=name, description=description, blocking=blocking
         )

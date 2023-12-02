@@ -91,6 +91,15 @@ class Logger:
         set_log_level(_cfg["level"])
 
     def __call__(self, whom: Any = None, style: Optional[LogStyle] = None) -> "Logger":
+        """Attention! do not call this logger instance unless you know what are you doing. Users should use the default logger by import logger from neetbox.logging.
+
+        Args:
+            whom (Any, optional): who is logging, could be anything. Defaults to None(neetbox will automatically trace who is creating this logger if set to None).
+            style (Optional[LogStyle], optional): overwrite default logger style. Defaults to None(neetbox will create a default style if set to None).
+
+        Returns:
+            Logger: a new logger
+        """
         if whom is None:
             return DEFAULT_LOGGER
         if whom in Logger.__WHOM_2_LOGGER:
@@ -108,6 +117,19 @@ class Logger:
         skip_writers: list[str] = [],
         traceback=2,
     ):
+        """log something
+
+        Args:
+            prefix (Optional[str], optional): prefix shows at the start of console log while it shows as a tag on frontend. Defaults to None.
+            datetime_format (Optional[str], optional): change the format neetbox displays time. Defaults to None("%Y-%m-%dT%H:%M:%S.%f").
+            with_identifier (Optional[bool], optional): whether to show who is logging, note that this option has noting todo with traceback. Defaults to None(True).
+            with_datetime (Optional[bool], optional): whether to show datetime in logs. Defaults to None(True).
+            skip_writers (list[str], optional): writers to skip, possible writes are 'stdout'(write into console), 'file'(write into file), 'ws'(write to frontend). Defaults to [], which means write to all writers.
+            traceback (int, optional): level of traceback. Defaults to 2.
+
+        Returns:
+            _type_: _description_
+        """
         _caller_identity = get_caller_identity_traceback(traceback=traceback)
 
         # converting args into a single string
