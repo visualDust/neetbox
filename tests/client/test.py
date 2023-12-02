@@ -5,8 +5,8 @@ from time import sleep
 
 import snake
 
-import neetbox.plotting as plotting
 from neetbox.daemon import action
+from neetbox.frontend import impost
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 
@@ -119,7 +119,7 @@ def send_image():
     from PIL import Image
 
     with Image.open("logo.png") as logo_image:
-        plotting.impost(logo_image, name="logo")
+        impost(logo_image, name="logo")
 
 
 for i in range(99999):
