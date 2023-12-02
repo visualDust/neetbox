@@ -7,21 +7,21 @@ level = "INFO"
 [pipeline]
 updateInterval = 0.5
 
-[integrations]
-autoload = true
+[extension]
+autoload = false
 
 [daemon]
 enable = true
 host = "127.0.0.1"
 port = 20202
 allowIpython = false
-mute = true
-mode = "detached"
+mute = false
+mode = "attached"
 uploadInterval = 0.5
 
-[integrations.environment.hardware]
+[extension.environment.hardware]
 monit = true
 interval = 0.5
 
-[integrations.environment.platform]
+[extension.environment.platform]
 monit = true

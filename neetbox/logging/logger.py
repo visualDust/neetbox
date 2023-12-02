@@ -23,7 +23,6 @@ from neetbox.logging._writer import (
     webSocketLogWriter,
 )
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
-from neetbox.utils import formatting
 from neetbox.utils.framing import get_caller_identity_traceback
 
 

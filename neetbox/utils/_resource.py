@@ -15,7 +15,6 @@ from threading import Event
 from typing import Dict, List, Union
 from urllib.request import urlopen
 
-import numpy as np
 from PIL import Image
 from rich.progress import (
     BarColumn,
@@ -26,10 +25,6 @@ from rich.progress import (
     TimeRemainingColumn,
     TransferSpeedColumn,
 )
-
-from neetbox.extension import engine
-from neetbox.logging import logger
-from neetbox.utils import pkg
 
 _loader_pool: Dict[str, "ResourceLoader"] = dict()  # all ResourceLoaders are stored here
 
@@ -51,9 +46,10 @@ class ResourceLoader:
     ):
         _id = folder + str(file_types) + "_R" if sub_dirs else ""
         if _id in _loader_pool and not force_rescan:
-            logger.info(
-                "ResourceLoader with same path and same file type(s) already exists. Returning the old one."
-            )
+            # logger.info(
+            #     "ResourceLoader with same path and same file type(s) already exists. Returning the old one."
+            # )
+            pass
         else:
             _loader_pool[_id] = super(ResourceLoader, cls).__new__(cls)
         return _loader_pool[_id]
@@ -108,19 +104,17 @@ class ResourceLoader:
                 self.file_path_list = []
                 for path in pathlib.Path(self.path).glob(glob_str):
                     if can_match(path):
-                        if verbose:
-                            logger.log(f"File match: {path}")
                         self.file_path_list.append(path)
             self.ready = True  # scan complete
             if not self._initialized:
                 self._initialized = True
-            logger.ok(
-                f"Resource loader '{self.path}' ready with {'all' if '*' in self._file_types else len(self._file_types)} file types({len(self.file_path_list)} files)."
-            )
+            # logger.ok(
+            #     f"Resource loader '{self.path}' ready with {'all' if '*' in self._file_types else len(self._file_types)} file types({len(self.file_path_list)} files)."
+            # )
 
-        logger.log(
-            f"Scanning started at '{self.path}' for {'all' if '*' in self._file_types else len(self._file_types)} file types."
-        )
+        # logger.log(
+        #     f"Scanning started at '{self.path}' for {'all' if '*' in self._file_types else len(self._file_types)} file types."
+        # )
         # call to scan
         if self._async_scan:
             threading.Thread(target=perform_scan).start()
@@ -139,53 +133,51 @@ class ResourceLoader:
             return self.file_path_list[index]
 
 
-class ImagesLoader(ResourceLoader):
-    def __init__(
-        self,
-        folder,
-        file_types=["png", "jpg"],
-        sub_dirs=True,
-        async_scan=False,
-        verbose=False,
-    ):
-        pkg.is_installed("PIL", try_install_if_not="pillow")
+# class ImagesLoader(ResourceLoader):
+#     def __init__(
+#         self,
+#         folder,
+#         file_types=["png", "jpg"],
+#         sub_dirs=True,
+#         async_scan=False,
+#         verbose=False,
+#     ):
+#         pkg.is_installed("PIL", try_install_if_not="pillow")
 
-        super().__init__(folder, file_types, sub_dirs, async_scan, verbose)
+#         super().__init__(folder, file_types, sub_dirs, async_scan, verbose)
 
-    def get_random_image(self):
-        rand_img_path = self.file_path_list[int(random() * len(self.file_path_list))]
-        image = Image.open(rand_img_path).convert("RGB")
-        return image
+#     def get_random_image(self):
+#         rand_img_path = self.file_path_list[int(random() * len(self.file_path_list))]
+#         image = Image.open(rand_img_path).convert("RGB")
+#         return image
 
-    def get_random_images(self, howmany=1):
-        assert howmany < len(self.file_path_list)
-        rand_idx_begin = int(random() * (len(self.file_path_list) - howmany))
-        image_path_list = self[rand_idx_begin : rand_idx_begin + howmany]
-        image_list = []
-        for path in image_path_list:
-            image_list.append(Image.open(path).convert("RGB"))
-        return image_list
+#     def get_random_images(self, howmany=1):
+#         assert howmany < len(self.file_path_list)
+#         rand_idx_begin = int(random() * (len(self.file_path_list) - howmany))
+#         image_path_list = self[rand_idx_begin : rand_idx_begin + howmany]
+#         image_list = []
+#         for path in image_path_list:
+#             image_list.append(Image.open(path).convert("RGB"))
+#         return image_list
 
-    def get_random_image_as_numpy(self):
-        image = self.get_random_image()
-        return np.array(image)
+#     def get_random_image_as_numpy(self):
+#         import numpy as np
+#         image = self.get_random_image()
+#         return np.array(image)
 
-    def get_random_image_as_tensor(self, engine=engine.Torch):
-        assert engine in [engine.Torch]  # TODO support other engines
-        if engine == engine.Torch:
-            assert pkg.is_installed("torchvision")
-            import torchvision.transforms as T
+#     def get_random_image_as_tensor(self, engine="torch"):
+#         assert engine in ["torch"]  # TODO support other engines ?
+#         assert pkg.is_installed("torchvision")
+#         import torchvision.transforms as T
 
-            tensor_transform = T.Compose(
-                [
-                    T.ToTensor(),
-                    T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
-                ]
-            )
-            image = tensor_transform(self.get_random_image()).unsqueeze(0)  # To tensor of NCHW
-            return image
-
-    # TODO(VisualDust): to_dataset
+#         tensor_transform = T.Compose(
+#             [
+#                 T.ToTensor(),
+#                 T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+#             ]
+#         )
+#         image = tensor_transform(self.get_random_image()).unsqueeze(0)  # To tensor of NCHW
+#         return image
 
 
 def download(
@@ -234,7 +226,7 @@ def download(
                 progress.update(task_id, advance=len(data))
                 if done_event.is_set():
                     return
-        logger.log(f"Downloaded {path}.")
+        # logger.log(f"Downloaded {path}.")
 
     assert type(urls) in [str, list, dict], "unkown format of url"
 
@@ -263,7 +255,7 @@ def download(
 
         urls = {filenames[i]: urls[i] for i in range(len(urls))}
 
-    logger.log(f"Downloading {len(urls)} file(s)...")
+    # logger.log(f"Downloading {len(urls)} file(s)...")
 
     with progress:
         with ThreadPoolExecutor(max_workers=max_workers) as pool:

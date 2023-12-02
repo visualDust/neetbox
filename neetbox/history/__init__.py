@@ -1,6 +1,6 @@
 import os
 
-from neetbox.utils.resource import ResourceLoader
+from neetbox.utils import ResourceLoader
 
 from ._db import (
     HISTORY_FILE_ROOT,

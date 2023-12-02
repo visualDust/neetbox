@@ -1,5 +1,5 @@
 # def test_download():
-#     from neetbox.utils.resource import download
+#     from neetbox.utils import download
 
 #     print("testing download")
 #     urls = {
@@ -16,7 +16,7 @@
 # def test_resource_loader():
 #     import time
 
-#     from neetbox.utils.resource import ResourceLoader
+#     from neetbox.utils import ResourceLoader
 
 #     print("testing resource loader")
 #     md_loader = ResourceLoader("./", ["md"])
