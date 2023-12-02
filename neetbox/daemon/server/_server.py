@@ -48,6 +48,12 @@ def server_process(cfg, debug=False):
 
     # describe a client
     class Bridge:
+        """Bridges represent projects, running or not running, from client connection or fron history. web apis should obtain information from Bridges."""
+
+        # static
+        _id2bridge: Dict[str, "Bridge"] = {}  # manage connections using project id
+
+        # instance vars
         id: str
         status: dict = {}
         cli_ws = None  # cli ws sid
@@ -55,6 +61,36 @@ def server_process(cfg, debug=False):
         web_ws_list = (
             []
         )  # frontend ws sids. client data should be able to be shown on multiple frontend
+
+        def __new__(cls, project_id, *args, **kwargs) -> None:
+            if project_id not in cls._id2bridge:
+                new_bridge = super().__new__(cls, *args, **kwargs)
+                new_bridge.id = project_id
+                new_bridge.historyDB = get_db_of_id(project_id=project_id)
+                cls._id2bridge[project_id] = new_bridge
+            return cls._id2bridge[project_id]
+
+        @classmethod
+        def items(cls):
+            return cls._id2bridge.items()
+
+        @classmethod
+        def has(cls, project_id):
+            return project_id in cls._id2bridge
+
+        @classmethod
+        def of_id(cls, project_id):
+            bridge = cls._id2bridge[project_id] if cls.has(project_id) else None
+            return bridge
+
+        @classmethod
+        def of_db(cls, db: DBConnection):
+            pass
+
+        @classmethod
+        def load_histories(cls):
+            db_list = get_db_list()
+            # todo
 
         def set_status(self, status):
             status = json.loads(status) if isinstance(status, str) else status
@@ -65,26 +101,22 @@ def server_process(cfg, debug=False):
             status["online"] = self.cli_ws is not None
             return status
 
-        def __init__(self, project_id) -> None:
-            # initialize non-websocket things
-            self.id = project_id
-            self.historyDB = get_history_db_of_id(project_id=project_id)
+    Bridge.load_histories()  # load history files
 
-    __BRIDGES: Dict[str, Bridge] = {}  # manage connections
     connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
 
     def save_json_to_history(project_id, table_name, json_data):
-        if project_id not in __BRIDGES:
+        if not Bridge.has(project_id):
             return  # cannot operate history if client is not connected
-        lastrowid = __BRIDGES[project_id].historyDB.write_json(
+        lastrowid = Bridge.of_id(project_id).historyDB.write_json(
             table_name=table_name, json_data=json_data
         )
         return lastrowid
 
     def save_blob_to_history(project_id, table_name, json_data, blob_data):
-        if project_id not in __BRIDGES:
+        if not Bridge.has(project_id):
             return  # cannot operate history if client is not connected
-        lastrowid = __BRIDGES[project_id].historyDB.write_blob(
+        lastrowid = Bridge.of_id(project_id).historyDB.write_blob(
             table_name=table_name, json_data=json_data, blob_data=blob_data
         )
         return lastrowid
@@ -139,13 +171,13 @@ def server_process(cfg, debug=False):
     """
 
     def ws_send_to_frontends_of_id(project_id, message):
-        if project_id not in __BRIDGES:
+        if not Bridge.has(project_id):
             if debug:
                 console.log(
                     f"cannot broadcast message to frontends under name {project_id}: name not found."
                 )
             return  # no such bridge
-        _target_bridge = __BRIDGES[project_id]
+        _target_bridge = Bridge.of_id(project_id)
         for web_ws in _target_bridge.web_ws_list:
             ws_server.send_message(
                 client=web_ws, msg=message
@@ -153,13 +185,13 @@ def server_process(cfg, debug=False):
         return
 
     def ws_send_to_client_of_id(project_id, message):
-        if project_id not in __BRIDGES:
+        if not Bridge.has(project_id):
             if debug:
                 console.log(
                     f"cannot forward message to client under name {project_id}: name not found."
                 )
             return  # no such bridge
-        _target_bridge = __BRIDGES[project_id]
+        _target_bridge = Bridge.of_id(project_id)
         _client = _target_bridge.cli_ws
         ws_server.send_message(client=_client, msg=message)  # forward original message to client
         return
@@ -170,39 +202,39 @@ def server_process(cfg, debug=False):
     def handle_ws_disconnect(client, server):
         if client["id"] not in connected_clients:
             return  # client disconnected before handshake, returning anyway
-        _project_id, _who = connected_clients[client["id"]]
-        if _who == "cli":  # remove client from Bridge
-            __BRIDGES[_project_id].cli_ws = None
+        project_id, who = connected_clients[client["id"]]
+        if who == "cli":  # remove client from Bridge
+            Bridge.of_id(project_id).cli_ws = None
         else:  # remove frontend from Bridge
             _new_web_ws_list = [
-                c for c in __BRIDGES[_project_id].web_ws_list if c["id"] != client["id"]
+                c for c in Bridge.of_id(project_id).web_ws_list if c["id"] != client["id"]
             ]
-            __BRIDGES[_project_id].web_ws_list = _new_web_ws_list
+            Bridge.of_id(project_id).web_ws_list = _new_web_ws_list
         del connected_clients[client["id"]]
-        console.log(f"a {_who} disconnected with id {client['id']}")
+        console.log(f"a {who} disconnected with id {client['id']}")
         # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
     def on_event_type_handshake(client, server, message_dict, message):
         _payload = message_dict[PAYLOAD_NAME_KEY]
         _event_id = message_dict[EVENT_ID_NAME_KEY]
-        _project_id = message_dict[PROJECT_ID_KEY]
+        project_id = message_dict[PROJECT_ID_KEY]
         if client["id"] in connected_clients:
             # !!! cli/web could change their project name by handshake twice, this is a legal behavior
             handle_ws_disconnect(
                 client=client, server=server
             )  # perform "software disconnect" before "software connect" again
         # assign this client to a Bridge
-        _who = _payload["who"]
-        console.log(f"handling handshake for {_who} with name {_project_id}")
-        if _who == "web":
+        who = _payload["who"]
+        console.log(f"handling handshake for {who} with name {project_id}")
+        if who == "web":
             # new connection from frontend
             # check if Bridge with name exist
-            if _project_id not in __BRIDGES:  # there is no such bridge
+            if not Bridge.has(project_id):  # there is no such bridge
                 server.send_message(
                     client=client,
                     msg=json.dumps(
                         WsMsg(
-                            project_id=_project_id,
+                            project_id=project_id,
                             event_type="handshake",
                             event_id=_event_id,
                             payload={"result": 404, "reason": "name not found"},
@@ -210,33 +242,31 @@ def server_process(cfg, debug=False):
                     ),
                 )
             else:  # assign web to bridge
-                _target_bridge = __BRIDGES[_project_id]
-                _target_bridge.web_ws_list.append(client)
-                connected_clients[client["id"]] = (_project_id, "web")
+                target_bridge = Bridge.of_id(project_id)
+                target_bridge.web_ws_list.append(client)
+                connected_clients[client["id"]] = (project_id, "web")
                 server.send_message(
                     client=client,
                     msg=json.dumps(
                         WsMsg(
-                            project_id=_project_id,
+                            project_id=project_id,
                             event_type="handshake",
                             event_id=_event_id,
                             payload={"result": 200, "reason": "join success"},
                         ).json()
                     ),
                 )
-        elif _who == "cli":
+        elif who == "cli":
             # new connection from cli
             # check if Bridge with name exist
-            if _project_id not in __BRIDGES:  # there is no such bridge
-                _target_bridge = Bridge(project_id=_project_id)  # create new bridge for this name
-                __BRIDGES[_project_id] = _target_bridge
-            __BRIDGES[_project_id].cli_ws = client  # assign cli to bridge
-            connected_clients[client["id"]] = (_project_id, "cli")
+            target_bridge = Bridge(project_id=project_id)
+            target_bridge.cli_ws = client  # assign cli to bridge
+            connected_clients[client["id"]] = (project_id, "cli")
             server.send_message(
                 client=client,
                 msg=json.dumps(
                     WsMsg(
-                        project_id=_project_id,
+                        project_id=project_id,
                         event_type="handshake",
                         event_id=_event_id,
                         payload={"result": 200, "reason": "join success"},
@@ -246,15 +276,15 @@ def server_process(cfg, debug=False):
 
     def on_event_type_log(client, server, message_dict, message):
         # forward log to frontend. logs should only be sent by cli and only be received by frontends
-        _project_id = message_dict[PROJECT_ID_KEY]
-        if _project_id not in __BRIDGES:
+        project_id = message_dict[PROJECT_ID_KEY]
+        if not Bridge.has(project_id):
             # project id must exist
             # drop anyway if not exist
             if debug:
-                console.log(f"handle log. {_project_id} not found.")
+                console.log(f"handle log. {project_id} not found.")
             return
-        ws_send_to_frontends_of_id(project_id=_project_id, message=message)  # forward to frontends
-        save_json_to_history(project_id=_project_id, table_name="log", json_data=message)
+        ws_send_to_frontends_of_id(project_id=project_id, message=message)  # forward to frontends
+        save_json_to_history(project_id=project_id, table_name="log", json_data=message)
         return  # return after handling log forwarding
 
     def on_event_type_action(client, server, message_dict, message):
@@ -320,14 +350,14 @@ def server_process(cfg, debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/list", methods=["GET"])
     def return_list_of_connected_project_ids():
         result = []
-        for id in __BRIDGES.keys():
-            result.append({"id": id, "config": __BRIDGES[id].get_status()["config"]})
+        for id, bridge in Bridge.items():
+            result.append({"id": id, "config": bridge.get_status()["config"]})
         return result
 
     @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>", methods=["GET"])
     def return_status_of(project_id):
-        if project_id in __BRIDGES:
-            _returning_stat = __BRIDGES[project_id].get_status()  # returning specific status
+        if Bridge.has(project_id):
+            _returning_stat = Bridge.of_id(project_id).get_status()  # returning specific status
         else:
             abort(404)
         return _returning_stat
@@ -335,9 +365,8 @@ def server_process(cfg, debug=False):
     @app.route(f"{CLIENT_API_ROOT}/sync/<project_id>", methods=["POST"])
     def sync_status_of(project_id):  # client side function
         _json_data = request.get_json()
-        if project_id not in __BRIDGES:  # Client not found
-            __BRIDGES[project_id] = Bridge(project_id=project_id)  # Create from sync request
-        __BRIDGES[project_id].set_status(_json_data)
+        target_bridge = Bridge(project_id)  # Create from sync request
+        target_bridge.set_status(_json_data)
         save_json_to_history(project_id=project_id, table_name="status", json_data=_json_data)
         return {"result": "ok"}
 
@@ -356,10 +385,10 @@ def server_process(cfg, debug=False):
 
     @app.route(f"{FRONTEND_API_ROOT}/image/<project_id>/<image_id>", methods=["GET"])
     def get_image_of_id(project_id, image_id: int):
-        if project_id not in __BRIDGES:
+        if not Bridge.has(project_id):
             return  # cannot operate history if client is not connected
         meta = request.args.get("meta") is not None
-        [(_, _, json, image)] = __BRIDGES[project_id].historyDB.read_blob(
+        [(_, _, json, image)] = Bridge.of_id(project_id).historyDB.read_blob(
             table_name="image", condition=QueryCondition(id_range=image_id), meta_only=meta
         )
 

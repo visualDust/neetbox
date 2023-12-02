@@ -18,7 +18,6 @@ logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws
 
 MODULE_NAME = get_frame_module_traceback(1).__name__  # type: ignore
 CONFIG_FILE_NAME = f"{MODULE_NAME}.toml"
-WORKSPACE_ID: str = None
 NEETBOX_VERSION = version("neetbox")
 
 

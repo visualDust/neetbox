@@ -6,6 +6,7 @@ from enum import Enum
 from importlib.metadata import version
 from typing import List, Tuple, Union
 
+from neetbox.config import get_module_level_config
 from neetbox.logging import logger
 from neetbox.logging.formatting import LogStyle
 
@@ -93,26 +94,45 @@ class QueryCondition:
 
 class DBConnection:
     connection = None
+    _path2dbc = {}
+    _id2dbc = {}
 
-    def __init__(self, workspace_id=None, **kwargs):
-        if "path" not in kwargs and workspace_id is None:
-            raise RuntimeError("please specify workspace id or db file path")
-        db_file = (
-            kwargs["path"]
-            if "path" in kwargs
-            else f"{HISTORY_FILE_ROOT}/{workspace_id}.{HISTORY_FILE_TYPE_NAME}"
-        )
+    def __new__(cls, path=None, **kwargs) -> "DBConnection":
+        if path in cls._path2dbc:
+            return cls._path2dbc[path]
+        new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
-        self.connection = sqlite3.connect(db_file, check_same_thread=False)
+        new_dbc.connection = sqlite3.connect(path, check_same_thread=False)
         # check neetbox version
-        _db_file_version = self.get_db_version()
+        PROJECT_ID = get_module_level_config("@")["workspace-id"]
+        _db_file_project_id = new_dbc.fetch_db_project_id(PROJECT_ID)
+        if _db_file_project_id != PROJECT_ID:
+            raise RuntimeError(
+                f"Wrong DB file! reading history of project id '{PROJECT_ID}' from file of project id '{_db_file_project_id}'"
+            )
+        _db_file_version = new_dbc.fetch_db_version(NEETBOX_VERSION)
         if NEETBOX_VERSION != _db_file_version:
             logger.warn(
                 f"History file version not match: reading from version {_db_file_version} with neetbox version {NEETBOX_VERSION}"
             )
-        logger.info(
-            f"History file '{db_file}'(version={_db_file_version}) attached for id {workspace_id}"
+        cls._path2dbc[path] = new_dbc
+        cls._id2dbc[PROJECT_ID] = new_dbc
+        logger.ok(
+            f"History file '{path}'(version={_db_file_version}) loaded, project id '{PROJECT_ID}'"
         )
+        return new_dbc
+
+    @classmethod
+    def items(cls):
+        return cls._id2dbc.items()
+
+    @classmethod
+    def of_project_id(cls, project_id):
+        if project_id in cls._id2dbc:
+            return cls._id2dbc[project_id]
+        # not exist, create new
+        path = f"{HISTORY_FILE_ROOT}/{project_id}.{HISTORY_FILE_TYPE_NAME}"
+        return DBConnection(path=path)
 
     def _execute(self, query, *args, fetch: FetchType = None, save_immediately=True, **kwargs):
         cur = self.connection.cursor()
@@ -134,17 +154,37 @@ class DBConnection:
         table_names, _ = self._execute(sql_query, fetch=FetchType.ALL)
         return table_names
 
-    def get_db_version(self):
+    def fetch_db_version(self, default=None):
         # create if there is no version table
         sql_query = "CREATE TABLE IF NOT EXISTS version ( version TEXT NON NULL );"
         self._execute(sql_query)
         sql_query = "SELECT version FROM version"
         _version, _ = self._execute(sql_query, fetch=FetchType.ONE)
         if _version is None:
+            if default is None:
+                raise RuntimeError(
+                    "should provide a default version if fetching from empty version"
+                )
             sql_query = f"INSERT INTO version VALUES (?);"
-            self._execute(sql_query, NEETBOX_VERSION)
-            return NEETBOX_VERSION
+            self._execute(sql_query, default)
+            return default
         return _version[0]
+
+    def fetch_db_project_id(self, default=None):
+        # create if there is no projectid table
+        sql_query = "CREATE TABLE IF NOT EXISTS projectid ( projectid TEXT NON NULL );"
+        self._execute(sql_query)
+        sql_query = "SELECT projectid FROM projectid"
+        _projectid, _ = self._execute(sql_query, fetch=FetchType.ONE)
+        if _projectid is None:
+            if default is None:
+                raise RuntimeError(
+                    "should provide a default project id if fetching from empty project id"
+                )
+            sql_query = f"INSERT INTO projectid VALUES (?);"
+            self._execute(sql_query, default)
+            return default
+        return _projectid[0]
 
     def write_json(self, table_name, json_data, timestamp=None):
         # create if there is no version table
