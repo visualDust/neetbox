@@ -14,7 +14,6 @@ from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 
 from .client._client import connection
-from .client._client_action_agent import _NeetActionManager as NeetActionManager
 from .client._client_http_upload_thread import connect_daemon as _connect_daemon
 
 logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
@@ -79,6 +78,5 @@ def connect():
         return False
 
 
-action = NeetActionManager.register
 ws_subscribe = connection.ws_subscribe
-__all__ = ["action", "ws_subscribe", "NeetActionManager"]
+__all__ = ["ws_subscribe"]

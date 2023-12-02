@@ -5,8 +5,7 @@ from time import sleep
 
 import snake
 
-from neetbox.daemon import action
-from neetbox.frontend import impost
+from neetbox.frontend import action, impost
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 
