@@ -93,7 +93,6 @@ class QueryCondition:
         if query_conditions:
             query_conditions = f"WHERE {query_conditions}"
         querty_condition_str = f"{query_conditions} {order_and_limit}"
-        print(querty_condition_str)
         return querty_condition_str
 
 
@@ -102,18 +101,22 @@ class DBConnection:
     _path2dbc = {}
     _id2dbc = {}
 
-    def __new__(cls, path=None, **kwargs) -> "DBConnection":
+    def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "DBConnection":
+        if path is None:  # make path from project id
+            path = f"{HISTORY_FILE_ROOT}/{project_id}.{HISTORY_FILE_TYPE_NAME}"
         if path in cls._path2dbc:
             return cls._path2dbc[path]
+        if project_id in cls._id2dbc:
+            return cls._id2dbc[project_id]
         new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
         new_dbc.connection = sqlite3.connect(path, check_same_thread=False)
         # check neetbox version
-        PROJECT_ID = get_module_level_config("@")["workspace-id"]
-        _db_file_project_id = new_dbc.fetch_db_project_id(PROJECT_ID)
-        if _db_file_project_id != PROJECT_ID:
+        _db_file_project_id = new_dbc.fetch_db_project_id(project_id)
+        project_id = project_id or _db_file_project_id
+        if _db_file_project_id != project_id:
             raise RuntimeError(
-                f"Wrong DB file! reading history of project id '{PROJECT_ID}' from file of project id '{_db_file_project_id}'"
+                f"Wrong DB file! reading history of project id '{project_id}' from file of project id '{_db_file_project_id}'"
             )
         _db_file_version = new_dbc.fetch_db_version(NEETBOX_VERSION)
         if NEETBOX_VERSION != _db_file_version:
@@ -121,10 +124,8 @@ class DBConnection:
                 f"History file version not match: reading from version {_db_file_version} with neetbox version {NEETBOX_VERSION}"
             )
         cls._path2dbc[path] = new_dbc
-        cls._id2dbc[PROJECT_ID] = new_dbc
-        logger.ok(
-            f"History file '{path}'(version={_db_file_version}) loaded, project id '{PROJECT_ID}'"
-        )
+        cls._id2dbc[project_id] = new_dbc
+        logger.ok(f"History file(version={_db_file_version}) for project id '{project_id}' loaded.")
         return new_dbc
 
     @classmethod
@@ -135,9 +136,7 @@ class DBConnection:
     def of_project_id(cls, project_id):
         if project_id in cls._id2dbc:
             return cls._id2dbc[project_id]
-        # not exist, create new
-        path = f"{HISTORY_FILE_ROOT}/{project_id}.{HISTORY_FILE_TYPE_NAME}"
-        return DBConnection(path=path)
+        return DBConnection(project_id)
 
     def _execute(self, query, *args, fetch: FetchType = None, save_immediately=True, **kwargs):
         cur = self.connection.cursor()
@@ -233,7 +232,7 @@ class DBConnection:
 
 
 if __name__ == "__main__":
-    conn = DBConnection(path=".ignore/some.db")
+    conn = DBConnection(project_id="test_project_id", path=".ignore/some.db")
     conn.write_json(
         table_name="test_log",
         json_data={

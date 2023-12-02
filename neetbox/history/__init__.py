@@ -20,6 +20,7 @@ if not os.path.isdir(HISTORY_FILE_ROOT):
 
 
 def load_db_of_path(path):
+    print(path)
     if not os.path.isfile(path):
         raise RuntimeError(f"{path} is not a file")
     conn = DBConnection(path=path)
@@ -36,8 +37,9 @@ def get_db_list():
     return DBConnection._id2dbc.items()
 
 
-def get_db_of_id(project_id):
-    get_db_list()  # scan again, for possible file changes
+def get_db_of_id(project_id, rescan: bool = True):
+    if rescan:
+        get_db_list()  # scan for possible file changes
     conn = DBConnection.of_project_id(project_id=project_id)
     return conn
 

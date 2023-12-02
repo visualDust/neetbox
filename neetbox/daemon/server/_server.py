@@ -65,7 +65,7 @@ def server_process(cfg, debug=False):
             []
         )  # frontend ws sids. client data should be able to be shown on multiple frontend
 
-        def __new__(cls, project_id: str, *args, **kwargs) -> None:
+        def __new__(cls, project_id: str, **kwargs) -> None:
             """Create Bridge of project id, return the old one if already exist
 
             Args:
@@ -75,10 +75,13 @@ def server_process(cfg, debug=False):
                 Bridge: Bridge of given project id
             """
             if project_id not in cls._id2bridge:
-                new_bridge = super().__new__(cls, *args, **kwargs)
+                new_bridge = super().__new__(cls)
                 new_bridge.project_id = project_id
-                new_bridge.historyDB = get_db_of_id(project_id=project_id)
+                flag_auto_load_db = kwargs["auto_load_db"] if "auto_load_db" in kwargs else True
+                if flag_auto_load_db:
+                    new_bridge.historyDB = get_db_of_id(project_id)
                 cls._id2bridge[project_id] = new_bridge
+                logger.info(f"created new Bridge for project id '{project_id}'")
             return cls._id2bridge[project_id]
 
         @classmethod
@@ -105,9 +108,9 @@ def server_process(cfg, debug=False):
         @classmethod
         def of_db(cls, db: DBConnection):
             project_id = db.fetch_db_project_id()
-            target_bridge = Bridge(project_id)
+            target_bridge = Bridge(project_id, auto_load_db=False)
             if target_bridge.historyDB is not None:
-                logger.warn(f"overwriting db of {project_id}")
+                logger.warn(f"overwriting db of '{project_id}'")
             target_bridge.historyDB = db
             # put last status
             last_status = target_bridge.read_json_from_history(
@@ -120,7 +123,9 @@ def server_process(cfg, debug=False):
 
         @classmethod
         def load_histories(cls):
-            for _, history_db in get_db_list():
+            db_list = get_db_list()
+            logger.log(f"found {len(db_list)} history db, loading...")
+            for _, history_db in db_list:
                 cls.of_db(history_db)
 
         def set_status(self, status):
@@ -252,14 +257,10 @@ def server_process(cfg, debug=False):
         _payload = message_dict[PAYLOAD_NAME_KEY]
         _event_id = message_dict[EVENT_ID_NAME_KEY]
         project_id = message_dict[PROJECT_ID_KEY]
-        if client["id"] in connected_clients:
-            # !!! cli/web could change their project name by handshake twice, this is a legal behavior
-            handle_ws_disconnect(
-                client=client, server=server
-            )  # perform "software disconnect" before "software connect" again
+
         # assign this client to a Bridge
         who = _payload["who"]
-        console.log(f"handling handshake for {who} with name {project_id}")
+        console.log(f"handling handshake for {who} with project id '{project_id}'")
         if who == "web":
             # new connection from frontend
             # check if Bridge with name exist
