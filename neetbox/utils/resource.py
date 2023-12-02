@@ -27,7 +27,6 @@ from rich.progress import (
     TransferSpeedColumn,
 )
 
-from neetbox.extension import engine
 from neetbox.logging import logger
 from neetbox.utils import pkg
 
@@ -170,22 +169,19 @@ class ImagesLoader(ResourceLoader):
         image = self.get_random_image()
         return np.array(image)
 
-    def get_random_image_as_tensor(self, engine=engine.Torch):
-        assert engine in [engine.Torch]  # TODO support other engines
-        if engine == engine.Torch:
-            assert pkg.is_installed("torchvision")
-            import torchvision.transforms as T
+    def get_random_image_as_tensor(self, engine="torch"):
+        assert engine in ["torch"]  # TODO support other engines ?
+        assert pkg.is_installed("torchvision")
+        import torchvision.transforms as T
 
-            tensor_transform = T.Compose(
-                [
-                    T.ToTensor(),
-                    T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
-                ]
-            )
-            image = tensor_transform(self.get_random_image()).unsqueeze(0)  # To tensor of NCHW
-            return image
-
-    # TODO(VisualDust): to_dataset
+        tensor_transform = T.Compose(
+            [
+                T.ToTensor(),
+                T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            ]
+        )
+        image = tensor_transform(self.get_random_image()).unsqueeze(0)  # To tensor of NCHW
+        return image
 
 
 def download(

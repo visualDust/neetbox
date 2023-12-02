@@ -21,7 +21,7 @@ pip install --index-url https://pypi.org/simple/ neetbox --force-reinstall --no-
 - [x] [Simple Logging Utility](/docs/guide/logging/) provides simple logging utility that interacts with other parts of NEETBOX.
 - [ ] [The CLI](/docs/guide/neetcli/) lets you easily monitor and manage deep learning projects.
 - [x] [Pipeline](/docs/guide/pipeline/) provides tools that monitor and facilitate your training and inferencing code.
-- [ ] [Integrations and other helpful tools](/docs/guide/integrations/) okay I know there are not many things here, but we are managing to do it.
+- [ ] [extension and other helpful tools](/docs/guide/extension/) okay I know there are not many things here, but we are managing to do it.
 - [x] [Basic PyTorch Code Snippets](/docs/guide/torch-snippets/) useless pytorch code snippets.
 - [x] [Dev APIs](/docs/develop/) join us.
 

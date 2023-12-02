@@ -12,8 +12,8 @@ DEFAULT_WORKSPACE_CONFIG = {
     "pipeline": {
         "updateInterval": 0.5,
     },
-    "integrations": {
-        "autoload": True,
+    "extension": {
+        "autoload": False,
         "environment": {"hardware": {"monit": True, "interval": 0.5}, "platform": {"monit": True}},
     },
     "daemon": {
