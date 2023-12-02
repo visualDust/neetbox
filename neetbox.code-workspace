@@ -4,7 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "neetbox/frontend"
+			"path": "frontend"
 		}
 	],
 	"settings": {}

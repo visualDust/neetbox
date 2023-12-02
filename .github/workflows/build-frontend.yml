@@ -3,10 +3,10 @@ name: Frontend Build & Lint
 on:
   push:
     paths:
-      - 'neetbox/frontend/**'
+      - 'frontend/**'
   pull_request:
     paths:
-      - 'neetbox/frontend/**'
+      - 'frontend/**'
 
 
 jobs:
@@ -14,14 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: neetbox/frontend
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: 'yarn'
-          cache-dependency-path: 'neetbox/frontend/yarn.lock'
+          cache-dependency-path: 'frontend/yarn.lock'
       - name: setup yarn
         run: corepack enable
       - run: yarn install --frozen-lockfile

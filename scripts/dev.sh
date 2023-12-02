@@ -9,7 +9,7 @@ tmux split-window -h
 tmux send 'cd tests/client' ENTER
 tmux send 'python test.py' ENTER
 tmux split-window -f
-tmux send 'cd neetbox/frontend' ENTER
+tmux send 'cd frontend' ENTER
 tmux send 'yarn dev' ENTER
 tmux set mouse on
 tmux a -t neetbox

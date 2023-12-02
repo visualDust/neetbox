@@ -28,6 +28,6 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "../frontend_dist",
+    outDir: "../neetbox/frontend_dist",
   },
 });
