@@ -87,4 +87,5 @@ def styled_text(text, style: LogStyle):
 
 
 def colored_text(text: str, color):
+    text = text.replace("[", "\[")
     return f"[{color}]{text}[/{color}]"

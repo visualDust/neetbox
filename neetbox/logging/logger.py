@@ -11,7 +11,7 @@ from enum import Enum
 from random import randint
 from typing import Any, Optional, Union
 
-from rich import print as rprint
+from rich.console import Console
 from rich.panel import Panel
 
 from neetbox.config import get_module_level_config
@@ -75,6 +75,7 @@ class Logger:
     # global static
     __WHOM_2_LOGGER = {}
     __WHOM_2_STYLE = {}
+    _console = Console()
 
     def __init__(self, whom=None, style: Optional[LogStyle] = None):
         self.whom: Any = whom
@@ -178,17 +179,8 @@ class Logger:
         if _GLOBAL_LOG_LEVEL >= LogLevel.INFO:
             self.log(
                 *content,
-                prefix=f"[{colored_text('ok', 'green')}]",
-                skip_writers=["file", "ws"] + skip_writers,
-                traceback=3,
-                datetime_format=datetime_format,
-                with_identifier=with_identifier,
-                with_datetime=with_datetime,
-            )
-            self.log(
-                *content,
-                prefix="ok",
-                skip_writers=["stdout"] + skip_writers,
+                prefix=f"ok",
+                skip_writers=skip_writers,
                 traceback=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
@@ -207,17 +199,8 @@ class Logger:
         if _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
             self.log(
                 *content,
-                prefix=f"[{colored_text('debug', 'cyan')}]",
-                skip_writers=["file", "ws"] + skip_writers,
-                traceback=3,
-                datetime_format=datetime_format,
-                with_identifier=with_identifier,
-                with_datetime=with_datetime,
-            )
-            self.log(
-                *content,
-                prefix="debug",
-                skip_writers=["stdout"] + skip_writers,
+                prefix=f"debug",
+                skip_writers=skip_writers,
                 traceback=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
@@ -236,17 +219,8 @@ class Logger:
         if _GLOBAL_LOG_LEVEL >= LogLevel.INFO:
             self.log(
                 *message,
-                prefix=f"[{colored_text('info', 'white')}]",
-                skip_writers=["file", "ws"] + skip_writers,
-                traceback=3,
-                datetime_format=datetime_format,
-                with_identifier=with_identifier,
-                with_datetime=with_datetime,
-            )
-            self.log(
-                *message,
-                prefix="info",
-                skip_writers=["stdout"] + skip_writers,
+                prefix=f"info",
+                skip_writers=skip_writers,
                 traceback=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
@@ -265,17 +239,8 @@ class Logger:
         if _GLOBAL_LOG_LEVEL >= LogLevel.WARNING:
             self.log(
                 *message,
-                prefix=f"[{colored_text('warning', 'yellow')}]",
-                skip_writers=["file", "ws"] + skip_writers,
-                traceback=3,
-                datetime_format=datetime_format,
-                with_identifier=with_identifier,
-                with_datetime=with_datetime,
-            )
-            self.log(
-                *message,
-                prefix="warning",
-                skip_writers=["stdout"],
+                prefix=f"warning",
+                skip_writers=skip_writers,
                 traceback=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
@@ -292,29 +257,21 @@ class Logger:
         skip_writers: list[str] = [],
         reraise=False,
     ):
-        if type(err) is not Exception:
-            err = RuntimeError(str(err))
         if _GLOBAL_LOG_LEVEL >= LogLevel.ERROR:
             self.log(
                 str(err),
-                prefix=f"[{colored_text('error','red')}]",
-                skip_writers=["file", "ws"] + skip_writers,
+                prefix=f"error",
+                skip_writers=skip_writers,
                 traceback=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
                 with_datetime=with_datetime,
             )
-            self.log(
-                str(err),
-                prefix="error",
-                skip_writers=["stdout"],
-                traceback=3,
-                datetime_format=datetime_format,
-                with_identifier=with_identifier,
-                with_datetime=with_datetime,
-            )
-        if reraise or _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
-            raise err
+        if type(err) is Exception:
+            if reraise or _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
+                raise err
+            else:
+                Logger._console.print_exception(err)
         return self
 
     def mention(self, func):
@@ -359,7 +316,7 @@ class Logger:
                     font = file[0]
         f = Figlet(font)
         rendered_text = f.renderText(text)
-        rprint(Panel.fit(f"{rendered_text}", border_style="green"))
+        Logger._console.print(Panel.fit(f"{rendered_text}", border_style="green"))
         return self
 
     def skip_lines(self, line_cnt=1, skip_writers: list[str] = []):
