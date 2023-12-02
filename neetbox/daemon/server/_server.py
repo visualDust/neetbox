@@ -110,7 +110,7 @@ def server_process(cfg, debug=False):
             return bridge
 
         @classmethod
-        def of_db(cls, db: DBConnection):
+        def from_db(cls, db: DBConnection):
             project_id = db.fetch_db_project_id()
             target_bridge = Bridge(project_id, auto_load_db=False)
             if target_bridge.historyDB is not None:
@@ -130,7 +130,7 @@ def server_process(cfg, debug=False):
             db_list = get_db_list()
             logger.log(f"found {len(db_list)} history db, loading...")
             for _, history_db in db_list:
-                cls.of_db(history_db)
+                cls.from_db(history_db)
 
         def set_status(self, status):
             self.save_json_to_history(table_name="status", json_data=status)
@@ -435,22 +435,33 @@ def server_process(cfg, debug=False):
         return {"hello": "hello"}
 
     @app.route(f"{FRONTEND_API_ROOT}/list", methods=["GET"])
-    def return_list_of_connected_project_ids():
+    def get_list_of_connected_project_ids():
         result = []
         for id, bridge in Bridge.items():
             result.append({"id": id, "config": bridge.get_status()["config"]})
         return result
 
     @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>", methods=["GET"])
-    def return_status_of(project_id):
-        if Bridge.has(project_id):
-            _returning_stat = Bridge.of_id(project_id).get_status()  # returning specific status
-        else:
+    def get_status_of(project_id):
+        if not Bridge.has(project_id):
             abort(404)
+        _returning_stat = Bridge.of_id(project_id).get_status()  # returning specific status
         return _returning_stat
 
+    @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>/history", methods=["GET"])
+    def get_history_status_of(project_id):
+        if not Bridge.has(project_id):
+            abort(404)
+        _json_data = request.get_json()
+        try:
+            condition = QueryCondition.from_json(_json_data)
+        except Exception as e:  # if failed to parse
+            return abort(400)
+        result_list = Bridge.of_id(project_id).read_json_from_history("status", condition)
+        return result_list
+
     @app.route(f"{CLIENT_API_ROOT}/sync/<project_id>", methods=["POST"])
-    def sync_status_of(project_id):  # client side function
+    def upload_status_of(project_id):  # client side function
         _json_data = request.get_json()
         target_bridge = Bridge(project_id)  # Create from sync request
         target_bridge.set_status(_json_data)
@@ -476,19 +487,34 @@ def server_process(cfg, debug=False):
         return {"result": "ok", "id": lastrowid}
 
     @app.route(f"{FRONTEND_API_ROOT}/image/<project_id>/<image_id>", methods=["GET"])
-    def get_image_of_id(project_id, image_id: int):
+    def get_image_of(project_id, image_id: int):
         if not Bridge.has(project_id):
             return abort(404)  # cannot operate history if bridge of given id not exist
         meta = request.args.get("meta") is not None
-        [(_, _, json, image)] = Bridge.of_id(project_id).read_blob_from_history(
+        [(_, _, meta_data, image)] = Bridge.of_id(project_id).read_blob_from_history(
             table_name="image", condition=QueryCondition(id_range=image_id), meta_only=meta
         )
 
         return (
-            Response(json, mimetype="application/json")
+            Response(meta_data, mimetype="application/json")
             if meta
             else Response(image, mimetype="image")
         )
+
+    @app.route(f"{FRONTEND_API_ROOT}/image/<project_id>/history", methods=["GET"])
+    def get_history_image_metadata_of(project_id):
+        if not Bridge.has(project_id):
+            abort(404)
+        _json_data = request.get_json()
+        try:
+            condition = QueryCondition.from_json(_json_data)
+        except Exception as e:  # if failed to parse
+            return abort(400)
+        query_results = Bridge.of_id(project_id).read_blob_from_history(
+            table_name="image", condition=condition, meta_only=True
+        )  # todo ?
+        result = [meta_data for _, _, meta_data, _ in query_results]
+        return result
 
     @app.route(f"/shutdown", methods=["POST"])
     def shutdown():

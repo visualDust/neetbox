@@ -29,9 +29,14 @@ class SortType(Enum):
     DESC = "DESC"
 
 
+# === COLUMN NAMES ===
 ID_COLUMN_NAME = "id"
 TIMESTAMP_COLUMN_NAME = "timestamp"
-DATA_COLUMN_NAME = "data"
+SERIES_CLOUMN_NAME = "series"
+JSON_COLUMN_NAME = METADATA_COLUMN_NAME = "metadata"
+BLOB_COLUMN_NAME = "data"
+
+# === TABLE NAMES ===
 
 
 class QueryCondition:
@@ -39,6 +44,7 @@ class QueryCondition:
         self,
         id_range: Union[Tuple[int, int], int] = None,
         timestamp_range: Union[Tuple[str, str], str] = None,
+        series: str = None,
         limit: int = None,
         order: Dict[str, SortType] = {},
     ) -> None:
@@ -46,8 +52,56 @@ class QueryCondition:
         self.timestamp_range = (
             timestamp_range if isinstance(timestamp_range, tuple) else (timestamp_range, None)
         )
+        self.series = series
         self.limit = limit
         self.order = {order[0], order[1]} if isinstance(order, tuple) else order
+
+    @classmethod
+    def from_json(cls, json_data):
+        if isinstance(json_data, str):
+            json_data = json.loads(json_data)
+        for prop in ["id_range", "timestamp_range", "limit", "order"]:
+            assert prop in json_data
+        """
+        {
+            "id_range" : [int,int], # from,to
+            "timestamp_range" : [str,str], # from,to
+            "series" : str, # series name
+            "limit" : int,
+            "order" : [
+                {"column name" : "ASC/DESC"},
+                ...
+            ]
+        }
+        """
+        # try load id range
+        id_range_str = json_data["id_range"]
+        id_range = eval(id_range_str)
+        assert isinstance(id_range, list) and len(id_range) == 2
+        assert type(id_range[0]) is int
+        assert type(id_range[1]) is int
+        id_range = tuple(id_range)  # to tuple
+        # try load timestamp range
+        timestamp_range_str = json_data["timestamp_range"]
+        timestamp_range = eval(timestamp_range_str)
+        assert isinstance(timestamp_range, list) and len(timestamp_range) == 2
+        # datetime.strptime(timestamp_range[0], DATETIME_FORMAT) # try parse to datetime, makesure its valid
+        # datetime.strptime(timestamp_range[1], DATETIME_FORMAT)
+        timestamp_range = tuple(timestamp_range)
+        # try to load series
+        series = json["series"]
+        # try load limit
+        limit = json_data["limit"]
+        assert type(limit) is int
+        order = json_data["order"]
+        assert isinstance(order, dict)
+        return QueryCondition(
+            id_range=id_range,
+            timestamp_range=timestamp_range,
+            series=series,
+            limit=limit,
+            order=order,
+        )
 
     @functools.lru_cache()
     def dumps(self):
@@ -69,6 +123,10 @@ class QueryCondition:
                 if _ts_1 is None
                 else f"{TIMESTAMP_COLUMN_NAME} BETWEEN '{_ts_0} AND '{_ts_1}"
             )
+        # === series condition ===
+        _series_cond = ""
+        if self.series:
+            _series_cond = f"{SERIES_CLOUMN_NAME} == {self.series}"
         # === ORDER BY ===
         _order_cond = f"ORDER BY " if self.order else ""
         if self.order:
@@ -79,17 +137,19 @@ class QueryCondition:
             _order_cond = _order_cond[:-2]  # remove last ','
         # === LIMIT ===
         _limit_cond = f"LIMIT {self.limit}" if self.limit else ""
-        # === concat ===
+        # === concat conditions ===
         query_conditions = []
-        for cond in [_id_cond, _timestamp_cond]:
+        for cond in [_id_cond, _timestamp_cond, _series_cond]:
             if cond:
                 query_conditions.append(cond)
         query_conditions = " AND ".join(query_conditions)
+        # === concat order by and limit ===
         order_and_limit = []
         for cond in [_order_cond, _limit_cond]:
             if cond:
                 order_and_limit.append(cond)
         order_and_limit = " ".join(order_and_limit)
+        # result
         if query_conditions:
             query_conditions = f"WHERE {query_conditions}"
         querty_condition_str = f"{query_conditions} {order_and_limit}"
@@ -201,34 +261,33 @@ class DBConnection:
         _, lastrowid = self._execute(sql_query, _timestamp, json_data)
         return lastrowid
 
-    def write_blob(self, table_name, meta_data, blob_data, timestamp=None):
+    def write_blob(self, table_name, meta_data, blob_data, series=None, timestamp=None):
         if isinstance(blob_data, bytes):
             blob_data = bytearray(blob_data)
         if not isinstance(meta_data, str):
             meta_data = json.dumps(meta_data)
         # create if there is no version table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, meta TEXT, data BLOB NON NULL );"
+        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, series TEXT, meta TEXT, data BLOB NON NULL );"
         self._execute(sql_query)
         _timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-        sql_query = f"INSERT INTO {table_name}(timestamp, meta, data) VALUES (?, ?, ?)"
-        _, lastrowid = self._execute(sql_query, _timestamp, meta_data, blob_data)
+        series = meta_data["series"] if "series" in meta_data else series
+        sql_query = f"INSERT INTO {table_name}(timestamp, series, meta, data) VALUES (?, ?, ?, ?)"
+        _, lastrowid = self._execute(sql_query, _timestamp, series, meta_data, blob_data)
         return lastrowid
 
-    def read(self, table_name: str, columns: Tuple[str], condition: QueryCondition = None):
+    def read_json(self, table_name: str, condition: QueryCondition = None):
         condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT {', '.join(columns)} FROM {table_name} {condition}"
+        sql_query = f"SELECT {', '.join(('id', 'timestamp', 'json'))} FROM {table_name} {condition}"
         result, _ = self._execute(sql_query, fetch=FetchType.ALL)
         return result
 
-    def read_json(self, table_name: str, condition: QueryCondition = None):
-        return self.read(table_name, ("id", "timestamp", "json"), condition)
+    def read_blob(
+        self, table_name: str, series: str = None, condition: QueryCondition = None, meta_only=False
+    ):
+        condition = condition.dumps() if condition else ""
+        sql_query = f"SELECT {', '.join(('id', 'timestamp', 'meta', *(('data',) if not meta_only else ())))} FROM {table_name} {condition}"
 
-    def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
-        return self.read(
-            table_name,
-            ("id", "timestamp", "meta", *(("data",) if not meta_only else ())),
-            condition,
-        )
+        return
 
 
 if __name__ == "__main__":
