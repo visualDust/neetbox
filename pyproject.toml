@@ -54,6 +54,8 @@ black = "^23.9.1"
 isort = "^5.11.5"
 pre-commit = ">=3.4.0"
 apiflask = "^2.0.2"
+opencv-python = "^4.8.1.78"
+pillow = "^10.1.0"
 
 [tool.poetry.extras]
 torch = ["torch", "torchvision", "torchaudio"]
