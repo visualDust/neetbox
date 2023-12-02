@@ -317,6 +317,13 @@ def server_process(cfg, debug=False):
     def just_send_hello():
         return {"hello": "hello"}
 
+    @app.route(f"{FRONTEND_API_ROOT}/list", methods=["GET"])
+    def return_list_of_connected_project_ids():
+        result = []
+        for id in __BRIDGES.keys():
+            result.append({"id": id, "config": __BRIDGES[id].get_status()["config"]})
+        return result
+
     @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>", methods=["GET"])
     def return_status_of(project_id):
         if project_id in __BRIDGES:
@@ -324,13 +331,6 @@ def server_process(cfg, debug=False):
         else:
             abort(404)
         return _returning_stat
-
-    @app.route(f"{FRONTEND_API_ROOT}/list", methods=["GET"])
-    def return_list_of_connected_project_ids():
-        result = []
-        for id in __BRIDGES.keys():
-            result.append({"id": id, "config": __BRIDGES[id].get_status()["config"]})
-        return result
 
     @app.route(f"{CLIENT_API_ROOT}/sync/<project_id>", methods=["POST"])
     def sync_status_of(project_id):  # client side function
@@ -369,7 +369,7 @@ def server_process(cfg, debug=False):
             else Response(image, mimetype="image")
         )
 
-    @app.route(f"{FRONTEND_API_ROOT}/shutdown", methods=["POST"])
+    @app.route(f"/shutdown", methods=["POST"])
     def shutdown():
         def __sleep_and_shutdown(secs=1):
             time.sleep(secs)

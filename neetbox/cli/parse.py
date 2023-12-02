@@ -8,10 +8,11 @@ from rich.table import Table
 import neetbox
 import neetbox.daemon as daemon_module
 from neetbox.config import get_module_level_config
-from neetbox.daemon.client._client_web_apis import *
 from neetbox.daemon.server._server import server_process
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
+
+from ._client_web_apis import *
 
 console = Console()
 
@@ -22,11 +23,11 @@ def get_daemon_config():
     return get_module_level_config(daemon_module)
 
 
-def get_base_addr(port=0):
-    daemon_config = get_daemon_config()
-    _port = port or daemon_config["port"]
-    daemon_address = f"{daemon_config['host']}:{_port}"
-    return f"http://{daemon_address}/"
+# def get_base_addr(port=0):
+#     daemon_config = get_daemon_config()
+#     _port = port or daemon_config["port"]
+#     daemon_address = f"{daemon_config['host']}:{_port}"
+#     return f"http://{daemon_address}/"
 
 
 @click.group()
@@ -51,19 +52,11 @@ def _try_load_workspace_if_applicable():
 
 
 @main.command(name="list")
-@click.option(
-    "--port",
-    "-p",
-    help="specify which port to fetch list",
-    metavar="port",
-    required=False,
-    default=0,
-)
-def list_command(port):
+def list_command():
     """Show list of connected project names"""
     _try_load_workspace_if_applicable()
     try:
-        _response = get_list(base_addr=get_base_addr(port=port))
+        _response = get_list()
 
         table = Table(title="Running NEETBOX Projects")
 
@@ -77,6 +70,9 @@ def list_command(port):
 
         console.print(table)
 
+        if not len(_response):
+            console.print("*There is no running project")
+
     except Exception as e:  # noqa
         logger.log("Could not fetch data. Is there any project with NEETBOX running?")
         raise e
@@ -84,20 +80,12 @@ def list_command(port):
 
 @main.command(name="status")
 @click.argument("name", metavar="name", required=True)
-@click.option(
-    "--port",
-    "-p",
-    help="specify which port to fetch status",
-    metavar="port",
-    required=False,
-    default=0,
-)
-def status_command(name, port):
+def status_command(name):
     """Show running project status of given name"""
     _try_load_workspace_if_applicable()
     _response = None
     try:
-        _response = get_status_of(base_addr=get_base_addr(port=port), workspace_id=name)
+        _response = get_status_of(workspace_id=name)
         click.echo(json.dumps(_response))
     except Exception as e:  # noqa
         logger.log("Could not fetch data. Is there any project with NEETBOX running?")
@@ -138,7 +126,7 @@ def shutdown_server(port):
         daemon_config = get_daemon_config()
         if port:
             daemon_config["port"] = port
-        _response = shutdown(base_addr=get_base_addr(port=port))
+        _response = shutdown()
         click.echo(_response)
     except Exception as e:
         logger.err(f"Failed to shutdown the neetbox server: {e}")

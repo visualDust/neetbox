@@ -20,21 +20,21 @@ def _post(api, data=None):
     return r
 
 
-def get_list(base_addr):
-    api_addr = f"{base_addr}{FRONTEND_API_ROOT}/list"
-    return _get(api_addr)
+def get_list():
+    api = f"{FRONTEND_API_ROOT}/list"
+    return _get(api)
 
 
-def get_status_of(base_addr, workspace_id):
-    id2name = get_list(base_addr)
+def get_status_of(workspace_id):
+    id2name = get_list()
     name2id = {v: k for k, v in id2name}  # todo resolve dup name
     if workspace_id not in name2id:
         return None
     _id = name2id[workspace_id]
-    api_addr = f"{base_addr}{FRONTEND_API_ROOT}/status/{_id}"
-    return _get(api_addr)
+    api = f"{FRONTEND_API_ROOT}/status/{_id}"
+    return _get(api)
 
 
-def shutdown(base_addr):
-    api_addr = f"{base_addr}{FRONTEND_API_ROOT}/shutdown"
-    return _post(api_addr)
+def shutdown():
+    api = "/shutdown"
+    return _post(api)

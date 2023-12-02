@@ -52,7 +52,7 @@ class ClientConn(metaclass=Singleton):
         return ClientConn.http.post(addr_of_api(api), *args, **kwargs)
 
     def get(api: str, *args, **kwargs):
-        return ClientConn.http.post(addr_of_api(api), *args, **kwargs)
+        return ClientConn.http.get(addr_of_api(api), *args, **kwargs)
 
     def put(api: str, *args, **kwargs):
         return ClientConn.http.put(addr_of_api(api), *args, **kwargs)
