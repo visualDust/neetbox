@@ -33,7 +33,7 @@ def get_db_list():
     history_file_list = history_file_loader.get_file_list()
     for path in history_file_list:
         load_db_of_path(path=path)
-    return DBConnection._id2dbc
+    return DBConnection._id2dbc.items()
 
 
 def get_db_of_id(project_id):

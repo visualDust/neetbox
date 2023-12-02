@@ -24,12 +24,15 @@ from websocket_server import WebsocketServer
 
 from neetbox.daemon._protocol import *
 from neetbox.history import *
+from neetbox.logging import LogStyle, logger
+
+__PROC_NAME = "NEETBOX SERVER"
+logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))
 
 
 def server_process(cfg, debug=False):
     # ===============================================================
 
-    __PROC_NAME = "NEETBOX SERVER"
     setproctitle.setproctitle(__PROC_NAME)
 
     if debug:
@@ -54,18 +57,26 @@ def server_process(cfg, debug=False):
         _id2bridge: Dict[str, "Bridge"] = {}  # manage connections using project id
 
         # instance vars
-        id: str
+        project_id: str
         status: dict = {}
         cli_ws = None  # cli ws sid
-        historyDB = None
-        web_ws_list = (
+        historyDB: DBConnection = None
+        web_ws_list: list = (
             []
         )  # frontend ws sids. client data should be able to be shown on multiple frontend
 
-        def __new__(cls, project_id, *args, **kwargs) -> None:
+        def __new__(cls, project_id: str, *args, **kwargs) -> None:
+            """Create Bridge of project id, return the old one if already exist
+
+            Args:
+                project_id (str): project id
+
+            Returns:
+                Bridge: Bridge of given project id
+            """
             if project_id not in cls._id2bridge:
                 new_bridge = super().__new__(cls, *args, **kwargs)
-                new_bridge.id = project_id
+                new_bridge.project_id = project_id
                 new_bridge.historyDB = get_db_of_id(project_id=project_id)
                 cls._id2bridge[project_id] = new_bridge
             return cls._id2bridge[project_id]
@@ -75,24 +86,45 @@ def server_process(cfg, debug=False):
             return cls._id2bridge.items()
 
         @classmethod
-        def has(cls, project_id):
+        def has(cls, project_id: str):
             return project_id in cls._id2bridge
 
         @classmethod
-        def of_id(cls, project_id):
+        def of_id(cls, project_id: str):
+            """get Bridge of project id if exist. note that this class method is different from Bridge.__new__, which do not create new Bridge if given id not exist, it returns None instead.
+
+            Args:
+                project_id (str): project id
+
+            Returns:
+                Bridge: Bridge if id exist, otherwise None
+            """
             bridge = cls._id2bridge[project_id] if cls.has(project_id) else None
             return bridge
 
         @classmethod
         def of_db(cls, db: DBConnection):
-            pass
+            project_id = db.fetch_db_project_id()
+            target_bridge = Bridge(project_id)
+            if target_bridge.historyDB is not None:
+                logger.warn(f"overwriting db of {project_id}")
+            target_bridge.historyDB = db
+            # put last status
+            last_status = target_bridge.read_json_from_history(
+                table_name="status", condition=QueryCondition(limit=1, order={"id": SortType.DESC})
+            )
+            if len(last_status):
+                _, _, last_status = last_status[0]  # do not use set_status()
+                target_bridge.status = json.loads(last_status)
+            return target_bridge
 
         @classmethod
         def load_histories(cls):
-            db_list = get_db_list()
-            # todo
+            for _, history_db in get_db_list():
+                cls.of_db(history_db)
 
         def set_status(self, status):
+            self.save_json_to_history(table_name="status", json_data=status)
             status = json.loads(status) if isinstance(status, str) else status
             self.status = status
 
@@ -101,25 +133,27 @@ def server_process(cfg, debug=False):
             status["online"] = self.cli_ws is not None
             return status
 
+        def save_json_to_history(self, table_name, json_data):
+            lastrowid = Bridge.of_id(self.project_id).historyDB.write_json(
+                table_name=table_name, json_data=json_data
+            )
+            return lastrowid
+
+        def read_json_from_history(self, table_name, condition):
+            return self.historyDB.read_json(table_name, condition=condition)
+
+        def save_blob_to_history(self, table_name, meta_data, blob_data):
+            lastrowid = Bridge.of_id(self.project_id).historyDB.write_blob(
+                table_name=table_name, meta_data=meta_data, blob_data=blob_data
+            )
+            return lastrowid
+
+        def read_blob_from_history(self, table_name, condition, meta_only: bool):
+            return self.historyDB.read_blob(table_name, condition=condition, meta_only=meta_only)
+
     Bridge.load_histories()  # load history files
 
     connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
-
-    def save_json_to_history(project_id, table_name, json_data):
-        if not Bridge.has(project_id):
-            return  # cannot operate history if client is not connected
-        lastrowid = Bridge.of_id(project_id).historyDB.write_json(
-            table_name=table_name, json_data=json_data
-        )
-        return lastrowid
-
-    def save_blob_to_history(project_id, table_name, json_data, blob_data):
-        if not Bridge.has(project_id):
-            return  # cannot operate history if client is not connected
-        lastrowid = Bridge.of_id(project_id).historyDB.write_blob(
-            table_name=table_name, json_data=json_data, blob_data=blob_data
-        )
-        return lastrowid
 
     # ========================  WS  SERVER  ===========================
 
@@ -284,7 +318,7 @@ def server_process(cfg, debug=False):
                 console.log(f"handle log. {project_id} not found.")
             return
         ws_send_to_frontends_of_id(project_id=project_id, message=message)  # forward to frontends
-        save_json_to_history(project_id=project_id, table_name="log", json_data=message)
+        Bridge.of_id(project_id).save_json_to_history(table_name="log", json_data=message)
         return  # return after handling log forwarding
 
     def on_event_type_action(client, server, message_dict, message):
@@ -367,15 +401,20 @@ def server_process(cfg, debug=False):
         _json_data = request.get_json()
         target_bridge = Bridge(project_id)  # Create from sync request
         target_bridge.set_status(_json_data)
-        save_json_to_history(project_id=project_id, table_name="status", json_data=_json_data)
         return {"result": "ok"}
 
     @app.route(f"/image/<project_id>", methods=["PUT"])
     def upload_image(project_id):
+        if not Bridge.has(project_id):
+            # project id must exist
+            # drop anyway if not exist
+            if debug:
+                console.log(f"handle log. {project_id} not found.")
+            return abort(404)
         _json_data = request.form.to_dict()
         image_bytes = request.files["image"].read()
-        lastrowid = save_blob_to_history(
-            project_id=project_id, table_name="image", json_data=_json_data, blob_data=image_bytes
+        lastrowid = Bridge.of_id(project_id).save_blob_to_history(
+            table_name="image", meta_data=_json_data, blob_data=image_bytes
         )
         ws_send_to_frontends_of_id(
             project_id,
@@ -386,9 +425,9 @@ def server_process(cfg, debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/image/<project_id>/<image_id>", methods=["GET"])
     def get_image_of_id(project_id, image_id: int):
         if not Bridge.has(project_id):
-            return  # cannot operate history if client is not connected
+            return abort(404)  # cannot operate history if bridge of given id not exist
         meta = request.args.get("meta") is not None
-        [(_, _, json, image)] = Bridge.of_id(project_id).historyDB.read_blob(
+        [(_, _, json, image)] = Bridge.of_id(project_id).read_blob_from_history(
             table_name="image", condition=QueryCondition(id_range=image_id), meta_only=meta
         )
 

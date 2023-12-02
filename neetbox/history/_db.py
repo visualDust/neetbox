@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime, timedelta
 from enum import Enum
 from importlib.metadata import version
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from neetbox.config import get_module_level_config
 from neetbox.logging import logger
@@ -13,8 +13,8 @@ from neetbox.logging.formatting import LogStyle
 logger = logger("NEETBOX HISTORY", LogStyle(skip_writers=["ws", "file"]))
 
 NEETBOX_VERSION = version("neetbox")
-HISTORY_FILE_ROOT = "history"
-HISTORY_FILE_TYPE_NAME = "neethistory"
+HISTORY_FILE_ROOT = ".neethistory"
+HISTORY_FILE_TYPE_NAME = "neetory"
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.SSS
 
 
@@ -25,8 +25,8 @@ class FetchType(Enum):
 
 
 class SortType(Enum):
-    ASC = "asc"
-    DESC = "desc"
+    ASC = "ASC"
+    DESC = "DESC"
 
 
 ID_COLUMN_NAME = "id"
@@ -40,17 +40,18 @@ class QueryCondition:
         id_range: Union[Tuple[int, int], int] = None,
         timestamp_range: Union[Tuple[str, str], str] = None,
         limit: int = None,
-        order: Union[List[Tuple[str, SortType]], Tuple[str, SortType]] = [],
+        order: Dict[str, SortType] = {},
     ) -> None:
         self.id_range = id_range if isinstance(id_range, tuple) else (id_range, None)
         self.timestamp_range = (
             timestamp_range if isinstance(timestamp_range, tuple) else (timestamp_range, None)
         )
         self.limit = limit
-        self.order = order if isinstance(order, list) else [order]
+        self.order = {order[0], order[1]} if isinstance(order, tuple) else order
 
     @functools.lru_cache()
     def dumps(self):
+        # === id condition ===
         _id_cond = ""
         if self.id_range[0]:
             _id_0, _id_1 = self.id_range
@@ -59,6 +60,7 @@ class QueryCondition:
                 if _id_1 is None
                 else f"{ID_COLUMN_NAME} BETWEEN {_id_0} AND {_id_1}"
             )
+        # === timestamp condition ===
         _timestamp_cond = ""
         if self.timestamp_range[0]:
             _ts_0, _ts_1 = self.timestamp_range
@@ -67,28 +69,31 @@ class QueryCondition:
                 if _ts_1 is None
                 else f"{TIMESTAMP_COLUMN_NAME} BETWEEN '{_ts_0} AND '{_ts_1}"
             )
-        _limit_cond = f"LIMIT {self.limit}" if self.limit else ""
+        # === ORDER BY ===
         _order_cond = f"ORDER BY " if self.order else ""
         if self.order:
-            for order in self.order:
-                _col_name, _sort = order
-                if isinstance(_sort, SortType):
-                    _sort = _sort.value
-                _order_cond += f"{_col_name} {_sort},"
+            for _col_name, _sort in self.order.items():
+                _order_cond += (
+                    f"{_col_name} {_sort.value if isinstance(_sort,SortType) else _sort}, "
+                )
             _order_cond = _order_cond[:-2]  # remove last ','
+        # === LIMIT ===
+        _limit_cond = f"LIMIT {self.limit}" if self.limit else ""
+        # === concat ===
         query_conditions = []
         for cond in [_id_cond, _timestamp_cond]:
             if cond:
                 query_conditions.append(cond)
         query_conditions = " AND ".join(query_conditions)
-        limit_and_order = []
-        for cond in [_limit_cond, _order_cond]:
+        order_and_limit = []
+        for cond in [_order_cond, _limit_cond]:
             if cond:
-                limit_and_order.append(cond)
-        limit_and_order = " ".join(limit_and_order)
+                order_and_limit.append(cond)
+        order_and_limit = " ".join(order_and_limit)
         if query_conditions:
             query_conditions = f"WHERE {query_conditions}"
-        querty_condition_str = f"{query_conditions} {limit_and_order}"
+        querty_condition_str = f"{query_conditions} {order_and_limit}"
+        print(querty_condition_str)
         return querty_condition_str
 
 
@@ -188,43 +193,43 @@ class DBConnection:
 
     def write_json(self, table_name, json_data, timestamp=None):
         # create if there is no version table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, data TEXT NON NULL );"
+        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, json TEXT NON NULL );"
         self._execute(sql_query)
         _timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-        sql_query = f"INSERT INTO {table_name}(timestamp, data) VALUES (?, ?)"
+        sql_query = f"INSERT INTO {table_name}(timestamp, json) VALUES (?, ?)"
         if not isinstance(json_data, str):
             json_data = json.dumps(json_data)
         _, lastrowid = self._execute(sql_query, _timestamp, json_data)
         return lastrowid
 
-    def write_blob(self, table_name, json_data, blob_data, timestamp=None):
+    def write_blob(self, table_name, meta_data, blob_data, timestamp=None):
         if isinstance(blob_data, bytes):
             blob_data = bytearray(blob_data)
-        if not isinstance(json_data, str):
-            json_data = json.dumps(json_data)
+        if not isinstance(meta_data, str):
+            meta_data = json.dumps(meta_data)
         # create if there is no version table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, json TEXT, data BLOB NON NULL );"
+        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, meta TEXT, data BLOB NON NULL );"
         self._execute(sql_query)
         _timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-        sql_query = f"INSERT INTO {table_name}(timestamp, json, data) VALUES (?, ?, ?)"
-        _, lastrowid = self._execute(sql_query, _timestamp, json_data, blob_data)
+        sql_query = f"INSERT INTO {table_name}(timestamp, meta, data) VALUES (?, ?, ?)"
+        _, lastrowid = self._execute(sql_query, _timestamp, meta_data, blob_data)
         return lastrowid
-
-    def read_json(self, table_name: str, condition: QueryCondition = None):
-        return self.read(table_name, ("id", "timestamp", "data"), condition)
-
-    def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
-        return self.read(
-            table_name,
-            ("id", "timestamp", "json", *(("data",) if not meta_only else ())),
-            condition,
-        )
 
     def read(self, table_name: str, columns: Tuple[str], condition: QueryCondition = None):
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join(columns)} FROM {table_name} {condition}"
         result, _ = self._execute(sql_query, fetch=FetchType.ALL)
         return result
+
+    def read_json(self, table_name: str, condition: QueryCondition = None):
+        return self.read(table_name, ("id", "timestamp", "json"), condition)
+
+    def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
+        return self.read(
+            table_name,
+            ("id", "timestamp", "meta", *(("data",) if not meta_only else ())),
+            condition,
+        )
 
 
 if __name__ == "__main__":
