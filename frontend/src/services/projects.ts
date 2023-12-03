@@ -1,10 +1,12 @@
 import { BetterAtom } from "../utils/betterAtom";
+import { fetcher } from "./api";
 import { WsClient } from "./projectWebsocket";
 import { ProjectStatusHistory, LogData, ProjectStatus, ImageMetadata } from "./types";
 
 const projects = new Map<string, Project>();
 
 const StatusHistoryCount = 120;
+const LogHistoryCount = 1000;
 
 export class Project {
   wsClient: WsClient;
@@ -19,29 +21,51 @@ export class Project {
   constructor(readonly id: string) {
     this.wsClient = new WsClient(this);
 
-    fetch(
-      "/web/status/" +
-        this.id +
-        "/history?" +
-        new URLSearchParams({
-          condition: JSON.stringify({
-            order: { id: "DESC" },
-            limit: StatusHistoryCount,
-          }),
+    this.fetchHistory();
+  }
+
+  fetchHistory() {
+    fetcher(
+      `/status/${this.id}/history?${new URLSearchParams({
+        condition: JSON.stringify({
+          order: { id: "DESC" },
+          limit: StatusHistoryCount,
         }),
-    ).then(async (res) => {
-      const data = await res.json();
-      console.info("history", data);
-      data.sort((a, b) => a.id - b.id);
+      })}`,
+    ).then(async (data) => {
+      data.reverse();
       this.status.value = { ...this.status.value, history: data.map((x) => x.metadata) };
+    });
+
+    fetcher(
+      `/log/${this.id}/history?${new URLSearchParams({
+        condition: JSON.stringify({
+          order: { id: "DESC" },
+          limit: LogHistoryCount,
+        }),
+      })}`,
+    ).then(async (data) => {
+      data.reverse();
+      this.logs.value = [...this.logs.value, ...data.map((x) => x.metadata)];
+    });
+
+    fetcher(
+      `/image/${this.id}/history?${new URLSearchParams({
+        condition: JSON.stringify({
+          order: { id: "DESC" },
+          limit: 100,
+        }),
+      })}`,
+    ).then(async (data) => {
+      data.reverse();
+      this.images.value = [...this.images.value, ...data.map((x) => x.metadata)];
     });
   }
 
   updateData() {
     if (!this.status.value.enablePolling) return false;
 
-    fetch("/web/status/" + this.id).then(async (res) => {
-      const data = (await res.json()) as ProjectStatus;
+    fetcher("/web/status/" + this.id).then(async (data: ProjectStatus) => {
       data.hardware.value.cpus.forEach((cpu, idx) => {
         if (typeof cpu.id != "number" || cpu.id < 0) cpu.id = idx;
       });
@@ -55,7 +79,7 @@ export class Project {
 
   private _logQueue: LogData[] | null = null;
   private _logFlush = () => {
-    this.logs.value = slideWindow(this.logs.value, this._logQueue!, 1000); // TODO
+    this.logs.value = slideWindow(this.logs.value, this._logQueue!, LogHistoryCount); // TODO
     this._logQueue = null;
   };
 

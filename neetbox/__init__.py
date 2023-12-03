@@ -52,7 +52,8 @@ def _init_workspace(path=None, **kwargs) -> bool:
 
 
 def _load_workspace(path=None) -> bool:
-    extension._run_things_before_load_workspace()  # run things before load workspace
+    extension._run_things_before_load_workspace()  # also run things before load workspace on init workspace
+    _update_default_config_from_config_register()  # load custom config into default config
     global WORKSPACE_ID
     if path:
         os.chdir(path=path)
