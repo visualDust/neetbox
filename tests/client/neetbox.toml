@@ -1,5 +1,6 @@
 name = "client"
 workspace-id = "a7a5572f-9bd8-4f3d-9dfc-78b01bd805ec"
+version = "0.2.6"
 
 [logging]
 level = "INFO"

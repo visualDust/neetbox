@@ -6,10 +6,13 @@ from importlib.metadata import version
 import toml
 
 import neetbox.daemon as daemon
-import neetbox.extension as extension
-from neetbox.config import default as default_config
+import neetbox.extension as extension  # DO NOT remove this import
+from neetbox.config import get_current as get_current_config
 from neetbox.config import get_module_level_config
-from neetbox.config._config import update_workspace_config_with
+from neetbox.config._config import (
+    _update_default_config_from_config_register,
+    _update_default_workspace_config_with,
+)
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.utils.framing import get_frame_module_traceback
@@ -29,7 +32,9 @@ def _init_workspace(path=None, **kwargs) -> bool:
     if not os.path.isfile(config_file_path):  # config file not exist
         try:  # creating config file using default config
             with open(config_file_path, "w+") as config_file:
-                _config = dict(default_config)
+                extension._run_things_before_load_workspace()  # also run things before load workspace on init workspace
+                _update_default_config_from_config_register()  # load custom config into default config
+                _config = get_current_config()
                 if "name" in kwargs and kwargs["name"]:  # using given name
                     _config["name"] = kwargs["name"]
                 else:  # using the folder name
@@ -47,6 +52,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
 
 
 def _load_workspace(path=None) -> bool:
+    extension._run_things_before_load_workspace()  # run things before load workspace
     global WORKSPACE_ID
     if path:
         os.chdir(path=path)
@@ -57,7 +63,7 @@ def _load_workspace(path=None) -> bool:
         return False
     try:  # do load
         _config_loaded_from_file = toml.load(config_file_path)
-        update_workspace_config_with(_config_loaded_from_file)
+        _update_default_workspace_config_with(_config_loaded_from_file)
         WORKSPACE_ID = get_module_level_config()["workspace-id"]
         logger.ok(f"workspace config loaded from {config_file_path}.")
         return True
@@ -72,11 +78,10 @@ is_in_daemon_process = (
 
 
 def _load_workspace_as_a_project(connect_daemon=False):
-    success = _load_workspace()  # init from config file
-    if not success:  # failed to load workspace config, exiting
+    success_flag = _load_workspace()  # init from config file
+    if not success_flag:  # failed to load workspace config, exiting
         os._exit(255)
-    # post init
-    extension._post_init_workspace()
+    extension._run_things_after_load_workspace()  # run things after init workspace
     if connect_daemon:
         daemon.connect()
 

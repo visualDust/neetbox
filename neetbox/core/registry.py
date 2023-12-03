@@ -6,9 +6,9 @@
 
 import functools
 import json
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from uuid import uuid4
 
-from neetbox.logging import logger
 from neetbox.utils.formatting import *
 
 
@@ -67,7 +67,7 @@ class Registry(dict):
         self,
         what: Any,
         name: Optional[str] = None,
-        overwrite: bool = True,
+        overwrite: Union[bool, Callable] = lambda x: x + f"_{uuid4()}",
         tags: Optional[Union[str, Sequence[str]]] = None,
     ):
         # if not (inspect.isfunction(what) or inspect.isclass(what)):
@@ -77,13 +77,14 @@ class Registry(dict):
             tags = [tags]
         _endp = _RegEndpoint(what, tags)
         if name in self.keys():
-            if not overwrite:
-                logger.warn(
-                    f"{name} already exists in Registry:{self.name}. If you want to overwrite, try to register with 'overwrite=True'"
-                )
+            if isinstance(overwrite, Callable):
+                name = overwrite(name)
+            elif overwrite == True:
+                pass
             else:
-                # logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
-                self[name] = _endp
+                raise RuntimeError(f"")
+            # logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
+            self[name] = _endp
         else:
             self[name] = _endp
         return what
@@ -92,7 +93,7 @@ class Registry(dict):
         self,
         *,
         name: Optional[str] = None,
-        overwrite: bool = True,
+        overwrite: Union[bool, Callable] = lambda x: x + f"_{uuid4()}",
         tags: Optional[Union[str, Sequence[str]]] = None,
     ):
         return functools.partial(self._register, name=name, overwrite=overwrite, tags=tags)
@@ -104,10 +105,11 @@ class Registry(dict):
         tags: Optional[Union[str, List[str]]] = None,
     ):
         if not name and not tags:
-            logger.err(
-                ValueError("Please provide at least the name or the tags you want to find."),
-                reraise=True,
-            )
+            # logger.err(
+            #     ValueError("Please provide at least the name or the tags you want to find."),
+            #     reraise=True,
+            # )
+            pass
         results = []
         # filter name
         for reg_name, reg in cls._registry_pool.items():

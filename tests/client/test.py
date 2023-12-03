@@ -3,8 +3,6 @@ import time
 from random import random
 from time import sleep
 
-import snake
-
 from neetbox.frontend import action, impost
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch

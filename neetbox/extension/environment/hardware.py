@@ -12,8 +12,8 @@ import GPUtil
 import psutil
 from GPUtil import GPU
 
-from neetbox.config import get_module_level_config
-from neetbox.extension import call_on_workspace_load
+from neetbox.config import export_default_config, get_module_level_config
+from neetbox.extension import on_workspace_loaded
 from neetbox.pipeline import watch
 from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils import pkg
@@ -132,8 +132,13 @@ class _Hardware(dict, metaclass=Singleton):
 hardware = _Hardware()
 
 
+@export_default_config()
+def return_default_config() -> dict:
+    return {"monit": True, "interval": 0.5}
+
+
 # watch updates in daemon
-@call_on_workspace_load(name="hardware-monit")
+@on_workspace_loaded(name="hardware-monit")
 def load_monit_hardware():
     cfg = get_module_level_config()
     if cfg["monit"]:  # if do monit hardware
