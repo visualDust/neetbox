@@ -5,7 +5,7 @@ export const WEBSOCKET_URL = import.meta.env.DEV
   ? `ws://${location.host}/ws/`
   : `ws://${location.hostname}:${Number(location.port) + 1}`;
 
-async function fetcher(url: string) {
+export async function fetcher(url: string) {
   const res = await fetch(API_BASEURL + url);
   return await res.json();
 }
