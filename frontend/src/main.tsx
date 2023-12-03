@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { LocaleProvider } from "@douyinfe/semi-ui";
+import en_US from "@douyinfe/semi-ui/lib/es/locale/source/en_US";
 import AppLayout from "./components/layout/AppLayout";
 import LoginPage from "./pages/login";
 import "./index.css";
@@ -30,10 +32,12 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeContextProvider>
-      <ServiceProvider>
-        <RouterProvider router={router} />
-      </ServiceProvider>
-    </ThemeContextProvider>
+    <LocaleProvider locale={en_US}>
+      <ThemeContextProvider>
+        <ServiceProvider>
+          <RouterProvider router={router} />
+        </ServiceProvider>
+      </ThemeContextProvider>
+    </LocaleProvider>
   </React.StrictMode>,
 );
