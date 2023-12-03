@@ -56,7 +56,7 @@ export interface WithTimestamp<T> {
 }
 
 export interface LogData {
-  prefix: string;
+  series: string;
   datetime: string;
   whom: string;
   msg: string;

@@ -70,7 +70,7 @@ function getColorFromWhom(whom: string) {
 }
 
 const LogItem = React.memo(({ data }: { data: LogData }) => {
-  let { prefix } = data;
+  let { series: prefix } = data;
   if (!prefix) prefix = "log";
   return (
     <div className="log-item">

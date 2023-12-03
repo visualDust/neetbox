@@ -4,6 +4,8 @@ import { ProjectStatusHistory, LogData, ProjectStatus, ImageMetadata } from "./t
 
 const projects = new Map<string, Project>();
 
+const StatusHistoryCount = 120;
+
 export class Project {
   wsClient: WsClient;
   status = new BetterAtom<ProjectStatusHistory>({
@@ -16,6 +18,23 @@ export class Project {
 
   constructor(readonly id: string) {
     this.wsClient = new WsClient(this);
+
+    fetch(
+      "/web/status/" +
+        this.id +
+        "/history?" +
+        new URLSearchParams({
+          condition: JSON.stringify({
+            order: { id: "DESC" },
+            limit: StatusHistoryCount,
+          }),
+        }),
+    ).then(async (res) => {
+      const data = await res.json();
+      console.info("history", data);
+      data.sort((a, b) => a.id - b.id);
+      this.status.value = { ...this.status.value, history: data.map((x) => x.metadata) };
+    });
   }
 
   updateData() {
@@ -28,7 +47,7 @@ export class Project {
       });
       const projectData = { ...this.status.value };
       projectData.current = data;
-      projectData.history = slideWindow(projectData.history, [data], 70);
+      projectData.history = slideWindow(projectData.history, [data], StatusHistoryCount);
       this.status.value = projectData;
       console.info({ projectData });
     });

@@ -121,8 +121,7 @@ def server_process(cfg, debug=False):
                 table_name="status", condition=QueryCondition(limit=1, order={"id": SortType.DESC})
             )
             if len(last_status):
-                _, _, last_status = last_status[0]  # do not use set_status()
-                target_bridge.status = json.loads(last_status)
+                target_bridge.status = last_status[0][JSON_COLUMN_NAME]  # do not use set_status()
             return target_bridge
 
         @classmethod
@@ -141,6 +140,9 @@ def server_process(cfg, debug=False):
             status = self.status
             status["online"] = self.cli_ws is not None
             return status
+
+        def get_series_of(self, table_name):
+            return self.historyDB.get_series_of_table(table_name=table_name)
 
         def save_json_to_history(self, table_name, json_data, series=None, timestamp=None):
             lastrowid = Bridge.of_id(self.project_id).historyDB.write_json(
@@ -447,8 +449,23 @@ def server_process(cfg, debug=False):
     def get_list_of_connected_project_ids():
         result = []
         for id, bridge in Bridge.items():
-            result.append({"id": id, "config": bridge.get_status()["config"]})
+            status = bridge.get_status()
+            result.append({"id": id, "online": status["online"], "config": status["config"]})
         return result
+
+    @app.route(f"{FRONTEND_API_ROOT}/log/<project_id>/history", methods=["GET"])
+    def get_history_log_of(project_id):
+        if not Bridge.has(project_id):
+            abort(404)
+        _json_data = json.loads(request.args.get("condition"))
+        try:
+            condition = QueryCondition.from_json(_json_data)
+        except Exception as e:  # if failed to parse
+            return abort(400)
+        result_list = Bridge.of_id(project_id).read_json_from_history(
+            table_name="log", condition=condition
+        )
+        return result_list
 
     @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>", methods=["GET"])
     def get_status_of(project_id):
@@ -461,7 +478,7 @@ def server_process(cfg, debug=False):
     def get_history_status_of(project_id):
         if not Bridge.has(project_id):
             abort(404)
-        _json_data = request.get_json()
+        _json_data = json.loads(request.args.get("condition"))
         try:
             condition = QueryCondition.from_json(_json_data)
         except Exception as e:  # if failed to parse
@@ -478,7 +495,14 @@ def server_process(cfg, debug=False):
         target_bridge.set_status(_json_data)
         return {"result": "ok"}
 
-    @app.route(f"/image/<project_id>", methods=["PUT"])
+    @app.route(f"{CLIENT_API_ROOT}/series/<project_id>/<table_name>", methods=["GET"])
+    def get_series_list_of(project_id: str, table_name: str):  # client side function
+        if not Bridge.has(project_id):
+            abort(404)
+        result = Bridge.of_id(project_id).get_series_of(table_name)
+        return result
+
+    @app.route(f"/image/<project_id>", methods=["POST"])
     def upload_image(project_id):
         if not Bridge.has(project_id):
             # project id must exist
@@ -516,7 +540,7 @@ def server_process(cfg, debug=False):
     def get_history_image_metadata_of(project_id):
         if not Bridge.has(project_id):
             abort(404)
-        _json_data = request.get_json()
+        _json_data = json.loads(request.args.get("condition"))
         try:
             condition = QueryCondition.from_json(_json_data)
         except Exception as e:  # if failed to parse

@@ -63,12 +63,10 @@ class QueryCondition:
     def from_json(cls, json_data):
         if isinstance(json_data, str):
             json_data = json.loads(json_data)
-        for prop in ["id_range", "timestamp_range", "limit", "order"]:
-            assert prop in json_data
         """
         {
-            "id_range" : [int,int], # from,to
-            "timestamp_range" : [str,str], # from,to
+            "id" : [int,int], # from,to
+            "timestamp" : [str,str], # from,to
             "series" : str, # series name
             "limit" : int,
             "order" : [
@@ -78,26 +76,45 @@ class QueryCondition:
         }
         """
         # try load id range
-        id_range_str = json_data["id_range"]
-        id_range = eval(id_range_str)
-        assert isinstance(id_range, list) and len(id_range) == 2
-        assert type(id_range[0]) is int
-        assert type(id_range[1]) is int
-        id_range = tuple(id_range)  # to tuple
+        id_range = None
+        if "id" in json_data:
+            id_range_str = json_data["id"]
+            id_range = eval(id_range_str)
+            assert (
+                isinstance(id_range, list)
+                and len(id_range) == 2
+                and type(id_range[0]) is int
+                and type(id_range[1]) is int
+                or type(id_range) is int
+            )
+            id_range = tuple(id_range)  # to tuple
         # try load timestamp range
-        timestamp_range_str = json_data["timestamp_range"]
-        timestamp_range = eval(timestamp_range_str)
-        assert isinstance(timestamp_range, list) and len(timestamp_range) == 2
-        # datetime.strptime(timestamp_range[0], DATETIME_FORMAT) # try parse to datetime, makesure its valid
-        # datetime.strptime(timestamp_range[1], DATETIME_FORMAT)
-        timestamp_range = tuple(timestamp_range)
+        timestamp_range = None
+        if "timestamp" in json_data:
+            timestamp_range_str = json_data["timestamp"]
+            timestamp_range = eval(timestamp_range_str)
+            assert (
+                isinstance(timestamp_range, list)
+                and len(timestamp_range) == 2
+                and type(timestamp_range[0]) is str
+                and type(timestamp_range[1]) is str
+                or type(timestamp_range) is str
+            )
+            # datetime.strptime(timestamp_range[0], DATETIME_FORMAT) # try parse to datetime, makesure its valid
+            # datetime.strptime(timestamp_range[1], DATETIME_FORMAT)
+            timestamp_range = tuple(timestamp_range)
         # try to load series
-        series = json["series"]
+        series = json_data["series"] if "series" in json_data else None
         # try load limit
-        limit = json_data["limit"]
-        assert type(limit) is int
-        order = json_data["order"]
-        assert isinstance(order, dict)
+        limit = None
+        if "limit" in json_data:
+            limit = json_data["limit"]
+            assert type(limit) is int
+        # try load order
+        order = None
+        if "order" in json_data:
+            order = json_data["order"]
+            assert isinstance(order, dict)
         return QueryCondition(
             id=id_range,
             timestamp=timestamp_range,
@@ -106,7 +123,6 @@ class QueryCondition:
             order=order,
         )
 
-    @functools.lru_cache()
     def dumps(self):
         # === id condition ===
         _id_cond = ""
@@ -291,13 +307,24 @@ class DBConnection:
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
         result, _ = self._execute(sql_query, fetch=FetchType.ALL)
+        try:
+            result = [
+                {ID_COLUMN_NAME: x, TIMESTAMP_COLUMN_NAME: y, JSON_COLUMN_NAME: json.loads(z)}
+                for x, y, z in result
+            ]
+        except:
+            print(result)
+            raise
         return result
 
-    def read_blob(
-        self, table_name: str, series: str = None, condition: QueryCondition = None, meta_only=False
-    ):
+    def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
+        result, _ = self._execute(sql_query, fetch=FetchType.ALL)
+        return result
+
+    def get_series_of_table(self, table_name):
+        sql_query = f"SELECT DISTINCT series FROM {table_name}"
         result, _ = self._execute(sql_query, fetch=FetchType.ALL)
         return result
 

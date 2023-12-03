@@ -26,7 +26,7 @@ def impost(image: Union[np.array, Image.Image], name: str):
             image.save(image_bytes_stream, format="PNG")
             image_bytes = image_bytes_stream.getvalue()
     # send bytes
-    connection.put(
+    connection.post(
         api=f"/image/{WORKSPACE_ID}",
         data={PROJECT_ID_KEY: WORKSPACE_ID, "series": name},
         files={"image": image_bytes},
