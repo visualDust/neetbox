@@ -10,7 +10,7 @@ export default function ConsoleLayout() {
       <Sider style={{ background: "var(--semi-color-fill-2)" }}>
         <ConsoleNavBar />
       </Sider>
-      <Content style={{ height: "100%", overflow: "auto" }}>
+      <Content style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "auto" }}>
         <Outlet />
         <AppFooter />
       </Content>

@@ -1,10 +1,18 @@
-import { useParams } from "react-router-dom";
-import { useAPI } from "../../services/api";
+import { Typography } from "@douyinfe/semi-ui";
 
 export default function Overview() {
-  // const { projectName } = useParams();
-  // const { isLoading, data, error } = useAPI("/status/" + projectName);
-  // if (!data) return <div>Loading...</div>;
-  // console.info({ isLoading, data });
-  return <div>Overview WIP</div>;
+  return (
+    <div
+      style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Typography.Paragraph>Overview WIP</Typography.Paragraph>
+      <Typography.Paragraph>Please select a project from the sidebar.</Typography.Paragraph>
+    </div>
+  );
 }
