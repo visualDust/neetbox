@@ -281,7 +281,7 @@ class DBConnection:
         if not self._inited_tables[table_name]:  # create if there is no version table
             sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {JSON_COLUMN_NAME} TEXT NON NULL );"
             self._execute(sql_query)
-            sql_query = f"CREATE INDEX IF NOT EXISTS {SERIES_COLUMN_NAME}_index ON {table_name}"
+            sql_query = f"CREATE INDEX IF NOT EXISTS {SERIES_COLUMN_NAME}_index ON {table_name} ({SERIES_COLUMN_NAME})"
             self._execute(sql_query)
             self._inited_tables[table_name] = True
 
@@ -305,7 +305,7 @@ class DBConnection:
         if not self._inited_tables[table_name]:  # create if there is no version table
             sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL );"
             self._execute(sql_query)
-            sql_query = f"CREATE INDEX IF NOT EXISTS {SERIES_COLUMN_NAME}_index ON {table_name}"
+            sql_query = f"CREATE INDEX IF NOT EXISTS {SERIES_COLUMN_NAME}_index ON {table_name} ({SERIES_COLUMN_NAME})"
             self._execute(sql_query)
             self._inited_tables[table_name] = True
 
