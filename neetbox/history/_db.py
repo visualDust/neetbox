@@ -1,3 +1,4 @@
+import collections
 import functools
 import json
 import sqlite3
@@ -176,9 +177,13 @@ class QueryCondition:
 
 
 class DBConnection:
-    connection = None
+    # static things
     _path2dbc = {}
     _id2dbc = {}
+
+    # not static. instance level vars
+    connection: sqlite3.Connection
+    _inited_tables: collections.defaultdict
 
     def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "DBConnection":
         if path is None:  # make path from project id
@@ -190,6 +195,7 @@ class DBConnection:
         new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
         new_dbc.connection = sqlite3.connect(path, check_same_thread=False)
+        new_dbc._inited_tables = collections.defaultdict(lambda: False)
         # check neetbox version
         _db_file_project_id = new_dbc.fetch_db_project_id(project_id)
         project_id = project_id or _db_file_project_id
@@ -238,9 +244,10 @@ class DBConnection:
         return table_names
 
     def fetch_db_version(self, default=None):
-        # create if there is no version table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {VERSION_TABLE_NAME} ( {VERSION_TABLE_NAME} TEXT NON NULL );"
-        self._execute(sql_query)
+        if not self._inited_tables[VERSION_TABLE_NAME]:  # create if there is no version table
+            sql_query = f"CREATE TABLE IF NOT EXISTS {VERSION_TABLE_NAME} ( {VERSION_TABLE_NAME} TEXT NON NULL );"
+            self._execute(sql_query)
+            self._inited_tables[VERSION_TABLE_NAME] = True
         sql_query = f"SELECT {VERSION_TABLE_NAME} FROM {VERSION_TABLE_NAME}"
         _version, _ = self._execute(sql_query, fetch=FetchType.ONE)
         if _version is None:
@@ -254,9 +261,10 @@ class DBConnection:
         return _version[0]
 
     def fetch_db_project_id(self, default=None):
-        # create if there is no projectid table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {PROJECT_ID_TABLE_NAME} ( {PROJECT_ID_TABLE_NAME} TEXT NON NULL );"
-        self._execute(sql_query)
+        if not self._inited_tables[PROJECT_ID_TABLE_NAME]:  # create if there is no projectid table
+            sql_query = f"CREATE TABLE IF NOT EXISTS {PROJECT_ID_TABLE_NAME} ( {PROJECT_ID_TABLE_NAME} TEXT NON NULL );"
+            self._execute(sql_query)
+            self._inited_tables[PROJECT_ID_TABLE_NAME] = True
         sql_query = f"SELECT {PROJECT_ID_TABLE_NAME} FROM {PROJECT_ID_TABLE_NAME}"
         _projectid, _ = self._execute(sql_query, fetch=FetchType.ONE)
         if _projectid is None:
@@ -270,9 +278,13 @@ class DBConnection:
         return _projectid[0]
 
     def write_json(self, table_name, json_data, series=None, timestamp=None):
-        # create if there is no version table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {JSON_COLUMN_NAME} TEXT NON NULL );"
-        self._execute(sql_query)
+        if not self._inited_tables[table_name]:  # create if there is no version table
+            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {JSON_COLUMN_NAME} TEXT NON NULL );"
+            self._execute(sql_query)
+            sql_query = f"CREATE INDEX IF NOT EXISTS {SERIES_COLUMN_NAME}_index ON {table_name}"
+            self._execute(sql_query)
+            self._inited_tables[table_name] = True
+
         _json_dict = json.loads(json_data)
         timestamp = (
             _json_dict[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in _json_dict else timestamp
@@ -290,9 +302,13 @@ class DBConnection:
             blob_data = bytearray(blob_data)
         if not isinstance(meta_data, str):
             meta_data = json.dumps(meta_data)
-        # create if there is no version table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL );"
-        self._execute(sql_query)
+        if not self._inited_tables[table_name]:  # create if there is no version table
+            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL );"
+            self._execute(sql_query)
+            sql_query = f"CREATE INDEX IF NOT EXISTS {SERIES_COLUMN_NAME}_index ON {table_name}"
+            self._execute(sql_query)
+            self._inited_tables[table_name] = True
+
         _json_dict = json.loads(meta_data)
         timestamp = (
             _json_dict[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in _json_dict else timestamp
