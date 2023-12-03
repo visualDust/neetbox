@@ -7,7 +7,7 @@ export function useReportGlobalError() {
       showError(e.message);
     };
     const handleRejection = (e: WindowEventMap["unhandledrejection"]) => {
-      showError(e.reason);
+      showError(String(e.reason));
     };
     window.addEventListener("error", handleError);
     window.addEventListener("unhandledrejection", handleRejection);

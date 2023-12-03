@@ -6,7 +6,7 @@ export const Images = memo(() => {
   const { projectId } = useCurrentProject()!;
   const images = useProjectImages(projectId);
   return (
-    <Space>
+    <Space style={{ overflow: "auto", width: "100%" }}>
       {images.map((img) => (
         <Popover showArrow content={<pre>{JSON.stringify(img.metadata, null, 2)}</pre>}>
           <img src={"/web/image/" + projectId + "/" + img.imageId} />
