@@ -1,12 +1,17 @@
-import { Button } from "@douyinfe/semi-ui";
-import { Link } from "react-router-dom";
+import { Layout } from "@douyinfe/semi-ui";
+import { Outlet } from "react-router-dom";
+import { useReportGlobalError } from "./hooks/useReportError";
+import AppHeader from "./components/layout/AppHeader";
+import "./styles/global.css";
 
-export function Home() {
+export default function App() {
+  useReportGlobalError();
   return (
-    <div>
-      <Link to="/console">
-        <Button>console</Button>
-      </Link>
-    </div>
+    <Layout style={{ height: "100vh" }}>
+      <AppHeader />
+      <Layout.Content style={{ flex: "1", overflow: "hidden" }}>
+        <Outlet />
+      </Layout.Content>
+    </Layout>
   );
 }
