@@ -28,6 +28,6 @@ def impost(image: Union[np.array, Image.Image], name: str):
     # send bytes
     connection.put(
         api=f"/image/{WORKSPACE_ID}",
-        data={PROJECT_ID_KEY: WORKSPACE_ID, "name": name},
+        data={PROJECT_ID_KEY: WORKSPACE_ID, "series": name},
         files={"image": image_bytes},
     )

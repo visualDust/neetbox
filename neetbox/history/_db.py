@@ -32,26 +32,29 @@ class SortType(Enum):
 # === COLUMN NAMES ===
 ID_COLUMN_NAME = "id"
 TIMESTAMP_COLUMN_NAME = "timestamp"
-SERIES_CLOUMN_NAME = "series"
+SERIES_COLUMN_NAME = "series"
 JSON_COLUMN_NAME = METADATA_COLUMN_NAME = "metadata"
 BLOB_COLUMN_NAME = "data"
 
 # === TABLE NAMES ===
+PROJECT_ID_TABLE_NAME = "projectid"
+VERSION_TABLE_NAME = "version"
+STATUS_TABLE_NAME = "status"
+LOG_TABLE_NAME = "log"
+IMAGE_TABLE_NAME = "image"
 
 
 class QueryCondition:
     def __init__(
         self,
-        id_range: Union[Tuple[int, int], int] = None,
-        timestamp_range: Union[Tuple[str, str], str] = None,
+        id: Union[Tuple[int, int], int] = None,
+        timestamp: Union[Tuple[str, str], str] = None,
         series: str = None,
         limit: int = None,
         order: Dict[str, SortType] = {},
     ) -> None:
-        self.id_range = id_range if isinstance(id_range, tuple) else (id_range, None)
-        self.timestamp_range = (
-            timestamp_range if isinstance(timestamp_range, tuple) else (timestamp_range, None)
-        )
+        self.id_range = id if isinstance(id, tuple) else (id, None)
+        self.timestamp_range = timestamp if isinstance(timestamp, tuple) else (timestamp, None)
         self.series = series
         self.limit = limit
         self.order = {order[0], order[1]} if isinstance(order, tuple) else order
@@ -96,8 +99,8 @@ class QueryCondition:
         order = json_data["order"]
         assert isinstance(order, dict)
         return QueryCondition(
-            id_range=id_range,
-            timestamp_range=timestamp_range,
+            id=id_range,
+            timestamp=timestamp_range,
             series=series,
             limit=limit,
             order=order,
@@ -126,7 +129,7 @@ class QueryCondition:
         # === series condition ===
         _series_cond = ""
         if self.series:
-            _series_cond = f"{SERIES_CLOUMN_NAME} == {self.series}"
+            _series_cond = f"{SERIES_COLUMN_NAME} == {self.series}"
         # === ORDER BY ===
         _order_cond = f"ORDER BY " if self.order else ""
         if self.order:
@@ -152,8 +155,8 @@ class QueryCondition:
         # result
         if query_conditions:
             query_conditions = f"WHERE {query_conditions}"
-        querty_condition_str = f"{query_conditions} {order_and_limit}"
-        return querty_condition_str
+        query_condition_str = f"{query_conditions} {order_and_limit}"
+        return query_condition_str
 
 
 class DBConnection:
@@ -220,45 +223,50 @@ class DBConnection:
 
     def fetch_db_version(self, default=None):
         # create if there is no version table
-        sql_query = "CREATE TABLE IF NOT EXISTS version ( version TEXT NON NULL );"
+        sql_query = f"CREATE TABLE IF NOT EXISTS {VERSION_TABLE_NAME} ( {VERSION_TABLE_NAME} TEXT NON NULL );"
         self._execute(sql_query)
-        sql_query = "SELECT version FROM version"
+        sql_query = f"SELECT {VERSION_TABLE_NAME} FROM {VERSION_TABLE_NAME}"
         _version, _ = self._execute(sql_query, fetch=FetchType.ONE)
         if _version is None:
             if default is None:
                 raise RuntimeError(
                     "should provide a default version if fetching from empty version"
                 )
-            sql_query = f"INSERT INTO version VALUES (?);"
+            sql_query = f"INSERT INTO {VERSION_TABLE_NAME} VALUES (?);"
             self._execute(sql_query, default)
             return default
         return _version[0]
 
     def fetch_db_project_id(self, default=None):
         # create if there is no projectid table
-        sql_query = "CREATE TABLE IF NOT EXISTS projectid ( projectid TEXT NON NULL );"
+        sql_query = f"CREATE TABLE IF NOT EXISTS {PROJECT_ID_TABLE_NAME} ( {PROJECT_ID_TABLE_NAME} TEXT NON NULL );"
         self._execute(sql_query)
-        sql_query = "SELECT projectid FROM projectid"
+        sql_query = f"SELECT {PROJECT_ID_TABLE_NAME} FROM {PROJECT_ID_TABLE_NAME}"
         _projectid, _ = self._execute(sql_query, fetch=FetchType.ONE)
         if _projectid is None:
             if default is None:
                 raise RuntimeError(
                     "should provide a default project id if fetching from empty project id"
                 )
-            sql_query = f"INSERT INTO projectid VALUES (?);"
+            sql_query = f"INSERT INTO {PROJECT_ID_TABLE_NAME} VALUES (?);"
             self._execute(sql_query, default)
             return default
         return _projectid[0]
 
-    def write_json(self, table_name, json_data, timestamp=None):
+    def write_json(self, table_name, json_data, series=None, timestamp=None):
         # create if there is no version table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, json TEXT NON NULL );"
+        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {JSON_COLUMN_NAME} TEXT NON NULL );"
         self._execute(sql_query)
-        _timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-        sql_query = f"INSERT INTO {table_name}(timestamp, json) VALUES (?, ?)"
+        _json_dict = json.loads(json_data)
+        timestamp = (
+            _json_dict[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in _json_dict else timestamp
+        )
+        timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
+        series = _json_dict[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in _json_dict else series
+        sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {JSON_COLUMN_NAME}) VALUES (?, ?, ?)"
         if not isinstance(json_data, str):
             json_data = json.dumps(json_data)
-        _, lastrowid = self._execute(sql_query, _timestamp, json_data)
+        _, lastrowid = self._execute(sql_query, timestamp, series, json_data)
         return lastrowid
 
     def write_blob(self, table_name, meta_data, blob_data, series=None, timestamp=None):
@@ -267,17 +275,21 @@ class DBConnection:
         if not isinstance(meta_data, str):
             meta_data = json.dumps(meta_data)
         # create if there is no version table
-        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT NON NULL, series TEXT, meta TEXT, data BLOB NON NULL );"
+        sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL );"
         self._execute(sql_query)
-        _timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-        series = meta_data["series"] if "series" in meta_data else series
-        sql_query = f"INSERT INTO {table_name}(timestamp, series, meta, data) VALUES (?, ?, ?, ?)"
-        _, lastrowid = self._execute(sql_query, _timestamp, series, meta_data, blob_data)
+        _json_dict = json.loads(meta_data)
+        timestamp = (
+            _json_dict[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in _json_dict else timestamp
+        )
+        timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
+        series = _json_dict[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in _json_dict else series
+        sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {METADATA_COLUMN_NAME}, {BLOB_COLUMN_NAME}) VALUES (?, ?, ?, ?)"
+        _, lastrowid = self._execute(sql_query, timestamp, series, meta_data, blob_data)
         return lastrowid
 
     def read_json(self, table_name: str, condition: QueryCondition = None):
         condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT {', '.join(('id', 'timestamp', 'json'))} FROM {table_name} {condition}"
+        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
         result, _ = self._execute(sql_query, fetch=FetchType.ALL)
         return result
 
@@ -285,9 +297,9 @@ class DBConnection:
         self, table_name: str, series: str = None, condition: QueryCondition = None, meta_only=False
     ):
         condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT {', '.join(('id', 'timestamp', 'meta', *(('data',) if not meta_only else ())))} FROM {table_name} {condition}"
-
-        return
+        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
+        result, _ = self._execute(sql_query, fetch=FetchType.ALL)
+        return result
 
 
 if __name__ == "__main__":
@@ -307,7 +319,7 @@ if __name__ == "__main__":
     for item in conn.read_json(
         table_name="test_log",
         condition=QueryCondition(
-            timestamp_range=(datetime.now() - timedelta(days=1)).strftime(DATETIME_FORMAT)
+            timestamp=(datetime.now() - timedelta(days=1)).strftime(DATETIME_FORMAT)
         ),
     ):
         print(item)

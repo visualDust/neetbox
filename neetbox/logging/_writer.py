@@ -85,7 +85,7 @@ class RawLog:
                 if len(_whom) != 0:
                     _whom += _default_style.split_char_identity
                 _whom += id_seq[i]
-        return {"prefix": _prefix, "datetime": _datetime, "whom": _whom, "msg": self.rich_msg}
+        return {"series": _prefix, "datetime": _datetime, "whom": _whom, "msg": self.rich_msg}
 
     def __repr__(self) -> str:
         return json.dumps(self.json(), default=str)
@@ -111,7 +111,7 @@ class __ConsoleLogWriter(LogWriter):
     def write(self, raw_log: RawLog):
         _msg_dict = raw_log.json()
         _style = raw_log.style
-        _prefix = _msg_dict["prefix"]
+        _prefix = _msg_dict["series"]
         _prefix = _console_prefix_2_colored_text[_prefix] + " " if _prefix else _prefix
         rich_msg = str(
             _prefix
@@ -162,7 +162,7 @@ class FileLogWriter(LogWriter):
         _msg_dict = raw_log.json()
         _style = raw_log.style
         text_msg = str(
-            _msg_dict["prefix"]
+            _msg_dict["series"]
             + _msg_dict["datetime"]
             + _style.split_char_txt * min(len(_msg_dict["datetime"]), 1)
             + _msg_dict["whom"]

@@ -142,18 +142,24 @@ def server_process(cfg, debug=False):
             status["online"] = self.cli_ws is not None
             return status
 
-        def save_json_to_history(self, table_name, json_data):
+        def save_json_to_history(self, table_name, json_data, series=None, timestamp=None):
             lastrowid = Bridge.of_id(self.project_id).historyDB.write_json(
-                table_name=table_name, json_data=json_data
+                table_name=table_name, json_data=json_data, series=series, timestamp=timestamp
             )
             return lastrowid
 
         def read_json_from_history(self, table_name, condition):
-            return self.historyDB.read_json(table_name, condition=condition)
+            return self.historyDB.read_json(table_name=table_name, condition=condition)
 
-        def save_blob_to_history(self, table_name, meta_data, blob_data):
+        def save_blob_to_history(
+            self, table_name, meta_data, blob_data, series=None, timestamp=None
+        ):
             lastrowid = Bridge.of_id(self.project_id).historyDB.write_blob(
-                table_name=table_name, meta_data=meta_data, blob_data=blob_data
+                table_name=table_name,
+                meta_data=meta_data,
+                blob_data=blob_data,
+                series=series,
+                timestamp=timestamp,
             )
             return lastrowid
 
@@ -371,7 +377,10 @@ def server_process(cfg, debug=False):
                 console.log(f"handle log. {project_id} not found.")
             return
         ws_send_to_frontends_of_id(project_id=project_id, message=message)  # forward to frontends
-        Bridge.of_id(project_id).save_json_to_history(table_name="log", json_data=message)
+        series = message_dict[PAYLOAD_NAME_KEY]["series"]
+        Bridge.of_id(project_id).save_json_to_history(
+            table_name="log", json_data=message, series=series
+        )
         return  # return after handling log forwarding
 
     def on_event_type_action(client, server, message_dict, message):
@@ -457,7 +466,9 @@ def server_process(cfg, debug=False):
             condition = QueryCondition.from_json(_json_data)
         except Exception as e:  # if failed to parse
             return abort(400)
-        result_list = Bridge.of_id(project_id).read_json_from_history("status", condition)
+        result_list = Bridge.of_id(project_id).read_json_from_history(
+            table_name="status", condition=condition
+        )
         return result_list
 
     @app.route(f"{CLIENT_API_ROOT}/sync/<project_id>", methods=["POST"])
@@ -492,7 +503,7 @@ def server_process(cfg, debug=False):
             return abort(404)  # cannot operate history if bridge of given id not exist
         meta = request.args.get("meta") is not None
         [(_, _, meta_data, image)] = Bridge.of_id(project_id).read_blob_from_history(
-            table_name="image", condition=QueryCondition(id_range=image_id), meta_only=meta
+            table_name="image", condition=QueryCondition(id=image_id), meta_only=meta
         )
 
         return (
