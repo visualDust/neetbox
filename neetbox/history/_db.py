@@ -248,6 +248,11 @@ class DBConnection:
             self.connection.commit()
         return result, cur.lastrowid
 
+    def table_exist(self, table_name):
+        sql_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
+        result, _ = self._execute(sql_query, fetch=FetchType.ALL)
+        return result != []
+
     def get_table_names(self):
         sql_query = "SELECT name FROM sqlite_master;"
         table_names, _ = self._execute(sql_query, fetch=FetchType.ALL)
@@ -307,13 +312,16 @@ class DBConnection:
         return run_id[0]
 
     def get_run_ids(self):
-        sql_query = f"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{RUN_IDS_TABLE_NAME}';"  # check if run id table exist
-        result, _ = self._execute(sql_query)
-        if not result:
+        if not self.table_exist(RUN_IDS_TABLE_NAME):
             raise RuntimeError("should not get run id of id before run id table creation")
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME},{TIMESTAMP_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
         result, _ = self._execute(sql_query)
         result = [{run_id: timestamp} for run_id, timestamp in result]
+        return result
+
+    def get_series_of_table(self, table_name):
+        sql_query = f"SELECT DISTINCT series FROM {table_name}"
+        result, _ = self._execute(sql_query, fetch=FetchType.ALL)
         return result
 
     def write_json(
@@ -382,6 +390,8 @@ class DBConnection:
         return lastrowid
 
     def read_json(self, table_name: str, condition: QueryCondition = None):
+        if not self.table_exist(table_name):
+            return []
         if condition.run_id:
             condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
@@ -398,15 +408,12 @@ class DBConnection:
         return result
 
     def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
+        if not self.table_exist(table_name):
+            return []
         if condition.run_id:
             condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
-        result, _ = self._execute(sql_query, fetch=FetchType.ALL)
-        return result
-
-    def get_series_of_table(self, table_name):
-        sql_query = f"SELECT DISTINCT series FROM {table_name}"
         result, _ = self._execute(sql_query, fetch=FetchType.ALL)
         return result
 

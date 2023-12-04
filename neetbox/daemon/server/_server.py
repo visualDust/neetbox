@@ -25,7 +25,7 @@ def server_process(cfg, debug=False):
 
     # websocket server
     ws_server = get_web_socket_server(config=cfg, debug=debug)
-    Bridge._ws_server = ws_server
+    Bridge._ws_server = ws_server  # add websocket server to bridge
 
     # http server
     flask_server = get_flask_server(debug=debug)
@@ -35,7 +35,7 @@ def server_process(cfg, debug=False):
     ws_server.run_forever(threaded=True)
 
     _port = cfg["port"]
-    logger.log(f"visit server at http://localhost:{_port}")
+    logger.log(f"visit frontend at http://localhost:{_port}")
     flask_server.run(host="0.0.0.0", port=_port)
 
 

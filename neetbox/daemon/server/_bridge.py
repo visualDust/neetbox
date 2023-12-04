@@ -17,9 +17,22 @@ __PROC_NAME = "NEETBOX SERVER"
 logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))
 
 
-# server works as a bridge between client and frontends
 class Bridge:
-    """Bridges represent projects, running or not running, from client connection or fronhistory. web apis should obtain information from Bridges."""
+    """Server works as a bridge between client and frontends. Bridge connects one client and multiple frontend. Since client means a running project, a bridge represents a running(connected) or not running(not connected, loaded from history database) project.
+    You can:
+    - send websocket message to client or frontends connected to specific bridge
+    - read and write history db(sqlite3) via bridge
+    HTTP server should serves information via bridges.
+
+                ┌──--> Frontend
+                |
+                ↓
+    Client<--> Server --> Frontend
+                ↑
+                │
+                └──--> Frontend
+
+    """
 
     # static
     _id2bridge: Dict[str, "Bridge"] = {}  # manage connections using project id
@@ -90,7 +103,7 @@ class Bridge:
     @classmethod
     def load_histories(cls):
         db_list = get_db_list()
-        logger.log(f"found {len(db_list)} history db, loading...")
+        logger.log(f"found {len(db_list)} history db.")
         for _, history_db in db_list:
             cls.from_db(history_db)
 
