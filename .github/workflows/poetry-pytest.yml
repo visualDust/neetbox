@@ -4,11 +4,12 @@ on: ["pull_request","push"]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 3
       matrix:
         python-version: ["3.9","3.10","3.11"]
+        os: [ubuntu-latest, windows-latest]
     steps:
       #----------------------------------------------
       #       check-out repo and set-up python
