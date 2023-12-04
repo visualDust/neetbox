@@ -109,11 +109,11 @@ class ClientConn(metaclass=Singleton):
         _ws_initialized = True
 
     def __on_ws_open(ws: websocket.WebSocketApp):
-        logger.ok(f"client websocket connected. sending handshake as '{neetbox.WORKSPACE_ID}'...")
+        logger.ok(f"client websocket connected. sending handshake as '{neetbox.PROJECT_ID}'...")
         ws.send(  # send handshake request
             json.dumps(
                 {
-                    PROJECT_ID_KEY: neetbox.WORKSPACE_ID,
+                    PROJECT_ID_KEY: neetbox.PROJECT_ID,
                     RUN_ID_KEY: get_run_id(),
                     EVENT_TYPE_NAME_KEY: "handshake",
                     PAYLOAD_NAME_KEY: {"who": "cli"},
@@ -169,7 +169,7 @@ class ClientConn(metaclass=Singleton):
             ClientConn.__ws_client.send(
                 json.dumps(
                     {
-                        PROJECT_ID_KEY: neetbox.WORKSPACE_ID,
+                        PROJECT_ID_KEY: neetbox.PROJECT_ID,
                         RUN_ID_KEY: get_run_id(),
                         EVENT_TYPE_NAME_KEY: event_type,
                         PAYLOAD_NAME_KEY: payload,

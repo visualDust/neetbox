@@ -97,7 +97,7 @@ def server_process(cfg, debug=False):
             return project_id in cls._id2bridge
 
         @classmethod
-        def of_id(cls, project_id: str):
+        def of_id(cls, project_id: str) -> "Bridge":
             """get Bridge of project id if exist. note that this class method is different from Bridge.__new__, which do not create new Bridge if given id not exist, it returns None instead.
 
             Args:
@@ -110,7 +110,7 @@ def server_process(cfg, debug=False):
             return bridge
 
         @classmethod
-        def from_db(cls, db: DBConnection):
+        def from_db(cls, db: DBConnection) -> "Bridge":
             project_id = db.fetch_db_project_id()
             target_bridge = Bridge(project_id, auto_load_db=False)
             if target_bridge.historyDB is not None:
@@ -143,6 +143,9 @@ def server_process(cfg, debug=False):
 
         def get_series_of(self, table_name):
             return self.historyDB.get_series_of_table(table_name=table_name)
+
+        def get_run_ids(self):
+            return self.historyDB.get_run_ids()
 
         def save_json_to_history(
             self, table_name, json_data, series=None, run_id=None, timestamp=None
@@ -283,6 +286,8 @@ def server_process(cfg, debug=False):
         # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
     def on_event_type_handshake(client, server, message_dict, message):
+        if debug:
+            logger.info(f"on event handshake, {message_dict}")
         if client["id"] in connected_clients:  # client cannot handshake again
             _client_id = client["id"]
             logger.warn(
@@ -499,11 +504,18 @@ def server_process(cfg, debug=False):
         target_bridge.set_status(_json_data)
         return {"result": "ok"}
 
-    @app.route(f"{CLIENT_API_ROOT}/series/<project_id>/<table_name>", methods=["GET"])
+    @app.route(f"{FRONTEND_API_ROOT}/series/<project_id>/<table_name>", methods=["GET"])
     def get_series_list_of(project_id: str, table_name: str):  # client side function
         if not Bridge.has(project_id):
             abort(404)
         result = Bridge.of_id(project_id).get_series_of(table_name)
+        return result
+
+    @app.route(f"{FRONTEND_API_ROOT}/runids/<project_id>", methods=["GET"])
+    def get_run_ids_of_projectid(project_id: str):
+        if not Bridge.has(project_id):
+            abort(404)
+        result = Bridge.of_id(project_id).get_run_ids()
         return result
 
     @app.route(f"/image/<project_id>", methods=["POST"])
@@ -530,6 +542,7 @@ def server_process(cfg, debug=False):
         if not Bridge.has(project_id):
             return abort(404)  # cannot operate history if bridge of given id not exist
         meta = request.args.get("meta") is not None
+
         [(_, _, meta_data, image)] = Bridge.of_id(project_id).read_blob_from_history(
             table_name="image", condition=QueryCondition(id=image_id), meta_only=meta
         )

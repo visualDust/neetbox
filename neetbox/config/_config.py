@@ -18,7 +18,7 @@ NEETBOX_VERSION = version("neetbox")
 _DEFAULT_WORKSPACE_CONFIG = {
     "name": None,
     "version": NEETBOX_VERSION,
-    "workspace-id": None,
+    "projectid": None,
     "logging": {"level": "INFO", "logdir": None},
     "pipeline": {
         "updateInterval": 0.5,

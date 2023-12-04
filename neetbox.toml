@@ -1,5 +1,5 @@
 name = "neetbox"
-workspace-id = "b42c4749-1fa8-4a9d-ae30-80e2c69309f8"
+projectid = "b42c4749-1fa8-4a9d-ae30-80e2c69309f8"
 
 [logging]
 level = "INFO"

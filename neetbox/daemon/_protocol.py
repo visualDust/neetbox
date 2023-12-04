@@ -3,8 +3,8 @@ from typing import Any
 
 EVENT_TYPE_NAME_KEY = "event-type"
 EVENT_ID_NAME_KEY = "event-id"
-PROJECT_ID_KEY = WORKSPACE_ID_KEY = "workspace-id"
-RUN_ID_KEY = "run-id"
+PROJECT_ID_KEY = WORKSPACE_ID_KEY = "projectid"
+RUN_ID_KEY = "runid"
 PAYLOAD_NAME_KEY = "payload"
 
 # ===================== HTTP things =====================

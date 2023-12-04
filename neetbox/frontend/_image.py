@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from neetbox import WORKSPACE_ID
+from neetbox import PROJECT_ID
 from neetbox.config._config import get_run_id
 from neetbox.daemon._protocol import *
 from neetbox.daemon.client._client import connection
@@ -28,7 +28,7 @@ def impost(image: Union[np.array, Image.Image], name: str):
             image_bytes = image_bytes_stream.getvalue()
     # send bytes
     connection.post(
-        api=f"/image/{WORKSPACE_ID}",
-        data={PROJECT_ID_KEY: WORKSPACE_ID, "series": name, "run-id": get_run_id()},
+        api=f"/image/{PROJECT_ID}",
+        data={PROJECT_ID_KEY: PROJECT_ID, "series": name, "run-id": get_run_id()},
         files={"image": image_bytes},
     )
