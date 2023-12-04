@@ -235,7 +235,7 @@ class DBConnection:
 
     def _execute(self, query, *args, fetch: FetchType = None, save_immediately=True, **kwargs):
         cur = self.connection.cursor()
-        logger.info(f"executing sql='{query}', params={args}")
+        # logger.info(f"executing sql='{query}', params={args}")
         result = cur.execute(query, args)
         if fetch:
             if fetch == FetchType.ALL:

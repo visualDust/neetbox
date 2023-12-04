@@ -93,13 +93,20 @@ class RawLog:
 
 # ================== CONSOLE LOG WRITER =====================
 
-_console_prefix_2_colored_text = defaultdict(
-    lambda x: x,
+
+class DefaultDictThatReturnsKeyOnMissing(defaultdict):
+    def __missing__(self, key):
+        return key
+
+
+_console_prefix_2_colored_text = DefaultDictThatReturnsKeyOnMissing(
+    str,
     {
         "ok": colored_text("[ok]", "green"),
         "debug": colored_text("[debug]", "cyan"),
         "info": colored_text("[info]", "white"),
         "warning": colored_text("[warning]", "yellow"),
+        "mention": colored_text("[mention]", "yellow"),
         "error": colored_text("[error]", "red"),
     },
 )

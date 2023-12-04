@@ -274,13 +274,45 @@ class Logger:
                 Logger._console.print_exception(err)
         return self
 
-    def mention(self, func):
-        @functools.wraps(func)
-        def with_logging(*args, **kwargs):
-            self.log(f"Currently running: {func.__name__}", traceback=3)
-            return func(*args, **kwargs)
+    def mention(
+        self, skip_writers=[], datetime_format=None, with_identifier=None, with_datetime=None
+    ):
+        def with_logging(func, skip_writers, datetime_format, with_identifier, with_datetime):
+            @functools.wraps(func)
+            def _with_logging(*args, **kwargs):
+                self.log(
+                    f"Entering: {func.__name__}",
+                    prefix=f"mention",
+                    skip_writers=skip_writers,
+                    traceback=4,
+                    datetime_format=datetime_format,
+                    with_identifier=with_identifier,
+                    with_datetime=with_datetime,
+                )
+                try:
+                    result = func(*args, **kwargs)
+                except Exception as e:
+                    raise e
+                self.log(
+                    f"Leaving: {func.__name__}, with returned value {result}",
+                    prefix=f"mention",
+                    skip_writers=skip_writers,
+                    traceback=4,
+                    datetime_format=datetime_format,
+                    with_identifier=with_identifier,
+                    with_datetime=with_datetime,
+                )
+                return result
 
-        return with_logging
+            return _with_logging
+
+        return functools.partial(
+            with_logging,
+            skip_writers=skip_writers,
+            datetime_format=datetime_format,
+            with_identifier=with_identifier,
+            with_datetime=with_datetime,
+        )
 
     def console_banner(self, text, font: Optional[str] = None):
         from pyfiglet import Figlet, FigletFont
