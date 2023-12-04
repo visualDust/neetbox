@@ -119,6 +119,16 @@ def send_image():
         impost(logo_image, name="logo")
 
 
+@logger.mention()
+def test_mention(text: str):
+    return text
+
+
+@action()
+def run_test_mention(text: str):
+    test_mention(text)
+
+
 for i in range(99999):
     sleep(1)
     train(i)

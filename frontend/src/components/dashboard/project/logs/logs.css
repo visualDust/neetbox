@@ -15,6 +15,9 @@
   .log-prefix-info {
     --log-tag-bg-hs: 222, 80%;
   }
+  .log-prefix-mention {
+    --log-tag-bg-hs: 190, 80%;
+  }
   .log-prefix-ok {
     --log-tag-bg-hs: 128, 80%;
   }

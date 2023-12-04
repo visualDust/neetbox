@@ -1,7 +1,9 @@
+import { Notification as SemiNotification } from "@douyinfe/semi-ui";
 import { BetterAtom } from "../utils/betterAtom";
 import { fetcher } from "./api";
 import { WsClient } from "./projectWebsocket";
 import { ProjectStatusHistory, LogData, ProjectStatus, ImageMetadata } from "./types";
+import { checkLogForNotification } from "./logNotifications";
 
 const projects = new Map<string, Project>();
 
@@ -17,6 +19,10 @@ export class Project {
   });
   logs = new BetterAtom<LogData[]>([]);
   images = new BetterAtom<ImageMetadata[]>([]);
+
+  get nameOrId() {
+    return this.status.value.current?.config.value.name ?? this.id;
+  }
 
   constructor(readonly id: string) {
     this.wsClient = new WsClient(this);
@@ -89,6 +95,7 @@ export class Project {
       setTimeout(this._logFlush, 60);
     }
     this._logQueue.push(log);
+    checkLogForNotification(log, this);
   }
 
   handleImage(image: ImageMetadata) {
