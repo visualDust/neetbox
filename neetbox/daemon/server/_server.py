@@ -132,9 +132,9 @@ def server_process(cfg, debug=False):
                 cls.from_db(history_db)
 
         def set_status(self, status):
+            status_dict = json.loads(status) if isinstance(status, str) else status
+            self.status = status_dict
             self.save_json_to_history(table_name="status", json_data=status)
-            status = json.loads(status) if isinstance(status, str) else status
-            self.status = status
 
         def get_status(self):
             status = self.status
@@ -144,9 +144,15 @@ def server_process(cfg, debug=False):
         def get_series_of(self, table_name):
             return self.historyDB.get_series_of_table(table_name=table_name)
 
-        def save_json_to_history(self, table_name, json_data, series=None, timestamp=None):
+        def save_json_to_history(
+            self, table_name, json_data, series=None, run_id=None, timestamp=None
+        ):
             lastrowid = Bridge.of_id(self.project_id).historyDB.write_json(
-                table_name=table_name, json_data=json_data, series=series, timestamp=timestamp
+                table_name=table_name,
+                json_data=json_data,
+                series=series,
+                run_id=run_id,
+                timestamp=timestamp,
             )
             return lastrowid
 
@@ -154,13 +160,14 @@ def server_process(cfg, debug=False):
             return self.historyDB.read_json(table_name=table_name, condition=condition)
 
         def save_blob_to_history(
-            self, table_name, meta_data, blob_data, series=None, timestamp=None
+            self, table_name, meta_data, blob_data, series=None, run_id=None, timestamp=None
         ):
             lastrowid = Bridge.of_id(self.project_id).historyDB.write_blob(
                 table_name=table_name,
                 meta_data=meta_data,
                 blob_data=blob_data,
                 series=series,
+                run_id=run_id,
                 timestamp=timestamp,
             )
             return lastrowid
@@ -379,10 +386,7 @@ def server_process(cfg, debug=False):
                 console.log(f"handle log. {project_id} not found.")
             return
         ws_send_to_frontends_of_id(project_id=project_id, message=message)  # forward to frontends
-        series = message_dict[PAYLOAD_NAME_KEY]["series"]
-        Bridge.of_id(project_id).save_json_to_history(
-            table_name="log", json_data=message, series=series
-        )
+        Bridge.of_id(project_id).save_json_to_history(table_name="log", json_data=message)
         return  # return after handling log forwarding
 
     def on_event_type_action(client, server, message_dict, message):

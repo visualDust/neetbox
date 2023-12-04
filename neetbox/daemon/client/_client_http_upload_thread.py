@@ -7,9 +7,9 @@
 import json
 
 import neetbox
-from neetbox.config._config import get_module_level_config
+from neetbox.config._config import get_module_level_config, get_run_id
+from neetbox.daemon._protocol import *
 from neetbox.daemon.client._client import connection
-from neetbox.daemon.server._server import CLIENT_API_ROOT
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.pipeline._signal_and_slot import _UPDATE_VALUE_DICT, SYSTEM_CHANNEL, watch
@@ -25,6 +25,7 @@ def _add_upload_thread_to_watch(daemon_config, base_addr, workspace_id):
     def upload_via_http():
         # dump status as json
         _data = _UPDATE_VALUE_DICT[SYSTEM_CHANNEL].copy()
+        _data[RUN_ID_KEY] = get_run_id()
         _data = json.dumps(_UPDATE_VALUE_DICT[SYSTEM_CHANNEL], default=str)
         _headers = {"Content-Type": "application/json"}
         try:

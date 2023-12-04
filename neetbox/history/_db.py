@@ -1,13 +1,11 @@
 import collections
-import functools
 import json
 import sqlite3
 from datetime import datetime, timedelta
 from enum import Enum
 from importlib.metadata import version
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Tuple, Union
 
-from neetbox.config import get_module_level_config
 from neetbox.logging import logger
 from neetbox.logging.formatting import LogStyle
 
@@ -34,12 +32,14 @@ class SortType(Enum):
 ID_COLUMN_NAME = "id"
 TIMESTAMP_COLUMN_NAME = "timestamp"
 SERIES_COLUMN_NAME = "series"
+RUN_ID_COLUMN_NAME = "run-id"
 JSON_COLUMN_NAME = METADATA_COLUMN_NAME = "metadata"
 BLOB_COLUMN_NAME = "data"
 
 # === TABLE NAMES ===
 PROJECT_ID_TABLE_NAME = "projectid"
 VERSION_TABLE_NAME = "version"
+RUN_IDS_TABLE_NAME = "run-id"
 STATUS_TABLE_NAME = "status"
 LOG_TABLE_NAME = "log"
 IMAGE_TABLE_NAME = "image"
@@ -51,12 +51,14 @@ class QueryCondition:
         id: Union[Tuple[int, int], int] = None,
         timestamp: Union[Tuple[str, str], str] = None,
         series: str = None,
+        run_id: str = None,
         limit: int = None,
         order: Dict[str, SortType] = {},
     ) -> None:
         self.id_range = id if isinstance(id, tuple) else (id, None)
         self.timestamp_range = timestamp if isinstance(timestamp, tuple) else (timestamp, None)
         self.series = series
+        self.run_id = run_id
         self.limit = limit
         self.order = {order[0], order[1]} if isinstance(order, tuple) else order
 
@@ -106,6 +108,8 @@ class QueryCondition:
             timestamp_range = tuple(timestamp_range)
         # try to load series
         series = json_data["series"] if "series" in json_data else None
+        # run-id cond
+        run_id = json_data["run_id"] if "run_id" in json_data else None
         # try load limit
         limit = None
         if "limit" in json_data:
@@ -120,6 +124,7 @@ class QueryCondition:
             id=id_range,
             timestamp=timestamp_range,
             series=series,
+            run_id=run_id,
             limit=limit,
             order=order,
         )
@@ -147,6 +152,10 @@ class QueryCondition:
         _series_cond = ""
         if self.series:
             _series_cond = f"{SERIES_COLUMN_NAME} == {self.series}"
+        # === run-id condition ===
+        _run_id_cond = ""
+        if self.run_id:
+            _run_id_cond = f"{RUN_ID_COLUMN_NAME} == {self.run_id}"
         # === ORDER BY ===
         _order_cond = f"ORDER BY " if self.order else ""
         if self.order:
@@ -159,7 +168,7 @@ class QueryCondition:
         _limit_cond = f"LIMIT {self.limit}" if self.limit else ""
         # === concat conditions ===
         query_conditions = []
-        for cond in [_id_cond, _timestamp_cond, _series_cond]:
+        for cond in [_id_cond, _timestamp_cond, _series_cond, _run_id_cond]:
             if cond:
                 query_conditions.append(cond)
         query_conditions = " AND ".join(query_conditions)
@@ -277,49 +286,100 @@ class DBConnection:
             return default
         return _projectid[0]
 
-    def write_json(self, table_name, json_data, series=None, timestamp=None):
-        if not self._inited_tables[table_name]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {JSON_COLUMN_NAME} TEXT NON NULL );"
+    def fetch_id_of_run_id(self, run_id: str, timestamp: str = None):
+        if not self._inited_tables[RUN_ID_COLUMN_NAME]:  # create if there is no version table
+            sql_query = f"CREATE TABLE IF NOT EXISTS {RUN_IDS_TABLE_NAME} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {RUN_ID_COLUMN_NAME} TEXT NON NULL, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL);"
             self._execute(sql_query)
-            sql_query = f"CREATE INDEX IF NOT EXISTS {SERIES_COLUMN_NAME}_index ON {table_name} ({SERIES_COLUMN_NAME})"
-            self._execute(sql_query)
-            self._inited_tables[table_name] = True
+            self._inited_tables[RUN_IDS_TABLE_NAME] = True
+        sql_query = f"SELECT {ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {RUN_ID_COLUMN_NAME} == {run_id}"
+        _id, _ = self._execute(sql_query, fetch=FetchType.ONE)
+        if _id is None:
+            timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
+            sql_query = f"INSERT INTO {RUN_IDS_TABLE_NAME}({RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}) VALUES (?, ?)"
+            _, lastrowid = self._execute(sql_query, run_id, timestamp)
+            return lastrowid
+        return _id
 
+    def run_id_of_id(self, id_of_run_id):
+        sql_query = f"SELECT {RUN_ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
+        run_id, _ = self._execute(sql_query, fetch=FetchType.ONE)
+        return run_id
+
+    def get_run_ids(self):
+        sql_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name={RUN_IDS_TABLE_NAME};"  # check if run id table exist
+        result, _ = self._execute(sql_query)
+        if not result:
+            raise RuntimeError("should not get run id of id before run id table creation")
+        sql_query = f"SELECT {RUN_ID_COLUMN_NAME},{TIMESTAMP_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
+        result, _ = self._execute(sql_query)
+        result = [{run_id: timestamp} for run_id, timestamp in result]
+        return result
+
+    def write_json(
+        self,
+        table_name: str,
+        json_data: str,
+        series: str = None,
+        run_id: str = None,
+        timestamp: str = None,
+    ):
         _json_dict = json.loads(json_data)
         timestamp = (
             _json_dict[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in _json_dict else timestamp
         )
         timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
         series = _json_dict[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in _json_dict else series
-        sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {JSON_COLUMN_NAME}) VALUES (?, ?, ?)"
-        if not isinstance(json_data, str):
-            json_data = json.dumps(json_data)
-        _, lastrowid = self._execute(sql_query, timestamp, series, json_data)
-        return lastrowid
+        run_id = _json_dict[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in _json_dict else run_id
+        run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
 
-    def write_blob(self, table_name, meta_data, blob_data, series=None, timestamp=None):
-        if isinstance(blob_data, bytes):
-            blob_data = bytearray(blob_data)
-        if not isinstance(meta_data, str):
-            meta_data = json.dumps(meta_data)
         if not self._inited_tables[table_name]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL );"
+            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {JSON_COLUMN_NAME} TEXT NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
             self._execute(sql_query)
-            sql_query = f"CREATE INDEX IF NOT EXISTS {SERIES_COLUMN_NAME}_index ON {table_name} ({SERIES_COLUMN_NAME})"
+            sql_query = f"CREATE INDEX IF NOT EXISTS series_and_runid_index ON {table_name} ({SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME})"
             self._execute(sql_query)
             self._inited_tables[table_name] = True
 
+        sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME}, {JSON_COLUMN_NAME}) VALUES (?, ?, ?, ?)"
+        if not isinstance(json_data, str):
+            json_data = json.dumps(json_data)
+        _, lastrowid = self._execute(sql_query, timestamp, series, run_id, json_data)
+        return lastrowid
+
+    def write_blob(
+        self,
+        table_name: str,
+        meta_data: Union[str, dict],
+        blob_data: bytes,
+        series: str = None,
+        run_id: str = None,
+        timestamp: str = None,
+    ):
         _json_dict = json.loads(meta_data)
         timestamp = (
             _json_dict[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in _json_dict else timestamp
         )
         timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
         series = _json_dict[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in _json_dict else series
-        sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {METADATA_COLUMN_NAME}, {BLOB_COLUMN_NAME}) VALUES (?, ?, ?, ?)"
-        _, lastrowid = self._execute(sql_query, timestamp, series, meta_data, blob_data)
+        run_id = _json_dict[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in _json_dict else run_id
+        run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
+        if isinstance(blob_data, bytes):
+            blob_data = bytearray(blob_data)
+        if not isinstance(meta_data, str):
+            meta_data = json.dumps(meta_data)
+
+        if not self._inited_tables[table_name]:  # create if there is no version table
+            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
+            self._execute(sql_query)
+            sql_query = f"CREATE INDEX IF NOT EXISTS series_and_runid_index ON {table_name} ({SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME})"
+            self._execute(sql_query)
+            self._inited_tables[table_name] = True
+
+        sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME}, {METADATA_COLUMN_NAME}, {BLOB_COLUMN_NAME}) VALUES (?, ?, ?, ?, ?)"
+        _, lastrowid = self._execute(sql_query, timestamp, series, run_id, meta_data, blob_data)
         return lastrowid
 
     def read_json(self, table_name: str, condition: QueryCondition = None):
+        condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
         result, _ = self._execute(sql_query, fetch=FetchType.ALL)
@@ -334,6 +394,7 @@ class DBConnection:
         return result
 
     def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
+        condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
         result, _ = self._execute(sql_query, fetch=FetchType.ALL)

@@ -114,6 +114,7 @@ class ClientConn(metaclass=Singleton):
             json.dumps(
                 {
                     PROJECT_ID_KEY: neetbox.WORKSPACE_ID,
+                    RUN_ID_KEY: get_run_id(),
                     EVENT_TYPE_NAME_KEY: "handshake",
                     PAYLOAD_NAME_KEY: {"who": "cli"},
                     EVENT_ID_NAME_KEY: 0,  # todo how does ack work
