@@ -2,8 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from neetbox.torch.arch.kernels import *
-from neetbox.utils import pkg
+from .kernels import *
 
 
 class CannyFilter(nn.Module):
@@ -29,9 +28,7 @@ class CannyFilter(nn.Module):
             padding=k_gaussian // 2 if padding else 0,
             bias=False,
         )
-        self.gaussian_filter.weight.data.copy_(
-            torch.from_numpy(gaussian_2D[None, None, :])
-        )
+        self.gaussian_filter.weight.data.copy_(torch.from_numpy(gaussian_2D[None, None, :]))
 
         # sobel
         sobel_2D = get_sobel_kernel(k_sobel)

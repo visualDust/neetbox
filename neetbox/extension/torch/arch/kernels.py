@@ -1,7 +1,5 @@
 import numpy as np
 
-from neetbox.utils import pkg
-
 
 def get_gaussian_kernel(k=3, mu=0, sigma=1, normalize=True):
     # compute 1 dimension gaussian
@@ -33,7 +31,6 @@ def get_sobel_kernel(k=3):
 
 
 def get_thin_kernels(start=0, end=360, step=45):
-    assert pkg.is_installed("cv2", try_install_if_not="opencv-python")
     import cv2
 
     k_thin = 3  # actual size of the directional kernel

@@ -6,8 +6,8 @@ import zipfile
 import torch
 from tqdm import tqdm
 
-from neetbox.extension.resource import download
 from neetbox.logging import logger
+from neetbox.utils import download
 
 __all__ = ["load_word_vectors"]
 

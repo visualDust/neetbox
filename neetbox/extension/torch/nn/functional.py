@@ -1,5 +1,7 @@
-import torch
 from typing import Union
+
+import torch
+
 
 def one_hot(
     tensor: torch.Tensor,
