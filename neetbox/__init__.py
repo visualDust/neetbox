@@ -40,7 +40,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
                     _config["name"] = kwargs["name"]
                 else:  # using the folder name
                     _config["name"] = os.path.basename(os.path.normpath(os.getcwd()))
-                _config["workspace-id"] = str(uuid.uuid4())
+                _config["projectid"] = str(uuid.uuid4())
                 toml.dump(_config, config_file)
             logger.ok(f"Workspace config created as {config_file_path}.")
             return True
@@ -55,7 +55,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
 def _load_workspace(path=None) -> bool:
     extension._run_things_before_load_workspace()  # also run things before load workspace on init workspace
     _update_default_config_from_config_register()  # load custom config into default config
-    global WORKSPACE_ID
+    global PROJECT_ID
     if path:
         os.chdir(path=path)
     current_path = os.getcwd()
@@ -66,7 +66,7 @@ def _load_workspace(path=None) -> bool:
     try:  # do load
         _config_loaded_from_file = toml.load(config_file_path)
         _update_default_workspace_config_with(_config_loaded_from_file)
-        WORKSPACE_ID = get_module_level_config()["workspace-id"]
+        PROJECT_ID = get_module_level_config()["projectid"]
         logger.ok(f"workspace config loaded from {config_file_path}.")
         return True
     except Exception as e:

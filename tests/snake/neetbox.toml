@@ -1,5 +1,5 @@
 name = "snake"
-workspace-id = "cfaf7fd6-a82f-4de7-aa74-013a6e826bef"
+projectid = "cfaf7fd6-a82f-4de7-aa74-013a6e826bef"
 
 [logging]
 level = "INFO"

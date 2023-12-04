@@ -17,16 +17,16 @@ from neetbox.pipeline._signal_and_slot import _UPDATE_VALUE_DICT, SYSTEM_CHANNEL
 logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 
-def _add_upload_thread_to_watch(daemon_config, base_addr, workspace_id):
+def _add_upload_thread_to_watch(daemon_config, project_id):
     _api_name = "sync"
-    _api = f"{CLIENT_API_ROOT}/{_api_name}/{workspace_id}"
+    _api = f"{CLIENT_API_ROOT}/{_api_name}/{project_id}"
 
     @watch(interval=daemon_config["uploadInterval"], overwrite=True, initiative=False)
     def upload_via_http():
         # dump status as json
         _data = _UPDATE_VALUE_DICT[SYSTEM_CHANNEL].copy()
         _data[RUN_ID_KEY] = get_run_id()
-        _data = json.dumps(_UPDATE_VALUE_DICT[SYSTEM_CHANNEL], default=str)
+        _data = json.dumps(_data, default=str)
         _headers = {"Content-Type": "application/json"}
         try:
             # upload data
@@ -59,9 +59,7 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
         return False
 
     if launch_upload_thread:
-        _add_upload_thread_to_watch(
-            daemon_config=_cfg, base_addr=_base_addr, workspace_id=neetbox.WORKSPACE_ID
-        )
+        _add_upload_thread_to_watch(daemon_config=_cfg, project_id=neetbox.PROJECT_ID)
 
     connection._init_ws()
     return True

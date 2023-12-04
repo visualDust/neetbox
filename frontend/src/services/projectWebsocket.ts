@@ -50,7 +50,7 @@ export class WsClient {
     const eventId = this.nextId++;
     const json = {
       ...msg,
-      "workspace-id": this.project.id,
+      "projectid": this.project.id,
       "event-id": eventId,
     };
     console.info("ws send", json);

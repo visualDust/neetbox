@@ -25,12 +25,12 @@ def get_list():
     return _get(api)
 
 
-def get_status_of(workspace_id):
+def get_status_of(project_id):
     id2name = get_list()
     name2id = {v: k for k, v in id2name}  # todo resolve dup name
-    if workspace_id not in name2id:
+    if project_id not in name2id:
         return None
-    _id = name2id[workspace_id]
+    _id = name2id[project_id]
     api = f"{FRONTEND_API_ROOT}/status/{_id}"
     return _get(api)
 

@@ -5,6 +5,7 @@
 # Date:   20230413
 
 import inspect
+import os
 import types
 from importlib.metadata import version
 from typing import Union
@@ -16,9 +17,9 @@ from neetbox.utils.framing import get_frame_module_traceback
 NEETBOX_VERSION = version("neetbox")
 
 _DEFAULT_WORKSPACE_CONFIG = {
-    "name": None,
+    "name": os.path.basename(os.path.normpath(os.getcwd())),
     "version": NEETBOX_VERSION,
-    "workspace-id": None,
+    "projectid": str(uuid4()),  # later will be overwrite by workspace config file
     "logging": {"level": "INFO", "logdir": None},
     "pipeline": {
         "updateInterval": 0.5,

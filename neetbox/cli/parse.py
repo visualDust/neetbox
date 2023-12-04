@@ -61,7 +61,7 @@ def list_command():
         table = Table(title="Running NEETBOX Projects")
 
         table.add_column("name", justify="center", style="cyan")
-        table.add_column("workspace-id", justify="center", style="magenta", no_wrap=True)
+        table.add_column("project id", justify="center", style="magenta", no_wrap=True)
         table.add_column("config", justify="center", style="green")
 
         for pjt in _response:
@@ -85,7 +85,7 @@ def status_command(name):
     _try_load_workspace_if_applicable()
     _response = None
     try:
-        _response = get_status_of(workspace_id=name)
+        _response = get_status_of(project_id=name)
         click.echo(json.dumps(_response))
     except Exception as e:  # noqa
         logger.log("Could not fetch data. Is there any project with NEETBOX running?")
