@@ -552,7 +552,7 @@ def server_process(cfg, debug=False):
         query_results = Bridge.of_id(project_id).read_blob_from_history(
             table_name="image", condition=condition, meta_only=True
         )  # todo ?
-        result = [meta_data for _, _, meta_data, _ in query_results]
+        result = [{"imageId": id, "metadata": meta_data} for id, _, meta_data in query_results]
         return result
 
     @app.route(f"/shutdown", methods=["POST"])

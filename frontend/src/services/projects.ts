@@ -46,7 +46,7 @@ export class Project {
       })}`,
     ).then(async (data) => {
       data.reverse();
-      this.logs.value = [...this.logs.value, ...data.map((x) => x.metadata)];
+      this.logs.value = [...this.logs.value, ...data.map((x) => x.metadata.payload)];
     });
 
     fetcher(
@@ -58,14 +58,14 @@ export class Project {
       })}`,
     ).then(async (data) => {
       data.reverse();
-      this.images.value = [...this.images.value, ...data.map((x) => x.metadata)];
+      this.images.value = [...this.images.value, ...data];
     });
   }
 
   updateData() {
     if (!this.status.value.enablePolling) return false;
 
-    fetcher("/web/status/" + this.id).then(async (data: ProjectStatus) => {
+    fetcher("/status/" + this.id).then(async (data: ProjectStatus) => {
       data.hardware.value.cpus.forEach((cpu, idx) => {
         if (typeof cpu.id != "number" || cpu.id < 0) cpu.id = idx;
       });
