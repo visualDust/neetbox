@@ -1,4 +1,4 @@
-import { Nav } from "@douyinfe/semi-ui";
+import { Nav, Tag, Typography } from "@douyinfe/semi-ui";
 import { IconHome, IconListView } from "@douyinfe/semi-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAPI } from "../../services/api";
@@ -22,8 +22,17 @@ export default function ConsoleNavBar() {
           icon: <IconListView />,
           itemKey: "projects",
           items: data
-            ? data.map(({ id, config }) => ({
-                text: config.value.name,
+            ? data.map(({ id, config, online }) => ({
+                text: (
+                  <Typography.Text type={online ? "primary" : "tertiary"}>
+                    {config.value.name}
+                    {!online && (
+                      <Tag style={{ marginLeft: "10px" }} color="orange">
+                        offline
+                      </Tag>
+                    )}
+                  </Typography.Text>
+                ),
                 itemKey: "/console/project/" + id,
               }))
             : [{ text: "", itemKey: "loading" }],
