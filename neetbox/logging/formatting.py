@@ -8,13 +8,15 @@ from dataclasses import dataclass
 from random import random
 from typing import Optional
 
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.SSS
+
 
 @dataclass
 class LogStyle:
     console_color: Optional[str] = None
     prefix: str = ""
     text_style: Optional[str] = None
-    datetime_format: str = "%Y-%m-%d-%H:%M:%S"
+    datetime_format: str = DATETIME_FORMAT
     with_identifier: bool = True
     trace_level = 3
     with_datetime: bool = True
@@ -85,4 +87,5 @@ def styled_text(text, style: LogStyle):
 
 
 def colored_text(text: str, color):
+    text = text.replace("[", "\[")
     return f"[{color}]{text}[/{color}]"

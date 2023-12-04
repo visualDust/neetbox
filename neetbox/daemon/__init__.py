@@ -8,17 +8,19 @@ import json
 import subprocess
 import time
 
-from neetbox.daemon.client._action_agent import _NeetActionManager as NeetActionManager
-from neetbox.daemon.client._client import connection
-from neetbox.daemon.client._update_thread import connect_daemon
+from neetbox.config import get_module_level_config
 from neetbox.daemon.server.daemonable_process import DaemonableProcess
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 
+from .client._client import connection
+from .client._client_http_upload_thread import connect_daemon as _connect_daemon
+
 logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
 
-def __attach_daemon(daemon_config):
+def connect():
+    daemon_config = get_module_level_config()
     if not daemon_config["allowIpython"]:
         try:
             eval("__IPYTHON__")
@@ -30,7 +32,7 @@ def __attach_daemon(daemon_config):
                 "ipython, try to set 'allowIpython' to True."
             )
             return False  # ignore if debugging in ipython
-    _is_daemon_server_online = connect_daemon()  # try to connect daemon
+    _is_daemon_server_online = _connect_daemon()  # try to connect daemon
     logger.debug("daemon connection status: " + str(_is_daemon_server_online))
     if not _is_daemon_server_online:  # if no daemon online
         # check if possible to launch
@@ -60,7 +62,7 @@ def __attach_daemon(daemon_config):
 
         logger.log("Created daemon process, trying to connect to daemon...")
         while time.perf_counter() - _time_begin < 10:  # try connect daemon
-            if connect_daemon():
+            if _connect_daemon():
                 return True
             else:
                 exit_code = popen.poll()
@@ -76,14 +78,5 @@ def __attach_daemon(daemon_config):
         return False
 
 
-def _try_attach_daemon():
-    from neetbox.config import get_module_level_config
-
-    _cfg = get_module_level_config()
-    if _cfg["enable"]:
-        __attach_daemon(_cfg)
-
-
-action = NeetActionManager.register
 ws_subscribe = connection.ws_subscribe
-__all__ = ["action", "ws_subscribe", "NeetActionManager", "_try_attach_daemon"]
+__all__ = ["ws_subscribe"]

@@ -4,11 +4,15 @@ on: ["pull_request","push"]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 3
       matrix:
         python-version: ["3.9","3.10","3.11"]
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
     steps:
       #----------------------------------------------
       #       check-out repo and set-up python
@@ -45,6 +49,7 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-root
+
       #----------------------------------------------
       # install your root project, if required
       #----------------------------------------------
@@ -55,5 +60,5 @@ jobs:
       #----------------------------------------------
       - name: Run tests
         run: |
-          source .venv/bin/activate
+          source $VENV
           pytest tests/

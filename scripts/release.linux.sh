@@ -4,7 +4,7 @@
 cd $(dirname $0)/..
 
 # build frontend
-pushd neetbox/frontend
+pushd frontend
 yarn build
 popd
 

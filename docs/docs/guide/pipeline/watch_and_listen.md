@@ -13,7 +13,7 @@ neet init
 create and edit `test.py`. In `test.py`:
 ```python
 from neetbox.pipeline import watch,listen
-from neetbox.integrations.environment import hardware
+from neetbox.extension.environment import hardware
 from neetbox.logging import logger
 import time
 

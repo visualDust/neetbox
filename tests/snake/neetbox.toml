@@ -1,0 +1,27 @@
+name = "snake"
+projectid = "cfaf7fd6-a82f-4de7-aa74-013a6e826bef"
+
+[logging]
+level = "INFO"
+
+[pipeline]
+updateInterval = 0.5
+
+[extension]
+autoload = true
+
+[daemon]
+enable = true
+host = "127.0.0.1"
+port = 5000
+allowIpython = false
+mute = true
+mode = "detached"
+uploadInterval = 0.5
+
+[extension.environment.hardware]
+monit = true
+interval = 0.5
+
+[extension.environment.platform]
+monit = true

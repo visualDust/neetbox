@@ -1,14 +1,17 @@
 .vscode
 .pytest_cache
+.ignore
 __pycache__/
 dist/
 frontend_dist/
 poetry.lock
 test/optional
 build_and_reinstall_wheel.cmd
-
+node_modules
 # log files
 log
 for_debug.txt
+.neethistory/
+.neetory
 
 other/

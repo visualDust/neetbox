@@ -8,7 +8,8 @@ from typing import Callable
 import httpx
 import websocket
 
-from neetbox.config import get_module_level_config
+import neetbox
+from neetbox.config._config import get_module_level_config, get_run_id
 from neetbox.daemon._protocol import *
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
@@ -32,10 +33,32 @@ def _load_http_client():
     return __local_http_client
 
 
+@functools.lru_cache()
+def addr_of_api(api):
+    _cfg = get_module_level_config()
+    _daemon_server_address = f"{_cfg['host']}:{_cfg['port']}"
+    _base_addr = f"http://{_daemon_server_address}"
+    if not api.startswith("/"):
+        api = f"/{api}"
+    return f"{_base_addr}{api}"
+
+
 # singleton
 class ClientConn(metaclass=Singleton):
     # http client
     http: httpx.Client = _load_http_client()
+
+    def post(api: str, *args, **kwargs):
+        return ClientConn.http.post(addr_of_api(api), *args, **kwargs)
+
+    def get(api: str, *args, **kwargs):
+        return ClientConn.http.get(addr_of_api(api), *args, **kwargs)
+
+    def put(api: str, *args, **kwargs):
+        return ClientConn.http.put(addr_of_api(api), *args, **kwargs)
+
+    def delete(api: str, *args, **kwargs):
+        return ClientConn.http.delete(addr_of_api(api), *args, **kwargs)
 
     __ws_client: websocket.WebSocketApp = None  # _websocket_client
     __ws_subscription = defaultdict(lambda: {})  # default to no subscribers
@@ -64,9 +87,6 @@ class ClientConn(metaclass=Singleton):
             return
 
         cfg = get_module_level_config()
-        _root_config = get_module_level_config("@")
-        ClientConn._display_name = cfg["displayName"] or _root_config["name"]
-
         # ws server url
         ClientConn.ws_server_addr = f"ws://{cfg['host']}:{cfg['port'] + 1}"
 
@@ -89,12 +109,12 @@ class ClientConn(metaclass=Singleton):
         _ws_initialized = True
 
     def __on_ws_open(ws: websocket.WebSocketApp):
-        _display_name = ClientConn._display_name
-        logger.ok(f"client websocket connected. sending handshake as '{_display_name}'...")
+        logger.ok(f"client websocket connected. sending handshake as '{neetbox.PROJECT_ID}'...")
         ws.send(  # send handshake request
             json.dumps(
                 {
-                    NAME_NAME_KEY: _display_name,
+                    PROJECT_ID_KEY: neetbox.PROJECT_ID,
+                    RUN_ID_KEY: get_run_id(),
                     EVENT_TYPE_NAME_KEY: "handshake",
                     PAYLOAD_NAME_KEY: {"who": "cli"},
                     EVENT_ID_NAME_KEY: 0,  # todo how does ack work
@@ -149,7 +169,8 @@ class ClientConn(metaclass=Singleton):
             ClientConn.__ws_client.send(
                 json.dumps(
                     {
-                        NAME_NAME_KEY: ClientConn._display_name,
+                        PROJECT_ID_KEY: neetbox.PROJECT_ID,
+                        RUN_ID_KEY: get_run_id(),
                         EVENT_TYPE_NAME_KEY: event_type,
                         PAYLOAD_NAME_KEY: payload,
                         EVENT_ID_NAME_KEY: event_id,
@@ -157,9 +178,6 @@ class ClientConn(metaclass=Singleton):
                     default=str,
                 )
             )
-        else:
-            if not _ws_initialized:  # ws not intialized
-                ClientConn._init_ws()
 
 
 # assign this connection to websocket log writer

@@ -6,7 +6,7 @@ import zipfile
 import torch
 from tqdm import tqdm
 
-from neetbox.integrations.resource import download
+from neetbox.extension.resource import download
 from neetbox.logging import logger
 
 __all__ = ["load_word_vectors"]
@@ -43,9 +43,7 @@ def load_word_vectors(root, wv_type, dim):
 
     if isinstance(dim, int):
         if dim not in AVAILABLE[wv_type]:
-            raise ValueError(
-                f"invalid word vector dimension, only support {AVAILABLE[wv_type]} d."
-            )
+            raise ValueError(f"invalid word vector dimension, only support {AVAILABLE[wv_type]} d.")
         dim = str(dim) + "d"
     fname = os.path.join(root, wv_type + "." + dim)
 
@@ -83,9 +81,7 @@ def load_word_vectors(root, wv_type, dim):
 
     wv_tokens, wv_arr, wv_size = [], array.array("d"), None
     if cm is not None:
-        for line in tqdm(
-            range(len(cm)), desc="loading word vectors from {}".format(fname_txt)
-        ):
+        for line in tqdm(range(len(cm)), desc="loading word vectors from {}".format(fname_txt)):
             entries = cm[line].strip().split(b" ")
             word, entries = entries[0], entries[1:]
             if wv_size is None:
