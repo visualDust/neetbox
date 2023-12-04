@@ -9,7 +9,7 @@ import subprocess
 import time
 
 from neetbox.config import get_module_level_config
-from neetbox.daemon.server.daemonable_process import DaemonableProcess
+from neetbox.daemon.server._daemonable_process import DaemonableProcess
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 
