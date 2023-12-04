@@ -10,6 +10,7 @@ import neetbox.extension as extension  # DO NOT remove this import
 from neetbox.config import get_current as get_current_config
 from neetbox.config import get_module_level_config
 from neetbox.config._config import (
+    _obtain_new_run_id,
     _update_default_config_from_config_register,
     _update_default_workspace_config_with,
 )
@@ -82,6 +83,7 @@ def _load_workspace_as_a_project(connect_daemon=False):
     success_flag = _load_workspace()  # init from config file
     if not success_flag:  # failed to load workspace config, exiting
         os._exit(255)
+    _obtain_new_run_id()  # obtain new run id
     extension._run_things_after_load_workspace()  # run things after init workspace
     if connect_daemon:
         daemon.connect()
