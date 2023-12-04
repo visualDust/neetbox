@@ -1,4 +1,4 @@
-name: Run pytest windows
+name: Run pytest
 
 on: ["pull_request","push"]
 
@@ -9,7 +9,7 @@ jobs:
       max-parallel: 3
       matrix:
         python-version: ["3.9","3.10","3.11"]
-        os: [windows-latest]
+        os: [ubuntu-latest, windows-latest]
     steps:
       #----------------------------------------------
       #       check-out repo and set-up python
@@ -45,9 +45,8 @@ jobs:
       #----------------------------------------------
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: |
-          poetry install --no-interaction --no-root
-        shell: cmd
+        run: poetry install --no-interaction --no-root
+
       #----------------------------------------------
       # install your root project, if required
       #----------------------------------------------
@@ -58,5 +57,5 @@ jobs:
       #----------------------------------------------
       - name: Run tests
         run: |
-          source .venv/bin/activate
+          source $VENV
           pytest tests/
