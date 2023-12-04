@@ -275,13 +275,21 @@ class Logger:
         return self
 
     def mention(
-        self, skip_writers=[], datetime_format=None, with_identifier=None, with_datetime=None
+        self,
+        mention_args=True,
+        mention_result=True,
+        skip_writers=[],
+        datetime_format=None,
+        with_identifier=None,
+        with_datetime=None,
     ):
-        def with_logging(func, skip_writers, datetime_format, with_identifier, with_datetime):
+        def with_logging(func):
             @functools.wraps(func)
             def _with_logging(*args, **kwargs):
                 self.log(
-                    f"Entering: {func.__name__}",
+                    f"Entering: {func.__name__}" + f", args={args}, kwargs={kwargs}"
+                    if mention_args
+                    else "",
                     prefix=f"mention",
                     skip_writers=skip_writers,
                     traceback=4,
@@ -294,7 +302,9 @@ class Logger:
                 except Exception as e:
                     raise e
                 self.log(
-                    f"Leaving: {func.__name__}, with returned value {result}",
+                    f"Leaving: {func.__name__}" + f", with returned value {result}"
+                    if mention_result
+                    else "",
                     prefix=f"mention",
                     skip_writers=skip_writers,
                     traceback=4,
@@ -306,13 +316,7 @@ class Logger:
 
             return _with_logging
 
-        return functools.partial(
-            with_logging,
-            skip_writers=skip_writers,
-            datetime_format=datetime_format,
-            with_identifier=with_identifier,
-            with_datetime=with_datetime,
-        )
+        return with_logging
 
     def console_banner(self, text, font: Optional[str] = None):
         from pyfiglet import Figlet, FigletFont
