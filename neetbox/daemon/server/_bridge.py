@@ -10,8 +10,9 @@ from typing import Dict
 from websocket_server import WebsocketServer
 
 from neetbox.daemon._protocol import *
-from neetbox.history import *
 from neetbox.logging import LogStyle, logger
+
+from .history import *
 
 __PROC_NAME = "NEETBOX SERVER"
 logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))

@@ -17,8 +17,9 @@ from flask import Response, abort, json, request, send_from_directory
 
 from neetbox.daemon._protocol import *
 from neetbox.daemon.server._bridge import Bridge
-from neetbox.history import *
 from neetbox.logging import LogStyle, logger
+
+from .history import *
 
 __PROC_NAME = "NEETBOX SERVER"
 logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))

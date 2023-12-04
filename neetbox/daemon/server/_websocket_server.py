@@ -14,8 +14,9 @@ from websocket_server import WebsocketServer
 
 from neetbox.daemon._protocol import *
 from neetbox.daemon.server._bridge import Bridge
-from neetbox.history import *
 from neetbox.logging import LogStyle, logger
+
+from .history import *
 
 console = Console()
 __PROC_NAME = "NEETBOX SERVER"
