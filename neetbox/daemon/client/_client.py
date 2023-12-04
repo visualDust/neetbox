@@ -9,7 +9,7 @@ import httpx
 import websocket
 
 import neetbox
-from neetbox.config import get_module_level_config
+from neetbox.config._config import get_module_level_config, get_run_id
 from neetbox.daemon._protocol import *
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
@@ -169,6 +169,7 @@ class ClientConn(metaclass=Singleton):
                 json.dumps(
                     {
                         PROJECT_ID_KEY: neetbox.WORKSPACE_ID,
+                        RUN_ID_KEY: get_run_id(),
                         EVENT_TYPE_NAME_KEY: event_type,
                         PAYLOAD_NAME_KEY: payload,
                         EVENT_ID_NAME_KEY: event_id,

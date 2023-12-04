@@ -49,6 +49,14 @@ def _obtain_new_run_id():
     return _DEFAULT_WORKSPACE_CONFIG["run-id"]
 
 
+def get_run_id():
+    if "run-id" not in _DEFAULT_WORKSPACE_CONFIG:
+        raise RuntimeError(
+            "no run id obtained. is this a neetbox workspace? run command line 'neet init' to initialize current folder as neetbox workspace."
+        )
+    return _DEFAULT_WORKSPACE_CONFIG["run-id"]
+
+
 def _update_dict_recursively(self: dict, the_other: dict):
     for _k, _v in the_other.items():
         if type(_v) is dict:  # currently resolving a dict child

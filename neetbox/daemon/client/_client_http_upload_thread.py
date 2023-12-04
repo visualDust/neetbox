@@ -5,12 +5,9 @@
 # Date:   20230414
 
 import json
-import time
-from threading import Thread
-from typing import Union
 
 import neetbox
-from neetbox.config import get_module_level_config
+from neetbox.config._config import get_module_level_config
 from neetbox.daemon.client._client import connection
 from neetbox.daemon.server._server import CLIENT_API_ROOT
 from neetbox.logging.formatting import LogStyle
@@ -27,6 +24,7 @@ def _add_upload_thread_to_watch(daemon_config, base_addr, workspace_id):
     @watch(interval=daemon_config["uploadInterval"], overwrite=True, initiative=False)
     def upload_via_http():
         # dump status as json
+        _data = _UPDATE_VALUE_DICT[SYSTEM_CHANNEL].copy()
         _data = json.dumps(_UPDATE_VALUE_DICT[SYSTEM_CHANNEL], default=str)
         _headers = {"Content-Type": "application/json"}
         try:
