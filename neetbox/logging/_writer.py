@@ -4,11 +4,12 @@ import json
 import os
 import pathlib
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Callable, Iterable, Optional, Union
 
-from rich import print as rprint
+from rich.console import Console
 
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
 from neetbox.utils import formatting
@@ -84,7 +85,7 @@ class RawLog:
                 if len(_whom) != 0:
                     _whom += _default_style.split_char_identity
                 _whom += id_seq[i]
-        return {"prefix": _prefix, "datetime": _datetime, "whom": _whom, "msg": self.rich_msg}
+        return {"series": _prefix, "datetime": _datetime, "whom": _whom, "msg": self.rich_msg}
 
     def __repr__(self) -> str:
         return json.dumps(self.json(), default=str)
@@ -93,19 +94,41 @@ class RawLog:
 # ================== CONSOLE LOG WRITER =====================
 
 
+class DefaultDictThatReturnsKeyOnMissing(defaultdict):
+    def __missing__(self, key):
+        return key
+
+
+_console_prefix_2_colored_text = DefaultDictThatReturnsKeyOnMissing(
+    str,
+    {
+        "ok": colored_text("[ok]", "green"),
+        "debug": colored_text("[debug]", "cyan"),
+        "info": colored_text("[info]", "white"),
+        "warning": colored_text("[warning]", "yellow"),
+        "mention": colored_text("[mention]", "yellow"),
+        "error": colored_text("[error]", "red"),
+    },
+)
+
+
 class __ConsoleLogWriter(LogWriter):
+    _console = Console()
+
     def write(self, raw_log: RawLog):
         _msg_dict = raw_log.json()
         _style = raw_log.style
+        _prefix = _msg_dict["series"]
+        _prefix = _console_prefix_2_colored_text[_prefix] + " " if _prefix else _prefix
         rich_msg = str(
-            _msg_dict["prefix"]
+            _prefix
             + _msg_dict["datetime"]
             + _style.split_char_cmd * min(len(_msg_dict["datetime"]), 1)
             + styled_text(_msg_dict["whom"], style=_style)
             + _style.split_char_cmd * min(len(_msg_dict["whom"]), 1)
             + _msg_dict["msg"]
         )
-        rprint(rich_msg)
+        self.__class__._console.print(rich_msg)
 
 
 # console writer singleton
@@ -146,7 +169,7 @@ class FileLogWriter(LogWriter):
         _msg_dict = raw_log.json()
         _style = raw_log.style
         text_msg = str(
-            _msg_dict["prefix"]
+            _msg_dict["series"]
             + _msg_dict["datetime"]
             + _style.split_char_txt * min(len(_msg_dict["datetime"]), 1)
             + _msg_dict["whom"]

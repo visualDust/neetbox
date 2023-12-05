@@ -1,0 +1,37 @@
+.log-item {
+  margin-bottom: 5px;
+  font-family: "Courier New", Courier, monospace;
+  white-space: pre-wrap;
+  font-size: 13px;
+
+  .log-tag {
+    display: inline-block;
+    --log-tag-bg-hs: 0, 0%;
+    --log-tag-bg-l: 80%;
+    background-color: hsl(var(--log-tag-bg-hs), var(--log-tag-bg-l));
+    padding: 0 3px;
+    border-radius: 5px;
+  }
+  .log-prefix-info {
+    --log-tag-bg-hs: 222, 80%;
+  }
+  .log-prefix-mention {
+    --log-tag-bg-hs: 190, 80%;
+  }
+  .log-prefix-ok {
+    --log-tag-bg-hs: 128, 80%;
+  }
+  .log-prefix-warning {
+    --log-tag-bg-hs: 55, 80%;
+  }
+  .log-prefix-debug {
+    --log-tag-bg-hs: 277, 80%;
+  }
+  .log-prefix-error {
+    --log-tag-bg-hs: 0, 80%;
+  }
+}
+
+[theme-mode="dark"] .log-item .log-tag {
+  --log-tag-bg-l: 30%;
+}

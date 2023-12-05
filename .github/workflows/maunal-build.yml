@@ -23,14 +23,14 @@ jobs:
         with:
           node-version: 18
           cache: "yarn"
-          cache-dependency-path: "neetbox/frontend/yarn.lock"
+          cache-dependency-path: "frontend/yarn.lock"
       - name: setup yarn
         run: corepack enable
-        working-directory: neetbox/frontend
+        working-directory: frontend
       - run: yarn install --frozen-lockfile
-        working-directory: neetbox/frontend
+        working-directory: frontend
       - run: yarn build
-        working-directory: neetbox/frontend
+        working-directory: frontend
       - name: Build and publish to pypi
         uses: JRubics/poetry-publish@v1.17
         with:

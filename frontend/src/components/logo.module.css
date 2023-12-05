@@ -1,0 +1,19 @@
+body {
+  --logo-glow-color: rgb(215, 76, 76);
+}
+
+body[theme-mode="dark"] {
+  --logo-glow-color: rgb(20, 76, 255);
+}
+
+.neet-logo-glow {
+  transition:
+    filter 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+  opacity: 0.7;
+}
+
+.neet-logo-glow:hover {
+  filter: drop-shadow(0 0 0.55rem var(--logo-glow-color));
+  opacity: 1;
+}
