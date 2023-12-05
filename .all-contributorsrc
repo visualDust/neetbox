@@ -21,6 +21,18 @@
         "infra",
         "maintenance"
       ]
+    },
+    {
+      "login": "lideming",
+      "name": "lideming",
+      "avatar_url": "https://avatars.githubusercontent.com/u/14901890?v=4",
+      "profile": "http://yuuza.net",
+      "contributions": [
+        "code",
+        "design",
+        "infra",
+        "maintenance"
+      ]
     }
   ]
 }
