@@ -56,7 +56,7 @@ run your code and visit https://localhost:20202 to see your dashboard.
 
 ## Contributors
 
-<a href = "https://github.com/Tanu-N-Prabhu/Python/graphs/contributors">
+<a href = "https://github.com/visualDust/neetbox/graphs/contributors">
   <img src = "https://contrib.rocks/image?repo=VisualDust/neetbox"/>
 </a>
 
