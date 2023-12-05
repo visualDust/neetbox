@@ -5,9 +5,9 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-import neetbox
 import neetbox.daemon as daemon_module
 from neetbox.config import get_module_level_config
+from neetbox.config._workspace import _init_workspace, _is_in_workspace, _load_workspace
 from neetbox.daemon.server._server import server_process
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
@@ -45,8 +45,8 @@ def main(ctx, verbose: bool):
 
 
 def _try_load_workspace_if_applicable():
-    if neetbox._is_in_workspace():
-        success = neetbox._load_workspace()
+    if _is_in_workspace():
+        success = _load_workspace()
         if not success:
             os._exit(255)
 
@@ -138,7 +138,7 @@ def shutdown_server(port):
 def init(name: str):
     """initialize current folder as workspace and generate the config file from defaults"""
     try:
-        if neetbox._init_workspace(name=name):
+        if _init_workspace(name=name):
             logger.console_banner("neetbox", font="ansishadow")
             logger.log("Welcome to NEETBOX")
     except Exception as e:

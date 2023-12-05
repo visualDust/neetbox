@@ -58,6 +58,10 @@ def get_run_id():
     return _DEFAULT_WORKSPACE_CONFIG["run-id"]
 
 
+def get_project_id():
+    return _DEFAULT_WORKSPACE_CONFIG["projectid"]
+
+
 def _update_dict_recursively(self: dict, the_other: dict):
     for _k, _v in the_other.items():
         if type(_v) is dict:  # currently resolving a dict child

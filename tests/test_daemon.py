@@ -1,7 +1,7 @@
 def test_neet_action():
     import time
 
-    from neetbox.frontend import NeetActionManager, action
+    from neetbox.client import NeetActionManager, action
 
     @action(name="some_func")
     def some(a, b):

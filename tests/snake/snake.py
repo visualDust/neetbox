@@ -2,7 +2,7 @@ from random import random
 from threading import Thread
 from time import sleep
 
-from neetbox.frontend import action
+from neetbox.client import action
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 

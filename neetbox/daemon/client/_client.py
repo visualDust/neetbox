@@ -8,8 +8,7 @@ from typing import Callable
 import httpx
 import websocket
 
-import neetbox
-from neetbox.config._config import get_module_level_config, get_run_id
+from neetbox.config._config import get_module_level_config, get_project_id, get_run_id
 from neetbox.daemon._protocol import *
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
@@ -109,11 +108,12 @@ class ClientConn(metaclass=Singleton):
         _ws_initialized = True
 
     def __on_ws_open(ws: websocket.WebSocketApp):
-        logger.ok(f"client websocket connected. sending handshake as '{neetbox.PROJECT_ID}'...")
+        project_id = get_project_id()
+        logger.ok(f"client websocket connected. sending handshake as '{project_id}'...")
         ws.send(  # send handshake request
             json.dumps(
                 {
-                    PROJECT_ID_KEY: neetbox.PROJECT_ID,
+                    PROJECT_ID_KEY: project_id,
                     RUN_ID_KEY: get_run_id(),
                     EVENT_TYPE_NAME_KEY: "handshake",
                     PAYLOAD_NAME_KEY: {"who": "cli"},
@@ -169,7 +169,7 @@ class ClientConn(metaclass=Singleton):
             ClientConn.__ws_client.send(
                 json.dumps(
                     {
-                        PROJECT_ID_KEY: neetbox.PROJECT_ID,
+                        PROJECT_ID_KEY: get_project_id(),
                         RUN_ID_KEY: get_run_id(),
                         EVENT_TYPE_NAME_KEY: event_type,
                         PAYLOAD_NAME_KEY: payload,
