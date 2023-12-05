@@ -49,6 +49,7 @@ pre-commit = ">=3.4.0"
 apiflask = "^2.0.2"
 opencv-python = "^4.8.1.78"
 pillow = "^10.1.0"
+coverage = "^7.3.2"
 
 [tool.poetry.extras]
 torch = ["torch", "torchvision", "torchaudio"]
