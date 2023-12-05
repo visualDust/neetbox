@@ -1,17 +1,26 @@
+# IDE files
 .vscode
 .pytest_cache
 .ignore
+
+# Python files
 __pycache__/
 dist/
-frontend_dist/
 poetry.lock
+
+# Frontend files
+node_modules
+frontend_dist/
+
+# test files
 test/optional
 build_and_reinstall_wheel.cmd
-node_modules
+
 # log files
 log
 for_debug.txt
 .neethistory/
 .neetory
 
+# others
 other/
