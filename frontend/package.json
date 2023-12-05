@@ -15,7 +15,7 @@
     "prettier": "prettier -w ."
   },
   "dependencies": {
-    "@douyinfe/semi-icons": "^2.47.1",
+    "@douyinfe/semi-icons": "^2.48.0",
     "@douyinfe/semi-ui": "^2.47.1",
     "@semi-bot/semi-theme-nyx-c": "^1.0.8",
     "echarts": "^5.4.3",
