@@ -66,4 +66,4 @@ jobs:
           source $VENV
           pytest --cov .
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@3
+        uses: codecov/codecov-action@v3
