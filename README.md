@@ -63,6 +63,7 @@ run your code and visit https://localhost:20202 to see your dashboard.
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://gavin.gong.host"><img src="https://avatars.githubusercontent.com/u/33346934?v=4?s=100" width="100px;" alt="Gavin Gong"/><br /><sub><b>Gavin Gong</b></sub></a><br /><a href="#projectManagement-visualDust" title="Project Management">📆</a> <a href="#code-visualDust" title="Code">💻</a> <a href="#doc-visualDust" title="Documentation">📖</a> <a href="#ideas-visualDust" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-visualDust" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-visualDust" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://yuuza.net"><img src="https://avatars.githubusercontent.com/u/14901890?v=4?s=100" width="100px;" alt="lideming"/><br /><sub><b>lideming</b></sub></a><br /><a href="#code-lideming" title="Code">💻</a> <a href="#design-lideming" title="Design">🎨</a> <a href="#infra-lideming" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-lideming" title="Maintenance">🚧</a></td>
     </tr>
   </tbody>
 </table>
