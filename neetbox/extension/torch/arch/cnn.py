@@ -43,9 +43,7 @@ def ConvNxN(
     )
 
 
-def SpatialSeparableConvNxN(
-    planes, kernel_size=3, padding=True, dilation=1, depthwise=False
-):
+def SpatialSeparableConvNxN(planes, kernel_size=3, padding=True, dilation=1, depthwise=False):
     """SpatialSeparableConvNxN
 
     Args:

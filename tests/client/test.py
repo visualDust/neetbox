@@ -115,8 +115,18 @@ def sys_exit():
 def send_image():
     from PIL import Image
 
-    with Image.open("logo.png") as logo_image:
-        impost(logo_image, name="logo")
+    with Image.open("weight_visualize_conv1_0_1.png") as logo_image:
+        impost(logo_image, name="weights visualize")
+
+
+@logger.mention()
+def test_mention(text: str):
+    return text
+
+
+@action()
+def run_test_mention(text: str):
+    test_mention(text)
 
 
 for i in range(99999):

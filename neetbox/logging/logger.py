@@ -274,11 +274,47 @@ class Logger:
                 Logger._console.print_exception(err)
         return self
 
-    def mention(self, func):
-        @functools.wraps(func)
-        def with_logging(*args, **kwargs):
-            self.log(f"Currently running: {func.__name__}", traceback=3)
-            return func(*args, **kwargs)
+    def mention(
+        self,
+        mention_args=True,
+        mention_result=True,
+        skip_writers=[],
+        datetime_format=None,
+        with_identifier=None,
+        with_datetime=None,
+    ):
+        def with_logging(func):
+            @functools.wraps(func)
+            def _with_logging(*args, **kwargs):
+                self.log(
+                    f"Entering: {func.__name__}" + f", args={args}, kwargs={kwargs}"
+                    if mention_args
+                    else "",
+                    prefix=f"mention",
+                    skip_writers=skip_writers,
+                    traceback=4,
+                    datetime_format=datetime_format,
+                    with_identifier=with_identifier,
+                    with_datetime=with_datetime,
+                )
+                try:
+                    result = func(*args, **kwargs)
+                except Exception as e:
+                    raise e
+                self.log(
+                    f"Leaving: {func.__name__}" + f", with returned value {result}"
+                    if mention_result
+                    else "",
+                    prefix=f"mention",
+                    skip_writers=skip_writers,
+                    traceback=4,
+                    datetime_format=datetime_format,
+                    with_identifier=with_identifier,
+                    with_datetime=with_datetime,
+                )
+                return result
+
+            return _with_logging
 
         return with_logging
 

@@ -235,7 +235,7 @@ class DBConnection:
 
     def _execute(self, query, *args, fetch: FetchType = None, save_immediately=True, **kwargs):
         cur = self.connection.cursor()
-        logger.info(f"executing sql='{query}', params={args}")
+        # logger.info(f"executing sql='{query}', params={args}")
         result = cur.execute(query, args)
         if fetch:
             if fetch == FetchType.ALL:
@@ -248,9 +248,17 @@ class DBConnection:
             self.connection.commit()
         return result, cur.lastrowid
 
+    def _query(self, query, *args, fetch: FetchType = None, **kwargs):
+        return self._execute(query=query, *args, fetch=fetch, save_immediately=False, **kwargs)
+
+    def table_exist(self, table_name):
+        sql_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
+        result, _ = self._query(sql_query, fetch=FetchType.ALL)
+        return result != []
+
     def get_table_names(self):
         sql_query = "SELECT name FROM sqlite_master;"
-        table_names, _ = self._execute(sql_query, fetch=FetchType.ALL)
+        table_names, _ = self._query(sql_query, fetch=FetchType.ALL)
         return table_names
 
     def fetch_db_version(self, default=None):
@@ -259,7 +267,7 @@ class DBConnection:
             self._execute(sql_query)
             self._inited_tables[VERSION_TABLE_NAME] = True
         sql_query = f"SELECT {VERSION_TABLE_NAME} FROM {VERSION_TABLE_NAME}"
-        _version, _ = self._execute(sql_query, fetch=FetchType.ONE)
+        _version, _ = self._query(sql_query, fetch=FetchType.ONE)
         if _version is None:
             if default is None:
                 raise RuntimeError(
@@ -276,7 +284,7 @@ class DBConnection:
             self._execute(sql_query)
             self._inited_tables[PROJECT_ID_TABLE_NAME] = True
         sql_query = f"SELECT {PROJECT_ID_TABLE_NAME} FROM {PROJECT_ID_TABLE_NAME}"
-        _projectid, _ = self._execute(sql_query, fetch=FetchType.ONE)
+        _projectid, _ = self._query(sql_query, fetch=FetchType.ONE)
         if _projectid is None:
             if default is None:
                 raise RuntimeError(
@@ -293,7 +301,7 @@ class DBConnection:
             self._execute(sql_query)
             self._inited_tables[RUN_IDS_TABLE_NAME] = True
         sql_query = f"SELECT {ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {RUN_ID_COLUMN_NAME} == '{run_id}'"
-        _id, _ = self._execute(sql_query, fetch=FetchType.ONE)
+        _id, _ = self._query(sql_query, fetch=FetchType.ONE)
         if _id is None:
             timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
             sql_query = f"INSERT INTO {RUN_IDS_TABLE_NAME}({RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}) VALUES (?, ?)"
@@ -303,17 +311,20 @@ class DBConnection:
 
     def run_id_of_id(self, id_of_run_id):
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
-        run_id, _ = self._execute(sql_query, fetch=FetchType.ONE)
+        run_id, _ = self._query(sql_query, fetch=FetchType.ONE)
         return run_id[0]
 
     def get_run_ids(self):
-        sql_query = f"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{RUN_IDS_TABLE_NAME}';"  # check if run id table exist
-        result, _ = self._execute(sql_query)
-        if not result:
+        if not self.table_exist(RUN_IDS_TABLE_NAME):
             raise RuntimeError("should not get run id of id before run id table creation")
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME},{TIMESTAMP_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
-        result, _ = self._execute(sql_query)
+        result, _ = self._query(sql_query)
         result = [{run_id: timestamp} for run_id, timestamp in result]
+        return result
+
+    def get_series_of_table(self, table_name):
+        sql_query = f"SELECT DISTINCT series FROM {table_name}"
+        result, _ = self._query(sql_query, fetch=FetchType.ALL)
         return result
 
     def write_json(
@@ -382,11 +393,13 @@ class DBConnection:
         return lastrowid
 
     def read_json(self, table_name: str, condition: QueryCondition = None):
+        if not self.table_exist(table_name):
+            return []
         if condition.run_id:
             condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
-        result, _ = self._execute(sql_query, fetch=FetchType.ALL)
+        result, _ = self._query(sql_query, fetch=FetchType.ALL)
         try:
             result = [
                 {ID_COLUMN_NAME: x, TIMESTAMP_COLUMN_NAME: y, JSON_COLUMN_NAME: json.loads(z)}
@@ -398,16 +411,13 @@ class DBConnection:
         return result
 
     def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
+        if not self.table_exist(table_name):
+            return []
         if condition.run_id:
             condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
-        result, _ = self._execute(sql_query, fetch=FetchType.ALL)
-        return result
-
-    def get_series_of_table(self, table_name):
-        sql_query = f"SELECT DISTINCT series FROM {table_name}"
-        result, _ = self._execute(sql_query, fetch=FetchType.ALL)
+        result, _ = self._query(sql_query, fetch=FetchType.ALL)
         return result
 
 
