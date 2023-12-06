@@ -6,15 +6,15 @@ const server = new URL("http://127.0.0.1:5000");
 
 export default defineConfig({
   plugins: [pluginReact()],
-  // tools: {
-  //   rspack: (config) => {
-  //     config.plugins!.push(
-  //       new SemiRspackPlugin({
-  //         theme: "@semi-bot/semi-theme-nyx-c",
-  //       }),
-  //     );
-  //   },
-  // },
+  tools: {
+    rspack: (config) => {
+      config.plugins!.push(
+        new SemiRspackPlugin({
+          theme: "@semi-bot/semi-theme-nyx-c",
+        }),
+      );
+    },
+  },
   source: {
     entry: { index: "./src/main.tsx" },
   },
