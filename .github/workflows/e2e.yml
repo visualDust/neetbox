@@ -65,7 +65,7 @@ jobs:
         working-directory: frontend
 
       - name: Upload screenshots
-        uses: actions/upload-artifact@latest
+        uses: actions/upload-artifact@v3
         if: always()
         with:
           name: logs-and-snapshots
