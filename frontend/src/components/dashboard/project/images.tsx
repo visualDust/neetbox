@@ -95,7 +95,7 @@ const InputChangeOnEnter: typeof Input = memo(({ value, onChange, ...props }) =>
       onChange={(x) => setTemp(x)}
       onKeyDown={(e) => {
         if (e.key == "Enter") {
-          onChange?.(temp as any, e);
+          onChange?.(temp as any, e as any);
         }
       }}
     />

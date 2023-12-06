@@ -4,7 +4,8 @@
 cd $(dirname $0)/..
 
 tmux new-session -d -s neetbox
-tmux send 'python neetbox/_daemon/server/_server.py' ENTER
+tmux send 'cd tests/client' ENTER
+tmux send 'neet serve' ENTER
 tmux split-window -h
 tmux send 'cd tests/client' ENTER
 tmux send 'python test.py' ENTER
