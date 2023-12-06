@@ -49,6 +49,7 @@ describe("test dashboard", () => {
   it("can add images", () => {
     cy.contains("button", "send_image").click();
     cy.contains("button", "Run").click().type("{esc}");
+    cy.wait(1000);
     const imgs = () => cy.contains("h3", "Images").parent().next();
     imgs()
       .find("img")

@@ -1,4 +1,3 @@
-import { Notification as SemiNotification } from "@douyinfe/semi-ui";
 import { BetterAtom } from "../utils/betterAtom";
 import { fetcher } from "./api";
 import { WsClient } from "./projectWebsocket";

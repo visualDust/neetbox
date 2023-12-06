@@ -151,7 +151,7 @@ class QueryCondition:
         # === series condition ===
         _series_cond = ""
         if self.series:
-            _series_cond = f"{SERIES_COLUMN_NAME} == {self.series}"
+            _series_cond = f"{SERIES_COLUMN_NAME} == '{self.series}'"
         # === run-id condition ===
         _run_id_cond = ""
         if self.run_id:
@@ -325,7 +325,7 @@ class DBConnection:
     def get_series_of_table(self, table_name):
         sql_query = f"SELECT DISTINCT series FROM {table_name}"
         result, _ = self._query(sql_query, fetch=FetchType.ALL)
-        return result
+        return [result for (result,) in result]
 
     def write_json(
         self,
