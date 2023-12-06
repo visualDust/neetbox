@@ -3,11 +3,10 @@ name: Frontend Build & Lint
 on:
   push:
     paths:
-      - 'frontend/**'
+      - "frontend/**"
   pull_request:
     paths:
-      - 'frontend/**'
-
+      - "frontend/**"
 
 jobs:
   build:
@@ -20,15 +19,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'yarn'
-          cache-dependency-path: 'frontend/yarn.lock'
+          cache: "yarn"
+          cache-dependency-path: "frontend/yarn.lock"
       - name: setup yarn
         run: corepack enable
       - run: yarn install --frozen-lockfile
       - run: yarn build
       - run: yarn tsc
-        if: '!cancelled()'
+        if: "!cancelled()"
       - run: yarn lint
-        if: '!cancelled()'
+        if: "!cancelled()"
       - run: yarn prettier-check
-        if: '!cancelled()'
+        if: "!cancelled()"

@@ -12,7 +12,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 20",
     "preview": "vite preview",
     "prettier-check": "prettier -c .",
-    "prettier": "prettier -w ."
+    "prettier": "prettier -w .",
+    "e2e": "cypress run --headed",
+    "e2e:ci": "cypress run"
   },
   "dependencies": {
     "@douyinfe/semi-icons": "^2.47.1",
@@ -30,7 +32,6 @@
   },
   "devDependencies": {
     "@douyinfe/semi-rspack-plugin": "^2.48.0",
-    "@douyinfe/semi-webpack-plugin": "^2.48.0",
     "@rsbuild/core": "^0.1.8",
     "@rsbuild/plugin-react": "^0.1.8",
     "@types/react": "^18.2.37",
@@ -50,5 +51,6 @@
   "prettier": {
     "trailingComma": "all",
     "printWidth": 110
-  }
+  },
+  "packageManager": "yarn@4.0.2"
 }
