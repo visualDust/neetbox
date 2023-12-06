@@ -9,10 +9,10 @@ import locale
 import platform
 import subprocess
 
+import neetbox
+from neetbox.client._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.config import export_default_config, get_module_level_config
 from neetbox.extension import on_workspace_loaded
-from neetbox.pipeline import watch
-from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils.mvc import Singleton
 
 

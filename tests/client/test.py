@@ -5,21 +5,20 @@ from time import sleep
 
 import neetbox
 from neetbox.logging import logger
-from neetbox.pipeline import listen, watch
 
 
-@watch("train", initiative=True)
+@neetbox.watch("train", initiative=True)
 def train(epoch):
     loss, acc = random(), random()
     return {"loss": loss, "acc": acc}
 
 
-@listen("train")
+@neetbox.listen("train")
 def print_to_console(metrix):
     logger.log(f"metrix from train: {metrix}")
 
 
-@watch("log-some-prefix", initiative=False, interval=5.0)
+@neetbox.watch("log-some-prefix", initiative=False, interval=5.0)
 def log_with_some_prefix():
     logger.ok("some ok")
     logger.info("some info")
