@@ -12,7 +12,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 20",
     "preview": "vite preview",
     "prettier-check": "prettier -c .",
-    "prettier": "prettier -w ."
+    "prettier": "prettier -w .",
+    "e2e": "cypress run --headed",
+    "e2e:ci": "cypress run"
   },
   "dependencies": {
     "@douyinfe/semi-icons": "^2.47.1",
