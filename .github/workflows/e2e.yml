@@ -55,10 +55,11 @@ jobs:
         run: |
           source $VENV
           mkdir logs
-          python neetbox/daemon/server/_server.py &> logs/server.log &
+          LOGS_DIR=$(pwd)/logs
+          python neetbox/daemon/server/_server.py &> $LOGS_DIR/server.log &
           sleep 3
           cd tests/client
-          python test.py &> logs/client.log &
+          python test.py &> $LOGS_DIR/client.log &
 
       - name: Run e2e tests
         run: yarn run e2e:ci
