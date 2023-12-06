@@ -53,9 +53,10 @@ jobs:
 
       - name: Start test project
         run: |
+          source $VENV
           python neetbox/daemon/server/_server.py &
           sleep 1
-          cd neetbox/tests/client
+          cd tests/client
           python test.py &
 
       - name: Run e2e tests
