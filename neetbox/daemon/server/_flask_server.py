@@ -37,7 +37,7 @@ def get_flask_server(debug=False):
 
         app = Flask(__PROC_NAME)
 
-        front_end_dist_path = os.path.join(os.path.dirname(__file__), "../../frontend_dist")
+    front_end_dist_path = os.path.join(os.path.dirname(__file__), "../../frontend_dist")
 
     @app.route("/")
     def static_serve_root():

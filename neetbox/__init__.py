@@ -1,16 +1,17 @@
 import os
 import sys
 
-import neetbox.daemon as daemon
-import neetbox.extension as extension  # DO NOT remove this import
-from neetbox.client import action, add_image
-from neetbox.config import get_module_level_config
-
 
 def _load_workspace(connect_daemon=True):
+    from neetbox.config import get_module_level_config
+
     get_module_level_config()  # run things after init workspace
+    import neetbox.extension as extension
+
     extension._init_extensions()
     if connect_daemon:
+        import neetbox.daemon as daemon
+
         daemon.connect()
 
 
@@ -24,5 +25,7 @@ if len(sys.argv) > 0 and sys.argv[0].endswith("neet") or is_in_daemon_process:
 else:
     _load_workspace(connect_daemon=True)
 
+from neetbox.client import action, add_image
+from neetbox.logging import logger
 
 __all__ = ["add_image", "action", "logger"]
