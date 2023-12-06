@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'NEETBOX',
-  tagline: 'Deeplearning researchers\' code snippets',
+  tagline: 'Logging/Debugging/Tracing/Managing/Facilitating long running python projects, especially a replacement of tensorboard for deep learning projects.',
   favicon: 'img/favicon.png',
 
   // Set the production url of your site here
@@ -64,15 +64,15 @@ const config = {
         },
         items: [
           {
-            to: '/docs/guide',
-            activeBasePath: '/docs/guide',
-            label: 'Try NeetBox',
+            to: '/docs/howto',
+            activeBasePath: '/docs/howto',
+            label: 'How To',
             position: 'left'
           },
           {
-            to: '/docs/develop',
-            activeBasePath: '/docs/develop',
-            label: 'Develop',
+            to: '/docs/guide',
+            activeBasePath: '/docs/guide',
+            label: 'Doc',
             position: 'left'
           },
           {

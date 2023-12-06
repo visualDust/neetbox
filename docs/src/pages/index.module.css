@@ -21,3 +21,23 @@
   align-items: center;
   justify-content: center;
 }
+
+.features {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+.feature-card {
+  background-color: var(--ifm-color-emphasis-100);
+  box-shadow: 3px 3px 10px #0008;
+  border-radius: 19px;
+  padding: 20px;
+  margin-bottom: 20px !important;
+}
+
+.feature-card-text {
+  color: var(--ifm-color-content-secondary);
+  font-style: italic;
+}
