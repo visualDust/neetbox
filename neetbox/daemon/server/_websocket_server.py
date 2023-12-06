@@ -138,20 +138,6 @@ def get_web_socket_server(config, debug=False):
             console.print(table)
         return
 
-    def on_event_type_log(client, server, message_dict, message):
-        # forward log to frontend. logs should only be sent by cli and only be received by frontends
-        project_id = message_dict[PROJECT_ID_KEY]
-        if not Bridge.has(project_id):
-            # project id must exist
-            # drop anyway if not exist
-            if debug:
-                console.log(f"handle log. {project_id} not found.")
-            return
-        bridge = Bridge.of_id(project_id)
-        bridge.ws_send_to_frontends(message)  # forward to frontends
-        bridge.save_json_to_history(table_name="log", json_data=message)
-        return  # return after handling log forwarding
-
     def on_event_type_action(client, server, message_dict, message):
         project_id = message_dict[PROJECT_ID_KEY]
         _, _who = connected_clients[client["id"]]  # check if is web or cli
@@ -161,6 +147,44 @@ def get_web_socket_server(config, debug=False):
         else:  # _who == 'cli', client send action result back to frontend(s)
             bridge.ws_send_to_frontends(message=message)
         return  # return after handling action forwarding
+
+    def on_event_type_json(
+        message_dict, message, event_type_name: str = None, forward: str = None, save_history=True
+    ):
+        # forward log to frontend. logs should only be sent by cli and only be received by frontends
+        project_id = message_dict[PROJECT_ID_KEY]
+        event_type_name = event_type_name or message_dict[EVENT_TYPE_NAME_KEY]
+        if not Bridge.has(project_id):
+            # project id must exist
+            # drop anyway if not exist
+            if debug:
+                console.log(f"handle {event_type_name}. {project_id} not found.")
+            return
+        bridge = Bridge.of_id(project_id)
+        if forward:
+            if "web" == forward:
+                bridge.ws_send_to_frontends(message)  # forward to frontends
+            elif "cli" == forward:
+                bridge.ws_send_to_client(message)  # forward to frontends
+        if save_history:
+            bridge.save_json_to_history(table_name=event_type_name, json_data=message)
+        return  # return after handling log forwarding
+
+    def on_event_type_log(message_dict, message):
+        return on_event_type_json(
+            message_dict=message_dict,
+            message=message,
+            forward="web",
+            save_history=True,
+        )
+
+    def on_event_type_scatter(message_dict, message):
+        return on_event_type_json(
+            message_dict=message_dict,
+            message=message,
+            forward="web",
+            save_history=True,
+        )
 
     def handle_ws_message(client, server: WebsocketServer, message):
         message_dict = json.loads(message)
@@ -174,9 +198,9 @@ def get_web_socket_server(config, debug=False):
         if client["id"] not in connected_clients:
             return  # !!! not handling messages from cli/web without handshake. handshake is aspecial   case and should be handled anyway before this check.
         if _event_type == "log":  # handle log
-            on_event_type_log(
-                client=client, server=server, message_dict=message_dict, message=message
-            )
+            on_event_type_log(message_dict=message_dict, message=message)
+        elif _event_type == "scatter":
+            on_event_type_scatter(message_dict=message_dict, message=message)
         elif _event_type == "action":
             on_event_type_action(
                 client=client, server=server, message_dict=message_dict, message=message

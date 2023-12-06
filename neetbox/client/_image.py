@@ -5,13 +5,12 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from neetbox import PROJECT_ID
-from neetbox.config._config import get_run_id
+from neetbox.config._config import get_project_id, get_run_id
 from neetbox.daemon._protocol import *
 from neetbox.daemon.client._client import connection
 
 
-def impost(image: Union[np.array, Image.Image], name: str):
+def add_image(name: str, image: Union[np.array, Image.Image]):
     """send an image to frontend display
 
     Args:
@@ -27,8 +26,9 @@ def impost(image: Union[np.array, Image.Image], name: str):
             image.save(image_bytes_stream, format="PNG")
             image_bytes = image_bytes_stream.getvalue()
     # send bytes
+    project_id = get_project_id()
     connection.post(
-        api=f"/image/{PROJECT_ID}",
-        data={PROJECT_ID_KEY: PROJECT_ID, "series": name, "run-id": get_run_id()},
+        api=f"/image/{project_id}",
+        data={PROJECT_ID_KEY: project_id, "series": name, "run-id": get_run_id()},
         files={"image": image_bytes},
     )

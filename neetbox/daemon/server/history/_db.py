@@ -344,7 +344,6 @@ class DBConnection:
         run_id = _json_dict[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in _json_dict else run_id
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
-
         if not self._inited_tables[table_name]:  # create if there is no version table
             sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {JSON_COLUMN_NAME} TEXT NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
             self._execute(sql_query)

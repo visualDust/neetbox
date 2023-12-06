@@ -3,7 +3,7 @@ import time
 from random import random
 from time import sleep
 
-from neetbox.frontend import action, impost
+import neetbox
 from neetbox.logging import logger
 from neetbox.pipeline import listen, watch
 
@@ -28,14 +28,14 @@ def log_with_some_prefix():
     logger.err("some error")
 
 
-@action()
+@neetbox.action()
 def log_perf_test(interval: int, count: int):
     for i in range(count):
         sleep(interval)
         logger.info(f"log_perf_test {i + 1}/{count}")
 
 
-@action(name="action-1")
+@neetbox.action(name="action-1")
 def action_1(text: str):
     """take action 1
 
@@ -46,19 +46,19 @@ def action_1(text: str):
     logger.log(f"action 1 triggered. text = {text}")
 
 
-@action()
+@neetbox.action()
 def action_bool(enable: bool):
     logger.info(f"action_bool triggered. enable = {enable}")
     return {"enable": enable}
 
 
-@action()
+@neetbox.action()
 def action_very_long_name(arg_with_very_long_long_name: int):
     return {"very_long_long_result_key": arg_with_very_long_long_name}
 
 
 def def_plus_1(val):
-    @action(name="plus1", description=f"val={val}")
+    @neetbox.action(name="plus1", description=f"val={val}")
     def plus_1():
         def_plus_1(val + 1)
 
@@ -66,26 +66,26 @@ def def_plus_1(val):
 def_plus_1(0)
 
 
-@action(name="action-2")
+@neetbox.action(name="action-2")
 def action_2(text1, text2):
     logger.log(f"action 2 triggered. text1 = {text1}, text2 = {text2}")
 
 
-@action(name="wait-for-sec", blocking=False)
+@neetbox.action(name="wait-for-sec", blocking=False)
 def wait_for_sec(sec):
     sec = int(sec)
     logger.log(f"wait for {sec} sec.")
     time.sleep(sec)
 
 
-@action(name="block-for-sec", blocking=True)
+@neetbox.action(name="block-for-sec", blocking=True)
 def block_for_sec(sec):
     sec = int(sec)
     logger.log(f"block for {sec} sec.")
     time.sleep(sec)
 
 
-@action(name="eval")
+@neetbox.action(name="eval")
 def eval_code(code: str):
     logger.log(f"running code {code}")
     logger.info("eval result: ", eval(code))
@@ -94,29 +94,29 @@ def eval_code(code: str):
 _id_indexer = 0
 
 
-@action()
+@neetbox.action()
 def new_action(id: int):
     global _id_indexer
 
-    @action(name=f"new_action_{_id_indexer}")
+    @neetbox.action(name=f"new_action_{_id_indexer}")
     def action_():
         pass
 
     _id_indexer += 1
 
 
-@action(name="shutdown", description="shutdown your process", blocking=True)
+@neetbox.action(name="shutdown", description="shutdown your process", blocking=True)
 def sys_exit():
     logger.log("shutdown received, shutting down immediately.")
     os._exit(0)
 
 
-@action()
+@neetbox.action()
 def send_image():
     from PIL import Image
 
     with Image.open("weight_visualize_conv1_0_1.png") as logo_image:
-        impost(logo_image, name="weights visualize")
+        neetbox.add_image(logo_image, name="weights visualize")
 
 
 @logger.mention()
@@ -124,7 +124,7 @@ def test_mention(text: str):
     return text
 
 
-@action()
+@neetbox.action()
 def run_test_mention(text: str):
     test_mention(text)
 

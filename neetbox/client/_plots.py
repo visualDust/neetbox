@@ -1,4 +1,11 @@
-# def scatter(image: Union[np.array, Image.Image], name: str):
+# import io
+# from typing import Union
+# from neetbox.config._config import get_run_id, get_project_id
+# from neetbox.daemon._protocol import *
+# from neetbox.daemon.client._client import connection
+
+
+# def scatter(name: str, x: Union[int, float], y: Union[int, float]):
 #     """send an image to frontend display
 
 #     Args:

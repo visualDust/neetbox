@@ -7,7 +7,7 @@
 import json
 
 import neetbox
-from neetbox.config._config import get_module_level_config, get_run_id
+from neetbox.config._config import get_module_level_config, get_project_id, get_run_id
 from neetbox.daemon._protocol import *
 from neetbox.daemon.client._client import connection
 from neetbox.logging.formatting import LogStyle
@@ -59,7 +59,7 @@ def connect_daemon(cfg=None, launch_upload_thread=True):
         return False
 
     if launch_upload_thread:
-        _add_upload_thread_to_watch(daemon_config=_cfg, project_id=neetbox.PROJECT_ID)
+        _add_upload_thread_to_watch(daemon_config=_cfg, project_id=get_project_id())
 
     connection._init_ws()
     return True
