@@ -54,11 +54,21 @@ jobs:
       - name: Start test project
         run: |
           source $VENV
-          python neetbox/daemon/server/_server.py &
-          sleep 1
+          mkdir logs
+          python neetbox/daemon/server/_server.py &> logs/server.log &
+          sleep 3
           cd tests/client
-          python test.py &
+          python test.py &> logs/client.log &
 
       - name: Run e2e tests
         run: yarn run e2e:ci
         working-directory: frontend
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@latest
+        if: always()
+        with:
+          name: logs-and-snapshots
+          path: |
+            frontend/cypress/screenshots/*
+            logs/*
