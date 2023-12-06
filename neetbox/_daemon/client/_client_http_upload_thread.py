@@ -7,9 +7,9 @@
 import json
 
 import neetbox
+from neetbox._daemon._protocol import *
+from neetbox._daemon.client._client import connection
 from neetbox.config import get_module_level_config, get_project_id
-from neetbox.daemon._protocol import *
-from neetbox.daemon.client._client import connection
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.pipeline._signal_and_slot import _UPDATE_VALUE_DICT, SYSTEM_CHANNEL, watch

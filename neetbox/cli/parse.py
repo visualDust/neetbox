@@ -5,14 +5,14 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-import neetbox.daemon as daemon_module
+import neetbox._daemon as daemon_module
+from neetbox._daemon.server._server import server_process
 from neetbox.config._workspace import (
     _check_if_workspace_config_valid,
     _get_module_level_config,
     _init_workspace,
     _load_workspace_config,
 )
-from neetbox.daemon.server._server import server_process
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 

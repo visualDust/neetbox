@@ -8,8 +8,8 @@ from typing import Callable
 import httpx
 import websocket
 
+from neetbox._daemon._protocol import *
 from neetbox.config import get_module_level_config, get_project_id, get_run_id
-from neetbox.daemon._protocol import *
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.utils.mvc import Singleton

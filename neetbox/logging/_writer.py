@@ -185,7 +185,7 @@ class FileLogWriter(LogWriter):
 
 class _WebSocketLogWriter(LogWriter):
     # class level statics
-    connection = None  # connection should be assigned by neetbox.daemon.client._client to avoid recursive import
+    connection = None  # connection should be assigned by neetbox._daemon.client._client to avoid recursive import
 
     def write(self, raw_log: RawLog):
         json_data = raw_log.json()

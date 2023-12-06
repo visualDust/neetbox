@@ -9,7 +9,7 @@ from typing import Dict
 
 from websocket_server import WebsocketServer
 
-from neetbox.daemon._protocol import *
+from neetbox._daemon._protocol import *
 from neetbox.logging import LogStyle, logger
 
 from .history import *

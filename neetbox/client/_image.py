@@ -5,9 +5,9 @@ import cv2
 import numpy as np
 from PIL import Image
 
+from neetbox._daemon._protocol import *
+from neetbox._daemon.client._client import connection
 from neetbox.config import get_project_id, get_run_id
-from neetbox.daemon._protocol import *
-from neetbox.daemon.client._client import connection
 
 
 def add_image(name: str, image: Union[np.array, Image.Image]):

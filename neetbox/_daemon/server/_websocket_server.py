@@ -12,8 +12,8 @@ from rich.console import Console
 from rich.table import Table
 from websocket_server import WebsocketServer
 
-from neetbox.daemon._protocol import *
-from neetbox.daemon.server._bridge import Bridge
+from neetbox._daemon._protocol import *
+from neetbox._daemon.server._bridge import Bridge
 from neetbox.logging import LogStyle, logger
 
 from .history import *

@@ -10,9 +10,9 @@ def _load_workspace(connect_daemon=True):
 
     extension._init_extensions()
     if connect_daemon:
-        import neetbox.daemon as daemon
+        import neetbox._daemon as _daemon
 
-        daemon.connect()
+        _daemon.connect()
 
 
 is_in_daemon_process = (

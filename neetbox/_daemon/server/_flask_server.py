@@ -15,8 +15,8 @@ werkzeug_log = logging.getLogger("werkzeug")
 werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 from flask import Response, abort, json, request, send_from_directory
 
-from neetbox.daemon._protocol import *
-from neetbox.daemon.server._bridge import Bridge
+from neetbox._daemon._protocol import *
+from neetbox._daemon.server._bridge import Bridge
 from neetbox.logging import LogStyle, logger
 
 from .history import *

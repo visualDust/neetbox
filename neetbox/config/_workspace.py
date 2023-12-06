@@ -204,6 +204,7 @@ def _get_module_level_config(module: Union[str, types.ModuleType] = None, **kwar
             # skip 'neetbox'
             sub_module_names.pop(0)
         for sub_module in sub_module_names:
+            sub_module = sub_module.removeprefix("_").removesuffix("_")
             if sub_module not in the_config:
                 return the_config
             the_config = the_config[sub_module]

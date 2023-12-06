@@ -2,7 +2,7 @@ import argparse
 import json
 import sys
 
-from neetbox.daemon.server._server import server_process
+from neetbox._daemon.server._server import server_process
 
 # sys.stdout=open(r'D:\Projects\ML\neetbox\logdir\daemon.log', 'a+')
 
