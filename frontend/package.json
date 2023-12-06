@@ -11,8 +11,8 @@
     "tsc": "tsc",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 20",
     "preview": "vite preview",
-    "prettier-check": "prettier -c .",
-    "prettier": "prettier -w .",
+    "prettier-check": "prettier -c . !.yarn",
+    "prettier": "prettier -w . !.yarn",
     "e2e": "cypress run --headed",
     "e2e:ci": "cypress run"
   },
