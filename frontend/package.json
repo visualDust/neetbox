@@ -32,7 +32,6 @@
   },
   "devDependencies": {
     "@douyinfe/semi-rspack-plugin": "^2.48.0",
-    "@douyinfe/semi-webpack-plugin": "^2.48.0",
     "@rsbuild/core": "^0.1.8",
     "@rsbuild/plugin-react": "^0.1.8",
     "@types/react": "^18.2.37",
@@ -52,5 +51,6 @@
   "prettier": {
     "trailingComma": "all",
     "printWidth": 110
-  }
+  },
+  "packageManager": "yarn@4.0.2"
 }
