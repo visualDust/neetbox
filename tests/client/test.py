@@ -116,7 +116,7 @@ def send_image():
     from PIL import Image
 
     with Image.open("weight_visualize_conv1_0_1.png") as logo_image:
-        neetbox.add_image(logo_image, name="weights visualize")
+        neetbox.add_image(name="weights visualize", image=logo_image)
 
 
 @logger.mention()

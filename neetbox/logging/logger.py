@@ -6,10 +6,10 @@
 
 import functools
 import os
-from datetime import date, datetime
+from datetime import date
 from enum import Enum
 from random import randint
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from rich.console import Console
 from rich.panel import Panel
@@ -22,7 +22,7 @@ from neetbox.logging._writer import (
     consoleLogWriter,
     webSocketLogWriter,
 )
-from neetbox.logging.formatting import LogStyle, colored_text, styled_text
+from neetbox.logging.formatting import LogStyle
 from neetbox.utils.framing import get_caller_identity_traceback
 
 

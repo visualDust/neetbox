@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from neetbox.config._config import get_project_id, get_run_id
+from neetbox.config import get_project_id, get_run_id
 from neetbox.daemon._protocol import *
 from neetbox.daemon.client._client import connection
 
