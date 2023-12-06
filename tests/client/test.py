@@ -21,13 +21,13 @@ def print_to_console(metrix):
     logger.log(f"metrix from train: {metrix}")
 
 
-# @neetbox.watch("log-some-prefix", initiative=False, interval=5.0)
-# def log_with_some_prefix():
-#     logger.ok("some ok")
-#     logger.info("some info")
-#     logger.debug("some debug")
-#     logger.warn("some warn")
-#     logger.err("some error")
+@neetbox.watch("log-some-prefix", initiative=False, interval=5.0)
+def log_with_some_prefix():
+    logger.ok("some ok")
+    logger.info("some info")
+    logger.debug("some debug")
+    logger.warn("some warn")
+    logger.err("some error")
 
 
 @neetbox.action()

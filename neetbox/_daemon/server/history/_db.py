@@ -323,6 +323,8 @@ class DBConnection:
         return result
 
     def get_series_of_table(self, table_name):
+        if not self.table_exist(table_name):
+            return []
         sql_query = f"SELECT DISTINCT series FROM {table_name}"
         result, _ = self._query(sql_query, fetch=FetchType.ALL)
         return [result for (result,) in result]
