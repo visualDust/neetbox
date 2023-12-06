@@ -4,9 +4,6 @@ import { IconAlignBottom } from "@douyinfe/semi-icons";
 import { LogData } from "../../../../services/types";
 import "./logs.css";
 import { useCurrentProject, useProjectLogs } from "../../../../hooks/useProject";
-interface Props {
-  projectId: string;
-}
 
 function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: React.CSSProperties }>) {
   const containerRef = useRef<HTMLDivElement>(null!);
@@ -60,7 +57,7 @@ export const Logs = React.memo(() => {
 });
 
 const LogItems = memo(({ logs }: { logs: LogData[] }) => {
-  return logs.map((x) => <LogItem key={x._id} data={x} />);
+  return logs.map((x) => <LogItem key={x.datetime} data={x} />);
 });
 
 function getColorFromWhom(whom: string) {

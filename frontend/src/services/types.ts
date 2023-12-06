@@ -60,8 +60,6 @@ export interface LogData {
   datetime: string;
   whom: string;
   msg: string;
-  /** frontend only */
-  _id: number;
 }
 
 export interface ImageMetadata {

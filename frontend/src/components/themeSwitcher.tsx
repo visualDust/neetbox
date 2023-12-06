@@ -23,7 +23,7 @@ export function ThemeContextProvider(props: React.PropsWithChildren) {
 
   const setDarkMode = useCallback((val) => {
     setDarkModeState(val);
-    localStorage.setItem("neetbox-theme", val ? "dark" : "");
+    localStorage.setItem("neetbox-theme", val ? "" : "light");
   }, []);
 
   useEffect(() => {

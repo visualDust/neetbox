@@ -2,6 +2,11 @@ import { Notification as SemiNotification } from "@douyinfe/semi-ui";
 import { Project } from "./projects";
 import { LogData } from "./types";
 
+SemiNotification.config({
+  top: "60px",
+  right: "10px",
+});
+
 const NotificationSeries = ["mention", "error"];
 
 let lastNotification: Notification | null = null;

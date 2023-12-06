@@ -9,6 +9,7 @@ import Loading from "../../components/loading";
 import { Hardware } from "../../components/dashboard/project/hardware";
 import { SectionTitle } from "../../components/sectionTitle";
 import { Images } from "../../components/dashboard/project/images";
+import { AppTitle } from "../../components/appTitle";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
@@ -35,9 +36,7 @@ function ProjectDashboard() {
   return (
     <ProjectContext.Provider value={projectContextData}>
       <div style={{ padding: "20px" }}>
-        <Typography.Title heading={2} style={{ textAlign: "center" }}>
-          Project "{projectName ?? projectId}"
-        </Typography.Title>
+        <AppTitle>Project "{projectName ?? projectId}"</AppTitle>
         <SectionTitle title="Logs" />
         <Logs />
         <SectionTitle title="Images" />
