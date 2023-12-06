@@ -1,6 +1,7 @@
 import { useAtom } from "jotai";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { getProject } from "../services/projects";
+import { WsMsg } from "../services/projectWebsocket";
 
 export const ProjectContext = createContext<{ projectId: string; projectName?: string } | null>(null);
 
@@ -24,4 +25,12 @@ export function useProjectImages(id: string) {
   const project = getProject(id);
   const [data] = useAtom(project?.images.atom);
   return data;
+}
+
+export function useProjectWebSocket(id: string, onMessage: (msg: WsMsg) => void) {
+  const project = getProject(id);
+  useEffect(() => {
+    project.wsClient.wsListeners.add(onMessage);
+    return () => void project.wsClient.wsListeners.delete(onMessage);
+  }, [project, onMessage]);
 }

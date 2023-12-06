@@ -1,31 +1,34 @@
 import { memo, useEffect, useState } from "react";
 import { Button, Card, Input, Popover, Space } from "@douyinfe/semi-ui";
-import { useCurrentProject, useProjectImages } from "../../../hooks/useProject";
+import { IconDownload } from "@douyinfe/semi-icons";
+import { useCurrentProject, useProjectWebSocket } from "../../../hooks/useProject";
 import { useAPI } from "../../../services/api";
 import Loading from "../../loading";
 import { createCondition } from "../../../utils/condition";
 
 export const Images = memo(() => {
   const { projectId } = useCurrentProject()!;
-  const { data: series } = useAPI(`/series/${projectId}/image`);
+  const { data: series, mutate } = useAPI(`/series/${projectId}/image`);
   console.info("image series", series);
   // const images = useProjectImages(projectId);
-  console.info({ series });
+  useProjectWebSocket(projectId, (msg) => {
+    if (msg["event-type"] == "image") {
+      const newSeries = msg["metadata"]?.["series"];
+      if (newSeries != null && !series.includes(newSeries)) {
+        mutate([...series, newSeries]);
+      }
+    }
+  });
   return (
-    <Space style={{ overflow: "auto", width: "100%" }}>
+    <Space style={{ marginBottom: "20px" }}>
       {series?.map((s) => <SeriesViewer series={s} />) ?? <Loading />}
-      {/* {images.map((img) => (
-        <Popover showArrow content={<pre>{JSON.stringify(img.metadata, null, 2)}</pre>}>
-          <img style={{ background: "white" }} src={"/web/image/" + projectId + "/" + img.imageId} />
-        </Popover>
-      ))} */}
     </Space>
   );
 });
 
-const SeriesViewer = ({ series }: { series: string }) => {
+const SeriesViewer = memo(({ series }: { series: string }) => {
   const { projectId } = useCurrentProject()!;
-  const { data } = useAPI(
+  const { data, mutate } = useAPI(
     `/image/${projectId}/history?${createCondition({
       series,
       limit: 1000,
@@ -35,22 +38,44 @@ const SeriesViewer = ({ series }: { series: string }) => {
     })}`,
   );
   const [index, setIndex] = useState(0);
+  useProjectWebSocket(projectId, (msg) => {
+    if (msg["event-type"] == "image" && msg["metadata"]?.["series"] === series) {
+      mutate([msg, ...data], { revalidate: false });
+      if (index > 0) {
+        setIndex((i) => i + 1);
+      }
+    }
+  });
   const img = data?.[index];
   const length = data?.length ?? 0;
   const has = (delta: number) => Boolean(data?.[index + delta]);
   const go = (delta: number) => {
     setIndex(Math.max(0, Math.min(index + delta, length - 1)));
   };
+  const imgSrc = img ? `/web/image/${projectId}/${img.imageId}` : null;
   return (
-    <Card>
+    <Card bodyStyle={{ position: "relative" }}>
       <Space vertical>
         "{series}" - id: {img?.imageId}
+        <Popover position="top" content={<Button disabled>Batch Download (WIP)</Button>}>
+          <a
+            href={imgSrc!}
+            target="_blank"
+            download
+            style={{ position: "absolute", top: "15px", right: "20px" }}
+          >
+            <Button icon={<IconDownload />} />
+          </a>
+        </Popover>
         {img ? (
-          <>
-            <img style={{ background: "white" }} src={"/web/image/" + projectId + "/" + img.imageId} />
-          </>
+          <a href={imgSrc!} target="_blank" style={{ display: "block", position: "relative" }}>
+            <img
+              style={{ background: "white", objectFit: "contain", width: "400px", height: "300px" }}
+              src={imgSrc!}
+            />
+          </a>
         ) : (
-          <Loading />
+          <Loading width="400px" height="300px" />
         )}
         <Space>
           <Button onClick={() => go(+10)} disabled={!has(1)}>
@@ -81,7 +106,7 @@ const SeriesViewer = ({ series }: { series: string }) => {
       </Space>
     </Card>
   );
-};
+});
 
 const InputChangeOnEnter: typeof Input = memo(({ value, onChange, ...props }) => {
   const [temp, setTemp] = useState(value);
