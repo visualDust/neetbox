@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from "react";
-import { Button, Card, Input, Popover, Space } from "@douyinfe/semi-ui";
+import { Button, Card, Input, Popover, Space, Typography } from "@douyinfe/semi-ui";
 import { IconDownload } from "@douyinfe/semi-icons";
 import { useCurrentProject, useProjectWebSocket } from "../../../hooks/useProject";
 import { useAPI } from "../../../services/api";
@@ -11,17 +11,15 @@ export const Images = memo(() => {
   const { data: series, mutate } = useAPI(`/series/${projectId}/image`);
   console.info("image series", series);
   // const images = useProjectImages(projectId);
-  useProjectWebSocket(projectId, (msg) => {
-    if (msg["event-type"] == "image") {
-      const newSeries = msg["metadata"]?.["series"];
-      if (newSeries != null && !series.includes(newSeries)) {
-        mutate([...series, newSeries]);
-      }
+  useProjectWebSocket(projectId, "image", (msg) => {
+    const newSeries = msg["metadata"]?.["series"];
+    if (newSeries != null && !series.includes(newSeries)) {
+      mutate([...series, newSeries]);
     }
   });
   return (
     <Space style={{ marginBottom: "20px" }}>
-      {series?.map((s) => <SeriesViewer series={s} />) ?? <Loading />}
+      {series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading />}
     </Space>
   );
 });
@@ -38,8 +36,8 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
     })}`,
   );
   const [index, setIndex] = useState(0);
-  useProjectWebSocket(projectId, (msg) => {
-    if (msg["event-type"] == "image" && msg["metadata"]?.["series"] === series) {
+  useProjectWebSocket(projectId, "image", (msg) => {
+    if (msg["metadata"]?.["series"] === series) {
       mutate([msg, ...data], { revalidate: false });
       if (index > 0) {
         setIndex((i) => i + 1);
@@ -56,7 +54,7 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
   return (
     <Card bodyStyle={{ position: "relative" }}>
       <Space vertical>
-        "{series}" - id: {img?.imageId}
+        <Typography.Title heading={4}>{series}</Typography.Title>
         <Popover position="top" content={<Button disabled>Batch Download (WIP)</Button>}>
           <a
             href={imgSrc!}

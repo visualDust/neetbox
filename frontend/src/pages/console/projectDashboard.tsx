@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useMemo } from "react";
-import { Divider, Typography } from "@douyinfe/semi-ui";
+import { Divider } from "@douyinfe/semi-ui";
 import PlatformProps from "../../components/dashboard/project/platformProps";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/dashboard/project/logs/logs";
@@ -10,6 +10,7 @@ import { Hardware } from "../../components/dashboard/project/hardware";
 import { SectionTitle } from "../../components/sectionTitle";
 import { Images } from "../../components/dashboard/project/images";
 import { AppTitle } from "../../components/appTitle";
+import { Scatters } from "../../components/dashboard/project/scatters";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
@@ -41,6 +42,8 @@ function ProjectDashboard() {
         <Logs />
         <SectionTitle title="Images" />
         <Images />
+        <SectionTitle title="Scatters" />
+        <Scatters />
         <Divider />
         {data.current ? (
           <>

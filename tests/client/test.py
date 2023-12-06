@@ -1,15 +1,18 @@
+import math
 import os
 import time
 from random import random
 from time import sleep
 
 import neetbox
-from neetbox.logging import logger
+from neetbox import logger
 
 
 @neetbox.watch("train", initiative=True)
 def train(epoch):
     loss, acc = random(), random()
+    neetbox.add_scatter("sin", epoch, math.sin(epoch * 0.1))
+    neetbox.add_scatter("cos", epoch, math.cos(epoch * 0.1))
     return {"loss": loss, "acc": acc}
 
 
@@ -18,13 +21,13 @@ def print_to_console(metrix):
     logger.log(f"metrix from train: {metrix}")
 
 
-@neetbox.watch("log-some-prefix", initiative=False, interval=5.0)
-def log_with_some_prefix():
-    logger.ok("some ok")
-    logger.info("some info")
-    logger.debug("some debug")
-    logger.warn("some warn")
-    logger.err("some error")
+# @neetbox.watch("log-some-prefix", initiative=False, interval=5.0)
+# def log_with_some_prefix():
+#     logger.ok("some ok")
+#     logger.info("some info")
+#     logger.debug("some debug")
+#     logger.warn("some warn")
+#     logger.err("some error")
 
 
 @neetbox.action()

@@ -6,7 +6,7 @@ import { WsMsg } from "../services/projectWebsocket";
 export const ProjectContext = createContext<{ projectId: string; projectName?: string } | null>(null);
 
 export function useCurrentProject() {
-  return useContext(ProjectContext);
+  return useContext(ProjectContext)!;
 }
 
 export function useProjectStatus(id: string) {
@@ -27,10 +27,19 @@ export function useProjectImages(id: string) {
   return data;
 }
 
-export function useProjectWebSocket(id: string, onMessage: (msg: WsMsg) => void) {
+export function useProjectWebSocket(
+  id: string,
+  type: WsMsg["event-type"] | null,
+  onMessage: (msg: WsMsg) => void,
+) {
   const project = getProject(id);
   useEffect(() => {
-    project.wsClient.wsListeners.add(onMessage);
-    return () => void project.wsClient.wsListeners.delete(onMessage);
-  }, [project, onMessage]);
+    const handle: typeof onMessage = (msg) => {
+      if (!type || msg["event-type"] == type) {
+        onMessage(msg);
+      }
+    };
+    project.wsClient.wsListeners.add(handle);
+    return () => void project.wsClient.wsListeners.delete(handle);
+  }, [project, type, onMessage]);
 }
