@@ -36,7 +36,7 @@ function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: Rea
   }, [renderingElement, following, height]);
   return (
     <div style={{ position: "relative", ...style }} ref={containerRef}>
-      <div style={{ overflowY: "auto", height: "100%" }} ref={scrollerRef}>
+      <div style={{ overflowY: "auto", height: "100%", overflowAnchor: "none" }} ref={scrollerRef}>
         {renderingElement}
       </div>
       {!following && (
