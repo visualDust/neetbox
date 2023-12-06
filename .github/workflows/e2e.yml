@@ -56,7 +56,7 @@ jobs:
           source $VENV
           mkdir logs
           LOGS_DIR=$(pwd)/logs
-          python neetbox/daemon/server/_server.py &> $LOGS_DIR/server.log &
+          python neetbox/_daemon/server/_server.py &> $LOGS_DIR/server.log &
           sleep 3
           cd tests/client
           python test.py &> $LOGS_DIR/client.log &
@@ -65,6 +65,14 @@ jobs:
         run: yarn run e2e:ci
         working-directory: frontend
 
+      - name: Server log
+        if: always()
+        run: cat logs/server.log
+
+      - name: Client log
+        if: always()
+        run: cat logs/client.log
+
       - name: Upload screenshots
         uses: actions/upload-artifact@v3
         if: always()
@@ -72,4 +80,3 @@ jobs:
           name: logs-and-snapshots
           path: |
             frontend/cypress/screenshots/*
-            logs/*
