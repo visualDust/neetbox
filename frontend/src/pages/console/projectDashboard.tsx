@@ -59,8 +59,10 @@ function ProjectDashboard() {
         </AppTitle>
         <SectionTitle title="Logs" />
         <Logs />
+        <Divider />
         <SectionTitle title="Actions" />
         {data.current ? <Actions actions={data.current.__action} /> : <Loading size="large" />}
+        <Divider />
         <SectionTitle title="Images & Scatters" />
         <ImagesAndScatters />
         {/* <SectionTitle title="Images" />
@@ -70,7 +72,6 @@ function ProjectDashboard() {
         <Divider />
         {data.current ? (
           <>
-            <Divider />
             <SectionTitle title="Hardware" />
             <Hardware hardwareData={data.history.map((x) => x.hardware)} />
             <Divider />

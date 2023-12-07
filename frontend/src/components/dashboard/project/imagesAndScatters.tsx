@@ -5,7 +5,7 @@ import { AllScatterViewers } from "./scatters";
 
 export const ImagesAndScatters = memo(() => {
   return (
-    <Space style={{ marginBottom: "20px" }}>
+    <Space style={{ marginBottom: "20px" }} wrap>
       <AllImageViewers />
       <AllScatterViewers />
     </Space>
