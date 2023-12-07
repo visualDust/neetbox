@@ -31,12 +31,12 @@ def get_flask_server(debug=False):
         logger.log(f"Running with debug, using APIFlask")
         from apiflask import APIFlask
 
-        app = APIFlask(__PROC_NAME)
+        app = APIFlask(__PROC_NAME, static_folder=None)
     else:
         logger.log(f"Running in production mode, using Flask")
         from flask import Flask
 
-        app = Flask(__PROC_NAME)
+        app = Flask(__PROC_NAME, static_folder=None)
 
     front_end_dist_path = os.path.join(os.path.dirname(__file__), "../../frontend_dist")
 

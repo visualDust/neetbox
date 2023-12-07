@@ -19,7 +19,8 @@ export default defineConfig({
     entry: { index: "./src/main.tsx" },
   },
   html: {
-    template: "./index.html",
+    title: "Neetbox",
+    favicon: "./public/logo.svg",
   },
   server: {
     port: 5173,
