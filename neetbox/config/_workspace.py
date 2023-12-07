@@ -170,9 +170,8 @@ def _load_workspace_config(folder="."):
     if not config_file_path:  # failed to load workspace config, exiting
         raise RuntimeError(f"Config file not exists in '{folder}'")
     _update_default_config_from_config_register()  # load custom config into default config
-    _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
     _obtain_new_run_id()  # obtain new run id
-
+    _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
 
 def _create_load_workspace(path=None):
     is_workspace = _check_if_workspace_config_valid(path)
