@@ -29,7 +29,7 @@ export const AllScatterViewers = memo(() => {
 export const ScatterViewer = memo(({ series }: { series: string }) => {
   const { projectId, runId } = useCurrentProject();
   const { data, mutate } = useAPI(
-    runId ? `/scatter/${projectId}/history?${createCondition({ series, runId })}` : null,
+    runId == null ? null : `/scatter/${projectId}/history?${createCondition({ series, runId })}`,
   );
   const [maximized, setMaximized] = useState(false);
   useProjectWebSocket(projectId, "scatter", (msg) => {

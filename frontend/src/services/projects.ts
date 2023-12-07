@@ -6,7 +6,7 @@ import { checkLogForNotification } from "./logNotifications";
 
 const projects = new Map<string, Project>();
 
-const StatusHistoryCount = 120;
+const StatusHistoryCount = 180;
 const LogHistoryCount = 500;
 
 export class Project {

@@ -5,6 +5,7 @@ import { useCurrentProject, useProjectWebSocket } from "../../../hooks/useProjec
 import { useAPI } from "../../../services/api";
 import Loading from "../../loading";
 import { createCondition } from "../../../utils/condition";
+import { CenterBox } from "../../centerBox";
 
 export const Images = memo(() => {
   return (
@@ -27,15 +28,18 @@ export const AllImageViewers = memo(() => {
 });
 
 const SeriesViewer = memo(({ series }: { series: string }) => {
-  const { projectId } = useCurrentProject()!;
+  const { projectId, runId } = useCurrentProject()!;
   const { data, mutate } = useAPI(
-    `/image/${projectId}/history?${createCondition({
-      series,
-      limit: 1000,
-      order: {
-        id: "DESC",
-      },
-    })}`,
+    runId == null
+      ? null
+      : `/image/${projectId}/history?${createCondition({
+          series,
+          limit: 1000,
+          order: {
+            id: "DESC",
+          },
+          runId,
+        })}`,
   );
   const [index, setIndex] = useState(0);
   useProjectWebSocket(projectId, "image", (msg) => {
@@ -74,6 +78,10 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
               src={imgSrc!}
             />
           </a>
+        ) : data && !data.length ? (
+          <CenterBox style={{ width: "450px", height: "300px" }}>
+            <Typography.Text type="tertiary">No image</Typography.Text>
+          </CenterBox>
         ) : (
           <Loading width="450px" height="300px" />
         )}
@@ -95,7 +103,7 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
             }}
             style={{ width: "60px" }}
           />{" "}
-          / {data?.length}
+          / {data?.length ?? "..."}
           <Button onClick={() => go(-1)} disabled={!has(-1)}>
             {">"}
           </Button>
