@@ -73,7 +73,9 @@ function ProjectDashboard() {
         {data.current ? (
           <>
             <SectionTitle title="Hardware" />
-            <Hardware hardwareData={data.history.map((x) => x.hardware)} />
+            {data.history.every((x) => x.hardware) ? (
+              <Hardware hardwareData={data.history.map((x) => x.hardware)} />
+            ) : null}
             <Divider />
             <SectionTitle title="Platform" />
             <PlatformProps data={data.current.platform} />
