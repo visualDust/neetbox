@@ -63,7 +63,7 @@ function ProjectDashboard() {
         <SectionTitle title="Actions" />
         {data.current ? <Actions actions={data.current.__action} /> : <Loading size="large" />}
         <Divider />
-        <SectionTitle title="Images & Scatters" />
+        <SectionTitle title="Images & Scalars" />
         <ImagesAndScatters />
         {/* <SectionTitle title="Images" />
         <Images /> */}

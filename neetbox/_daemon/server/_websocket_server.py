@@ -202,7 +202,7 @@ def get_web_socket_server(config, debug=False):
             return  # !!! not handling messages from cli/web without handshake. handshake is aspecial   case and should be handled anyway before this check.
         if _event_type == "log":  # handle log
             on_event_type_log(message_dict=message_dict, message=message)
-        elif _event_type == "scatter":
+        elif _event_type == "scalar":
             on_event_type_scatter(message_dict=message_dict, message=message)
         elif _event_type == "action":
             on_event_type_action(

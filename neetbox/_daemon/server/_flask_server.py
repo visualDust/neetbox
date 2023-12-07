@@ -166,10 +166,10 @@ def get_flask_server(debug=False):
         result = [{"imageId": id, "metadata": meta_data} for id, _, meta_data in query_results]
         return result
 
-    @app.route(f"{FRONTEND_API_ROOT}/scatter/<project_id>/history", methods=["GET"])
-    def get_history_scatter_of(project_id):
+    @app.route(f"{FRONTEND_API_ROOT}/scalar/<project_id>/history", methods=["GET"])
+    def get_history_scalar_of(project_id):
         return get_history_json_of(
-            project_id=project_id, table_name="scatter", condition=request.args.get("condition")
+            project_id=project_id, table_name="scalar", condition=request.args.get("condition")
         )
 
     @app.route(f"/shutdown", methods=["POST"])

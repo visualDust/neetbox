@@ -17,8 +17,8 @@ export const Scatters = memo(() => {
 
 export const AllScatterViewers = memo(() => {
   const { projectId } = useCurrentProject();
-  const { data: series, mutate } = useAPI(`/series/${projectId}/scatter`);
-  useProjectWebSocket(projectId, "scatter", (msg) => {
+  const { data: series, mutate } = useAPI(`/series/${projectId}/scalar`);
+  useProjectWebSocket(projectId, "scalar", (msg) => {
     if (msg.payload.series != null && !series.includes(msg.payload.series)) {
       mutate([...series, msg.payload.series]);
     }
@@ -29,10 +29,10 @@ export const AllScatterViewers = memo(() => {
 export const ScatterViewer = memo(({ series }: { series: string }) => {
   const { projectId, runId } = useCurrentProject();
   const { data, mutate } = useAPI(
-    runId == null ? null : `/scatter/${projectId}/history?${createCondition({ series, runId })}`,
+    runId == null ? null : `/scalar/${projectId}/history?${createCondition({ series, runId })}`,
   );
   const [maximized, setMaximized] = useState(false);
-  useProjectWebSocket(projectId, "scatter", (msg) => {
+  useProjectWebSocket(projectId, "scalar", (msg) => {
     if (series == msg.payload.series && (!runId || runId == msg.runid)) {
       if (data) {
         mutate([...data, { metadata: msg.payload }], { revalidate: false });
@@ -111,6 +111,16 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
         },
       ],
     } as echarts.EChartsOption;
+    if (points?.length > 1000) {
+      newOption.dataZoom = [
+        {
+          start: 90,
+        },
+        {
+          start: 90,
+        },
+      ];
+    }
     return newOption;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [points]);
@@ -125,7 +135,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
   return (
     <Card style={{ overflow: "visible", position: "relative" }}>
       <Space vertical>
-        <Typography.Title heading={4}>scatter "{series}"</Typography.Title>
+        <Typography.Title heading={4}>scalar "{series}"</Typography.Title>
         <div
           style={
             maximized
@@ -153,7 +163,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
             }
           }}
         >
-          {maximized && <Typography.Title heading={4}>scatter "{series}"</Typography.Title>}
+          {maximized && <Typography.Title heading={4}>scalar "{series}"</Typography.Title>}
           {data ? (
             <ECharts
               initialOption={initialOption}
