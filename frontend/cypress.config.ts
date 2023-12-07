@@ -12,4 +12,14 @@ export default defineConfig({
     baseUrl: isCI ? "http://localhost:5000" : "http://localhost:5173",
     testIsolation: false,
   },
+  setupNodeEvents(on, config) {
+    on("before:browser:launch", (browser, launchOptions) => {
+      if (browser.name === "electron" && browser.isHeadless) {
+        launchOptions.preferences.width = 1920;
+        launchOptions.preferences.height = 1080;
+      }
+
+      return launchOptions;
+    });
+  },
 });
