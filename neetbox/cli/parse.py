@@ -68,7 +68,7 @@ def list_command():
         table.add_column("config", justify="center", style="green")
 
         for pjt in _response:
-            config = pjt["config"]["value"]
+            config = pjt["config"]
             table.add_row(config["name"], pjt["id"], json.dumps(config))
 
         console.print(table)
