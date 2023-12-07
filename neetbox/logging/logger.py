@@ -69,7 +69,6 @@ class Logger:
         self.console_writer = consoleLogWriter
         self.ws_writer = webSocketLogWriter
         self.file_writer = None
-
         _cfg = get_module_level_config()
         self.set_log_dir(_cfg["logdir"])
         self.set_log_level(_cfg["level"])
@@ -385,11 +384,9 @@ class Logger:
         if os.path.isfile(path):
             raise Exception("Target path is not a directory.")
         if not os.path.exists(path):
-            DEFAULT_LOGGER.info(f"Directory {path} not found, trying to create.")
             try:
                 os.makedirs(path)
             except Exception:
-                DEFAULT_LOGGER.err(f"Failed when trying to create directory {path}")
                 raise Exception(f"Failed when trying to create directory {path}")
         log_file_name = ""
         if independent:
