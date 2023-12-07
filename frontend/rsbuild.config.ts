@@ -13,6 +13,17 @@ export default defineConfig({
           theme: "@semi-bot/semi-theme-nyx-c",
         }),
       );
+      config.optimization = { ...config.optimization, minimize: false };
+      config.module = {
+        ...config.module,
+        rules: [
+          ...(config.module?.rules ?? []),
+          {
+            test: /echarts/,
+            sideEffects: true,
+          },
+        ],
+      };
     },
   },
   source: {
