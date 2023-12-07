@@ -245,7 +245,10 @@ class DBConnection:
             elif fetch == FetchType.MANY:
                 result = result.fetchmany(kwargs["many"])
         if save_immediately:
-            self.connection.commit()
+            try:
+                self.connection.commit()
+            except Exception as e:
+                logger.warn(e) # todo
         return result, cur.lastrowid
 
     def _query(self, query, *args, fetch: FetchType = None, **kwargs):
