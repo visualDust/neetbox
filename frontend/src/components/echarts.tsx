@@ -54,6 +54,6 @@ export const ECharts = (props: EChartsProps) => {
   return echartsModule ? (
     <div ref={chartContainerRef} style={props.style} />
   ) : (
-    <Loading height={props.style?.height as string} />
+    <Loading width={props.style?.width as string} height={props.style?.height as string} />
   );
 };

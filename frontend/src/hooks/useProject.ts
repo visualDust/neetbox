@@ -7,6 +7,7 @@ export const ProjectContext = createContext<{
   projectId: string;
   projectName?: string;
   runId?: string;
+  setRunId: (runId: string) => void;
 } | null>(null);
 
 export function useCurrentProject() {

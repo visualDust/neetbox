@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Divider, Select, Space, Typography } from "@douyinfe/semi-ui";
 import PlatformProps from "../../components/dashboard/project/platformProps";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
@@ -10,7 +10,8 @@ import { Hardware } from "../../components/dashboard/project/hardware";
 import { SectionTitle } from "../../components/sectionTitle";
 import { AppTitle } from "../../components/appTitle";
 import { ImagesAndScatters } from "../../components/dashboard/project/imagesAndScatters";
-import { useAPI } from "../../services/api";
+import { getProject } from "../../services/projects";
+import { RunSelect } from "../../components/dashboard/project/runSelect";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
@@ -22,11 +23,16 @@ function ProjectDashboard() {
   if (!projectId) throw new Error("projectId required");
 
   const data = useProjectStatus(projectId);
-  // console.info("project", { projectId, data });
+  useEffect(() => {
+    const project = getProject(projectId);
+    if (!project.status.value.current) {
+      project.updateData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const projectName = data.current?.config.name;
 
-  const { data: runIds } = useAPI(`/runids/${projectId}`);
   const [runId, setRunId] = useState<string | undefined>(undefined);
 
   const projectContextData = useMemo(
@@ -34,6 +40,7 @@ function ProjectDashboard() {
       projectId,
       projectName,
       runId,
+      setRunId,
     }),
     [projectId, projectName, runId],
   );
@@ -43,17 +50,9 @@ function ProjectDashboard() {
       <div style={{ padding: "20px", position: "relative" }}>
         <AppTitle
           extra={
-            <Space>
-              Run:
-              <Select value={runId} onChange={(x) => setRunId(x as any)}>
-                <Select.Option value={undefined}>All</Select.Option>
-                {[...(runIds ?? [])].reverse().map((x) => (
-                  <Select.Option value={x.id}>
-                    {x.timestamp} <Typography.Text type="tertiary">({x.id})</Typography.Text>
-                  </Select.Option>
-                ))}
-              </Select>
-            </Space>
+            <ProjectContext.Provider value={projectContextData}>
+              <RunSelect />
+            </ProjectContext.Provider>
           }
         >
           Project "{projectName ?? projectId}"

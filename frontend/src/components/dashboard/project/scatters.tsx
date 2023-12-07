@@ -16,22 +16,26 @@ export const Scatters = memo(() => {
 
 export const AllScatterViewers = memo(() => {
   const { projectId } = useCurrentProject();
-  const [series, setSeries] = useState<string[]>([]);
+  const { data: series, mutate } = useAPI(`/series/${projectId}/scatter`);
   useProjectWebSocket(projectId, "scatter", (msg) => {
     if (msg.payload.series != null && !series.includes(msg.payload.series)) {
-      setSeries([...series, msg.payload.series]);
+      mutate([...series, msg.payload.series]);
     }
   });
-  return series.map((s) => <ScatterViewer key={s} series={s} />);
+  return series?.map((s) => <ScatterViewer key={s} series={s} />) ?? <Loading />;
 });
 
 export const ScatterViewer = memo(({ series }: { series: string }) => {
   const { projectId, runId } = useCurrentProject();
-  const { data, mutate } = useAPI(`/scatter/${projectId}/history?${createCondition({ series, runId })}`);
+  const { data, mutate } = useAPI(
+    runId ? `/scatter/${projectId}/history?${createCondition({ series, runId })}` : null,
+  );
   // const [data, setData] = useState<any[]>([]);
   useProjectWebSocket(projectId, "scatter", (msg) => {
-    if (msg.payload.series != null && series == msg.payload.series && (!runId || runId == msg.runid)) {
-      mutate([...data, { metadata: msg.payload }], { revalidate: false });
+    if (series == msg.payload.series && (!runId || runId == (msg as any).runid)) {
+      if (data) {
+        mutate([...data, { metadata: msg.payload }], { revalidate: false });
+      }
     }
   });
 
@@ -51,13 +55,13 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
       xAxis: {
         type: "value",
         min: "dataMin",
-        max: "dataMax",
+        // max: "dataMax",
       },
       yAxis: [
         {
           type: "value",
-          min: "dataMin",
-          max: "dataMax",
+          // min: "dataMin",
+          // max: "dataMax",
         },
       ],
       series: [],
@@ -79,7 +83,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
   }, [points]);
 
   return (
-    <Card>
+    <Card style={{ overflow: "visible" }}>
       <Space vertical>
         <Typography.Title heading={4}>scatter "{series}"</Typography.Title>
         {data ? (
@@ -89,7 +93,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
             style={{ height: "345px", width: "400px" }}
           />
         ) : (
-          <Loading />
+          <Loading height="345px" width="400px" />
         )}
       </Space>
     </Card>

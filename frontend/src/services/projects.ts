@@ -7,7 +7,7 @@ import { checkLogForNotification } from "./logNotifications";
 const projects = new Map<string, Project>();
 
 const StatusHistoryCount = 120;
-const LogHistoryCount = 1000;
+const LogHistoryCount = 500;
 
 export class Project {
   wsClient: WsClient;
