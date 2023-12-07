@@ -17,9 +17,10 @@ __QUERY_AFTER_LOAD_WORKSPACE = Registry("__QUERY_AFTER_LOAD_WORKSPACE")
 on_workspace_loaded = __QUERY_AFTER_LOAD_WORKSPACE.register
 
 
-__THIS_MODULE = get_frame_module_traceback(1)
-for sub_module_info in pkgutil.iter_modules(__THIS_MODULE.__path__):
-    importlib.import_module(f"{__THIS_MODULE.__name__}.{sub_module_info.name}")
+def _scan_sub_modules():
+    __THIS_MODULE = get_frame_module_traceback(1)
+    for sub_module_info in pkgutil.iter_modules(__THIS_MODULE.__path__):
+        importlib.import_module(f"{__THIS_MODULE.__name__}.{sub_module_info.name}")
 
 
 def _init_extensions():

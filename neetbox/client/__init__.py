@@ -5,10 +5,10 @@
 # Date:   20231206
 
 from ._client_action_agent import _NeetActionManager as NeetActionManager
-from ._image import add_image
+from ._image import add_image, add_tensor
 from ._plots import add_scatter
 from ._signal_and_slot import listen, watch
 
 action = NeetActionManager.register
 
-__all__ = ["add_image", "add_scatter", "action", "NeetActionManager", "watch", "listen"]
+__all__ = ["add_image", "add_tensor", "add_scatter", "action", "NeetActionManager", "watch", "listen"]
