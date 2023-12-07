@@ -7,21 +7,23 @@ import Loading from "../../loading";
 import { createCondition } from "../../../utils/condition";
 
 export const Images = memo(() => {
+  return (
+    <Space style={{ marginBottom: "20px" }}>
+      <AllImageViewers />
+    </Space>
+  );
+});
+
+export const AllImageViewers = memo(() => {
   const { projectId } = useCurrentProject()!;
   const { data: series, mutate } = useAPI(`/series/${projectId}/image`);
-  console.info("image series", series);
-  // const images = useProjectImages(projectId);
   useProjectWebSocket(projectId, "image", (msg) => {
     const newSeries = msg["metadata"]?.["series"];
     if (newSeries != null && !series.includes(newSeries)) {
       mutate([...series, newSeries]);
     }
   });
-  return (
-    <Space style={{ marginBottom: "20px" }}>
-      {series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading />}
-    </Space>
-  );
+  return series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading />;
 });
 
 const SeriesViewer = memo(({ series }: { series: string }) => {
@@ -54,7 +56,7 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
   return (
     <Card bodyStyle={{ position: "relative" }}>
       <Space vertical>
-        <Typography.Title heading={4}>{series}</Typography.Title>
+        <Typography.Title heading={4}>image "{series}"</Typography.Title>
         <Popover position="top" content={<Button disabled>Batch Download (WIP)</Button>}>
           <a
             href={imgSrc!}
@@ -77,13 +79,13 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
         )}
         <Space>
           <Button onClick={() => go(+10)} disabled={!has(1)}>
-            Prev 10
+            {"<<"}
           </Button>
           <Button onClick={() => go(+1)} disabled={!has(1)}>
-            Prev 1
+            {"<"}
           </Button>
           <InputChangeOnEnter
-            type="number"
+            type="text"
             value={length - index}
             onChange={(x) => {
               const i = length - parseInt(x);
@@ -91,14 +93,14 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
                 setIndex(i);
               }
             }}
-            style={{ width: "90px" }}
+            style={{ width: "60px" }}
           />{" "}
           / {data?.length}
           <Button onClick={() => go(-1)} disabled={!has(-1)}>
-            Next 1
+            {">"}
           </Button>
           <Button onClick={() => go(-10)} disabled={!has(-1)}>
-            Next 10
+            {">>"}
           </Button>
         </Space>
       </Space>
