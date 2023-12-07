@@ -70,12 +70,12 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
         {img ? (
           <a href={imgSrc!} target="_blank" style={{ display: "block", position: "relative" }}>
             <img
-              style={{ background: "white", objectFit: "contain", width: "400px", height: "300px" }}
+              style={{ background: "white", objectFit: "contain", width: "450px", height: "300px" }}
               src={imgSrc!}
             />
           </a>
         ) : (
-          <Loading width="400px" height="300px" />
+          <Loading width="450px" height="300px" />
         )}
         <Space>
           <Button onClick={() => go(+10)} disabled={!has(1)}>
