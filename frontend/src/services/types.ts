@@ -5,7 +5,7 @@ export interface ProjectStatusHistory {
 }
 
 export interface ProjectStatus {
-  config: WithTimestamp<ProjectConfig>;
+  config: ProjectConfig;
   platform: WithTimestamp<Record<string, string | string[]>>;
   hardware: WithTimestamp<HardwareInfo>;
   __action: WithTimestamp<ActionInfo>;

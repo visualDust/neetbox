@@ -24,7 +24,7 @@ function ProjectDashboard() {
   const data = useProjectStatus(projectId);
   // console.info("project", { projectId, data });
 
-  const projectName = data.current?.config.value.name;
+  const projectName = data.current?.config.name;
 
   const { data: runIds } = useAPI(`/runids/${projectId}`);
   const [runId, setRunId] = useState<string | undefined>(undefined);

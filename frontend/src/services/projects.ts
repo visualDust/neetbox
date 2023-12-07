@@ -20,7 +20,7 @@ export class Project {
   images = new BetterAtom<ImageMetadata[]>([]);
 
   get nameOrId() {
-    return this.status.value.current?.config.value.name ?? this.id;
+    return this.status.value.current?.config.name ?? this.id;
   }
 
   constructor(readonly id: string) {

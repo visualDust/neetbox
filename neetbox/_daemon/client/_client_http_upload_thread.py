@@ -24,7 +24,7 @@ def _add_upload_thread_to_watch(daemon_config, project_id):
     def upload_via_http():
         # dump status as json
         _data = _UPDATE_VALUE_DICT[SYSTEM_CHANNEL].copy()
-        _UPDATE_VALUE_DICT["config"] = get_module_level_config("@")
+        _data["config"] = get_module_level_config("@")
         try:
             _data = json.dumps(_data, default=str)
             _headers = {"Content-Type": "application/json"}

@@ -25,7 +25,7 @@ export default function ConsoleNavBar() {
             ? data.map(({ id, config, online }) => ({
                 text: (
                   <Typography.Text type={online ? "primary" : "tertiary"}>
-                    {config.value.name}
+                    {config.name}
                     {!online && (
                       <Tag style={{ marginLeft: "10px" }} color="orange">
                         offline
