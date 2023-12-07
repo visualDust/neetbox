@@ -18,7 +18,7 @@ export const AllImageViewers = memo(() => {
   const { projectId } = useCurrentProject()!;
   const { data: series, mutate } = useAPI(`/series/${projectId}/image`);
   useProjectWebSocket(projectId, "image", (msg) => {
-    const newSeries = msg["metadata"]?.["series"];
+    const newSeries = msg.metadata.series;
     if (newSeries != null && !series.includes(newSeries)) {
       mutate([...series, newSeries]);
     }
@@ -39,7 +39,7 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
   );
   const [index, setIndex] = useState(0);
   useProjectWebSocket(projectId, "image", (msg) => {
-    if (msg["metadata"]?.["series"] === series) {
+    if (msg.metadata.series === series) {
       mutate([msg, ...data], { revalidate: false });
       if (index > 0) {
         setIndex((i) => i + 1);
@@ -120,7 +120,7 @@ const InputChangeOnEnter: typeof Input = memo(({ value, onChange, ...props }) =>
       onChange={(x) => setTemp(x)}
       onKeyDown={(e) => {
         if (e.key == "Enter") {
-          onChange?.(temp as any, e as any);
+          onChange?.(temp as any, null!);
         }
       }}
     />

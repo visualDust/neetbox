@@ -32,10 +32,10 @@ export function useProjectImages(id: string) {
   return data;
 }
 
-export function useProjectWebSocket(
+export function useProjectWebSocket<T extends WsMsg["event-type"]>(
   id: string,
-  type: WsMsg["event-type"] | null,
-  onMessage: (msg: WsMsg) => void,
+  type: T | null,
+  onMessage: (msg: Extract<WsMsg, { "event-type": T }>) => void,
 ) {
   const project = getProject(id);
   useEffect(() => {
@@ -44,7 +44,9 @@ export function useProjectWebSocket(
         onMessage(msg);
       }
     };
-    project.wsClient.wsListeners.add(handle);
-    return () => void project.wsClient.wsListeners.delete(handle);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    project.wsClient.wsListeners.add(handle as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return () => void project.wsClient.wsListeners.delete(handle as any);
   }, [project, type, onMessage]);
 }

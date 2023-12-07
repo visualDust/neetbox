@@ -64,5 +64,7 @@ export interface LogData {
 
 export interface ImageMetadata {
   imageId: number;
-  metadata: any;
+  metadata: {
+    series: string;
+  };
 }

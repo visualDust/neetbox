@@ -2,12 +2,17 @@ import { WEBSOCKET_URL } from "./api";
 import { Project } from "./projects";
 import { ImageMetadata } from "./types";
 
-export interface WsMsg<Type extends string = string, Payload = any> {
+export interface WsMsgBase<Type extends string = string, Payload = any> {
   "event-type": Type;
   name: string;
   payload: Payload;
   "event-id": number;
 }
+
+export type WsMsg =
+  | WsMsgBase
+  | (WsMsgBase<"image"> & ImageMetadata)
+  | (WsMsgBase<"scatter", { series: string; x: number; y: number }> & { runid: string });
 
 export class WsClient {
   ws: WebSocket;
@@ -27,7 +32,7 @@ export class WsClient {
       });
     };
     this.ws.onmessage = (e) => {
-      console.info("ws receive", e.data);
+      // console.info("ws receive", e.data);
       const json = JSON.parse(e.data) as WsMsg;
       const eventId = json["event-id"];
       const eventType = json["event-type"];

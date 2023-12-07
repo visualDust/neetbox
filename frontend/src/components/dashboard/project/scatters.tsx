@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { Card, Space, Typography } from "@douyinfe/semi-ui";
 import { useCurrentProject, useProjectWebSocket } from "../../../hooks/useProject";
 import { ECharts } from "../../echarts";
@@ -32,7 +32,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
   );
   // const [data, setData] = useState<any[]>([]);
   useProjectWebSocket(projectId, "scatter", (msg) => {
-    if (series == msg.payload.series && (!runId || runId == (msg as any).runid)) {
+    if (series == msg.payload.series && (!runId || runId == msg.runid)) {
       if (data) {
         mutate([...data, { metadata: msg.payload }], { revalidate: false });
       }
@@ -80,6 +80,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
       ],
     } as echarts.EChartsOption;
     return newOption;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [points]);
 
   return (

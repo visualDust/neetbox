@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { Divider, Select, Space, Typography } from "@douyinfe/semi-ui";
+import { Divider } from "@douyinfe/semi-ui";
 import PlatformProps from "../../components/dashboard/project/platformProps";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/dashboard/project/logs/logs";

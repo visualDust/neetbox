@@ -1,6 +1,6 @@
 import { BetterAtom } from "../utils/betterAtom";
 import { fetcher } from "./api";
-import { WsClient } from "./projectWebsocket";
+import { WsClient, WsMsg } from "./projectWebsocket";
 import { ProjectStatusHistory, LogData, ProjectStatus, ImageMetadata } from "./types";
 import { checkLogForNotification } from "./logNotifications";
 
@@ -103,7 +103,7 @@ export class Project {
     this.images.value = [...this.images.value, image];
   }
 
-  sendAction(action: string, args: Record<string, string>, onReply?: (result: any) => void) {
+  sendAction(action: string, args: Record<string, string>, onReply?: (result: WsMsg["payload"]) => void) {
     this.wsClient.send(
       {
         "event-type": "action",
