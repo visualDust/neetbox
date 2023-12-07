@@ -8,6 +8,7 @@ import logging
 import os
 import time
 from threading import Thread
+from typing import Union
 
 import werkzeug
 
@@ -62,19 +63,24 @@ def get_flask_server(debug=False):
             result.append({"id": id, "online": status["online"], "config": status["config"]})
         return result
 
-    @app.route(f"{FRONTEND_API_ROOT}/log/<project_id>/history", methods=["GET"])
-    def get_history_log_of(project_id):
+    def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, str]):
         if not Bridge.has(project_id):
             abort(404)
-        _json_data = json.loads(request.args.get("condition"))
         try:
-            condition = QueryCondition.from_json(_json_data)
+            condition = QueryCondition.from_json(
+                json.loads(condition) if isinstance(condition, str) else condition
+            )
         except Exception as e:  # if failed to parse
             return abort(400)
-        result_list = Bridge.of_id(project_id).read_json_from_history(
-            table_name="log", condition=condition
+        return Bridge.of_id(project_id).read_json_from_history(
+            table_name=table_name, condition=condition
         )
-        return result_list
+
+    @app.route(f"{FRONTEND_API_ROOT}/log/<project_id>/history", methods=["GET"])
+    def get_history_log_of(project_id):
+        return get_history_json_of(
+            project_id=project_id, table_name="log", condition=request.args.get("condition")
+        )
 
     @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>", methods=["GET"])
     def get_status_of(project_id):
@@ -85,17 +91,9 @@ def get_flask_server(debug=False):
 
     @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>/history", methods=["GET"])
     def get_history_status_of(project_id):
-        if not Bridge.has(project_id):
-            abort(404)
-        _json_data = json.loads(request.args.get("condition"))
-        try:
-            condition = QueryCondition.from_json(_json_data)
-        except Exception as e:  # if failed to parse
-            return abort(400)
-        result_list = Bridge.of_id(project_id).read_json_from_history(
-            table_name="status", condition=condition
+        return get_history_json_of(
+            project_id=project_id, table_name="status", condition=request.args.get("condition")
         )
-        return result_list
 
     @app.route(f"{CLIENT_API_ROOT}/sync/<project_id>", methods=["POST"])
     def upload_status_of(project_id):  # client side function
@@ -116,6 +114,7 @@ def get_flask_server(debug=False):
         if not Bridge.has(project_id):
             abort(404)
         result = Bridge.of_id(project_id).get_run_ids()
+        result = [{"id": list(r.keys())[0], "timestamp": list(r.values())[0]} for r in result]
         return result
 
     @app.route(f"/image/<project_id>", methods=["POST"])
@@ -166,6 +165,12 @@ def get_flask_server(debug=False):
         )  # todo ?
         result = [{"imageId": id, "metadata": meta_data} for id, _, meta_data in query_results]
         return result
+
+    @app.route(f"{FRONTEND_API_ROOT}/scatter/<project_id>/history", methods=["GET"])
+    def get_history_scatter_of(project_id):
+        return get_history_json_of(
+            project_id=project_id, table_name="scatter", condition=request.args.get("condition")
+        )
 
     @app.route(f"/shutdown", methods=["POST"])
     def shutdown():

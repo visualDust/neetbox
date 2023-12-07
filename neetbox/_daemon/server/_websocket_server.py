@@ -166,7 +166,11 @@ def get_web_socket_server(config, debug=False):
             elif "cli" == forward:
                 bridge.ws_send_to_client(message)  # forward to frontends
         if save_history:
-            bridge.save_json_to_history(table_name=event_type_name, json_data=message)
+            bridge.save_json_to_history(
+                table_name=event_type_name,
+                json_data=message_dict[PAYLOAD_NAME_KEY],
+                run_id=message_dict[RUN_ID_KEY],
+            )
         return  # return after handling log forwarding
 
     def on_event_type_log(message_dict, message):
