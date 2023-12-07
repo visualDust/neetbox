@@ -4,6 +4,7 @@ import SwitchColorMode from "../themeSwitcher";
 import { useTitle } from "../appTitle";
 
 export default function AppHeader() {
+  const { title, extra } = useTitle();
   return (
     <Layout.Header
       style={{
@@ -16,7 +17,8 @@ export default function AppHeader() {
       <Typography.Title>
         <Link to="/">NEET Center</Link>
       </Typography.Title>
-      <Typography.Title heading={2}>{useTitle()}</Typography.Title>
+      <Typography.Title heading={2}>{title}</Typography.Title>
+      {extra}
       <div>
         <Space>
           <SwitchColorMode></SwitchColorMode>

@@ -3,7 +3,11 @@ import { createContext, useContext, useEffect } from "react";
 import { getProject } from "../services/projects";
 import { WsMsg } from "../services/projectWebsocket";
 
-export const ProjectContext = createContext<{ projectId: string; projectName?: string } | null>(null);
+export const ProjectContext = createContext<{
+  projectId: string;
+  projectName?: string;
+  runId?: string;
+} | null>(null);
 
 export function useCurrentProject() {
   return useContext(ProjectContext)!;
