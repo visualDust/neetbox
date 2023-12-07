@@ -48,6 +48,9 @@ export default defineConfig({
       },
     },
   },
+  dev: {
+    writeToDisk: true,
+  },
   output: {
     distPath: {
       root: "../neetbox/frontend_dist",
