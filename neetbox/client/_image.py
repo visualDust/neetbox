@@ -1,5 +1,5 @@
 import io
-from typing import Union
+from typing import Optional, Union
 
 import cv2
 import numpy as np
@@ -7,33 +7,47 @@ from PIL import Image
 from neetbox._daemon._protocol import *
 from neetbox._daemon.client._client import connection
 from neetbox.config import get_project_id, get_run_id
+from neetbox.utils.x2numpy import *
 from neetbox.logging import logger
 
 
-def make_np(x):
-    def check_nan(array):
-        tmp = np.sum(array)
-        if np.isnan(tmp) or np.isinf(tmp):
-            logger.warning("NaN or Inf found in input tensor.")
-        return array
+def figure_to_image(figures, close=True):
+    """Render matplotlib figure to numpy format.
 
-    if isinstance(x, list):
-        return check_nan(np.array(x))
-    if isinstance(x, np.ndarray):
-        return check_nan(x)
-    if np.isscalar(x):
-        return check_nan(np.array([x]))
-    if "torch" in str(type(x)):
+    Note that this requires the ``matplotlib`` package.
 
-        def prepare_pytorch(x):
-            import torch
+    Args:
+        figure (matplotlib.pyplot.figure) or list of figures: figure or a list of figures
+        close (bool): Flag to automatically close the figure
 
-            if isinstance(x, torch.autograd.Variable):
-                x = x.data
-            x = x.cpu().numpy()
-            return x
+    Returns:
+        numpy.array: image in [CHW] order
+    """
+    import numpy as np
 
-        return check_nan(prepare_pytorch(x))
+    try:
+        import matplotlib.pyplot as plt
+        import matplotlib.backends.backend_agg as plt_backend_agg
+    except ModuleNotFoundError:
+        print("please install matplotlib")
+
+    def render_to_rgb(figure):
+        canvas = plt_backend_agg.FigureCanvasAgg(figure)
+        canvas.draw()
+        data = np.frombuffer(canvas.buffer_rgba(), dtype=np.uint8)
+        w, h = figure.canvas.get_width_height()
+        image_hwc = data.reshape([h, w, 4])[:, :, 0:3]
+        image_chw = np.moveaxis(image_hwc, source=2, destination=0)
+        if close:
+            plt.close(figure)
+        return image_chw
+
+    if isinstance(figures, list):
+        images = [render_to_rgb(figure) for figure in figures]
+        return np.stack(images)
+    else:
+        image = render_to_rgb(figures)
+        return image
 
 
 def make_grid(I, ncols=8):
@@ -91,22 +105,29 @@ def convert_to_HWC(tensor, input_format):  # tensor: numpy array
         return tensor
 
 
-def add_image(name: str, image: Union[np.array, Image.Image]):
+def add_image(name: str, image, dataformats: str = None):
     """send an image to frontend display
 
     Args:
         image (Union[np.array, Image.Image]): image from cv2 and PIL.Image are supported
         name (str): name of the image, used in frontend display
     """
-
-    if isinstance(image, np.ndarray):  # convert ndarray to bytes
-        _, im_buf_arr = cv2.imencode(".png", image)
-        image_bytes = im_buf_arr.tobytes()
-    elif isinstance(image, Image.Image):
+    if isinstance(image, Image.Image):  # is PIL Image
         with io.BytesIO() as image_bytes_stream:
             # convert PIL Image to bytes
             image.save(image_bytes_stream, format="PNG")
             image_bytes = image_bytes_stream.getvalue()
+    else:  # try convert numpy
+        dataformats = dataformats or "CHW"
+        image = make_np(image)
+        image = convert_to_HWC(image, dataformats)
+        if image.dtype != np.uint8:
+            image = (image * 255.0).astype(np.uint8)
+
+        if isinstance(image, np.ndarray):  # convert ndarray to bytes
+            _, im_buf_arr = cv2.imencode(".png", image)
+            image_bytes = im_buf_arr.tobytes()
+
     # send bytes
     project_id = get_project_id()
     connection.post(
@@ -116,9 +137,21 @@ def add_image(name: str, image: Union[np.array, Image.Image]):
     )
 
 
-def add_tensor(name: str, tensor, dataformats="CHW"):
-    tensor = make_np(tensor)
-    tensor = convert_to_HWC(tensor, dataformats)
-    if tensor.dtype != np.uint8:
-        tensor = (tensor * 255.0).astype(np.uint8)
-    add_image(name=name, image=tensor)
+def add_figure(
+    figure,
+    close: Optional[bool] = True,
+):
+    """Render matplotlib figure into an image and add it to summary.
+    Note that this requires the ``matplotlib`` package.
+
+    Args:
+        tag: Data identifier
+        figure (matplotlib.pyplot.figure) or list of figures: Figure or a list of figures
+        global_step: Global step value to record
+        close: Flag to automatically close the figure
+        walltime: Override default walltime (time.time()) of event
+    """
+    if isinstance(figure, list):
+        add_image(image=figure_to_image(figure, close), dataformats="NCHW")
+    else:
+        add_image(image=figure_to_image(figure, close), dataformats="CHW")
