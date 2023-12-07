@@ -2,18 +2,23 @@ import { WEBSOCKET_URL } from "./api";
 import { Project } from "./projects";
 import { ImageMetadata } from "./types";
 
-interface WsMsg<Type extends string = string, Payload = any> {
+export interface WsMsgBase<Type extends string = string, Payload = any> {
   "event-type": Type;
   name: string;
   payload: Payload;
   "event-id": number;
 }
 
+export type WsMsg =
+  | WsMsgBase
+  | (WsMsgBase<"image"> & ImageMetadata)
+  | (WsMsgBase<"scatter", { series: string; x: number; y: number }> & { runid: string });
+
 export class WsClient {
   ws: WebSocket;
   nextId = ~~(Math.random() * 100000000) * 1000;
   callbacks = new Map<number, (msg: WsMsg) => void>();
-  nextLogId = 1;
+  wsListeners = new Set<(msg: WsMsg) => void>();
 
   constructor(readonly project: Project) {
     this.ws = new WebSocket(WEBSOCKET_URL);
@@ -35,13 +40,10 @@ export class WsClient {
         this.callbacks.get(eventId)!(json);
         this.callbacks.delete(eventId);
       } else if (eventType === "log") {
-        json.payload._id = this.nextLogId++;
         project.handleLog(json.payload);
-      } else if (eventType === "image") {
-        const { imageId, metadata } = json as unknown as ImageMetadata;
-        project.handleImage({ imageId, metadata });
       } else {
-        console.warn("ws unhandled message", json);
+        // console.warn("ws unhandled message", json);
+        this.wsListeners.forEach((x) => x(json));
       }
     };
   }

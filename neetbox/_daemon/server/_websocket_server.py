@@ -12,8 +12,8 @@ from rich.console import Console
 from rich.table import Table
 from websocket_server import WebsocketServer
 
-from neetbox.daemon._protocol import *
-from neetbox.daemon.server._bridge import Bridge
+from neetbox._daemon._protocol import *
+from neetbox._daemon.server._bridge import Bridge
 from neetbox.logging import LogStyle, logger
 
 from .history import *
@@ -48,8 +48,7 @@ def get_web_socket_server(config, debug=False):
         # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
     def on_event_type_handshake(client, server, message_dict, message):
-        if debug:
-            logger.info(f"on event handshake, {message_dict}")
+        logger.debug(f"on event handshake, {message_dict}")
         if client["id"] in connected_clients:  # client cannot handshake again
             _client_id = client["id"]
             logger.warn(
@@ -167,7 +166,11 @@ def get_web_socket_server(config, debug=False):
             elif "cli" == forward:
                 bridge.ws_send_to_client(message)  # forward to frontends
         if save_history:
-            bridge.save_json_to_history(table_name=event_type_name, json_data=message)
+            bridge.save_json_to_history(
+                table_name=event_type_name,
+                json_data=message_dict[PAYLOAD_NAME_KEY],
+                run_id=message_dict[RUN_ID_KEY],
+            )
         return  # return after handling log forwarding
 
     def on_event_type_log(message_dict, message):
@@ -208,6 +211,15 @@ def get_web_socket_server(config, debug=False):
         elif _event_type == "ack":
             # todo forward ack to waiting acks?
             return  # return after handling ack
+        else:  # unknown event type, forward and save to history
+            _, _who = connected_clients[client["id"]]  # check if is web or cli
+            on_event_type_json(
+                message_dict=message_dict,
+                message=message,
+                event_type_name=message_dict[EVENT_TYPE_NAME_KEY],
+                forward=["web" if _who == "cli" else "cli"],
+                save_history=True,
+            )
 
     ws_server.set_fn_new_client(handle_ws_connect)
     ws_server.set_fn_client_left(handle_ws_disconnect)

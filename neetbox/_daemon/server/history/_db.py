@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime, timedelta
 from enum import Enum
 from importlib.metadata import version
-from typing import Dict, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from neetbox.logging import logger
 from neetbox.logging.formatting import LogStyle
@@ -80,8 +80,8 @@ class QueryCondition:
         """
         # try load id range
         id_range = None
-        if "id" in json_data:
-            id_range_str = json_data["id"]
+        if ID_COLUMN_NAME in json_data:
+            id_range_str = json_data[ID_COLUMN_NAME]
             id_range = eval(id_range_str)
             assert (
                 isinstance(id_range, list)
@@ -93,8 +93,8 @@ class QueryCondition:
             id_range = tuple(id_range)  # to tuple
         # try load timestamp range
         timestamp_range = None
-        if "timestamp" in json_data:
-            timestamp_range_str = json_data["timestamp"]
+        if TIMESTAMP_COLUMN_NAME in json_data:
+            timestamp_range_str = json_data[TIMESTAMP_COLUMN_NAME]
             timestamp_range = eval(timestamp_range_str)
             assert (
                 isinstance(timestamp_range, list)
@@ -107,9 +107,9 @@ class QueryCondition:
             # datetime.strptime(timestamp_range[1], DATETIME_FORMAT)
             timestamp_range = tuple(timestamp_range)
         # try to load series
-        series = json_data["series"] if "series" in json_data else None
+        series = json_data[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in json_data else None
         # run-id cond
-        run_id = json_data["run_id"] if "run_id" in json_data else None
+        run_id = json_data[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in json_data else None
         # try load limit
         limit = None
         if "limit" in json_data:
@@ -151,11 +151,10 @@ class QueryCondition:
         # === series condition ===
         _series_cond = ""
         if self.series:
-            _series_cond = f"{SERIES_COLUMN_NAME} == {self.series}"
+            _series_cond = f"{SERIES_COLUMN_NAME} == '{self.series}'"
         # === run-id condition ===
         _run_id_cond = ""
         if self.run_id:
-            raise
             _run_id_cond = f"{RUN_ID_COLUMN_NAME} == {self.run_id}"
         # === ORDER BY ===
         _order_cond = f"ORDER BY " if self.order else ""
@@ -194,6 +193,7 @@ class DBConnection:
     # not static. instance level vars
     connection: sqlite3.Connection
     _inited_tables: collections.defaultdict
+    _exec_query: List[Tuple]
 
     def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "DBConnection":
         if path is None:  # make path from project id
@@ -323,9 +323,11 @@ class DBConnection:
         return result
 
     def get_series_of_table(self, table_name):
+        if not self.table_exist(table_name):
+            return []
         sql_query = f"SELECT DISTINCT series FROM {table_name}"
         result, _ = self._query(sql_query, fetch=FetchType.ALL)
-        return result
+        return [result for (result,) in result]
 
     def write_json(
         self,
@@ -335,13 +337,14 @@ class DBConnection:
         run_id: str = None,
         timestamp: str = None,
     ):
-        _json_dict = json.loads(json_data)
+        if not isinstance(json_data, dict):
+            json_data = json.loads(json_data)
         timestamp = (
-            _json_dict[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in _json_dict else timestamp
+            json_data[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in json_data else timestamp
         )
         timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-        series = _json_dict[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in _json_dict else series
-        run_id = _json_dict[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in _json_dict else run_id
+        series = json_data[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in json_data else series
+        run_id = json_data[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in json_data else run_id
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
         if not self._inited_tables[table_name]:  # create if there is no version table
@@ -352,7 +355,7 @@ class DBConnection:
             self._inited_tables[table_name] = True
 
         sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME}, {JSON_COLUMN_NAME}) VALUES (?, ?, ?, ?)"
-        if not isinstance(json_data, str):
+        if isinstance(json_data, dict):
             json_data = json.dumps(json_data)
         _, lastrowid = self._execute(sql_query, timestamp, series, run_id, json_data)
         return lastrowid
@@ -366,13 +369,13 @@ class DBConnection:
         run_id: str = None,
         timestamp: str = None,
     ):
-        _json_dict = meta_data if isinstance(meta_data, dict) else json.loads(meta_data)
+        meta_data = meta_data if isinstance(meta_data, dict) else json.loads(meta_data)
         timestamp = (
-            _json_dict[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in _json_dict else timestamp
+            meta_data[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in meta_data else timestamp
         )
         timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-        series = _json_dict[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in _json_dict else series
-        run_id = _json_dict[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in _json_dict else run_id
+        series = meta_data[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in meta_data else series
+        run_id = meta_data[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in meta_data else run_id
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
         if isinstance(blob_data, bytes):

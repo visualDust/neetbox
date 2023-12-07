@@ -8,8 +8,8 @@ from typing import Callable
 import httpx
 import websocket
 
-from neetbox.config._config import get_module_level_config, get_project_id, get_run_id
-from neetbox.daemon._protocol import *
+from neetbox._daemon._protocol import *
+from neetbox.config import get_module_level_config, get_project_id, get_run_id
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.utils.mvc import Singleton
@@ -166,18 +166,21 @@ class ClientConn(metaclass=Singleton):
 
     def ws_send(event_type: str, payload, event_id=-1):
         if ClientConn.__ws_client:  # if ws client exist
-            ClientConn.__ws_client.send(
-                json.dumps(
-                    {
-                        PROJECT_ID_KEY: get_project_id(),
-                        RUN_ID_KEY: get_run_id(),
-                        EVENT_TYPE_NAME_KEY: event_type,
-                        PAYLOAD_NAME_KEY: payload,
-                        EVENT_ID_NAME_KEY: event_id,
-                    },
-                    default=str,
+            try:
+                ClientConn.__ws_client.send(
+                    json.dumps(
+                        {
+                            PROJECT_ID_KEY: get_project_id(),
+                            RUN_ID_KEY: get_run_id(),
+                            EVENT_TYPE_NAME_KEY: event_type,
+                            PAYLOAD_NAME_KEY: payload,
+                            EVENT_ID_NAME_KEY: event_id,
+                        },
+                        default=str,
+                    )
                 )
-            )
+            except Exception as e:
+                logger.warn(f"websocket send fialed: {e}, message dropped.")
 
 
 # assign this connection to websocket log writer

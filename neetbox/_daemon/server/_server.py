@@ -6,11 +6,11 @@
 
 import setproctitle
 
-from neetbox.daemon._protocol import *
-from neetbox.daemon.server._bridge import Bridge
-from neetbox.daemon.server._flask_server import get_flask_server
-from neetbox.daemon.server._websocket_server import get_web_socket_server
-from neetbox.daemon.server.history import *
+from neetbox._daemon._protocol import *
+from neetbox._daemon.server._bridge import Bridge
+from neetbox._daemon.server._flask_server import get_flask_server
+from neetbox._daemon.server._websocket_server import get_web_socket_server
+from neetbox._daemon.server.history import *
 from neetbox.logging import LogStyle, logger
 
 __PROC_NAME = "NEETBOX SERVER"

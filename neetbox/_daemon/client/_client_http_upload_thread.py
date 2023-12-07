@@ -6,13 +6,12 @@
 
 import json
 
-import neetbox
-from neetbox.config._config import get_module_level_config, get_project_id, get_run_id
-from neetbox.daemon._protocol import *
-from neetbox.daemon.client._client import connection
+from neetbox._daemon._protocol import *
+from neetbox._daemon.client._client import connection
+from neetbox.client._signal_and_slot import _UPDATE_VALUE_DICT, SYSTEM_CHANNEL, watch
+from neetbox.config import get_module_level_config, get_project_id
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
-from neetbox.pipeline._signal_and_slot import _UPDATE_VALUE_DICT, SYSTEM_CHANNEL, watch
 
 logger = Logger(style=LogStyle(with_datetime=False, skip_writers=["ws"]))
 
@@ -25,10 +24,10 @@ def _add_upload_thread_to_watch(daemon_config, project_id):
     def upload_via_http():
         # dump status as json
         _data = _UPDATE_VALUE_DICT[SYSTEM_CHANNEL].copy()
-        _data[RUN_ID_KEY] = get_run_id()
-        _data = json.dumps(_data, default=str)
-        _headers = {"Content-Type": "application/json"}
+        _data["config"] = get_module_level_config("@")
         try:
+            _data = json.dumps(_data, default=str)
+            _headers = {"Content-Type": "application/json"}
             # upload data
             resp = connection.post(api=_api, json=_data, headers=_headers)
             if resp.is_error:  # upload failed

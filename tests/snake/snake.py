@@ -2,9 +2,8 @@ from random import random
 from threading import Thread
 from time import sleep
 
-from neetbox.client import action
-from neetbox.logging import logger
-from neetbox.pipeline import listen, watch
+import neetbox
+from neetbox import logger
 
 EMPTY = " "
 BODY = "o"
@@ -18,7 +17,7 @@ game_running = False
 # logger.info("starting")
 
 
-@action(blocking=False)
+@neetbox.action(blocking=False)
 def snake_game():
     global game_running
     if game_running:
@@ -39,22 +38,22 @@ def game():
     cur_head = 3, 3
     cur_direction = (1, 0)
 
-    @action()
+    @neetbox.action()
     def left():
         nonlocal cur_direction
         cur_direction = (-1, 0)
 
-    @action()
+    @neetbox.action()
     def down():
         nonlocal cur_direction
         cur_direction = (0, 1)
 
-    @action()
+    @neetbox.action()
     def up():
         nonlocal cur_direction
         cur_direction = (0, -1)
 
-    @action()
+    @neetbox.action()
     def right():
         nonlocal cur_direction
         cur_direction = (1, 0)

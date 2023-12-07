@@ -9,7 +9,7 @@ from typing import Dict
 
 from websocket_server import WebsocketServer
 
-from neetbox.daemon._protocol import *
+from neetbox._daemon._protocol import *
 from neetbox.logging import LogStyle, logger
 
 from .history import *
@@ -131,7 +131,7 @@ class Bridge:
     def set_status(self, status):
         status_dict = json.loads(status) if isinstance(status, str) else status
         self.status = status_dict
-        self.save_json_to_history(table_name="status", json_data=status)
+        self.save_json_to_history(table_name="status", json_data=status_dict)
 
     def get_status(self):
         status = self.status

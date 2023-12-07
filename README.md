@@ -26,8 +26,6 @@ NEETBOX is under heavy development.
 - [ ] attach remote logging in command line cli
 - [ ] distinguish different runs
 
-
-
 ## docs
 
 [neetbox.550w.host](https://neetbox.550w.host). (APIs are ready but we are not ready for the doc yet)
@@ -55,6 +53,12 @@ run your code and visit https://localhost:20202 to see your dashboard.
 ## usage examples
 
 [how to guides](todo) provides easy examples of basic neetbox funcionalities.
+
+## Contributors
+
+<a href = "https://github.com/visualDust/neetbox/graphs/contributors">
+  <img src = "https://contrib.rocks/image?repo=VisualDust/neetbox"/>
+</a>
 
 ## Star History
 

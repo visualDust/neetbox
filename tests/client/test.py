@@ -1,25 +1,27 @@
+import math
 import os
 import time
 from random import random
 from time import sleep
 
 import neetbox
-from neetbox.logging import logger
-from neetbox.pipeline import listen, watch
+from neetbox import logger
 
 
-@watch("train", initiative=True)
+@neetbox.watch("train", initiative=True)
 def train(epoch):
     loss, acc = random(), random()
+    neetbox.add_scatter("sin", epoch, math.sin(epoch * 0.1))
+    neetbox.add_scatter("cos", epoch, math.cos(epoch * 0.1))
     return {"loss": loss, "acc": acc}
 
 
-@listen("train")
+@neetbox.listen("train")
 def print_to_console(metrix):
     logger.log(f"metrix from train: {metrix}")
 
 
-@watch("log-some-prefix", initiative=False, interval=5.0)
+@neetbox.watch("log-some-prefix", initiative=False, interval=5.0)
 def log_with_some_prefix():
     logger.ok("some ok")
     logger.info("some info")
@@ -116,7 +118,7 @@ def send_image():
     from PIL import Image
 
     with Image.open("weight_visualize_conv1_0_1.png") as logo_image:
-        neetbox.add_image(logo_image, name="weights visualize")
+        neetbox.add_image(name="weights visualize", image=logo_image)
 
 
 @logger.mention()

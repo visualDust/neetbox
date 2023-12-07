@@ -4,12 +4,11 @@ from ast import literal_eval
 from threading import Thread
 from typing import Callable, Optional
 
+from neetbox._daemon._protocol import *
+from neetbox._daemon.client._client import connection
+from neetbox.client._signal_and_slot import SYSTEM_CHANNEL, watch
 from neetbox.core import Registry
-from neetbox.daemon._protocol import *
-from neetbox.daemon.client._client import connection
 from neetbox.logging import logger
-from neetbox.pipeline import watch
-from neetbox.pipeline._signal_and_slot import SYSTEM_CHANNEL
 from neetbox.utils.mvc import Singleton
 
 

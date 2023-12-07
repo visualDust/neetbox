@@ -5,10 +5,14 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-import neetbox.daemon as daemon_module
-from neetbox.config import get_module_level_config
-from neetbox.config._workspace import _init_workspace, _is_in_workspace, _load_workspace
-from neetbox.daemon.server._server import server_process
+import neetbox._daemon as daemon_module
+from neetbox._daemon.server._server import server_process
+from neetbox.config._workspace import (
+    _check_if_workspace_config_valid,
+    _get_module_level_config,
+    _init_workspace,
+    _load_workspace_config,
+)
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 
@@ -20,7 +24,7 @@ logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws
 
 
 def get_daemon_config():
-    return get_module_level_config(daemon_module)
+    return _get_module_level_config(daemon_module)
 
 
 # def get_base_addr(port=0):
@@ -45,10 +49,9 @@ def main(ctx, verbose: bool):
 
 
 def _try_load_workspace_if_applicable():
-    if _is_in_workspace():
-        success = _load_workspace()
-        if not success:
-            os._exit(255)
+    is_workspace = _check_if_workspace_config_valid()
+    if is_workspace:
+        _load_workspace_config()
 
 
 @main.command(name="list")
@@ -138,7 +141,10 @@ def shutdown_server(port):
 def init(name: str):
     """initialize current folder as workspace and generate the config file from defaults"""
     try:
-        if _init_workspace(name=name):
+        import neetbox.extension  # do not remove
+
+        init_succeed = _init_workspace(name=name)
+        if init_succeed:
             logger.console_banner("neetbox", font="ansishadow")
             logger.log("Welcome to NEETBOX")
     except Exception as e:

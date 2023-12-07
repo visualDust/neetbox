@@ -200,11 +200,3 @@ def _update_thread():
 
 update_thread = Thread(target=_update_thread, daemon=True)
 update_thread.start()
-
-
-@watch(name="config", initiative=True, _channel=SYSTEM_CHANNEL)
-def put_workspace_config_into_watch():
-    return get_module_level_config("@")
-
-
-put_workspace_config_into_watch()  # put workspace config into http_uploads at once

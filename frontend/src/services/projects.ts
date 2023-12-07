@@ -1,14 +1,13 @@
-import { Notification as SemiNotification } from "@douyinfe/semi-ui";
 import { BetterAtom } from "../utils/betterAtom";
 import { fetcher } from "./api";
-import { WsClient } from "./projectWebsocket";
+import { WsClient, WsMsg } from "./projectWebsocket";
 import { ProjectStatusHistory, LogData, ProjectStatus, ImageMetadata } from "./types";
 import { checkLogForNotification } from "./logNotifications";
 
 const projects = new Map<string, Project>();
 
 const StatusHistoryCount = 120;
-const LogHistoryCount = 1000;
+const LogHistoryCount = 500;
 
 export class Project {
   wsClient: WsClient;
@@ -21,7 +20,7 @@ export class Project {
   images = new BetterAtom<ImageMetadata[]>([]);
 
   get nameOrId() {
-    return this.status.value.current?.config.value.name ?? this.id;
+    return this.status.value.current?.config.name ?? this.id;
   }
 
   constructor(readonly id: string) {
@@ -52,7 +51,7 @@ export class Project {
       })}`,
     ).then(async (data) => {
       data.reverse();
-      this.logs.value = [...this.logs.value, ...data.map((x) => x.metadata.payload)];
+      this.logs.value = [...this.logs.value, ...data.map((x) => x.metadata)];
     });
 
     fetcher(
@@ -75,11 +74,13 @@ export class Project {
       data.hardware.value.cpus.forEach((cpu, idx) => {
         if (typeof cpu.id != "number" || cpu.id < 0) cpu.id = idx;
       });
-      const projectData = { ...this.status.value };
-      projectData.current = data;
-      projectData.history = slideWindow(projectData.history, [data], StatusHistoryCount);
-      this.status.value = projectData;
-      console.info({ projectData });
+      if (data.hardware.timestamp !== this.status.value.current?.hardware.timestamp) {
+        const projectData = { ...this.status.value };
+        projectData.current = data;
+        projectData.history = slideWindow(projectData.history, [data], StatusHistoryCount);
+        this.status.value = projectData;
+        console.info({ projectData });
+      }
     });
   }
 
@@ -102,7 +103,7 @@ export class Project {
     this.images.value = [...this.images.value, image];
   }
 
-  sendAction(action: string, args: Record<string, string>, onReply?: (result: any) => void) {
+  sendAction(action: string, args: Record<string, string>, onReply?: (result: WsMsg["payload"]) => void) {
     this.wsClient.send(
       {
         "event-type": "action",

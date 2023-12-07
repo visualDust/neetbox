@@ -8,8 +8,8 @@ import json
 import subprocess
 import time
 
+from neetbox._daemon.server._daemonable_process import DaemonableProcess
 from neetbox.config import get_module_level_config
-from neetbox.daemon.server._daemonable_process import DaemonableProcess
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
 
@@ -48,7 +48,7 @@ def connect():
         )
 
         popen = DaemonableProcess(
-            target="neetbox.daemon.server._daemon_launcher",
+            target="neetbox._daemon.server._daemon_launcher",
             args=["--config", json.dumps(daemon_config)],
             mode=daemon_config["mode"],
             redirect_stdout=subprocess.DEVNULL if daemon_config["mute"] else None,
