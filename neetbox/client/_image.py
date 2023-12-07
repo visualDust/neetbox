@@ -4,11 +4,12 @@ from typing import Optional, Union
 import cv2
 import numpy as np
 from PIL import Image
+
 from neetbox._daemon._protocol import *
 from neetbox._daemon.client._client import connection
 from neetbox.config import get_project_id, get_run_id
-from neetbox.utils.x2numpy import *
 from neetbox.logging import logger
+from neetbox.utils.x2numpy import *
 
 
 def figure_to_image(figures, close=True):
@@ -26,8 +27,8 @@ def figure_to_image(figures, close=True):
     import numpy as np
 
     try:
-        import matplotlib.pyplot as plt
         import matplotlib.backends.backend_agg as plt_backend_agg
+        import matplotlib.pyplot as plt
     except ModuleNotFoundError:
         print("please install matplotlib")
 
@@ -132,7 +133,7 @@ def add_image(name: str, image, dataformats: str = None):
     project_id = get_project_id()
     connection.post(
         api=f"/image/{project_id}",
-        data={PROJECT_ID_KEY: project_id, "series": name, "run-id": get_run_id()},
+        data={PROJECT_ID_KEY: project_id, SERIES_ID_KEY: name, RUN_ID_KEY: get_run_id()},
         files={"image": image_bytes},
     )
 
