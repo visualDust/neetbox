@@ -4,7 +4,6 @@ from ast import literal_eval
 from threading import Thread
 from typing import Callable, Optional
 
-import neetbox
 from neetbox._daemon._protocol import *
 from neetbox._daemon.client._client import connection
 from neetbox.client._signal_and_slot import SYSTEM_CHANNEL, watch

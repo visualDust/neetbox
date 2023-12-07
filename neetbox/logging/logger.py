@@ -14,7 +14,9 @@ from typing import Any, Optional
 from rich.console import Console
 from rich.panel import Panel
 
-from neetbox.config import get_module_level_config
+from neetbox.config._workspace import (
+    _get_module_level_config as get_module_level_config,
+)
 from neetbox.logging._writer import (
     FileLogWriter,
     JsonLogWriter,

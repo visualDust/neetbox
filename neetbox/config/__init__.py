@@ -24,6 +24,7 @@ def get_module_level_config(module: Union[str, types.ModuleType] = None):
 
             _create_load_workspace()
             __IS_WORKSPACE_LOADED = True
+
     module_config = _get_module_level_config(module, traceback=3)
     return module_config
 

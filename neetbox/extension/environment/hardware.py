@@ -12,7 +12,6 @@ import GPUtil
 import psutil
 from GPUtil import GPU
 
-import neetbox
 from neetbox.client._signal_and_slot import SYSTEM_CHANNEL, watch
 from neetbox.config import export_default_config, get_module_level_config
 from neetbox.extension import on_workspace_loaded

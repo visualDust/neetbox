@@ -131,7 +131,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
         os.chdir(path=path)
     current_path = os.getcwd()
     config_file_path = os.path.join(current_path, CONFIG_FILE_NAME)
-    if not os.path.isfile(config_file_path):  # config file not exist
+    if not os.path.exists(config_file_path):  # config file not exist
         try:  # creating config file using default config
             with open(config_file_path, "w+") as config_file:
                 _update_default_config_from_config_register()  # load custom config into default config
@@ -146,7 +146,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
         except Exception as e:
             raise e
     else:  # config file exist:
-        return False
+        raise RuntimeError(f"{config_file_path} already exist")
 
 
 def _check_if_workspace_config_valid(path=None) -> bool:
