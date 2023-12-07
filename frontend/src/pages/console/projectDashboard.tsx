@@ -50,7 +50,7 @@ function ProjectDashboard() {
       <div style={{ padding: "20px", position: "relative" }}>
         <AppTitle
           extra={
-            <ProjectContext.Provider value={projectContextData}>
+            <ProjectContext.Provider key={projectId} value={projectContextData}>
               <RunSelect />
             </ProjectContext.Provider>
           }

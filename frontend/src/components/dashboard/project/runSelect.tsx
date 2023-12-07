@@ -1,12 +1,12 @@
-import { useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import { Space, Select, Typography } from "@douyinfe/semi-ui";
 import Loading from "../../loading";
 import { useAPI } from "../../../services/api";
 import { useCurrentProject } from "../../../hooks/useProject";
 
-export const RunSelect = () => {
+export const RunSelect = memo(() => {
   const { projectId, runId, setRunId } = useCurrentProject();
-  const { data: runIds } = useAPI(`/runids/${projectId}`);
+  const { data: runIds } = useAPI(`/runids/${projectId}`, { refreshInterval: 5000 });
   const sortedRunIds = useMemo(() => [...(runIds ?? [])].reverse(), [runIds]);
   useEffect(() => {
     if (runId === undefined && sortedRunIds.length) {
@@ -35,4 +35,4 @@ export const RunSelect = () => {
       )}
     </Space>
   );
-};
+});
