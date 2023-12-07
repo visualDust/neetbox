@@ -193,7 +193,6 @@ class DBConnection:
     # not static. instance level vars
     connection: sqlite3.Connection
     _inited_tables: collections.defaultdict
-    _exec_query: List[Tuple]
 
     def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "DBConnection":
         if path is None:  # make path from project id
@@ -204,7 +203,7 @@ class DBConnection:
             return cls._id2dbc[project_id]
         new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
-        new_dbc.connection = sqlite3.connect(path, check_same_thread=False)
+        new_dbc.connection = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
         new_dbc._inited_tables = collections.defaultdict(lambda: False)
         # check neetbox version
         _db_file_project_id = new_dbc.fetch_db_project_id(project_id)
@@ -233,7 +232,7 @@ class DBConnection:
             return cls._id2dbc[project_id]
         return DBConnection(project_id)
 
-    def _execute(self, query, *args, fetch: FetchType = None, save_immediately=True, **kwargs):
+    def _execute(self, query, *args, fetch: FetchType = None, **kwargs):
         cur = self.connection.cursor()
         # logger.info(f"executing sql='{query}', params={args}")
         result = cur.execute(query, args)
@@ -244,15 +243,10 @@ class DBConnection:
                 result = result.fetchone()
             elif fetch == FetchType.MANY:
                 result = result.fetchmany(kwargs["many"])
-        if save_immediately:
-            try:
-                self.connection.commit()
-            except Exception as e:
-                logger.warn(e) # todo
         return result, cur.lastrowid
 
     def _query(self, query, *args, fetch: FetchType = None, **kwargs):
-        return self._execute(query=query, *args, fetch=fetch, save_immediately=False, **kwargs)
+        return self._execute(query=query, *args, fetch=fetch, **kwargs)
 
     def table_exist(self, table_name):
         sql_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
