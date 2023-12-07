@@ -51,7 +51,7 @@ export class Project {
       })}`,
     ).then(async (data) => {
       data.reverse();
-      this.logs.value = [...this.logs.value, ...data.map((x) => x.metadata.payload)];
+      this.logs.value = [...this.logs.value, ...data.map((x) => x.metadata)];
     });
 
     fetcher(
@@ -74,11 +74,13 @@ export class Project {
       data.hardware.value.cpus.forEach((cpu, idx) => {
         if (typeof cpu.id != "number" || cpu.id < 0) cpu.id = idx;
       });
-      const projectData = { ...this.status.value };
-      projectData.current = data;
-      projectData.history = slideWindow(projectData.history, [data], StatusHistoryCount);
-      this.status.value = projectData;
-      console.info({ projectData });
+      if (data.hardware.timestamp !== this.status.value.current?.hardware.timestamp) {
+        const projectData = { ...this.status.value };
+        projectData.current = data;
+        projectData.history = slideWindow(projectData.history, [data], StatusHistoryCount);
+        this.status.value = projectData;
+        console.info({ projectData });
+      }
     });
   }
 
