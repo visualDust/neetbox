@@ -13,7 +13,7 @@ export default defineConfig({
           theme: "@semi-bot/semi-theme-nyx-c",
         }),
       );
-      config.optimization = { ...config.optimization, minimize: false };
+      // config.optimization = { ...config.optimization, minimize: false };
       config.module = {
         ...config.module,
         rules: [
@@ -32,6 +32,9 @@ export default defineConfig({
   html: {
     title: "Neetbox",
     favicon: "./public/logo.svg",
+  },
+  performance: {
+    chunkSplit: { strategy: "all-in-one" },
   },
   server: {
     port: 5173,
