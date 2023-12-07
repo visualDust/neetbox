@@ -1,26 +1,31 @@
 exclude: |
-    (?x)^(
-        other/.+|
-        doc/.+|
-    )$
+  (?x)^(
+      other/.+|
+      doc/.+|
+  )$
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: check-toml
-    -   id: check-added-large-files
-# For Python files
--   repo: https://github.com/psf/black.git
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+  # For Python files
+  - repo: https://github.com/psf/black.git
     rev: 23.9.1
     hooks:
-    -   id: black
+      - id: black
         files: (.*\.(py|pyi|bzl)|BUILD|.*\.BUILD|WORKSPACE)$
         args: [--line-length=100]
--   repo: https://github.com/pycqa/isort
+  - repo: https://github.com/pycqa/isort
     rev: 5.11.5
     hooks:
-    -   id: isort
+      - id: isort
         args: ["--profile", "black"]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v3.1.0" # Use the sha or tag you want to point at
+    hooks:
+      - id: prettier
+        files: .*\.(js|jsx|ts|tsx|json|yml|yaml|md)$
