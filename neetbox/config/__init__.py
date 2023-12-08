@@ -4,10 +4,37 @@
 # URL:    https://gong.host
 # Date:   20230413
 
-import inspect
 
-from neetbox.config._config import get_current, get_module_level_config
+import os
+import types
+from typing import Union
 
-from ._config import export_default_config
+from ._workspace import _get_module_level_config, export_default_config
 
-__all__ = ["get_module_level_config", "get_current", "export_default_config"]
+__IS_WORKSPACE_LOADED = False
+
+
+def get_module_level_config(module: Union[str, types.ModuleType] = None):
+    global __IS_WORKSPACE_LOADED
+    if not __IS_WORKSPACE_LOADED:
+        if not (
+            "NEETBOX_DAEMON_PROCESS" in os.environ and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
+        ):
+            from ._workspace import _create_load_workspace
+
+            _create_load_workspace()
+            __IS_WORKSPACE_LOADED = True
+
+    module_config = _get_module_level_config(module, traceback=3)
+    return module_config
+
+
+def get_project_id():
+    return get_module_level_config("@")["projectid"]
+
+
+def get_run_id():
+    return get_module_level_config("@")["runid"]
+
+
+__all__ = ["get_module_level_config", "export_default_config", "get_project_id", "get_run_id"]

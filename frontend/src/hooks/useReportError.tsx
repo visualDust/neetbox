@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Notification, Typography } from "@douyinfe/semi-ui";
+import { Typography } from "@douyinfe/semi-ui";
+import { addNotice } from "../utils/notification";
 
 export function useReportGlobalError() {
   useEffect(() => {
@@ -19,7 +20,8 @@ export function useReportGlobalError() {
 }
 
 function showError(errorText: string) {
-  Notification.error({
+  addNotice({
+    type: "error",
     content: (
       <div>
         <Typography.Text>Frontend App Error</Typography.Text>

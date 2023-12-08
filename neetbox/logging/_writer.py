@@ -8,9 +8,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Callable, Iterable, Optional, Union
-
+from neetbox.config import get_run_id, get_project_id
 from rich.console import Console
-
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
 from neetbox.utils import formatting
 
@@ -47,28 +46,28 @@ class RawLog:
     def json(self) -> dict:
         _default_style = self.style
         # prefix
-        _prefix = self.prefix or _default_style.prefix
+        prefix = self.prefix or _default_style.prefix
         # composing datetime
         _with_datetime = (
             _default_style.with_datetime if self.with_datetime is None else self.with_datetime
         )
-        _datetime = ""
+        timestamp = ""
         if _with_datetime:
             _datetime_fmt = self.datetime_format or _default_style.datetime_format
-            _datetime = datetime.now().strftime(_datetime_fmt)
+            timestamp = datetime.now().strftime(_datetime_fmt)
 
         # composing identifier
-        _whom = ""
+        whom = ""
         _with_identifier = (
             _default_style.with_identifier if self.with_identifier is None else self.with_identifier
         )
         if _with_identifier:
             _caller_identity = self.caller_identity
-            _whom = str(self.whom)  # check identity
+            whom = str(self.whom)  # check identity
             id_seq = []
             if self.whom is None:  # if using default logger, tracing back to the caller
                 file_level = True
-                _whom = ""
+                whom = ""
                 if _caller_identity.module_name and _default_style.trace_level >= 2:
                     # trace as module level
                     id_seq.append(_caller_identity.module_name)
@@ -82,10 +81,10 @@ class RawLog:
             if _caller_identity.func_name != "<module>":
                 id_seq.append(_caller_identity.func_name)  # skip for jupyters
             for i in range(len(id_seq)):
-                if len(_whom) != 0:
-                    _whom += _default_style.split_char_identity
-                _whom += id_seq[i]
-        return {"series": _prefix, "datetime": _datetime, "whom": _whom, "msg": self.rich_msg}
+                if len(whom) != 0:
+                    whom += _default_style.split_char_identity
+                whom += id_seq[i]
+        return {"series": prefix, "timestamp": timestamp, "whom": whom, "message": self.rich_msg}
 
     def __repr__(self) -> str:
         return json.dumps(self.json(), default=str)
@@ -122,11 +121,11 @@ class __ConsoleLogWriter(LogWriter):
         _prefix = _console_prefix_2_colored_text[_prefix] + " " if _prefix else _prefix
         rich_msg = str(
             _prefix
-            + _msg_dict["datetime"]
-            + _style.split_char_cmd * min(len(_msg_dict["datetime"]), 1)
+            + _msg_dict["timestamp"]
+            + _style.split_char_cmd * min(len(_msg_dict["timestamp"]), 1)
             + styled_text(_msg_dict["whom"], style=_style)
             + _style.split_char_cmd * min(len(_msg_dict["whom"]), 1)
-            + _msg_dict["msg"]
+            + _msg_dict["message"]
         )
         self.__class__._console.print(rich_msg)
 
@@ -170,11 +169,11 @@ class FileLogWriter(LogWriter):
         _style = raw_log.style
         text_msg = str(
             _msg_dict["series"]
-            + _msg_dict["datetime"]
-            + _style.split_char_txt * min(len(_msg_dict["datetime"]), 1)
+            + _msg_dict["timestamp"]
+            + _style.split_char_txt * min(len(_msg_dict["timestamp"]), 1)
             + _msg_dict["whom"]
             + _style.split_char_txt * min(len(_msg_dict["whom"]), 1)
-            + _msg_dict["msg"]
+            + _msg_dict["message"]
             + "\n"
         )
         self.file_writer.write(text_msg)
@@ -185,13 +184,17 @@ class FileLogWriter(LogWriter):
 
 class _WebSocketLogWriter(LogWriter):
     # class level statics
-    connection = None  # connection should be assigned by neetbox.daemon.client._client to avoid recursive import
+    connection = None  # connection should be assigned by neetbox._daemon.client._client to avoid recursive import
 
     def write(self, raw_log: RawLog):
         json_data = raw_log.json()
-
+        payload = {"whom": json_data["whom"], "message": json_data["message"], "series":json_data["series"]}
         if _WebSocketLogWriter.connection:
-            _WebSocketLogWriter.connection.ws_send(event_type="log", payload=json_data)
+            _WebSocketLogWriter.connection.ws_send(
+                event_type="log",
+                payload=payload,
+                timestamp=json_data["timestamp"],
+            )
 
 
 def _assign_connection_to_WebSocketLogWriter(conn):

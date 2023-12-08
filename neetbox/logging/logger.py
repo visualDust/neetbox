@@ -6,15 +6,17 @@
 
 import functools
 import os
-from datetime import date, datetime
+from datetime import date
 from enum import Enum
 from random import randint
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from rich.console import Console
 from rich.panel import Panel
 
-from neetbox.config import get_module_level_config
+from neetbox.config._workspace import (
+    _get_module_level_config as get_module_level_config,
+)
 from neetbox.logging._writer import (
     FileLogWriter,
     JsonLogWriter,
@@ -22,7 +24,7 @@ from neetbox.logging._writer import (
     consoleLogWriter,
     webSocketLogWriter,
 )
-from neetbox.logging.formatting import LogStyle, colored_text, styled_text
+from neetbox.logging.formatting import LogStyle
 from neetbox.utils.framing import get_caller_identity_traceback
 
 
@@ -52,25 +54,6 @@ class LogLevel(Enum):
         return self.value >= other.value
 
 
-_GLOBAL_LOG_LEVEL = LogLevel.ALL
-
-
-def set_log_level(level: LogLevel):
-    if type(level) is str:
-        level = {
-            "ALL": LogLevel.ALL,
-            "DEBUG": LogLevel.DEBUG,
-            "INFO": LogLevel.INFO,
-            "WARNING": LogLevel.WARNING,
-            "ERROR": LogLevel.ERROR,
-        }[level]
-    if type(level) is int:
-        assert level >= 0 and level <= 3
-        level = LogLevel(level)
-    global _GLOBAL_LOG_LEVEL
-    _GLOBAL_LOG_LEVEL = level
-
-
 class Logger:
     # global static
     __WHOM_2_LOGGER = {}
@@ -86,10 +69,9 @@ class Logger:
         self.console_writer = consoleLogWriter
         self.ws_writer = webSocketLogWriter
         self.file_writer = None
-
         _cfg = get_module_level_config()
         self.set_log_dir(_cfg["logdir"])
-        set_log_level(_cfg["level"])
+        self.set_log_level(_cfg["level"])
 
     def __call__(self, whom: Any = None, style: Optional[LogStyle] = None) -> "Logger":
         """Attention! do not call this logger instance unless you know what are you doing. Users should use the default logger by import logger from neetbox.logging.
@@ -107,6 +89,20 @@ class Logger:
             return Logger.__WHOM_2_LOGGER[whom]
         Logger.__WHOM_2_LOGGER[whom] = Logger(whom=whom, style=style)
         return Logger.__WHOM_2_LOGGER[whom]
+
+    def set_log_level(self, level: LogLevel):
+        if type(level) is str:
+            level = {
+                "ALL": LogLevel.ALL,
+                "DEBUG": LogLevel.DEBUG,
+                "INFO": LogLevel.INFO,
+                "WARNING": LogLevel.WARNING,
+                "ERROR": LogLevel.ERROR,
+            }[level]
+        if type(level) is int:
+            assert level >= 0 and level <= 3
+            level = LogLevel(level)
+        self.log_level = level
 
     def log(
         self,
@@ -176,7 +172,7 @@ class Logger:
         with_datetime: Optional[bool] = None,
         skip_writers: list[str] = [],
     ):
-        if _GLOBAL_LOG_LEVEL >= LogLevel.INFO:
+        if self.log_level >= LogLevel.INFO:
             self.log(
                 *content,
                 prefix=f"ok",
@@ -196,7 +192,7 @@ class Logger:
         with_datetime: Optional[bool] = None,
         skip_writers: list[str] = [],
     ):
-        if _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
+        if self.log_level >= LogLevel.DEBUG:
             self.log(
                 *content,
                 prefix=f"debug",
@@ -216,7 +212,7 @@ class Logger:
         with_datetime: Optional[bool] = None,
         skip_writers: list[str] = [],
     ):
-        if _GLOBAL_LOG_LEVEL >= LogLevel.INFO:
+        if self.log_level >= LogLevel.INFO:
             self.log(
                 *message,
                 prefix=f"info",
@@ -236,7 +232,7 @@ class Logger:
         with_datetime: Optional[bool] = None,
         skip_writers: list[str] = [],
     ):
-        if _GLOBAL_LOG_LEVEL >= LogLevel.WARNING:
+        if self.log_level >= LogLevel.WARNING:
             self.log(
                 *message,
                 prefix=f"warning",
@@ -257,7 +253,7 @@ class Logger:
         skip_writers: list[str] = [],
         reraise=False,
     ):
-        if _GLOBAL_LOG_LEVEL >= LogLevel.ERROR:
+        if self.log_level >= LogLevel.ERROR:
             self.log(
                 str(err),
                 prefix=f"error",
@@ -270,7 +266,7 @@ class Logger:
         if type(err) is Exception:
             if reraise:
                 raise err
-            elif _GLOBAL_LOG_LEVEL >= LogLevel.DEBUG:
+            elif self.log_level >= LogLevel.DEBUG:
                 Logger._console.print_exception(err)
         return self
 
@@ -388,11 +384,9 @@ class Logger:
         if os.path.isfile(path):
             raise Exception("Target path is not a directory.")
         if not os.path.exists(path):
-            DEFAULT_LOGGER.info(f"Directory {path} not found, trying to create.")
             try:
                 os.makedirs(path)
             except Exception:
-                DEFAULT_LOGGER.err(f"Failed when trying to create directory {path}")
                 raise Exception(f"Failed when trying to create directory {path}")
         log_file_name = ""
         if independent:

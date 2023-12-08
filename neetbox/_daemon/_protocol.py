@@ -1,0 +1,136 @@
+from dataclasses import dataclass
+from enum import Enum
+import json
+from typing import Any, Union
+from importlib.metadata import version
+from datetime import datetime as dt
+
+# ===================== common things =====================
+
+ID_KEY = "id"
+NAME_KEY = "name"
+ARGS_KEY = "args"
+PROJECT_ID_KEY = WORKSPACE_ID_KEY = "projectid"
+RUN_ID_KEY = "runid"
+SERIES_KEY = "series"
+EVENT_TYPE_KEY = "event-type"
+EVENT_ID_KEY = "event-id"
+WHO_KEY = "who"
+PAYLOAD_KEY = "payload"
+METADATA_KEY = "metadata"
+TIMESTAMP_KEY = "timestamp"
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.SSS
+
+
+def get_timestamp(datetime=None):
+    datetime = datetime or dt.now()
+    return datetime.strftime(DATETIME_FORMAT)
+
+
+class IdentityType(str, Enum):
+    WEB = "web"
+    CLI = "cli"
+    SERVER = "server"
+    SELF = "self"
+    OTHERS = "another"
+    BOTH = "both"
+
+
+RESULT_KEY = "result"
+ERROR_KEY = "error"
+REASON_KEY = "reason"
+
+
+@dataclass
+class EventMsg:
+    project_id: str
+    event_type: str
+    who: str
+    payload: Any = None
+    run_id: str = None
+    event_id: int = -1
+    timestamp: str = get_timestamp()
+
+    def json(self):
+        return {
+            PROJECT_ID_KEY: self.project_id,
+            RUN_ID_KEY: self.run_id,
+            EVENT_TYPE_KEY: self.event_type,
+            EVENT_ID_KEY: self.event_id,
+            WHO_KEY: self.who,
+            PAYLOAD_KEY: self.payload,
+            TIMESTAMP_KEY: self.timestamp,
+        }
+
+    def dumps(self):
+        return json.dumps(self.json(), default=str)
+
+    @classmethod
+    def loads(cls, src):
+        if isinstance(src, str):
+            src = json.loads(src)
+        return EventMsg(
+            project_id=src.get(PROJECT_ID_KEY),
+            run_id=src.get(RUN_ID_KEY),
+            event_type=src.get(EVENT_TYPE_KEY),
+            who=src.get(WHO_KEY),
+            payload=src.get(PAYLOAD_KEY),
+            event_id=src.get(EVENT_ID_KEY),
+            timestamp=src.get(TIMESTAMP_KEY),
+        )
+
+    @classmethod
+    def merge(cls, x: Union["EventMsg", dict], y: Union["EventMsg", dict]):
+        _x = x if isinstance(x, dict) else x.json()
+        _y = y if isinstance(y, dict) else y.json()
+        for _k, _v in _y.items():
+            _x[_k] = _v
+        return cls.loads(_x)
+
+
+# ===================== WS things =====================
+
+# known event names
+EVENT_TYPE_NAME_HANDSHAKE = "handshake"
+EVENT_TYPE_NAME_LOG = "log"
+EVENT_TYPE_NAME_ACTION = "action"
+EVENT_TYPE_NAME_SCALAR = "scalar"
+EVENT_TYPE_NAME_IMAGE = "image"
+
+# ===================== HTTP things =====================
+
+FRONTEND_API_ROOT = "/web"
+CLIENT_API_ROOT = "/cli"
+
+# ===================== DB things =====================
+
+# === COLUMN NAMES ===
+ID_COLUMN_NAME = ID_KEY
+TIMESTAMP_COLUMN_NAME = TIMESTAMP_KEY
+SERIES_COLUMN_NAME = SERIES_KEY
+RUN_ID_COLUMN_NAME = RUN_ID_KEY
+JSON_COLUMN_NAME = METADATA_COLUMN_NAME = METADATA_KEY
+BLOB_COLUMN_NAME = "data"
+
+# === TABLE NAMES ===
+PROJECT_ID_TABLE_NAME = PROJECT_ID_KEY
+VERSION_TABLE_NAME = "version"
+RUN_IDS_TABLE_NAME = RUN_ID_KEY
+STATUS_TABLE_NAME = "status"
+LOG_TABLE_NAME = "log"
+IMAGE_TABLE_NAME = "image"
+
+NEETBOX_VERSION = version("neetbox")
+HISTORY_FILE_ROOT = ".neethistory"
+HISTORY_FILE_TYPE_NAME = "neetory"
+
+
+class DbQueryFetchType(str, Enum):
+    ALL = "all"
+    ONE = "one"
+    MANY = "many"
+
+
+class DbQuerySortType(str, Enum):
+    ASC = "ASC"
+    DESC = "DESC"
