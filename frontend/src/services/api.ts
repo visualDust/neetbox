@@ -10,6 +10,6 @@ export async function fetcher(url: string) {
   return await res.json();
 }
 
-export function useAPI(url: string, options?: { refreshInterval?: number }) {
+export function useAPI(url: string | null, options?: { refreshInterval?: number }) {
   return useSWR(url, fetcher, options);
 }

@@ -5,7 +5,7 @@ export interface ProjectStatusHistory {
 }
 
 export interface ProjectStatus {
-  config: WithTimestamp<ProjectConfig>;
+  config: ProjectConfig;
   platform: WithTimestamp<Record<string, string | string[]>>;
   hardware: WithTimestamp<HardwareInfo>;
   __action: WithTimestamp<ActionInfo>;
@@ -60,11 +60,11 @@ export interface LogData {
   datetime: string;
   whom: string;
   msg: string;
-  /** frontend only */
-  _id: number;
 }
 
 export interface ImageMetadata {
   imageId: number;
-  metadata: any;
+  metadata: {
+    series: string;
+  };
 }

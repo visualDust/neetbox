@@ -5,7 +5,6 @@ import { getTimeAxisOptions } from "./utils";
 
 export const CPUGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["hardware"]> }) => {
   const cpus = hardwareData[0].value.cpus;
-  console.info({ hardwareData });
   const initialOption = () => {
     return {
       backgroundColor: "transparent",

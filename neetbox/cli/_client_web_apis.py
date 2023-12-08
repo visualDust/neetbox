@@ -5,8 +5,8 @@
 # Date:   20230414
 
 
-from neetbox.daemon._protocol import *
-from neetbox.daemon.client._client import connection
+from neetbox._daemon._protocol import *
+from neetbox._daemon.client._client import connection
 
 
 def _get(api):

@@ -6,20 +6,35 @@ const server = new URL("http://127.0.0.1:5000");
 
 export default defineConfig({
   plugins: [pluginReact()],
-  // tools: {
-  //   rspack: (config) => {
-  //     config.plugins!.push(
-  //       new SemiRspackPlugin({
-  //         theme: "@semi-bot/semi-theme-nyx-c",
-  //       }),
-  //     );
-  //   },
-  // },
+  tools: {
+    rspack: (config) => {
+      config.plugins!.push(
+        new SemiRspackPlugin({
+          theme: "@semi-bot/semi-theme-nyx-c",
+        }),
+      );
+      // config.optimization = { ...config.optimization, minimize: false };
+      config.module = {
+        ...config.module,
+        rules: [
+          ...(config.module?.rules ?? []),
+          {
+            test: /echarts/,
+            sideEffects: true,
+          },
+        ],
+      };
+    },
+  },
   source: {
     entry: { index: "./src/main.tsx" },
   },
   html: {
-    template: "./index.html",
+    title: "Neetbox",
+    favicon: "./public/logo.svg",
+  },
+  performance: {
+    chunkSplit: { strategy: "all-in-one" },
   },
   server: {
     port: 5173,
@@ -32,6 +47,9 @@ export default defineConfig({
         pathRewrite: { "/ws/": "" },
       },
     },
+  },
+  dev: {
+    writeToDisk: true,
   },
   output: {
     distPath: {

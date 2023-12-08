@@ -8,7 +8,7 @@ module.exports = {
     "plugin:import/recommended",
     "plugin:import/typescript",
   ],
-  ignorePatterns: ["dist", ".eslintrc.cjs"],
+  ignorePatterns: ["dist", ".eslintrc.cjs", "cypress"],
   parser: "@typescript-eslint/parser",
   plugins: ["react-refresh"],
   rules: {
