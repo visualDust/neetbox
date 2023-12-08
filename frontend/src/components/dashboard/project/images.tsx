@@ -20,7 +20,7 @@ export const AllImageViewers = memo(() => {
   const { data: series, mutate } = useAPI(`/series/${projectId}/image`);
   useProjectWebSocket(projectId, "image", (msg) => {
     const newSeries = msg.metadata.series;
-    if (newSeries != null && !series.includes(newSeries)) {
+    if (newSeries != null && series && !series.includes(newSeries)) {
       mutate([...series, newSeries]);
     }
   });
