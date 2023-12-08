@@ -12,7 +12,7 @@ def fetch_servers(server_list):
     for server in server_list:
         address, port = server["address"], server["port"]
         try:
-            running_things = get_list(root=f"http://{address}:{port}")
+            running_things = get_list(root=f"http://{address}:{port}/")
         except Exception as e:
             running_things = e
         result.append((address, port, running_things))
@@ -39,8 +39,17 @@ class SeverList(Screen):
     def compose(self) -> ComposeResult:
         server_list = config._get("servers")
         servers = fetch_servers(server_list)
-        print(servers)
-        yield ListView(*[ListItem(Label(f"{server}")) for server in servers])
+        list_items = []
+        for server in servers:
+            address = server[0]
+            port = server[1]
+            if isinstance(server[2], Exception):
+                stat = "OFFLINE"
+            else:
+                num_projects = len(server[2])
+                stat = f"({num_projects} projects)"
+            list_items.append(ListItem(Label(f"{address}:{port} {stat}")))
+        yield ListView(*list_items)
         yield Footer()
 
 

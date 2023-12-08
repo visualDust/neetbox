@@ -11,7 +11,7 @@ from neetbox.utils.massive import (
     update_dict_recursively,
 )
 
-_CLI_APP_CONFIG = {"version": NEETBOX_VERSION, "servers": [{"address": "localhost", "port": 20202}]}
+_CLI_APP_CONFIG = {"version": NEETBOX_VERSION, "servers": [{"address": "localhost", "port": 5000}]}
 
 CONFIG_FILE_NAME = f"neetbox.toml"
 
