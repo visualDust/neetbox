@@ -19,7 +19,7 @@ export const AllScatterViewers = memo(() => {
   const { projectId } = useCurrentProject();
   const { data: series, mutate } = useAPI(`/series/${projectId}/scalar`);
   useProjectWebSocket(projectId, "scalar", (msg) => {
-    if (msg.payload.series != null && !series.includes(msg.payload.series)) {
+    if (msg.payload.series != null && series && !series.includes(msg.payload.series)) {
       mutate([...series, msg.payload.series]);
     }
   });
