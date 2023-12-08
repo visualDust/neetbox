@@ -95,7 +95,7 @@ class Bridge:
         target_bridge.historyDB = db
         # put last status
         last_status = target_bridge.read_json_from_history(
-            table_name="status", condition=QueryCondition(limit=1, order={"id": SortType.DESC})
+            table_name="status", condition=QueryCondition(limit=1, order={"id": DbQuerySortType.DESC})
         )
         if len(last_status):
             target_bridge.status = last_status[0][JSON_COLUMN_NAME]  # do not use set_status()
@@ -108,21 +108,21 @@ class Bridge:
         for _, history_db in db_list:
             cls.from_db(history_db)
 
-    def ws_send_to_frontends(self, message):
+    def ws_send_to_frontends(self, message:EventMsg):
         for web_ws in self.web_ws_list:
             try:
                 Bridge._ws_server.send_message(
-                    client=web_ws, msg=message
+                    client=web_ws, msg=message.dumps()
                 )  # forward original message to frontend
             except Exception as e:
                 logger.err(e)
         return
 
-    def ws_send_to_client(self, message):
+    def ws_send_to_client(self, message:EventMsg):
         _client = self.cli_ws
         try:
             Bridge._ws_server.send_message(
-                client=_client, msg=message
+                client=_client, msg=message.dumps()
             )  # forward original message to client
         except Exception as e:
             logger.err(e)

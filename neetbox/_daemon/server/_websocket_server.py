@@ -4,28 +4,25 @@
 # URL:    https://gong.host
 # Date:   20231204
 
-import json
 from typing import Dict, Tuple
-
+from neetbox._daemon._protocol import *
 from rich import box
 from rich.console import Console
 from rich.table import Table
-from websocket_server import WebsocketServer
-
-from neetbox._daemon._protocol import *
-from neetbox._daemon.server._bridge import Bridge
-from neetbox.logging import LogStyle, logger
-
 from .history import *
-
-console = Console()
-__PROC_NAME = "NEETBOX SERVER"
-logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))
 
 
 def get_web_socket_server(config, debug=False):
+    from websocket_server import WebsocketServer
+    from neetbox._daemon.server._bridge import Bridge
+    from neetbox.logging import LogStyle, logger
+
+    console = Console()
+    logger = logger("NEETBOX SERVER", LogStyle(skip_writers=["ws"]))
     ws_server = WebsocketServer(host="0.0.0.0", port=config["port"] + 1)
-    connected_clients: Dict(int, Tuple(str, str)) = {}  # {cid:(name,type)} store connection only
+    connected_clients: Dict(
+        int, Tuple(str, IdentityType)
+    ) = {}  # {cid:(name,type)} store connection only
 
     def handle_ws_connect(client, server):
         logger.info(f"client {client} connected. waiting for handshake...")
@@ -34,9 +31,9 @@ def get_web_socket_server(config, debug=False):
         if client["id"] not in connected_clients:
             return  # client disconnected before handshake, returning anyway
         project_id, who = connected_clients[client["id"]]
-        if who == "cli":  # remove client from Bridge
+        if who == IdentityType.CLI:  # remove client from Bridge
             Bridge.of_id(project_id).cli_ws = None
-        elif who == "web":  # remove frontend from Bridge
+        elif who == IdentityType.WEB:  # remove frontend from Bridge
             _new_web_ws_list = [
                 c for c in Bridge.of_id(project_id).web_ws_list if c["id"] != client["id"]
             ]
@@ -47,8 +44,9 @@ def get_web_socket_server(config, debug=False):
         )
         # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
-    def on_event_type_handshake(client, server, message_dict, message):
-        logger.debug(f"on event handshake, {message_dict}")
+    def on_event_type_handshake(client, server, message: EventMsg):
+        logger.debug(f"on event handshake, {message}")
+
         if client["id"] in connected_clients:  # client cannot handshake again
             _client_id = client["id"]
             logger.warn(
@@ -56,170 +54,132 @@ def get_web_socket_server(config, debug=False):
             )
             server.send_message(
                 client=client,
-                msg=json.dumps(
-                    WsMsg(
-                        project_id=project_id,
-                        event_type="handshake",
-                        event_id=_event_id,
-                        payload={"result": 400, "reason": "name not found"},
-                    ).json()
-                ),
+                msg=EventMsg.merge(
+                    message,
+                    {
+                        PAYLOAD_KEY: {ERROR_KEY: 400, REASON_KEY: "name not found"},
+                        WHO_KEY: IdentityType.SERVER,
+                    },
+                ).dumps(),
             )
             return  # client cannot handshake again
-        _payload = message_dict[PAYLOAD_NAME_KEY]
-        _event_id = message_dict[EVENT_ID_NAME_KEY]
-        project_id = message_dict[PROJECT_ID_KEY]
+
         # assign this client to a Bridge
-        who = _payload["who"]
-        console.log(f"handling handshake for {who} with project id '{project_id}'")
-        if who == "web":
+
+        console.log(f"handling handshake for {message.who} with project id '{message.project_id}'")
+        if message.who == IdentityType.WEB:
             # new connection from frontend
             # check if Bridge with name exist
-            if not Bridge.has(project_id):  # there is no such bridge
+            if not Bridge.has(message.project_id):  # there is no such bridge
                 server.send_message(
                     client=client,
-                    msg=json.dumps(
-                        WsMsg(
-                            project_id=project_id,
-                            event_type="handshake",
-                            event_id=_event_id,
-                            payload={"result": 404, "reason": "name not found"},
-                        ).json()
-                    ),
+                    msg=EventMsg.merge(
+                        message,
+                        {
+                            PAYLOAD_KEY: {ERROR_KEY: 404, REASON_KEY: "name not found"},
+                            WHO_KEY: IdentityType.SERVER,
+                        },
+                    ).dumps(),
                 )
             else:  # assign web to bridge
-                target_bridge = Bridge.of_id(project_id)
+                target_bridge = Bridge.of_id(message.project_id)
                 target_bridge.web_ws_list.append(client)
-                connected_clients[client["id"]] = (project_id, "web")
+                connected_clients[client["id"]] = (message.project_id, IdentityType.WEB)
                 server.send_message(
                     client=client,
-                    msg=json.dumps(
-                        WsMsg(
-                            project_id=project_id,
-                            event_type="handshake",
-                            event_id=_event_id,
-                            payload={"result": 200, "reason": "join success"},
-                        ).json()
-                    ),
+                    msg=EventMsg.merge(
+                        message,
+                        {
+                            PAYLOAD_KEY: {RESULT_KEY: 200, REASON_KEY: "join success"},
+                            WHO_KEY: IdentityType.SERVER,
+                        },
+                    ).dumps(),
                 )
-        elif who == "cli":
+        elif message.who == IdentityType.CLI:
             # new connection from cli
             # check if Bridge with name exist
-            target_bridge = Bridge(project_id=project_id)
+            target_bridge = Bridge(project_id=message.project_id)
             target_bridge.cli_ws = client  # assign cli to bridge
-            connected_clients[client["id"]] = (project_id, "cli")
+            connected_clients[client["id"]] = (message.project_id, IdentityType.CLI)
             server.send_message(
                 client=client,
-                msg=json.dumps(
-                    WsMsg(
-                        project_id=project_id,
-                        event_type="handshake",
-                        event_id=_event_id,
-                        payload={"result": 200, "reason": "join success"},
-                    ).json()
-                ),
+                msg=EventMsg.merge(
+                    message,
+                    {
+                        PAYLOAD_KEY: {RESULT_KEY: 200, REASON_KEY: "join success"},
+                        WHO_KEY: IdentityType.SERVER,
+                    },
+                ).dumps(),
             )
         else:
-            logger.warn(f"unknown type({who}) of websocket trying to handshake")
+            logger.warn(f"unknown type({message.who}) of websocket trying to handshake")
         if debug:
             table = Table(
                 title="Connected Websockets", box=box.MINIMAL_DOUBLE_HEAD, show_lines=True
             )
-            table.add_column("project-id", justify="center", style="magenta", no_wrap=True)
-            table.add_column("who", justify="center", style="cyan")
-            table.add_column("ws client", justify="center", style="green")
+            table.add_column(PROJECT_ID_KEY, justify="center", style="magenta", no_wrap=True)
+            table.add_column(WHO_KEY, justify="center", style="cyan")
+            table.add_column("ws", justify="center", style="green")
             for _, _bridge in Bridge.items():
                 table.add_row(_bridge.project_id, "", "")
                 if _bridge.cli_ws:
-                    table.add_row("", "client", str(_bridge.cli_ws))
+                    table.add_row("", IdentityType.CLI, str(_bridge.cli_ws))
                 for ws_web in _bridge.web_ws_list:
-                    table.add_row("", "web", str(ws_web))
+                    table.add_row("", IdentityType.WEB, str(ws_web))
             console.print(table)
         return
 
-    def on_event_type_action(client, server, message_dict, message):
-        project_id = message_dict[PROJECT_ID_KEY]
-        _, _who = connected_clients[client["id"]]  # check if is web or cli
-        bridge = Bridge.of_id(project_id)
-        if _who == "web":  # frontend send action query to client
-            bridge.ws_send_to_client(message)
-        else:  # _who == 'cli', client send action result back to frontend(s)
-            bridge.ws_send_to_frontends(message=message)
-        return  # return after handling action forwarding
-
     def on_event_type_json(
-        message_dict, message, event_type_name: str = None, forward: str = None, save_history=True
+        message: EventMsg,
+        forward_to: IdentityType = IdentityType.OTHERS,
+        save_history=True,
     ):
-        # forward log to frontend. logs should only be sent by cli and only be received by frontends
-        project_id = message_dict[PROJECT_ID_KEY]
-        event_type_name = event_type_name or message_dict[EVENT_TYPE_NAME_KEY]
-        if not Bridge.has(project_id):
+        if not Bridge.has(message.project_id):
             # project id must exist
             # drop anyway if not exist
             if debug:
-                console.log(f"handle {event_type_name}. {project_id} not found.")
+                console.log(f"handle {message.event_type}. {message.project_id} not found.")
             return
-        bridge = Bridge.of_id(project_id)
-        if forward:
-            if "web" == forward:
+        bridge = Bridge.of_id(message.project_id)
+        if forward_to:
+            if forward_to == IdentityType.SELF:
+                forward_to = message.who
+            if forward_to == IdentityType.OTHERS:
+                forward_to = (
+                    IdentityType.WEB if message.who == IdentityType.CLI else IdentityType.WEB
+                )
+            if forward_to in [IdentityType.WEB, IdentityType.BOTH]:
                 bridge.ws_send_to_frontends(message)  # forward to frontends
-            elif "cli" == forward:
+            elif forward_to in [IdentityType.CLI, IdentityType.BOTH]:
                 bridge.ws_send_to_client(message)  # forward to frontends
         if save_history:
             bridge.save_json_to_history(
-                table_name=event_type_name,
-                json_data=message_dict[PAYLOAD_NAME_KEY],
-                run_id=message_dict[RUN_ID_KEY],
+                table_name=message.event_type,
+                json_data=message.payload,
+                run_id=message.run_id,
+                timestamp = message.timestamp
             )
         return  # return after handling log forwarding
 
-    def on_event_type_log(message_dict, message):
-        return on_event_type_json(
-            message_dict=message_dict,
-            message=message,
-            forward="web",
-            save_history=True,
-        )
-
-    def on_event_type_scatter(message_dict, message):
-        return on_event_type_json(
-            message_dict=message_dict,
-            message=message,
-            forward="web",
-            save_history=True,
-        )
-
     def handle_ws_message(client, server: WebsocketServer, message):
-        message_dict = json.loads(message)
+        message = EventMsg.loads(message)
         # handle event-type
-        _event_type = message_dict[EVENT_TYPE_NAME_KEY]
-        if _event_type == "handshake":  # handle handshake
+        if message.event_type == EVENT_TYPE_NAME_HANDSHAKE:  # handle handshake
             on_event_type_handshake(
-                client=client, server=server, message_dict=message_dict, message=message
+                client=client, server=server, message=message
             )
             return  # return after handling handshake
         if client["id"] not in connected_clients:
             return  # !!! not handling messages from cli/web without handshake. handshake is aspecial   case and should be handled anyway before this check.
-        if _event_type == "log":  # handle log
-            on_event_type_log(message_dict=message_dict, message=message)
-        elif _event_type == "scalar":
-            on_event_type_scatter(message_dict=message_dict, message=message)
-        elif _event_type == "action":
-            on_event_type_action(
-                client=client, server=server, message_dict=message_dict, message=message
-            )
-        elif _event_type == "ack":
-            # todo forward ack to waiting acks?
-            return  # return after handling ack
+        if message.who != connected_clients[client["id"]][1]:
+            return  # !!! security check, who should match who
         else:  # unknown event type, forward and save to history
-            _, _who = connected_clients[client["id"]]  # check if is web or cli
             on_event_type_json(
-                message_dict=message_dict,
                 message=message,
-                event_type_name=message_dict[EVENT_TYPE_NAME_KEY],
-                forward=["web" if _who == "cli" else "cli"],
+                forward_to=IdentityType.OTHERS,
                 save_history=True,
             )
+            return
 
     ws_server.set_fn_new_client(handle_ws_connect)
     ws_server.set_fn_client_left(handle_ws_disconnect)

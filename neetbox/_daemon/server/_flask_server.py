@@ -125,14 +125,13 @@ def get_flask_server(debug=False):
             if debug:
                 logger.log(f"handle log. {project_id} not found.")
             return abort(404)
-        _json_data = request.form.to_dict()
+        message = EventMsg.loads(request.form.to_dict())
         image_bytes = request.files["image"].read()
         lastrowid = Bridge.of_id(project_id).save_blob_to_history(
-            table_name="image", meta_data=_json_data, blob_data=image_bytes
+            table_name="image", meta_data=message.payload, blob_data=image_bytes
         )
-        Bridge.of_id(project_id).ws_send_to_frontends(
-            json.dumps({"event-type": "image", "imageId": lastrowid, "metadata": _json_data})
-        )
+        message.payload[ID_KEY] = lastrowid
+        Bridge.of_id(project_id).ws_send_to_frontends(message)
         return {"result": "ok", "id": lastrowid}
 
     @app.route(f"{FRONTEND_API_ROOT}/image/<project_id>/<image_id>", methods=["GET"])

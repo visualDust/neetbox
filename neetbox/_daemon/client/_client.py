@@ -110,22 +110,18 @@ class ClientConn(metaclass=Singleton):
     def __on_ws_open(ws: websocket.WebSocketApp):
         project_id = get_project_id()
         logger.ok(f"client websocket connected. sending handshake as '{project_id}'...")
-        ws.send(  # send handshake request
-            json.dumps(
-                {
-                    PROJECT_ID_KEY: project_id,
-                    RUN_ID_KEY: get_run_id(),
-                    EVENT_TYPE_NAME_KEY: "handshake",
-                    PAYLOAD_NAME_KEY: {"who": "cli"},
-                    EVENT_ID_NAME_KEY: 0,  # todo how does ack work
-                },
-                default=str,
-            )
-        )
+        handshake_msg = EventMsg(  # handshake request message
+            project_id=project_id,
+            run_id=get_run_id(),
+            event_type=EVENT_TYPE_NAME_HANDSHAKE,
+            who=IdentityType.CLI,
+            event_id=0,
+        ).dumps()
+        ws.send(handshake_msg)
 
-        @ClientConn.ws_subscribe(event_type_name="handshake")
-        def _handle_handshake(msg):
-            assert msg[PAYLOAD_NAME_KEY]["result"] == 200
+        @ClientConn.ws_subscribe(event_type_name=EVENT_TYPE_NAME_HANDSHAKE)
+        def _handle_handshake(msg:EventMsg):
+            assert msg.payload["result"] == 200
             logger.ok(f"handshake succeed.")
             ClientConn.__ws_client = ws
 
@@ -139,45 +135,34 @@ class ClientConn(metaclass=Singleton):
             logger.warn("ws close message: {close_msg}")
         ClientConn.__ws_client = None
 
-    def __on_ws_message(ws: websocket.WebSocketApp, msg):
-        """EXAMPLE JSON
-        {
-            "event-type": "action",
-            "event-id": 111 (optional?)
-            "payload": ...
-        }
-        """
-        msg = json.loads(msg)  # message should be json
-        logger.debug(f"ws received {msg}")
-
-        event_type_name = msg[EVENT_TYPE_NAME_KEY]
-        if event_type_name not in ClientConn.__ws_subscription:
+    def __on_ws_message(ws: websocket.WebSocketApp, message):
+        message = EventMsg.loads(message)  # message should be json
+        if message.event_type not in ClientConn.__ws_subscription:
             logger.warn(
-                f"Client received a(n) {event_type_name} event but nobody subscribes it. Ignoring anyway."
+                f"Client received a(n) {message.event_type} event but nobody subscribes it. Ignoring anyway."
             )
-        for name, subscriber in ClientConn.__ws_subscription[event_type_name].items():
+        for name, subscriber in ClientConn.__ws_subscription[message.event_type].items():
             try:
-                subscriber(msg)  # pass payload message into subscriber
+                subscriber(message)  # pass payload message into subscriber
             except Exception as e:
                 # subscriber throws error
                 logger.err(
-                    f"Subscriber {name} crashed on message event {event_type_name}, ignoring."
+                    f"Subscriber {name} crashed on message event {message.event_type}, ignoring."
                 )
 
-    def ws_send(event_type: str, payload, event_id=-1):
+    def ws_send(event_type: str, payload: dict, timestamp: str = None, event_id=-1):
         if ClientConn.__ws_client:  # if ws client exist
             try:
                 ClientConn.__ws_client.send(
-                    json.dumps(
-                        {
-                            PROJECT_ID_KEY: get_project_id(),
-                            RUN_ID_KEY: get_run_id(),
-                            EVENT_TYPE_NAME_KEY: event_type,
-                            PAYLOAD_NAME_KEY: payload,
-                            EVENT_ID_NAME_KEY: event_id,
-                        },
-                        default=str,
-                    )
+                    EventMsg(
+                        project_id=get_project_id(),
+                        run_id=get_run_id(),
+                        event_type=event_type,
+                        event_id=event_id,
+                        who=IdentityType.CLI,
+                        payload=payload,
+                        timestamp=timestamp or get_timestamp(),
+                    ).dumps()
                 )
             except Exception as e:
                 logger.warn(f"websocket send fialed: {e}, message dropped.")

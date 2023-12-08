@@ -3,47 +3,12 @@ import json
 import sqlite3
 from datetime import datetime, timedelta
 from enum import Enum
-from importlib.metadata import version
-from typing import Dict, List, Tuple, Union
-
+from typing import Dict, Tuple, Union
+from neetbox._daemon._protocol import *
 from neetbox.logging import logger
 from neetbox.logging.formatting import LogStyle
 
 logger = logger("NEETBOX HISTORY", LogStyle(skip_writers=["ws", "file"]))
-
-NEETBOX_VERSION = version("neetbox")
-HISTORY_FILE_ROOT = ".neethistory"
-HISTORY_FILE_TYPE_NAME = "neetory"
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.SSS
-
-
-class FetchType(Enum):
-    ALL = "all"
-    ONE = "one"
-    MANY = "many"
-
-
-class SortType(Enum):
-    ASC = "ASC"
-    DESC = "DESC"
-
-
-# === COLUMN NAMES ===
-ID_COLUMN_NAME = "id"
-TIMESTAMP_COLUMN_NAME = "timestamp"
-SERIES_COLUMN_NAME = "series"
-RUN_ID_COLUMN_NAME = "runid"
-JSON_COLUMN_NAME = METADATA_COLUMN_NAME = "metadata"
-BLOB_COLUMN_NAME = "data"
-
-# === TABLE NAMES ===
-PROJECT_ID_TABLE_NAME = "projectid"
-VERSION_TABLE_NAME = "version"
-RUN_IDS_TABLE_NAME = "runid"
-STATUS_TABLE_NAME = "status"
-LOG_TABLE_NAME = "log"
-IMAGE_TABLE_NAME = "image"
-
 
 class QueryCondition:
     def __init__(
@@ -53,7 +18,7 @@ class QueryCondition:
         series: str = None,
         run_id: str = None,
         limit: int = None,
-        order: Dict[str, SortType] = {},
+        order: Dict[str, DbQuerySortType] = {},
     ) -> None:
         self.id_range = id if isinstance(id, tuple) else (id, None)
         self.timestamp_range = timestamp if isinstance(timestamp, tuple) else (timestamp, None)
@@ -161,7 +126,7 @@ class QueryCondition:
         if self.order:
             for _col_name, _sort in self.order.items():
                 _order_cond += (
-                    f"{_col_name} {_sort.value if isinstance(_sort,SortType) else _sort}, "
+                    f"{_col_name} {_sort.value if isinstance(_sort,DbQuerySortType) else _sort}, "
                 )
             _order_cond = _order_cond[:-2]  # remove last ','
         # === LIMIT ===
@@ -232,30 +197,30 @@ class DBConnection:
             return cls._id2dbc[project_id]
         return DBConnection(project_id)
 
-    def _execute(self, query, *args, fetch: FetchType = None, **kwargs):
+    def _execute(self, query, *args, fetch: DbQueryFetchType = None, **kwargs):
         cur = self.connection.cursor()
         # logger.info(f"executing sql='{query}', params={args}")
         result = cur.execute(query, args)
         if fetch:
-            if fetch == FetchType.ALL:
+            if fetch == DbQueryFetchType.ALL:
                 result = result.fetchall()
-            elif fetch == FetchType.ONE:
+            elif fetch == DbQueryFetchType.ONE:
                 result = result.fetchone()
-            elif fetch == FetchType.MANY:
+            elif fetch == DbQueryFetchType.MANY:
                 result = result.fetchmany(kwargs["many"])
         return result, cur.lastrowid
 
-    def _query(self, query, *args, fetch: FetchType = None, **kwargs):
+    def _query(self, query, *args, fetch: DbQueryFetchType = None, **kwargs):
         return self._execute(query=query, *args, fetch=fetch, **kwargs)
 
     def table_exist(self, table_name):
         sql_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
-        result, _ = self._query(sql_query, fetch=FetchType.ALL)
+        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         return result != []
 
     def get_table_names(self):
         sql_query = "SELECT name FROM sqlite_master;"
-        table_names, _ = self._query(sql_query, fetch=FetchType.ALL)
+        table_names, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         return table_names
 
     def fetch_db_version(self, default=None):
@@ -264,7 +229,7 @@ class DBConnection:
             self._execute(sql_query)
             self._inited_tables[VERSION_TABLE_NAME] = True
         sql_query = f"SELECT {VERSION_TABLE_NAME} FROM {VERSION_TABLE_NAME}"
-        _version, _ = self._query(sql_query, fetch=FetchType.ONE)
+        _version, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         if _version is None:
             if default is None:
                 raise RuntimeError(
@@ -281,7 +246,7 @@ class DBConnection:
             self._execute(sql_query)
             self._inited_tables[PROJECT_ID_TABLE_NAME] = True
         sql_query = f"SELECT {PROJECT_ID_TABLE_NAME} FROM {PROJECT_ID_TABLE_NAME}"
-        _projectid, _ = self._query(sql_query, fetch=FetchType.ONE)
+        _projectid, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         if _projectid is None:
             if default is None:
                 raise RuntimeError(
@@ -298,7 +263,7 @@ class DBConnection:
             self._execute(sql_query)
             self._inited_tables[RUN_IDS_TABLE_NAME] = True
         sql_query = f"SELECT {ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {RUN_ID_COLUMN_NAME} == '{run_id}'"
-        _id, _ = self._query(sql_query, fetch=FetchType.ONE)
+        _id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         if _id is None:
             timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
             sql_query = f"INSERT INTO {RUN_IDS_TABLE_NAME}({RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}) VALUES (?, ?)"
@@ -308,7 +273,7 @@ class DBConnection:
 
     def run_id_of_id(self, id_of_run_id):
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
-        run_id, _ = self._query(sql_query, fetch=FetchType.ONE)
+        run_id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         return run_id[0]
 
     def get_run_ids(self):
@@ -323,7 +288,7 @@ class DBConnection:
         if not self.table_exist(table_name):
             return []
         sql_query = f"SELECT DISTINCT series FROM {table_name}"
-        result, _ = self._query(sql_query, fetch=FetchType.ALL)
+        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         return [result for (result,) in result]
 
     def write_json(
@@ -336,12 +301,7 @@ class DBConnection:
     ):
         if not isinstance(json_data, dict):
             json_data = json.loads(json_data)
-        timestamp = (
-            json_data[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in json_data else timestamp
-        )
-        timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
         series = json_data[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in json_data else series
-        run_id = json_data[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in json_data else run_id
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
         if not self._inited_tables[table_name]:  # create if there is no version table
@@ -367,10 +327,6 @@ class DBConnection:
         timestamp: str = None,
     ):
         meta_data = meta_data if isinstance(meta_data, dict) else json.loads(meta_data)
-        timestamp = (
-            meta_data[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in meta_data else timestamp
-        )
-        timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
         series = meta_data[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in meta_data else series
         run_id = meta_data[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in meta_data else run_id
         if run_id:
@@ -398,7 +354,7 @@ class DBConnection:
             condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
-        result, _ = self._query(sql_query, fetch=FetchType.ALL)
+        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         try:
             result = [
                 {ID_COLUMN_NAME: x, TIMESTAMP_COLUMN_NAME: y, JSON_COLUMN_NAME: json.loads(z)}
@@ -416,7 +372,7 @@ class DBConnection:
             condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
-        result, _ = self._query(sql_query, fetch=FetchType.ALL)
+        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         return result
 
 

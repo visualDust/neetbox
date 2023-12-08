@@ -11,5 +11,5 @@ def add_scalar(name: str, x: Union[int, float], y: Union[int, float]):
         name (str): name of the image, used in frontend display
     """
     # send
-    connection.ws_send(event_type="scalar", payload={SERIES_ID_KEY: name, "x": x, "y": y})
+    connection.ws_send(event_type=EVENT_TYPE_NAME_SCALAR, payload={SERIES_KEY: name, "x": x, "y": y})
     
