@@ -11,8 +11,9 @@ from typing import Union
 
 
 def get_frame_traceback(traceback=1):
-    stack = inspect.stack()[traceback]
-    return stack
+    stack = inspect.stack()
+    traceback = len(stack) - 1 if traceback >= len(stack) else traceback
+    return stack[traceback]
 
 
 def get_frame_func_name_traceback(traceback=1):

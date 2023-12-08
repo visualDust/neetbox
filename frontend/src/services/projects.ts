@@ -6,7 +6,7 @@ import { checkLogForNotification } from "./logNotifications";
 
 const projects = new Map<string, Project>();
 
-const StatusHistoryCount = 120;
+const StatusHistoryCount = 180;
 const LogHistoryCount = 500;
 
 export class Project {
@@ -74,7 +74,10 @@ export class Project {
       data.hardware.value.cpus.forEach((cpu, idx) => {
         if (typeof cpu.id != "number" || cpu.id < 0) cpu.id = idx;
       });
-      if (data.hardware.timestamp !== this.status.value.current?.hardware.timestamp) {
+      if (
+        !this.status.value.history.length ||
+        data.hardware.timestamp !== this.status.value.current?.hardware.timestamp
+      ) {
         const projectData = { ...this.status.value };
         projectData.current = data;
         projectData.history = slideWindow(projectData.history, [data], StatusHistoryCount);

@@ -68,7 +68,7 @@ def list_command():
         table.add_column("config", justify="center", style="green")
 
         for pjt in _response:
-            config = pjt["config"]["value"]
+            config = pjt["config"]
             table.add_row(config["name"], pjt["id"], json.dumps(config))
 
         console.print(table)
@@ -141,8 +141,8 @@ def shutdown_server(port):
 def init(name: str):
     """initialize current folder as workspace and generate the config file from defaults"""
     try:
-        import neetbox.extension  # do not remove
-
+        import neetbox.extension as extension
+        extension._scan_sub_modules()
         init_succeed = _init_workspace(name=name)
         if init_succeed:
             logger.console_banner("neetbox", font="ansishadow")

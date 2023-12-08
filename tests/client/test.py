@@ -11,8 +11,8 @@ from neetbox import logger
 @neetbox.watch("train", initiative=True)
 def train(epoch):
     loss, acc = random(), random()
-    neetbox.add_scatter("sin", epoch, math.sin(epoch * 0.1))
-    neetbox.add_scatter("cos", epoch, math.cos(epoch * 0.1))
+    neetbox.add_scalar("sin", epoch, math.sin(epoch * 0.1))
+    neetbox.add_scalar("cos", epoch, math.cos(epoch * 0.1))
     return {"loss": loss, "acc": acc}
 
 

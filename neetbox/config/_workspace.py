@@ -26,7 +26,7 @@ _DEFAULT_WORKSPACE_CONFIG = {
     "name": os.path.basename(os.path.normpath(os.getcwd())),
     "version": NEETBOX_VERSION,
     "projectid": str(uuid4()),  # later will be overwrite by workspace config file
-    "logging": {"level": "DEBUG", "logdir": None},
+    "logging": {"level": "DEBUG", "logdir": "logs"},
     "pipeline": {
         "updateInterval": 0.5,
     },
@@ -134,6 +134,8 @@ def _init_workspace(path=None, **kwargs) -> bool:
     if not os.path.exists(config_file_path):  # config file not exist
         try:  # creating config file using default config
             with open(config_file_path, "w+") as config_file:
+                import neetbox.extension as extension
+                extension._scan_sub_modules()
                 _update_default_config_from_config_register()  # load custom config into default config
                 _config = _DEFAULT_WORKSPACE_CONFIG
                 if "name" in kwargs and kwargs["name"]:  # using given name
@@ -168,15 +170,16 @@ def _load_workspace_config(folder="."):
     if not config_file_path:  # failed to load workspace config, exiting
         raise RuntimeError(f"Config file not exists in '{folder}'")
     _update_default_config_from_config_register()  # load custom config into default config
-    _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
     _obtain_new_run_id()  # obtain new run id
-
+    _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
 
 def _create_load_workspace(path=None):
     is_workspace = _check_if_workspace_config_valid(path)
     if not is_workspace:
         _init_workspace(path)
     _load_workspace_config()
+    import neetbox.extension as extension
+    extension._scan_sub_modules()
 
 
 def _get_module_level_config(module: Union[str, types.ModuleType] = None, **kwargs):

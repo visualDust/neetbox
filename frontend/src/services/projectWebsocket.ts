@@ -12,7 +12,7 @@ export interface WsMsgBase<Type extends string = string, Payload = any> {
 export type WsMsg =
   | WsMsgBase
   | (WsMsgBase<"image"> & ImageMetadata)
-  | (WsMsgBase<"scatter", { series: string; x: number; y: number }> & { runid: string });
+  | (WsMsgBase<"scalar", { series: string; x: number; y: number }> & { runid: string });
 
 export class WsClient {
   ws: WebSocket;

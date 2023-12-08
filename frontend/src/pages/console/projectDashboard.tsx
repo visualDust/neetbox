@@ -50,7 +50,7 @@ function ProjectDashboard() {
       <div style={{ padding: "20px", position: "relative" }}>
         <AppTitle
           extra={
-            <ProjectContext.Provider value={projectContextData}>
+            <ProjectContext.Provider key={projectId} value={projectContextData}>
               <RunSelect />
             </ProjectContext.Provider>
           }
@@ -59,9 +59,11 @@ function ProjectDashboard() {
         </AppTitle>
         <SectionTitle title="Logs" />
         <Logs />
+        <Divider />
         <SectionTitle title="Actions" />
         {data.current ? <Actions actions={data.current.__action} /> : <Loading size="large" />}
-        <SectionTitle title="Images & Scatters" />
+        <Divider />
+        <SectionTitle title="Images & Scalars" />
         <ImagesAndScatters />
         {/* <SectionTitle title="Images" />
         <Images /> */}
@@ -70,9 +72,10 @@ function ProjectDashboard() {
         <Divider />
         {data.current ? (
           <>
-            <Divider />
             <SectionTitle title="Hardware" />
-            <Hardware hardwareData={data.history.map((x) => x.hardware)} />
+            {data.history.every((x) => x.hardware) ? (
+              <Hardware hardwareData={data.history.map((x) => x.hardware)} />
+            ) : null}
             <Divider />
             <SectionTitle title="Platform" />
             <PlatformProps data={data.current.platform} />
