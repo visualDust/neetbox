@@ -9,24 +9,24 @@ from neetbox._daemon._protocol import *
 from neetbox._daemon.client._client import connection
 
 
-def _get(api):
-    r = connection.get(api=api)
+def _get(api, root=None):
+    r = connection.get(api=api, root=root)
     _data = r.json()
     return _data
 
 
-def _post(api, data=None):
-    r = connection.post(api=api, json=data)
+def _post(api, root=None, data=None):
+    r = connection.post(api=api, root=root, json=data)
     return r
 
 
-def get_list():
+def get_list(root=None):
     api = f"{FRONTEND_API_ROOT}/list"
-    return _get(api)
+    return _get(api, root=root)
 
 
-def get_status_of(project_id):
-    id2name = get_list()
+def get_status_of(project_id, root=None):
+    id2name = get_list(root=root)
     name2id = {v: k for k, v in id2name}  # todo resolve dup name
     if project_id not in name2id:
         return None
@@ -35,6 +35,6 @@ def get_status_of(project_id):
     return _get(api)
 
 
-def shutdown():
+def shutdown(root=None):
     api = "/shutdown"
-    return _post(api)
+    return _post(api, root=root)

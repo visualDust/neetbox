@@ -10,7 +10,7 @@ from textual.screen import Screen
 from textual.widget import Widget
 from textual.widgets import Button, DirectoryTree, Footer, Header, Placeholder, Static
 
-from neetbox.cli.app._manage_server import SeverList
+from ._manage_server import SeverList
 
 
 class WorkspaceBanner(Widget):

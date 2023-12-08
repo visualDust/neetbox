@@ -32,14 +32,14 @@ def _load_http_client():
     return __local_http_client
 
 
-@functools.lru_cache()
-def addr_of_api(api):
-    _cfg = get_module_level_config()
-    _daemon_server_address = f"{_cfg['host']}:{_cfg['port']}"
-    _base_addr = f"http://{_daemon_server_address}"
+def addr_of_api(api, root=None):
+    if not root:
+        _cfg = get_module_level_config()
+        _daemon_server_address = f"{_cfg['host']}:{_cfg['port']}"
+        root = f"http://{_daemon_server_address}"
     if not api.startswith("/"):
         api = f"/{api}"
-    return f"{_base_addr}{api}"
+    return f"{root}{api}"
 
 
 # singleton
@@ -47,17 +47,17 @@ class ClientConn(metaclass=Singleton):
     # http client
     http: httpx.Client = _load_http_client()
 
-    def post(api: str, *args, **kwargs):
-        return ClientConn.http.post(addr_of_api(api), *args, **kwargs)
+    def post(api: str, root=None, *args, **kwargs):
+        return ClientConn.http.post(addr_of_api(api, root), *args, **kwargs)
 
-    def get(api: str, *args, **kwargs):
-        return ClientConn.http.get(addr_of_api(api), *args, **kwargs)
+    def get(api: str, root=None, *args, **kwargs):
+        return ClientConn.http.get(addr_of_api(api, root), *args, **kwargs)
 
-    def put(api: str, *args, **kwargs):
-        return ClientConn.http.put(addr_of_api(api), *args, **kwargs)
+    def put(api: str, root=None, *args, **kwargs):
+        return ClientConn.http.put(addr_of_api(api, root), *args, **kwargs)
 
-    def delete(api: str, *args, **kwargs):
-        return ClientConn.http.delete(addr_of_api(api), *args, **kwargs)
+    def delete(api: str, root=None, *args, **kwargs):
+        return ClientConn.http.delete(addr_of_api(api, root), *args, **kwargs)
 
     __ws_client: websocket.WebSocketApp = None  # _websocket_client
     __ws_subscription = defaultdict(lambda: {})  # default to no subscribers
@@ -120,7 +120,7 @@ class ClientConn(metaclass=Singleton):
         ws.send(handshake_msg)
 
         @ClientConn.ws_subscribe(event_type_name=EVENT_TYPE_NAME_HANDSHAKE)
-        def _handle_handshake(msg:EventMsg):
+        def _handle_handshake(msg: EventMsg):
             assert msg.payload["result"] == 200
             logger.ok(f"handshake succeed.")
             ClientConn.__ws_client = ws

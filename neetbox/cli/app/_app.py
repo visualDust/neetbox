@@ -17,7 +17,7 @@ from textual.widgets import (
     Static,
 )
 
-from neetbox.cli.app._home import HomePage
+from ._home import HomePage
 
 
 class QuitScreen(Screen):

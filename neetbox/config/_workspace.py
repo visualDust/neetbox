@@ -17,7 +17,7 @@ import toml
 
 from neetbox.core import Registry
 from neetbox.utils.framing import get_frame_module_traceback
-from neetbox.utils.massive import update_dict_recursively
+from neetbox.utils.massive import check_read_toml, update_dict_recursively
 
 CONFIG_FILE_NAME = f"neetbox.toml"
 NEETBOX_VERSION = version("neetbox")
@@ -27,9 +27,6 @@ _DEFAULT_WORKSPACE_CONFIG = {
     "version": NEETBOX_VERSION,
     "projectid": str(uuid4()),  # later will be overwrite by workspace config file
     "logging": {"level": "DEBUG", "logdir": "logs"},
-    "pipeline": {
-        "updateInterval": 0.5,
-    },
     "extension": {
         "autoload": True,
     },
@@ -135,6 +132,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
         try:  # creating config file using default config
             with open(config_file_path, "w+") as config_file:
                 import neetbox.extension as extension
+
                 extension._scan_sub_modules()
                 _update_default_config_from_config_register()  # load custom config into default config
                 _config = _DEFAULT_WORKSPACE_CONFIG
@@ -151,34 +149,24 @@ def _init_workspace(path=None, **kwargs) -> bool:
         raise RuntimeError(f"{config_file_path} already exist")
 
 
-def _check_if_workspace_config_valid(path=None) -> bool:
-    path = path or "."
-    config_file_path = os.path.join(path, CONFIG_FILE_NAME)
-    if not os.path.isfile(config_file_path):  # but config file not exist
-        return False
-    try:
-        toml.load(config_file_path)  # try load as toml
-        return config_file_path
-    except Exception as e:
-        return False
-
-
 def _load_workspace_config(folder="."):
-    config_file_path = _check_if_workspace_config_valid(
-        path=folder
+    config = check_read_toml(
+        path=os.path.join(folder, CONFIG_FILE_NAME)
     )  # check if config file is valid
-    if not config_file_path:  # failed to load workspace config, exiting
+    if not config:  # failed to load workspace config, exiting
         raise RuntimeError(f"Config file not exists in '{folder}'")
     _update_default_config_from_config_register()  # load custom config into default config
     _obtain_new_run_id()  # obtain new run id
-    _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
+    _update_default_workspace_config_with(config)  # load config file in
 
-def _create_load_workspace(path=None):
-    is_workspace = _check_if_workspace_config_valid(path)
+
+def _create_load_workspace(folder="."):
+    is_workspace = check_read_toml(path=os.path.join(folder, CONFIG_FILE_NAME))
     if not is_workspace:
-        _init_workspace(path)
+        _init_workspace(folder)
     _load_workspace_config()
     import neetbox.extension as extension
+
     extension._scan_sub_modules()
 
 

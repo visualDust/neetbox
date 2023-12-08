@@ -8,15 +8,16 @@ from rich.table import Table
 import neetbox._daemon as daemon_module
 from neetbox._daemon.server._server import server_process
 from neetbox.config._workspace import (
-    _check_if_workspace_config_valid,
     _get_module_level_config,
     _init_workspace,
     _load_workspace_config,
 )
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
+from neetbox.utils.massive import check_read_toml
 
 from ._client_web_apis import *
+from .app._app import NeetBoxApp
 
 console = Console()
 
@@ -49,7 +50,8 @@ def main(ctx, verbose: bool):
 
 
 def _try_load_workspace_if_applicable():
-    is_workspace = _check_if_workspace_config_valid()
+    CONFIG_FILE_NAME = f"neetbox.toml"
+    is_workspace = check_read_toml(CONFIG_FILE_NAME)
     if is_workspace:
         _load_workspace_config()
 
@@ -142,6 +144,7 @@ def init(name: str):
     """initialize current folder as workspace and generate the config file from defaults"""
     try:
         import neetbox.extension as extension
+
         extension._scan_sub_modules()
         init_succeed = _init_workspace(name=name)
         if init_succeed:
@@ -149,6 +152,13 @@ def init(name: str):
             logger.log("Welcome to NEETBOX")
     except Exception as e:
         logger.err(f"Failed to init here: {e}")
+
+
+@main.command()
+def app():
+    """initialize current folder as workspace and generate the config file from defaults"""
+    app = NeetBoxApp()
+    app.run()
 
 
 if __name__ == "__main__":
