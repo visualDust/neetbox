@@ -6,7 +6,6 @@ from typing import Callable, Optional
 
 from neetbox._daemon._protocol import *
 from neetbox._daemon.client._client import connection
-from neetbox.client._signal_and_slot import SYSTEM_CHANNEL, watch
 from neetbox.core import Registry
 from neetbox.logging import logger
 from neetbox.utils.mvc import Singleton
@@ -98,11 +97,6 @@ class _NeetActionManager(metaclass=Singleton):
             run_and_callback()
             return
 
-    @watch(name="__action", _channel=SYSTEM_CHANNEL, initiative=True)
-    def _update_action_dict():
-        # for status updater
-        return _NeetActionManager.get_action_dict()
-
     def register(name: Optional[str] = None, description: str = None, blocking: bool = False):
         """register function as action visiable on frontend page
 
@@ -143,7 +137,9 @@ class _NeetActionManager(metaclass=Singleton):
             function=function, name=name, description=description, blocking=blocking
         )
         _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, overwrite=True)
-        _NeetActionManager._update_action_dict()  # update for sync
+        connection.ws_send(
+            event_type=EVENT_TYPE_NAME_ACTION, payload=_NeetActionManager.get_action_dict()
+        )  # update for sync
         return function
 
 

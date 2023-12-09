@@ -17,13 +17,13 @@ __IS_WORKSPACE_LOADED = False
 def get_module_level_config(module: Union[str, types.ModuleType] = None):
     global __IS_WORKSPACE_LOADED
     if not __IS_WORKSPACE_LOADED:
+        __IS_WORKSPACE_LOADED = True
         if not (
             "NEETBOX_DAEMON_PROCESS" in os.environ and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
         ):
             from ._workspace import _create_load_workspace
 
             _create_load_workspace()
-            __IS_WORKSPACE_LOADED = True
 
     module_config = _get_module_level_config(module, traceback=3)
     return module_config

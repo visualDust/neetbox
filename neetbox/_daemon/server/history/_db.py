@@ -284,7 +284,7 @@ class DBConnection:
             raise RuntimeError("should not get run id of id before run id table creation")
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME},{TIMESTAMP_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
         result, _ = self._query(sql_query)
-        result = [{run_id: timestamp} for run_id, timestamp in result]
+        result = [(run_id, timestamp) for run_id, timestamp in result]
         return result
 
     def get_series_of_table(self, table_name):
@@ -346,7 +346,7 @@ class DBConnection:
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id)
         if not self._inited_tables[STATUS_TABLE_NAME]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {STATUS_TABLE_NAME} ({RUN_ID_COLUMN_NAME} INTEGER PRIMARY KEY, {SERIES_COLUMN_NAME} TEXT NON NULL, {JSON_COLUMN_NAME} TEXT NON NULL, UNIQUE({RUN_ID_COLUMN_NAME}, {SERIES_COLUMN_NAME}) ON CONFLICT REPLACE, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
+            sql_query = f"CREATE TABLE IF NOT EXISTS {STATUS_TABLE_NAME} ({ID_COLUMN_NAME} INTEGER PRIMARY KEY,{RUN_ID_COLUMN_NAME} INTEGER NON NULL, {SERIES_COLUMN_NAME} TEXT NON NULL, {JSON_COLUMN_NAME} TEXT NON NULL, UNIQUE({RUN_ID_COLUMN_NAME}, {SERIES_COLUMN_NAME}) ON CONFLICT REPLACE, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
             self._execute(sql_query)
             self._inited_tables[STATUS_TABLE_NAME] = True
         sql_query = f"INSERT OR REPLACE INTO {STATUS_TABLE_NAME}({RUN_ID_COLUMN_NAME},{SERIES_COLUMN_NAME}, {JSON_COLUMN_NAME}) VALUES (?, ?, ?)"
@@ -364,9 +364,12 @@ class DBConnection:
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {condition}"
         query_result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
-        result = collections.defaultdict(dict)
-        for qr in query_result:
-            result[self.run_id_of_id(qr[0])][qr[1]] = [qr[2]]
+        result = {}
+        for id_of_runid, series_name, value in query_result:
+            _run_id = self.run_id_of_id(id_of_runid)
+            if _run_id not in result:
+                result[_run_id] = {}
+            result[_run_id][series_name] = json.loads(value)
         return result
 
     def write_blob(

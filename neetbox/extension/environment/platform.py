@@ -53,8 +53,15 @@ class __Platform(dict, metaclass=Singleton):
 # watch updates in daemon
 @on_workspace_loaded(name="show-platform-information")
 def load_send_platform_info():
-    from neetbox._daemon._protocol import EVENT_TYPE_NAME_STATUS
+    from neetbox._daemon._protocol import (
+        EVENT_TYPE_NAME_HANDSHAKE,
+        EVENT_TYPE_NAME_STATUS,
+        EventMsg,
+    )
     from neetbox._daemon.client._client import connection
 
     platform = __Platform()
-    connection.ws_send(event_type=EVENT_TYPE_NAME_STATUS, payload=dict({"platform": platform}))
+
+    @connection.ws_subscribe(event_type_name=EVENT_TYPE_NAME_HANDSHAKE)
+    def ws_send_platform_info(message: EventMsg):
+        connection.ws_send(event_type=EVENT_TYPE_NAME_STATUS, payload=dict({"platform": platform}))

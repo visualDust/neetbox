@@ -126,9 +126,14 @@ class Bridge:
 
     def get_status(self, run_id: str = None, series: str = None):
         status = self.historyDB.get_status(run_id=run_id, series=series)
-        status = {EVENT_TYPE_NAME_STATUS: status}
-        status["online"] = self.cli_ws is not None
+        if run_id:
+            status = status.get(run_id, {})
+        if series:
+            status = status.get(series, {})
         return status
+
+    def is_online(self):
+        return self.cli_ws is not None
 
     def get_series_of(self, table_name):
         return self.historyDB.get_series_of_table(table_name=table_name)

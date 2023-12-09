@@ -135,10 +135,7 @@ def get_web_socket_server(config, debug=False):
 
     def on_event_type_status(message: EventMsg):
         bridge = Bridge.of_id(message.project_id)
-        current_status = bridge.get_status(run_id=message.run_id)[STATUS_TABLE_NAME]
         for k, v in message.payload.items():
-            current_status[k] = v
-        for k, v in current_status.items():
             bridge.set_status(run_id=message.run_id, series=k, value=v)
 
     def on_event_type_hyperparams(message: EventMsg):
@@ -198,6 +195,10 @@ def get_web_socket_server(config, debug=False):
                 on_event_type_hyperparams(message)
             elif message.event_type == EVENT_TYPE_NAME_STATUS:
                 on_event_type_status(message)
+            elif message.event_type == EVENT_TYPE_NAME_ACTION:
+                on_event_type_json(
+                    message=message, forward_to=IdentityType.OTHERS, save_history=False
+                )
             else:
                 on_event_type_json(
                     message=message,

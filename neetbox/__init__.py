@@ -6,9 +6,6 @@ def _load_workspace(connect_daemon=True):
     from neetbox.config import get_module_level_config
 
     get_module_level_config()  # run things after init workspace
-    import neetbox.extension as extension
-
-    extension._init_extensions()
     if connect_daemon:
         import neetbox._daemon as _daemon
 
@@ -25,7 +22,7 @@ if len(sys.argv) > 0 and sys.argv[0].endswith("neet") or is_in_daemon_process:
 else:
     _load_workspace(connect_daemon=True)
 
-from neetbox.client import listen, watch, action, add_image, add_scalar, add_tensor
+from neetbox.client import action, add_image, add_scalar, add_tensor, listen, watch
 from neetbox.logging import logger
 
 __all__ = ["add_image", "add_scalar", "action", "logger", "watch", "listen"]

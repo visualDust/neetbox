@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import time
 from collections import defaultdict
 from threading import Thread
 from typing import Callable
@@ -78,31 +79,30 @@ class ClientConn(metaclass=Singleton):
     def _ws_subscribe(function: Callable, event_type_name: str, name=None):
         name = name or function.__name__
         ClientConn.__ws_subscription[event_type_name][name] = function
-        logger.debug(f"ws: {name} subscribed to '{event_type_name}")
+        logger.info(f"ws: {name} subscribed to '{event_type_name}'")
 
-    def _init_ws():
+    @classmethod
+    def _init_ws(cls):
         global _ws_initialized
         if _ws_initialized:
             return
 
         cfg = get_module_level_config()
         # ws server url
-        ClientConn.ws_server_addr = f"ws://{cfg['host']}:{cfg['port'] + 1}"
+        cls.ws_server_addr = f"ws://{cfg['host']}:{cfg['port'] + 1}"
 
         # create websocket app
-        logger.log(
-            f"creating websocket connection to {ClientConn.ws_server_addr}", skip_writers=["ws"]
-        )
-        ClientConn.wsApp = websocket.WebSocketApp(
-            ClientConn.ws_server_addr,
-            on_open=ClientConn.__on_ws_open,
-            on_message=ClientConn.__on_ws_message,
-            on_error=ClientConn.__on_ws_err,
-            on_close=ClientConn.__on_ws_close,
+        logger.log(f"creating websocket connection to {cls.ws_server_addr}", skip_writers=["ws"])
+        cls.wsApp = websocket.WebSocketApp(
+            cls.ws_server_addr,
+            on_open=cls.__on_ws_open,
+            on_message=cls.__on_ws_message,
+            on_error=cls.__on_ws_err,
+            on_close=cls.__on_ws_close,
         )
 
         Thread(
-            target=ClientConn.wsApp.run_forever, kwargs={"reconnect": True}, daemon=True
+            target=cls.wsApp.run_forever, kwargs={"reconnect": True}, daemon=True
         ).start()  # initialize and start ws thread
 
         _ws_initialized = True
@@ -119,15 +119,6 @@ class ClientConn(metaclass=Singleton):
         ).dumps()
         ws.send(handshake_msg)
 
-        @ClientConn.ws_subscribe(event_type_name=EVENT_TYPE_NAME_HANDSHAKE)
-        def _handle_handshake(msg: EventMsg):
-            assert msg.payload["result"] == 200
-            logger.ok(f"handshake succeed.")
-            ClientConn.__ws_client = ws
-            ClientConn.ws_send(  # send config
-                event_type=EVENT_TYPE_NAME_STATUS, payload={"config": get_module_level_config("@")}
-            )
-
     def __on_ws_err(ws: websocket.WebSocketApp, msg):
         logger.err(f"client websocket encountered {msg}")
 
@@ -140,6 +131,13 @@ class ClientConn(metaclass=Singleton):
 
     def __on_ws_message(ws: websocket.WebSocketApp, message):
         message = EventMsg.loads(message)  # message should be json
+        if message.event_type == EVENT_TYPE_NAME_HANDSHAKE:
+            assert message.payload["result"] == 200
+            logger.ok(f"handshake succeed.")
+            ClientConn.__ws_client = ws
+            ClientConn.ws_send(  # send config
+                event_type=EVENT_TYPE_NAME_STATUS, payload={"config": get_module_level_config("@")}
+            )
         if message.event_type not in ClientConn.__ws_subscription:
             logger.warn(
                 f"Client received a(n) {message.event_type} event but nobody subscribes it. Ignoring anyway."

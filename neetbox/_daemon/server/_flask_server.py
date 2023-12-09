@@ -56,15 +56,18 @@ def get_flask_server(debug=False):
         return {"hello": "hello"}
 
     @app.route(f"{FRONTEND_API_ROOT}/list", methods=["GET"])
-    def get_list_of_connected_project_ids():
+    def get_list_of_connected_project():
         result = []
         for project_id, bridge in Bridge.items():
             status = bridge.get_status()
+            last_run_id = bridge.get_run_ids()[0][0]
+            config_last_run = bridge.get_status(run_id=last_run_id, series="config")
             result.append(
                 {
                     PROJECT_ID_KEY: project_id,
-                    "online": status["online"],
-                    STATUS_TABLE_NAME: status[STATUS_TABLE_NAME],
+                    "online": bridge.is_online(),
+                    NAME_KEY: config_last_run[NAME_KEY],
+                    STATUS_TABLE_NAME: status,
                 }
             )
         return result
@@ -117,7 +120,7 @@ def get_flask_server(debug=False):
         if not Bridge.has(project_id):
             abort(404)
         result = Bridge.of_id(project_id).get_run_ids()
-        result = [{"id": list(r.keys())[0], "timestamp": list(r.values())[0]} for r in result]
+        result = [{"id": r[0], "timestamp": r[1]} for r in result]
         return result
 
     @app.route(f"/image/<project_id>", methods=["POST"])

@@ -164,15 +164,25 @@ def _check_if_workspace_config_valid(path=None) -> bool:
         return False
 
 
+_IS_EXTENSION_INITED = False
+
+
 def _load_workspace_config(folder="."):
+    global _IS_EXTENSION_INITED
     config_file_path = _check_if_workspace_config_valid(
         path=folder
     )  # check if config file is valid
     if not config_file_path:  # failed to load workspace config, exiting
         raise RuntimeError(f"Config file not exists in '{folder}'")
+    import neetbox.extension as extension
+
+    extension._scan_sub_modules()
     _update_default_config_from_config_register()  # load custom config into default config
     _obtain_new_run_id()  # obtain new run id
     _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
+    if not _IS_EXTENSION_INITED:
+        extension._init_extensions()
+        _IS_EXTENSION_INITED = True
 
 
 def _create_load_workspace(path=None):
@@ -180,9 +190,6 @@ def _create_load_workspace(path=None):
     if not is_workspace:
         _init_workspace(path)
     _load_workspace_config()
-    import neetbox.extension as extension
-
-    extension._scan_sub_modules()
 
 
 def _get_module_level_config(module: Union[str, types.ModuleType] = None, **kwargs):
