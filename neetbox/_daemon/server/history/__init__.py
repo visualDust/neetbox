@@ -12,9 +12,9 @@ from ._db import (
     SERIES_COLUMN_NAME,
     TIMESTAMP_COLUMN_NAME,
     DBConnection,
-    FetchType,
+    DbQueryFetchType,
     QueryCondition,
-    SortType,
+    DbQuerySortType,
 )
 
 if not os.path.exists(HISTORY_FILE_ROOT):
@@ -51,8 +51,8 @@ def get_db_of_id(project_id, rescan: bool = True):
 
 
 __all__ = [
-    "FetchType",
-    "SortType",
+    "DbQueryFetchType",
+    "DbQuerySortType",
     "QueryCondition",
     "DBConnection",
     "get_db_of_id",

@@ -1,5 +1,5 @@
 import io
-from typing import Optional, Union
+from typing import Optional
 
 import cv2
 import numpy as np
@@ -8,7 +8,6 @@ from PIL import Image
 from neetbox._daemon._protocol import *
 from neetbox._daemon.client._client import connection
 from neetbox.config import get_project_id, get_run_id
-from neetbox.logging import logger
 from neetbox.utils.x2numpy import *
 
 
@@ -133,7 +132,12 @@ def add_image(name: str, image, dataformats: str = None):
     project_id = get_project_id()
     connection.post(
         api=f"/image/{project_id}",
-        data={PROJECT_ID_KEY: project_id, SERIES_ID_KEY: name, RUN_ID_KEY: get_run_id()},
+        data=EventMsg(
+            project_id=project_id,
+            run_id=get_run_id(),
+            event_type=EVENT_TYPE_NAME_IMAGE,
+            payload={SERIES_KEY: name},
+        ).json(),
         files={"image": image_bytes},
     )
 

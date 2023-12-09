@@ -147,19 +147,18 @@ class _NeetActionManager(metaclass=Singleton):
         return function
 
 
-@connection.ws_subscribe(event_type_name="action")
-def __listen_to_actions(msg):
-    _payload = msg[PAYLOAD_NAME_KEY]
-    _event_id = msg[EVENT_ID_NAME_KEY]
-    _action_name = _payload["name"]
-    _action_args = _payload["args"]
+@connection.ws_subscribe(event_type_name=EVENT_TYPE_NAME_ACTION)
+def __listen_to_actions(message: EventMsg):
     _NeetActionManager.eval_call(
-        name=_action_name,
-        params=_action_args,
+        name=message.payload[NAME_KEY],
+        params=message.payload[ARGS_KEY],
         callback=lambda x: connection.ws_send(
-            event_type="action",
-            payload={"name": _action_name, ("error" if isinstance(x, Exception) else "result"): x},
-            event_id=_event_id,
+            event_type=EVENT_TYPE_NAME_ACTION,
+            payload={
+                NAME_KEY: message.payload[NAME_KEY],
+                (ERROR_KEY if isinstance(x, Exception) else RESULT_KEY): x,
+            },
+            event_id=message.event_id,
         ),
     )
 
