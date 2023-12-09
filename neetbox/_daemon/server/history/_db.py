@@ -171,6 +171,7 @@ class DBConnection:
         new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
         new_dbc.connection = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
+        new_dbc.connection.execute("pragma journal_mode=wal")
         new_dbc._inited_tables = collections.defaultdict(lambda: False)
         # check neetbox version
         _db_file_project_id = new_dbc.fetch_db_project_id(project_id)
