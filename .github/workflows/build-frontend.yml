@@ -1,6 +1,9 @@
 name: Frontend Build & Lint
 
 on:
+  push:
+    paths:
+      - "frontend/**"
   pull_request:
     paths:
       - "frontend/**"
