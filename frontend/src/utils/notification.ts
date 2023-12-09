@@ -1,8 +1,12 @@
 import { Notification } from "@douyinfe/semi-ui";
 
-Notification.config({
+type NoticeProps = Parameters<typeof Notification.addNotice>[0];
+
+const defaultConfig = {
   top: "60px",
   right: "10px",
-});
+} as any;
 
-export const addNotice = Notification.addNotice.bind(Notification);
+Notification.config(defaultConfig);
+
+export const addNotice = (notice: NoticeProps) => Notification.addNotice({ ...defaultConfig, ...notice });

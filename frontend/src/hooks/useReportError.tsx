@@ -19,23 +19,25 @@ export function useReportGlobalError() {
   }, []);
 }
 
+let errorCount = 0;
+
 function showError(errorText: string) {
+  errorCount++;
   addNotice({
+    id: "app-error",
     type: "error",
+    title: `Frontend App Error (${errorCount})`,
     content: (
-      <div>
-        <Typography.Text>Frontend App Error</Typography.Text>
-        <div
-          style={{
-            fontFamily: "monospace",
-            whiteSpace: "pre-wrap",
-            maxWidth: "400px",
-            maxHeight: "200px",
-            overflow: "auto",
-          }}
-        >
-          {errorText}
-        </div>
+      <div
+        style={{
+          fontFamily: "monospace",
+          whiteSpace: "pre-wrap",
+          maxWidth: "400px",
+          maxHeight: "200px",
+          overflow: "auto",
+        }}
+      >
+        {errorText}
       </div>
     ),
     duration: 10,
