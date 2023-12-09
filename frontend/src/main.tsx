@@ -10,7 +10,7 @@ import { ThemeContextProvider } from "./components/themeSwitcher";
 import { ServiceProvider } from "./services/serviceProvider";
 import ConsoleLayout from "./components/layout/ConsoleLayout";
 import App from "./App";
-import { RouteError } from "./components/routeError";
+import { RouteError } from "./components/errorBoundary";
 
 const router = createBrowserRouter([
   {

@@ -1,17 +1,12 @@
 import { useMemo } from "react";
 import { ECharts } from "../../../echarts";
-import { ProjectStatus } from "../../../../services/types";
+import { GpuInfo } from "../../../../services/types";
+import { TimeDataMapper } from "../../../../utils/timeDataMapper";
 import { getTimeAxisOptions } from "./utils";
 
-export const GPUGraph = ({
-  hardwareData,
-  gpuId,
-}: {
-  hardwareData: Array<ProjectStatus["hardware"]>;
-  gpuId: number;
-}) => {
-  const gpus = hardwareData[0].value.gpus;
+export const GPUGraph = ({ data }: { data: TimeDataMapper<GpuInfo> }) => {
   const initialOption = () => {
+    const gpu = data.mapValue((x) => x)[0];
     return {
       backgroundColor: "transparent",
       animation: false,
@@ -23,7 +18,7 @@ export const GPUGraph = ({
         bottom: 30,
       },
       title: {
-        text: `GPU${gpuId}: ${gpus[gpuId].name}`,
+        text: `GPU${gpu.id}: ${gpu.name}`,
         textStyle: {
           fontSize: 12,
         },
@@ -49,7 +44,7 @@ export const GPUGraph = ({
           axisLabel: {
             formatter: (x) => x.toFixed(1) + " GB",
           },
-          max: gpus[gpuId].memoryTotal / 1024,
+          max: gpu.memoryTotal / 1024,
         },
       ],
       series: [],
@@ -64,7 +59,7 @@ export const GPUGraph = ({
           type: "line",
           areaStyle: null,
           symbol: null,
-          data: hardwareData.map((x) => [new Date(x.timestamp), x.value.gpus[gpuId].load * 100]),
+          data: data.map((timestamp, gpu) => [new Date(timestamp), gpu.load * 100]),
         },
         {
           name: `Memory`,
@@ -72,13 +67,13 @@ export const GPUGraph = ({
           areaStyle: {},
           symbol: null,
           yAxisIndex: 1,
-          data: hardwareData.map((x) => [new Date(x.timestamp), x.value.gpus[gpuId].memoryUsed / 1024]),
+          data: data.map((timestamp, gpu) => [new Date(timestamp), gpu.memoryUsed / 1024]),
         },
       ],
-      xAxis: getTimeAxisOptions(hardwareData),
+      xAxis: getTimeAxisOptions(data),
     } as echarts.EChartsOption;
     return newOption;
-  }, [gpuId, hardwareData]);
+  }, [data]);
 
   return (
     <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />

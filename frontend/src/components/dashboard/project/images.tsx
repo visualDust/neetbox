@@ -24,7 +24,7 @@ export const AllImageViewers = memo(() => {
       mutate([...series, newSeries]);
     }
   });
-  return series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading />;
+  return series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading text="Images loading" />;
 });
 
 const SeriesViewer = memo(({ series }: { series: string }) => {

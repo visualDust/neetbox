@@ -15,7 +15,8 @@ export interface WsMsgBase<Type extends string = string, Payload = undefined> {
 
 export type WsMsg =
   | WsMsgBase
-  | WsMsgBase<"handshake">
+  | (WsMsgBase<"handshake"> & { who: "web" | "cli" })
+  | WsMsgBase<"action", { name: string; args: Record<string, string> }>
   | (WsMsgBase<"image"> & ImageMetadata)
   | WsMsgBase<"scalar", { series: string; x: number; y: number }>
   | WsMsgBase<
@@ -44,27 +45,26 @@ export class WsClient {
     };
     this.ws.onmessage = (e) => {
       const json = JSON.parse(e.data) as WsMsg;
-      console.info("ws receive", json);
+      console.debug("ws receive", json);
       const eventId = json["event-id"];
       const eventType = json["event-type"];
       if (this.callbacks.has(eventId)) {
         this.callbacks.get(eventId)!(json);
         this.callbacks.delete(eventId);
-      } else if (eventType === "log") {
-        project.handleLog({
-          whom: json.payload?.whom,
-          datetime: json.timestamp,
-          msg: json.payload?.message,
-          series: json.payload?.series,
-        });
       } else {
+        if (eventType === "log") {
+          project.handleLog({
+            timestamp: json.timestamp,
+            ...(json.payload as any),
+          });
+        }
         // console.warn("ws unhandled message", json);
         this.wsListeners.forEach((x) => x(json));
       }
     };
   }
 
-  send(msg: Omit<WsMsg, "name" | "event-id" | "projectid" | "runid">, onReply?: (msg: WsMsg) => void) {
+  send(msg: Partial<WsMsg>, onReply?: (msg: WsMsg) => void) {
     const eventId = this.nextId++;
     const json = {
       ...msg,

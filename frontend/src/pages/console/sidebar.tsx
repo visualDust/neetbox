@@ -1,4 +1,4 @@
-import { Nav, Tag, Typography } from "@douyinfe/semi-ui";
+import { Nav, Space, Tag, Typography } from "@douyinfe/semi-ui";
 import { IconHome, IconListView } from "@douyinfe/semi-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAPI } from "../../services/api";
@@ -11,7 +11,7 @@ export default function ConsoleNavBar() {
   return (
     <Nav
       renderWrapper={(args) => {
-        if (args.props.itemKey === "loading") return <Loading height="60px" />;
+        if (args.props.itemKey === "loading") return <Loading height="60px" size="large" />;
         return args.itemElement;
       }}
       style={{ height: "100%", overflowY: "auto" }}
@@ -22,16 +22,16 @@ export default function ConsoleNavBar() {
           icon: <IconListView />,
           itemKey: "projects",
           items: data
-            ? data.map(({ id, config, online }) => ({
+            ? data.map(({ projectid: id, name, online }) => ({
                 text: (
-                  <Typography.Text type={online ? "primary" : "tertiary"}>
-                    {config.name}
+                  <Space>
+                    <Typography.Text type={online ? "primary" : "tertiary"}>{name}</Typography.Text>
                     {!online && (
                       <Tag style={{ marginLeft: "10px" }} color="orange">
                         offline
                       </Tag>
                     )}
-                  </Typography.Text>
+                  </Space>
                 ),
                 itemKey: "/console/project/" + id,
               }))

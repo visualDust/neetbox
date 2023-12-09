@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { ECharts } from "../../../echarts";
-import { ProjectStatus } from "../../../../services/types";
+import { RamInfo } from "../../../../services/types";
+import { TimeDataMapper } from "../../../../utils/timeDataMapper";
 import { getTimeAxisOptions } from "./utils";
 
-export const RAMGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["hardware"]> }) => {
+export const RAMGraph = ({ data }: { data: TimeDataMapper<RamInfo> }) => {
   const initialOption = () => {
     return {
       backgroundColor: "transparent",
@@ -34,7 +35,7 @@ export const RAMGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["
           axisLabel: {
             formatter: (x) => x.toFixed(1) + " GB",
           },
-          max: hardwareData[0].value.ram.total,
+          max: data.getValue(0).total,
         },
       ],
       series: [],
@@ -49,13 +50,13 @@ export const RAMGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["
           type: "line",
           areaStyle: {},
           symbol: null,
-          data: hardwareData.map((x) => [new Date(x.timestamp), x.value.ram.used]),
+          data: data.map((timestamp, ram) => [new Date(timestamp), ram.used]),
         },
       ],
-      xAxis: getTimeAxisOptions(hardwareData),
+      xAxis: getTimeAxisOptions(data),
     } as echarts.EChartsOption;
     return newOption;
-  }, [hardwareData]);
+  }, [data]);
 
   return (
     <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />

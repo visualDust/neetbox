@@ -1,10 +1,9 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Space, Typography } from "@douyinfe/semi-ui";
 import { IconClose, IconMaximize } from "@douyinfe/semi-icons";
-import { useCurrentProject, useProjectWebSocket } from "../../../hooks/useProject";
+import { useCurrentProject, useProjectData, useProjectWebSocket } from "../../../hooks/useProject";
 import { ECharts } from "../../echarts";
 import { useAPI } from "../../../services/api";
-import { createCondition } from "../../../utils/condition";
 import Loading from "../../loading";
 
 export const Scatters = memo(() => {
@@ -23,24 +22,21 @@ export const AllScatterViewers = memo(() => {
       mutate([...series, msg.payload.series]);
     }
   });
-  return series?.map((s) => <ScatterViewer key={s} series={s} />) ?? <Loading />;
+  return series?.map((s) => <ScatterViewer key={s} series={s} />) ?? <Loading text="Scalars loading" />;
 });
 
 export const ScatterViewer = memo(({ series }: { series: string }) => {
   const { projectId, runId } = useCurrentProject();
-  const { data, mutate } = useAPI(
-    runId == null ? null : `/scalar/${projectId}/history?${createCondition({ series, runId })}`,
-  );
   const [maximized, setMaximized] = useState(false);
-  useProjectWebSocket(projectId, "scalar", (msg) => {
-    if (series == msg.payload.series && (!runId || runId == msg.runid)) {
-      if (data) {
-        mutate([...data, { metadata: msg.payload }], { revalidate: false });
-      }
-    }
+  const points = useProjectData({
+    type: "scalar",
+    projectId,
+    runId,
+    conditions: { series },
+    transformWS: (x) => ({ x: x.payload.x, y: x.payload.y }),
+    transformHTTP: (x) => ({ x: x.metadata.x, y: x.metadata.y }),
+    filterWS: (x) => x.payload.series == series,
   });
-
-  const points = useMemo(() => data?.map((x) => x.metadata) ?? [], [data]);
 
   const initialOption = () => {
     return {
@@ -111,10 +107,11 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
           symbol: null,
           data: points?.map((x) => [x.x, x.y]),
           // sampling: "lttb",
+          large: true,
         },
       ],
     } as echarts.EChartsOption;
-    if (points?.length > 1000 && !hadZoom) {
+    if (points && points.length > 1000 && !hadZoom) {
       setHadZoom(true);
       newOption.dataZoom = [
         {
@@ -168,7 +165,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
           }}
         >
           {maximized && <Typography.Title heading={4}>scalar "{series}"</Typography.Title>}
-          {data ? (
+          {points ? (
             <ECharts
               initialOption={initialOption}
               updatingOption={updatingOption}

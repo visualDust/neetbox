@@ -3,7 +3,8 @@ import { Button } from "@douyinfe/semi-ui";
 import { IconAlignBottom } from "@douyinfe/semi-icons";
 import { LogData } from "../../../../services/types";
 import "./logs.css";
-import { useCurrentProject, useProjectLogs } from "../../../../hooks/useProject";
+import { useCurrentProject, useProjectData } from "../../../../hooks/useProject";
+import Loading from "../../../loading";
 
 function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: React.CSSProperties }>) {
   const containerRef = useRef<HTMLDivElement>(null!);
@@ -52,12 +53,30 @@ function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: Rea
 
 export const Logs = React.memo(() => {
   const { projectId } = useCurrentProject()!;
-  const logs = useProjectLogs(projectId);
-  return <AutoScrolling style={{ height: "40vh" }} children={<LogItems logs={logs} />} />;
+  const logs = useProjectData({
+    projectId,
+    type: "log",
+    limit: 100,
+    transformHTTP: (x) => ({
+      id: x.id,
+      timestamp: x.timestamp,
+      ...x.metadata,
+    }),
+    transformWS: (x) => ({
+      id: x.id,
+      timestamp: x.timestamp,
+      ...x.payload,
+    }),
+  });
+  return logs ? (
+    <AutoScrolling style={{ height: "40vh" }} children={<LogItems logs={logs} />} />
+  ) : (
+    <Loading size="large" />
+  );
 });
 
 const LogItems = memo(({ logs }: { logs: LogData[] }) => {
-  return logs.map((x) => <LogItem key={x.datetime} data={x} />);
+  return logs.map((x) => <LogItem key={x.timestamp} data={x} />);
 });
 
 function getColorFromWhom(whom: string) {
@@ -71,12 +90,12 @@ const LogItem = React.memo(({ data }: { data: LogData }) => {
   if (!prefix) prefix = "log";
   return (
     <div className="log-item">
-      <span className="log-tag log-datetime">{data.datetime}</span>{" "}
+      <span className="log-tag log-datetime">{data.timestamp}</span>{" "}
       <span className={`log-tag log-prefix log-prefix-${prefix}`}>{prefix}</span>{" "}
       <span className="log-tag log-whom" style={{ backgroundColor: getColorFromWhom(data.whom) }}>
         {data.whom}
       </span>{" "}
-      {data.msg}
+      {data.message}
     </div>
   );
 });

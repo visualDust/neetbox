@@ -31,6 +31,13 @@ def log_with_some_prefix():
 
 
 @neetbox.action()
+def scalar_perf_test(interval: float, count: int):
+    for i in range(count):
+        sleep(interval)
+        neetbox.add_scalar("scalar_perf_test", i, math.cos(i * 0.1))
+
+
+@neetbox.action()
 def log_perf_test(interval: int, count: int):
     for i in range(count):
         sleep(interval)

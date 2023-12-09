@@ -1,10 +1,11 @@
 import { useMemo } from "react";
 import { ECharts } from "../../../echarts";
-import { ProjectStatus } from "../../../../services/types";
+import { CpuInfo } from "../../../../services/types";
+import { TimeDataMapper } from "../../../../utils/timeDataMapper";
 import { getTimeAxisOptions } from "./utils";
 
-export const CPUGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["hardware"]> }) => {
-  const cpus = hardwareData[0].value.cpus;
+export const CPUGraph = ({ data }: { data: TimeDataMapper<CpuInfo[]> }) => {
+  const cpus = data.getValue(0);
   const initialOption = () => {
     return {
       backgroundColor: "transparent",
@@ -47,12 +48,12 @@ export const CPUGraph = ({ hardwareData }: { hardwareData: Array<ProjectStatus["
         stack: "cpu",
         areaStyle: {},
         symbol: null,
-        data: hardwareData.map((x) => [new Date(x.timestamp), x.value.cpus[cpu.id].percent]),
+        data: data.map((timestamp, cpus) => [new Date(timestamp), cpus[cpu.id].percent]),
       })),
-      xAxis: getTimeAxisOptions(hardwareData),
+      xAxis: getTimeAxisOptions(data),
     } as echarts.EChartsOption;
     return newOption;
-  }, [cpus, hardwareData]);
+  }, [cpus, data]);
 
   return (
     <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />

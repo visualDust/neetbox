@@ -1,6 +1,6 @@
 import { RouteObject } from "react-router-dom";
 import ConsoleLayout from "../../components/layout/ConsoleLayout";
-import { RouteError } from "../../components/routeError";
+import { RouteError } from "../../components/errorBoundary";
 import Dashboard from "./projectDashboard";
 import Overview from "./overview";
 
