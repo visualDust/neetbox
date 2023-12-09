@@ -135,6 +135,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
         try:  # creating config file using default config
             with open(config_file_path, "w+") as config_file:
                 import neetbox.extension as extension
+
                 extension._scan_sub_modules()
                 _update_default_config_from_config_register()  # load custom config into default config
                 _config = _DEFAULT_WORKSPACE_CONFIG
@@ -173,12 +174,14 @@ def _load_workspace_config(folder="."):
     _obtain_new_run_id()  # obtain new run id
     _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
 
+
 def _create_load_workspace(path=None):
     is_workspace = _check_if_workspace_config_valid(path)
     if not is_workspace:
         _init_workspace(path)
     _load_workspace_config()
     import neetbox.extension as extension
+
     extension._scan_sub_modules()
 
 
