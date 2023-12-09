@@ -120,10 +120,13 @@ class ClientConn(metaclass=Singleton):
         ws.send(handshake_msg)
 
         @ClientConn.ws_subscribe(event_type_name=EVENT_TYPE_NAME_HANDSHAKE)
-        def _handle_handshake(msg:EventMsg):
+        def _handle_handshake(msg: EventMsg):
             assert msg.payload["result"] == 200
             logger.ok(f"handshake succeed.")
             ClientConn.__ws_client = ws
+            ClientConn.ws_send(  # send config
+                event_type=EVENT_TYPE_NAME_STATUS, payload={"config": get_module_level_config("@")}
+            )
 
     def __on_ws_err(ws: websocket.WebSocketApp, msg):
         logger.err(f"client websocket encountered {msg}")
@@ -150,22 +153,29 @@ class ClientConn(metaclass=Singleton):
                     f"Subscriber {name} crashed on message event {message.event_type}, ignoring."
                 )
 
-    def ws_send(event_type: str, payload: dict, timestamp: str = None, event_id=-1):
-        if ClientConn.__ws_client:  # if ws client exist
+    @classmethod
+    def _ws_send(cls, message: EventMsg):
+        if cls.__ws_client:  # if ws client exist
             try:
-                ClientConn.__ws_client.send(
-                    EventMsg(
-                        project_id=get_project_id(),
-                        run_id=get_run_id(),
-                        event_type=event_type,
-                        event_id=event_id,
-                        who=IdentityType.CLI,
-                        payload=payload,
-                        timestamp=timestamp or get_timestamp(),
-                    ).dumps()
-                )
+                cls.__ws_client.send(message.dumps())
             except Exception as e:
                 logger.warn(f"websocket send fialed: {e}, message dropped.")
+
+    @classmethod
+    def ws_send(
+        cls, event_type: str, payload: dict, timestamp: str = None, event_id=-1, _history_len=-1
+    ):
+        message = EventMsg(
+            project_id=get_project_id(),
+            run_id=get_run_id(),
+            event_type=event_type,
+            event_id=event_id,
+            who=IdentityType.CLI,
+            payload=payload,
+            timestamp=timestamp or get_timestamp(),
+            history_len=_history_len,
+        )
+        cls._ws_send(message=message)
 
 
 # assign this connection to websocket log writer
@@ -173,3 +183,28 @@ from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
 
 _assign_connection_to_WebSocketLogWriter(ClientConn)
 connection = ClientConn
+
+
+def check_server_connectivity(cfg=None):
+    _cfg = cfg or get_module_level_config()
+    logger.log(f"Connecting to daemon at {_cfg['host']}:{_cfg['port']} ...")
+    _daemon_server_address = f"{_cfg['host']}:{_cfg['port']}"
+    _base_addr = f"http://{_daemon_server_address}"
+
+    # check if daemon is alive
+    def _check_daemon_alive(_api_addr):
+        _api_name = "hello"
+        _api_addr = f"{_api_addr}/{_api_name}"
+        r = connection.http.get(_api_addr)
+        if r.is_error:
+            raise IOError(f"Daemon at {_api_addr} is not alive. ({r.status_code})")
+
+    try:
+        _check_daemon_alive(_base_addr)
+        logger.ok(f"daemon alive at {_base_addr}")
+    except Exception as e:
+        logger.err(e)
+        return False
+
+    connection._init_ws()
+    return True

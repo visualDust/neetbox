@@ -9,8 +9,6 @@ import locale
 import platform
 import subprocess
 
-from neetbox.client._signal_and_slot import SYSTEM_CHANNEL, watch
-from neetbox.config import export_default_config, get_module_level_config
 from neetbox.extension import on_workspace_loaded
 from neetbox.utils.mvc import Singleton
 
@@ -52,23 +50,11 @@ class __Platform(dict, metaclass=Singleton):
         return rc, output.strip(), err.strip()
 
 
-# singleton
-platform = __Platform()
-
-
-@export_default_config()
-def return_default_config() -> dict:
-    return {"monit": True}
-
-
 # watch updates in daemon
 @on_workspace_loaded(name="show-platform-information")
-def load_monit_hardware():
-    cfg = get_module_level_config()
-    if cfg["monit"]:  # if do monit hardware
-        # watch updates in daemon
-        @watch(name="platform", initiative=True, _channel=SYSTEM_CHANNEL)
-        def update_env_stat():
-            return dict(platform)
+def load_send_platform_info():
+    from neetbox._daemon._protocol import EVENT_TYPE_NAME_STATUS
+    from neetbox._daemon.client._client import connection
 
-        update_env_stat()  # call once
+    platform = __Platform()
+    connection.ws_send(event_type=EVENT_TYPE_NAME_STATUS, payload=dict({"platform": platform}))

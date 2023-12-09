@@ -58,9 +58,15 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/list", methods=["GET"])
     def get_list_of_connected_project_ids():
         result = []
-        for id, bridge in Bridge.items():
+        for project_id, bridge in Bridge.items():
             status = bridge.get_status()
-            result.append({"id": id, "online": status["online"], "config": status["config"]})
+            result.append(
+                {
+                    PROJECT_ID_KEY: project_id,
+                    "online": status["online"],
+                    STATUS_TABLE_NAME: status[STATUS_TABLE_NAME],
+                }
+            )
         return result
 
     def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, str]):
@@ -79,28 +85,25 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/log/<project_id>/history", methods=["GET"])
     def get_history_log_of(project_id):
         return get_history_json_of(
-            project_id=project_id, table_name="log", condition=request.args.get("condition")
+            project_id=project_id,
+            table_name=LOG_TABLE_NAME,
+            condition=request.args.get("condition"),
         )
 
-    @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>", methods=["GET"])
-    def get_status_of(project_id):
+    @app.route(f"{FRONTEND_API_ROOT}/hardware/<project_id>/history", methods=["GET"])
+    def get_history_hardware_of(project_id):
+        return get_history_json_of(
+            project_id=project_id,
+            table_name=EVENT_TYPE_NAME_HARDWARE,
+            condition=request.args.get("condition"),
+        )
+
+    @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>/<run_id>", methods=["GET"])
+    def get_status_of(project_id, run_id):
         if not Bridge.has(project_id):
             abort(404)
-        _returning_stat = Bridge.of_id(project_id).get_status()  # returning specific status
-        return _returning_stat
-
-    @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>/history", methods=["GET"])
-    def get_history_status_of(project_id):
-        return get_history_json_of(
-            project_id=project_id, table_name="status", condition=request.args.get("condition")
-        )
-
-    @app.route(f"{CLIENT_API_ROOT}/sync/<project_id>", methods=["POST"])
-    def upload_status_of(project_id):  # client side function
-        _json_data = request.get_json()
-        target_bridge = Bridge(project_id)  # Create from sync request
-        target_bridge.set_status(_json_data)
-        return {"result": "ok"}
+        result = Bridge.of_id(project_id).get_status(run_id=run_id)
+        return result
 
     @app.route(f"{FRONTEND_API_ROOT}/series/<project_id>/<table_name>", methods=["GET"])
     def get_series_list_of(project_id: str, table_name: str):  # client side function

@@ -62,7 +62,6 @@ class Bridge:
             )  # frontend ws sids. client data should be able to be shown on multiple frontend
             flag_auto_load_db = kwargs["auto_load_db"] if "auto_load_db" in kwargs else True
             new_bridge.historyDB = get_db_of_id(project_id) if flag_auto_load_db else None
-            new_bridge.status = {}
             cls._id2bridge[project_id] = new_bridge
             logger.info(f"created new Bridge for project id '{project_id}'")
         return cls._id2bridge[project_id]
@@ -93,12 +92,6 @@ class Bridge:
         if target_bridge.historyDB is not None:
             logger.warn(f"overwriting db of '{project_id}'")
         target_bridge.historyDB = db
-        # put last status
-        last_status = target_bridge.read_json_from_history(
-            table_name="status", condition=QueryCondition(limit=1, order={"id": DbQuerySortType.DESC})
-        )
-        if len(last_status):
-            target_bridge.status = last_status[0][JSON_COLUMN_NAME]  # do not use set_status()
         return target_bridge
 
     @classmethod
@@ -108,7 +101,7 @@ class Bridge:
         for _, history_db in db_list:
             cls.from_db(history_db)
 
-    def ws_send_to_frontends(self, message:EventMsg):
+    def ws_send_to_frontends(self, message: EventMsg):
         for web_ws in self.web_ws_list:
             try:
                 Bridge._ws_server.send_message(
@@ -118,7 +111,7 @@ class Bridge:
                 logger.err(e)
         return
 
-    def ws_send_to_client(self, message:EventMsg):
+    def ws_send_to_client(self, message: EventMsg):
         _client = self.cli_ws
         try:
             Bridge._ws_server.send_message(
@@ -128,13 +121,12 @@ class Bridge:
             logger.err(e)
         return
 
-    def set_status(self, status):
-        status_dict = json.loads(status) if isinstance(status, str) else status
-        self.status = status_dict
-        self.save_json_to_history(table_name="status", json_data=status_dict)
+    def set_status(self, run_id: str, series: str, value: dict):
+        self.historyDB.set_status(run_id=run_id, series=series, json_data=value)
 
-    def get_status(self):
-        status = self.status
+    def get_status(self, run_id: str = None, series: str = None):
+        status = self.historyDB.get_status(run_id=run_id, series=series)
+        status = {EVENT_TYPE_NAME_STATUS: status}
         status["online"] = self.cli_ws is not None
         return status
 

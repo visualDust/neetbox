@@ -10,6 +10,8 @@ from neetbox._daemon.client._client import connection
 from neetbox.config import get_project_id, get_run_id
 from neetbox.utils.x2numpy import *
 
+# ===================== IMAGE things ===================== #
+
 
 def figure_to_image(figures, close=True):
     """Render matplotlib figure to numpy format.
@@ -142,6 +144,9 @@ def add_image(name: str, image, dataformats: str = None):
     )
 
 
+# ===================== MATPLOTLIB things ===================== #
+
+
 def add_figure(
     figure,
     close: Optional[bool] = True,
@@ -160,3 +165,24 @@ def add_figure(
         add_image(image=figure_to_image(figure, close), dataformats="NCHW")
     else:
         add_image(image=figure_to_image(figure, close), dataformats="CHW")
+
+
+def add_scalar(name: str, x: Union[int, float], y: Union[int, float]):
+    """send an scalar to frontend display
+
+    Args:
+        name (str): name of the image, used in frontend display
+        x (Union[int, float]): x
+        y (Union[int, float]): y
+    """
+    # send
+    connection.ws_send(
+        event_type=EVENT_TYPE_NAME_SCALAR, payload={SERIES_KEY: name, "x": x, "y": y}
+    )
+
+
+# ===================== HYPERPARAM things ===================== #
+
+
+def add_hyperparams(name: str, value: dict):
+    connection.ws_send(event_type=EVENT_TYPE_NAME_HPARAMS, payload={name: value})

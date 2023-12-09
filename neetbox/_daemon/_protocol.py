@@ -1,9 +1,9 @@
-from dataclasses import dataclass
-from enum import Enum
 import json
-from typing import Any, Union
-from importlib.metadata import version
+from dataclasses import dataclass
 from datetime import datetime as dt
+from enum import Enum
+from importlib.metadata import version
+from typing import Any, Union
 
 # ===================== common things =====================
 
@@ -19,6 +19,7 @@ WHO_KEY = "who"
 PAYLOAD_KEY = "payload"
 METADATA_KEY = "metadata"
 TIMESTAMP_KEY = "timestamp"
+HISTORY_LEN_KEY = "history-len"
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.SSS
 
 
@@ -50,6 +51,7 @@ class EventMsg:
     run_id: str = None
     event_id: int = -1
     timestamp: str = get_timestamp()
+    history_len: int = -1
 
     def json(self):
         return {
@@ -60,6 +62,7 @@ class EventMsg:
             WHO_KEY: self.who,
             PAYLOAD_KEY: self.payload,
             TIMESTAMP_KEY: self.timestamp,
+            HISTORY_LEN_KEY: self.history_len,
         }
 
     def dumps(self):
@@ -75,8 +78,9 @@ class EventMsg:
             event_type=src.get(EVENT_TYPE_KEY),
             who=src.get(WHO_KEY),
             payload=src.get(PAYLOAD_KEY),
-            event_id=src.get(EVENT_ID_KEY),
-            timestamp=src.get(TIMESTAMP_KEY),
+            event_id=src.get(EVENT_ID_KEY, -1),
+            timestamp=src.get(TIMESTAMP_KEY, get_timestamp()),
+            history_len=src.get(HISTORY_LEN_KEY, -1),
         )
 
     @classmethod
@@ -96,6 +100,9 @@ EVENT_TYPE_NAME_LOG = "log"
 EVENT_TYPE_NAME_ACTION = "action"
 EVENT_TYPE_NAME_SCALAR = "scalar"
 EVENT_TYPE_NAME_IMAGE = "image"
+EVENT_TYPE_NAME_HPARAMS = "hyperparameters"
+EVENT_TYPE_NAME_STATUS = "status"
+EVENT_TYPE_NAME_HARDWARE = "hardware"
 
 # ===================== HTTP things =====================
 
@@ -107,7 +114,7 @@ CLIENT_API_ROOT = "/cli"
 # === COLUMN NAMES ===
 ID_COLUMN_NAME = ID_KEY
 TIMESTAMP_COLUMN_NAME = TIMESTAMP_KEY
-SERIES_COLUMN_NAME = SERIES_KEY
+NAME_COLUMN_KEY = SERIES_COLUMN_NAME = SERIES_KEY
 RUN_ID_COLUMN_NAME = RUN_ID_KEY
 JSON_COLUMN_NAME = METADATA_COLUMN_NAME = METADATA_KEY
 BLOB_COLUMN_NAME = "data"
@@ -116,7 +123,7 @@ BLOB_COLUMN_NAME = "data"
 PROJECT_ID_TABLE_NAME = PROJECT_ID_KEY
 VERSION_TABLE_NAME = "version"
 RUN_IDS_TABLE_NAME = RUN_ID_KEY
-STATUS_TABLE_NAME = "status"
+STATUS_TABLE_NAME = EVENT_TYPE_NAME_STATUS
 LOG_TABLE_NAME = "log"
 IMAGE_TABLE_NAME = "image"
 

@@ -5,15 +5,19 @@
 # Date:   20231204
 
 from typing import Dict, Tuple
-from neetbox._daemon._protocol import *
+
 from rich import box
 from rich.console import Console
 from rich.table import Table
+
+from neetbox._daemon._protocol import *
+
 from .history import *
 
 
 def get_web_socket_server(config, debug=False):
     from websocket_server import WebsocketServer
+
     from neetbox._daemon.server._bridge import Bridge
     from neetbox.logging import LogStyle, logger
 
@@ -129,6 +133,24 @@ def get_web_socket_server(config, debug=False):
             console.print(table)
         return
 
+    def on_event_type_status(message: EventMsg):
+        bridge = Bridge.of_id(message.project_id)
+        current_status = bridge.get_status(run_id=message.run_id)[STATUS_TABLE_NAME]
+        for k, v in message.payload.items():
+            current_status[k] = v
+        for k, v in current_status.items():
+            bridge.set_status(run_id=message.run_id, series=k, value=v)
+
+    def on_event_type_hyperparams(message: EventMsg):
+        bridge = Bridge.of_id(message.project_id)
+        current_hyperparams = bridge.get_status(
+            run_id=message.run_id, series=EVENT_TYPE_NAME_HPARAMS
+        )[STATUS_TABLE_NAME]
+        for k, v in message.payload.items():
+            current_hyperparams[k] = v
+        message.payload = {EVENT_TYPE_NAME_HPARAMS: current_hyperparams}
+        on_event_type_status(message)
+
     def on_event_type_json(
         message: EventMsg,
         forward_to: IdentityType = IdentityType.OTHERS,
@@ -157,7 +179,7 @@ def get_web_socket_server(config, debug=False):
                 table_name=message.event_type,
                 json_data=message.payload,
                 run_id=message.run_id,
-                timestamp = message.timestamp
+                timestamp=message.timestamp,
             )
         return  # return after handling log forwarding
 
@@ -165,21 +187,23 @@ def get_web_socket_server(config, debug=False):
         message = EventMsg.loads(message)
         # handle event-type
         if message.event_type == EVENT_TYPE_NAME_HANDSHAKE:  # handle handshake
-            on_event_type_handshake(
-                client=client, server=server, message=message
-            )
+            on_event_type_handshake(client=client, server=server, message=message)
             return  # return after handling handshake
         if client["id"] not in connected_clients:
             return  # !!! not handling messages from cli/web without handshake. handshake is aspecial   case and should be handled anyway before this check.
         if message.who != connected_clients[client["id"]][1]:
             return  # !!! security check, who should match who
-        else:  # unknown event type, forward and save to history
-            on_event_type_json(
-                message=message,
-                forward_to=IdentityType.OTHERS,
-                save_history=True,
-            )
-            return
+        else:  # handle regular event types
+            if message.event_type == EVENT_TYPE_NAME_HPARAMS:
+                on_event_type_hyperparams(message)
+            elif message.event_type == EVENT_TYPE_NAME_STATUS:
+                on_event_type_status(message)
+            else:
+                on_event_type_json(
+                    message=message,
+                    forward_to=IdentityType.OTHERS,
+                    save_history=True,
+                )
 
     ws_server.set_fn_new_client(handle_ws_connect)
     ws_server.set_fn_client_left(handle_ws_disconnect)
