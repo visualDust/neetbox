@@ -8,6 +8,8 @@ from PIL import Image
 from neetbox._daemon._protocol import *
 from neetbox._daemon.client._client import connection
 from neetbox.config import get_project_id, get_run_id
+from neetbox.logging import logger
+from neetbox.utils.massive import nonblocking
 from neetbox.utils.x2numpy import *
 
 # ===================== IMAGE things ===================== #
@@ -107,6 +109,7 @@ def convert_to_HWC(tensor, input_format):  # tensor: numpy array
         return tensor
 
 
+@nonblocking
 def add_image(name: str, image, dataformats: str = None):
     """send an image to frontend display
 
@@ -132,16 +135,19 @@ def add_image(name: str, image, dataformats: str = None):
 
     # send bytes
     project_id = get_project_id()
-    connection.post(
-        api=f"/image/{project_id}",
-        data=EventMsg(
-            project_id=project_id,
-            run_id=get_run_id(),
-            event_type=EVENT_TYPE_NAME_IMAGE,
-            payload={SERIES_KEY: name},
-        ).json(),
-        files={"image": image_bytes},
-    )
+    try:
+        connection.post(
+            api=f"/image/{project_id}",
+            data=EventMsg(
+                project_id=project_id,
+                run_id=get_run_id(),
+                event_type=EVENT_TYPE_NAME_IMAGE,
+                payload={SERIES_KEY: name},
+            ).json(),
+            files={"image": image_bytes},
+        )
+    except Exception as e:
+        logger.warn(f"unable to upload image: {e}")
 
 
 # ===================== MATPLOTLIB things ===================== #

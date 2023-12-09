@@ -156,26 +156,26 @@ class ClientConn(metaclass=Singleton):
     @classmethod
     def _ws_send(cls, message: EventMsg):
         if cls.__ws_client:  # if ws client exist
-            try:
-                cls.__ws_client.send(message.dumps())
-            except Exception as e:
-                logger.warn(f"websocket send fialed: {e}, message dropped.")
+            cls.__ws_client.send(message.dumps())
 
     @classmethod
     def ws_send(
         cls, event_type: str, payload: dict, timestamp: str = None, event_id=-1, _history_len=-1
     ):
-        message = EventMsg(
-            project_id=get_project_id(),
-            run_id=get_run_id(),
-            event_type=event_type,
-            event_id=event_id,
-            who=IdentityType.CLI,
-            payload=payload,
-            timestamp=timestamp or get_timestamp(),
-            history_len=_history_len,
-        )
-        cls._ws_send(message=message)
+        try:
+            message = EventMsg(
+                project_id=get_project_id(),
+                run_id=get_run_id(),
+                event_type=event_type,
+                event_id=event_id,
+                who=IdentityType.CLI,
+                payload=payload,
+                timestamp=timestamp or get_timestamp(),
+                history_len=_history_len,
+            )
+            cls._ws_send(message=message)
+        except Exception as e:
+            logger.warn(f"websocket send fialed: {e}, message dropped.")
 
 
 # assign this connection to websocket log writer
