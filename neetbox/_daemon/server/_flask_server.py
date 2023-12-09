@@ -56,21 +56,24 @@ def get_flask_server(debug=False):
         return {"hello": "hello"}
 
     @app.route(f"{FRONTEND_API_ROOT}/list", methods=["GET"])
-    def get_list_of_connected_project():
-        result = []
-        for project_id, bridge in Bridge.items():
-            status = bridge.get_status()
-            last_run_id = bridge.get_run_ids()[0][0]
-            config_last_run = bridge.get_status(run_id=last_run_id, series="config")
-            result.append(
-                {
-                    PROJECT_ID_KEY: project_id,
-                    "online": bridge.is_online(),
-                    NAME_KEY: config_last_run[NAME_KEY],
-                    STATUS_TABLE_NAME: status,
-                }
-            )
-        return result
+    def get_status_of_all_proejcts():
+        return [_project_status_from_bridge(bridge) for _, bridge in Bridge.items()]
+
+    @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>", methods=["GET"])
+    def get_status_of_project_id(project_id: str):
+        bridge = Bridge.of_id(project_id)
+        return _project_status_from_bridge(bridge)
+
+    def _project_status_from_bridge(bridge: Bridge):
+        status = bridge.get_status()
+        last_run_id = bridge.get_run_ids()[0][0]
+        config_last_run = bridge.get_status(run_id=last_run_id, series="config")
+        return {
+            PROJECT_ID_KEY: bridge.project_id,
+            "online": bridge.is_online(),
+            NAME_KEY: config_last_run[NAME_KEY],
+            STATUS_TABLE_NAME: status,
+        }
 
     def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, str]):
         if not Bridge.has(project_id):
