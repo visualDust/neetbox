@@ -33,18 +33,19 @@ export function HowToCard({
       style={{
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
       }}
     >
       <div className="text--center">
-        <img src={image} style={{ borderRadius: "30px" }} />
+        <img src={image} style={{ borderRadius: "5px" }} />
       </div>
       <div
         style={{
           display: "flex",
-          margin: "30px",
+          marginBottom: "30px",
+          marginTop: "30px",
           flexDirection: "column",
           justifyContent: "space-between",
+          height: "100%",
         }}
       >
         <div className={clsx("text--center", styles["feature-card-text"])}>
@@ -124,7 +125,7 @@ export function FeatureCard({
           justifyContent: "center",
         }}
       >
-        <img src={image} />
+        <img src={image} style={{boxShadow: "rgba(0, 0, 0, 0.05) 0px 0px 0px 1px"}}/>
       </div>
     </div>
   );
