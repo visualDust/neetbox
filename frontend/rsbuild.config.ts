@@ -10,7 +10,7 @@ export default defineConfig({
     rspack: (config) => {
       config.plugins!.push(
         new SemiRspackPlugin({
-          theme: "@semi-bot/semi-theme-nyx-c",
+          // theme: "@semi-bot/semi-theme-nyx-c",
         }),
       );
       // config.optimization = { ...config.optimization, minimize: false };
