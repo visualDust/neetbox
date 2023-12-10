@@ -52,11 +52,12 @@ function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: Rea
 }
 
 export const Logs = React.memo(() => {
-  const { projectId } = useCurrentProject()!;
+  const { projectId, runId } = useCurrentProject()!;
   const logs = useProjectData({
     projectId,
     type: "log",
-    limit: 100,
+    limit: 1000,
+    runId,
     transformHTTP: (x) => ({
       id: x.id,
       timestamp: x.timestamp,
@@ -69,9 +70,9 @@ export const Logs = React.memo(() => {
     }),
   });
   return logs ? (
-    <AutoScrolling style={{ height: "40vh" }} children={<LogItems logs={logs} />} />
+    <AutoScrolling style={{ height: "40vh" }} children={<LogItems key={`LogItems-${runId}`} logs={logs} />} />
   ) : (
-    <Loading size="large" />
+    <Loading size="large" height="40vh" />
   );
 });
 

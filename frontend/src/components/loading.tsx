@@ -24,7 +24,7 @@ export default function Loading({
       }}
     >
       {text ? (
-        <Space>
+        <Space vertical>
           <Spin size={size} />
           {text}
         </Space>

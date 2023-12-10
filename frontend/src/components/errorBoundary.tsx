@@ -2,8 +2,9 @@ import React, { ReactNode } from "react";
 import { useRouteError } from "react-router";
 
 export const RouteError = () => {
-  const error = useRouteError();
-  const text = `${error}\n\n${(error as Error)?.stack}`;
+  const routeError = useRouteError() as { error: Error };
+  const error = routeError?.error ?? routeError;
+  const text = `RouteError\n\n${error}\n\n${error?.stack}`;
   return <pre style={{ whiteSpace: "pre-wrap", margin: 10 }}>{text}</pre>;
 };
 
@@ -22,6 +23,7 @@ export class ErrorBoundary extends React.Component<
   }
 
   renderDefaultErrorPage() {
+    console.info(this.state);
     const text = `${this.state.error}\n\n${(this.state.error as Error)?.stack}\n\n${this.state.errorInfo
       ?.componentStack}`;
     return <pre style={{ whiteSpace: "pre-wrap", margin: 10 }}>{text}</pre>;

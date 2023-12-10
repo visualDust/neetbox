@@ -1,20 +1,3 @@
-export interface ProjectStatusHistory {
-  enablePolling: boolean;
-  current?: ProjectStatus;
-  history: Array<ProjectStatus>;
-}
-
-export interface ProjectStatus {
-  config: ProjectConfig;
-  platform: WithTimestamp<Record<string, string | string[]>>;
-  hardware: WithTimestamp<HardwareInfo>;
-  __action: WithTimestamp<ActionInfo>;
-}
-
-interface ProjectConfig {
-  name: string;
-}
-
 export interface CpuInfo {
   id: number;
   percent: number;
@@ -55,6 +38,8 @@ export type ActionInfo = Record<
     description: string;
   }
 >;
+
+export type PlatformInfo = Record<string, string | string[]>;
 
 export interface WithTimestamp<T> {
   value: T;

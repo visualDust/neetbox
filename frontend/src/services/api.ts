@@ -16,5 +16,5 @@ export async function fetcher(url: string) {
 }
 
 export function useAPI(url: string | null, options?: { refreshInterval?: number; fetcher?: typeof fetcher }) {
-  return useSWR(url, options?.fetcher ?? fetcher, options);
+  return useSWR(url, options?.fetcher ?? fetcher, { keepPreviousData: false, ...options });
 }

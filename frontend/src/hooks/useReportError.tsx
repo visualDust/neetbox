@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Typography } from "@douyinfe/semi-ui";
 import { addNotice } from "../utils/notification";
 
 export function useReportGlobalError() {

@@ -1,8 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
+import { useAtom } from "jotai";
 import { getProject } from "../services/projects";
 import { WsMsg } from "../services/projectWebsocket";
 import { fetcher, useAPI } from "../services/api";
 import { Condition, createCondition } from "../utils/condition";
+import { ActionInfo, PlatformInfo } from "../services/types";
+import { slideWindow } from "../utils/array";
 
 export const ProjectContext = createContext<{
   projectId: string;
@@ -22,7 +25,12 @@ export function useProjectStatus(id: string) {
 
 export function useProjectRunStatus(id: string, runId?: string) {
   const data = useProjectStatus(id);
-  return !runId ? undefined : data?.status[runId];
+  return !runId ? undefined : (data?.status[runId] as { action: ActionInfo; platform: PlatformInfo });
+}
+
+export function useProjectWebSocketReady(id: string) {
+  const project = getProject(id);
+  return useAtom(project.wsClient.isReady.atom)[0];
 }
 
 export function useProjectWebSocket<T extends WsMsg["event-type"]>(
@@ -46,54 +54,78 @@ export function useProjectWebSocket<T extends WsMsg["event-type"]>(
 
 export function useProjectData<T = any>(options: {
   type: string;
+  disable?: boolean;
   projectId: string;
   runId?: string;
   limit?: number;
   conditions?: Condition;
-  filterWS?: (msg: any) => boolean;
-  transformHTTP?: (data: any) => unknown;
-  transformWS?: (data: any) => unknown;
-  onNewWSData?: (transformed: any) => void;
+  filterWS?: (msg) => boolean;
+  transformHTTP?: (data) => unknown;
+  transformWS?: (msg) => unknown;
+  onNewWSData?: (transformed) => void;
 }) {
   const { type, projectId, runId, limit, transformWS = (x) => x, transformHTTP = (x) => x } = options;
-  const { data, mutate } = useAPI(
-    `/${type}/${projectId}/history?${createCondition({
-      runId,
-      ...(!limit ? null : { limit, order: { id: "DESC" } }),
-      ...options.conditions,
-    })}`,
-    {
-      fetcher: async (url) => {
-        let result = (await fetcher(url)).map(transformHTTP);
-        if (limit) {
-          result = result.reverse();
-        }
-        return result;
-      },
+  const wsReady = useProjectWebSocketReady(projectId);
+  const url =
+    options.disable || !wsReady
+      ? null
+      : `/${type}/${projectId}/history?${createCondition({
+          runId,
+          ...(!limit ? null : { limit, order: { id: "DESC" } }),
+          ...options.conditions,
+        })}`;
+  const { data, mutate, isLoading } = useAPI(url, {
+    fetcher: async (url) => {
+      let result = (await fetcher(url)).map(transformHTTP);
+      if (limit) {
+        result = result.reverse();
+      }
+      return result;
     },
-  );
-  const [realtimeData, setRealtimeData] = useState<any[]>([]);
+  });
+  const refQueue = useRef<{ timer: number | null; queue: T[] }>({ timer: null, queue: [] });
+  const flushQueue = () => {
+    let queue = refQueue.current.queue;
+    if (!queue.length) {
+      console.warn("flushQueue called when the queue is empty");
+      return;
+    }
+    const lastData = data[data.length - 1];
+    const firstQueue = queue[0];
+    const seqKey =
+      lastData && firstQueue && ["id", "timestamp"].find((key) => lastData[key] && firstQueue[key]);
+    if (seqKey) {
+      queue = queue.filter((x) => x[seqKey] > lastData[seqKey]);
+    }
+    mutate((arr) => slideWindow(arr, queue, limit, limit ? limit * 1.2 : undefined), {
+      revalidate: false,
+    });
+    refQueue.current.queue = [];
+    refQueue.current.timer = null;
+  };
   useProjectWebSocket(projectId, type, (msg) => {
+    if (options.disable) return;
     if (!runId || (msg.runid == runId && (!options.filterWS || options.filterWS(msg)))) {
       const transformed = transformWS(msg);
-      // if (data) {
-      //   mutate((arr) => [...arr, transformed], { revalidate: false });
-      // } else {
-      //   setRealtimeData((arr) => [...arr, transformed]);
-      // }
-      if (data) {
-        mutate((arr) => [...arr, transformed], { revalidate: false });
-        options.onNewWSData?.(transformed);
+      if (data && !isLoading && !refQueue.current.timer) {
+        refQueue.current.timer = setTimeout(flushQueue, 50) as unknown as number;
       }
-      // setRealtimeData((arr) => [...arr, transformed]);
+      refQueue.current.queue.push(transformed);
     }
   });
-  // useEffect(() => {
-  //   if (data && realtimeData.length) {
-  //     setRealtimeData([]);
-  //     mutate([...data, ...realtimeData], { revalidate: false });
-  //   }
-  // }, [data, realtimeData]);
-  console.debug("useProjectData", options.type, { data, realtimeData });
-  return useMemo(() => (data ? ([...data, ...realtimeData] as T[]) : null), [data, realtimeData]);
+  useEffect(() => {
+    if (data && !isLoading && refQueue.current.queue.length && !refQueue.current.timer) {
+      flushQueue();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, isLoading]);
+  useEffect(() => {
+    if (refQueue.current.timer) {
+      clearTimeout(refQueue.current.timer);
+      refQueue.current.timer = null;
+    }
+    refQueue.current.queue = [];
+  }, [url]);
+  // console.debug("useProjectData", options.type, data);
+  return data as T[] | null;
 }

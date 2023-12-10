@@ -1,3 +1,4 @@
+import { BetterAtom } from "../utils/betterAtom";
 import { WEBSOCKET_URL } from "./api";
 import { Project } from "./projects";
 import { ImageMetadata } from "./types";
@@ -33,19 +34,26 @@ export class WsClient {
   nextId = ~~(Math.random() * 100000000) * 1000;
   callbacks = new Map<number, (msg: WsMsg) => void>();
   wsListeners = new Set<(msg: WsMsg) => void>();
+  isReady = new BetterAtom(false);
 
   constructor(readonly project: Project) {
     this.ws = new WebSocket(WEBSOCKET_URL);
     this.ws.onopen = () => {
       console.info("ws open");
-      this.send({
-        "event-type": "handshake",
-        who: "web",
-      });
+      this.send(
+        {
+          "event-type": "handshake",
+          who: "web",
+        },
+        (msg) => {
+          console.info("ws joined", msg);
+          this.isReady.value = true;
+        },
+      );
     };
     this.ws.onmessage = (e) => {
       const json = JSON.parse(e.data) as WsMsg;
-      console.debug("ws receive", json);
+      // console.debug("ws receive", json);
       const eventId = json["event-id"];
       const eventType = json["event-type"];
       if (this.callbacks.has(eventId)) {
@@ -61,6 +69,9 @@ export class WsClient {
         // console.warn("ws unhandled message", json);
         this.wsListeners.forEach((x) => x(json));
       }
+    };
+    this.ws.onclose = (e) => {
+      this.isReady.value = false;
     };
   }
 

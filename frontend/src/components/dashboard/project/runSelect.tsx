@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo } from "react";
+import { memo, startTransition, useEffect, useMemo } from "react";
 import { Space, Select, Typography } from "@douyinfe/semi-ui";
 import Loading from "../../loading";
 import { useAPI } from "../../../services/api";
@@ -19,7 +19,7 @@ export const RunSelect = memo(() => {
       {runIds ? (
         <Select
           value={runId}
-          onChange={(x) => setRunId(x as any)}
+          onChange={(x) => setRunId(x as string)}
           renderSelectedItem={(p) =>
             p.value === undefined ? "All" : runIds.find((x) => x.id == p.value).timestamp
           }

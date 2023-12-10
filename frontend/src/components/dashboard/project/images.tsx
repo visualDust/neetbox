@@ -31,6 +31,7 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
   const { projectId, runId } = useCurrentProject()!;
   const data = useProjectData({
     type: "image",
+    disable: !runId,
     projectId,
     runId,
     conditions: {
@@ -44,19 +45,15 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
       if (index == length - 1) setIndex((i) => i + 1);
     },
   });
-  const [index, setIndex] = useState(0);
-  const img = data?.[index];
+  const [realIndex, setIndex] = useState(-1);
   const length = data?.length ?? 0;
+  const index = realIndex < 0 ? length - 1 : realIndex;
+  const img = data?.[index];
   const has = (delta: number) => Boolean(data?.[index + delta]);
-  const go = (delta: number) => {
-    setIndex(Math.max(0, Math.min(index + delta, length - 1)));
+  const move = (delta: number) => {
+    goto(Math.max(0, Math.min(index + delta, length - 1)));
   };
-  useEffect(() => {
-    if (length > 0) {
-      setIndex(length - 1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [length > 0]);
+  const goto = (newIndex: number) => setIndex(newIndex == length - 1 ? -1 : newIndex);
   const imgSrc = img ? `/web/image/${projectId}/${img.id}` : null;
   return (
     <Card bodyStyle={{ position: "relative" }}>
@@ -87,10 +84,10 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
           <Loading width="450px" height="300px" />
         )}
         <Space>
-          <Button onClick={() => go(-10)} disabled={!has(-1)}>
+          <Button onClick={() => move(-10)} disabled={!has(-1)}>
             {"<<"}
           </Button>
-          <Button onClick={() => go(-1)} disabled={!has(-1)}>
+          <Button onClick={() => move(-1)} disabled={!has(-1)}>
             {"<"}
           </Button>
           <InputChangeOnEnter
@@ -99,16 +96,16 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
             onChange={(x) => {
               const i = parseInt(x) - 1;
               if (data?.[i]) {
-                setIndex(i);
+                goto(i);
               }
             }}
             style={{ width: "60px" }}
           />{" "}
           / {data?.length ?? "..."}
-          <Button onClick={() => go(+1)} disabled={!has(1)}>
+          <Button onClick={() => move(+1)} disabled={!has(1)}>
             {">"}
           </Button>
-          <Button onClick={() => go(+10)} disabled={!has(1)}>
+          <Button onClick={() => move(+10)} disabled={!has(1)}>
             {">>"}
           </Button>
         </Space>
