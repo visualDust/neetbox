@@ -53,6 +53,7 @@ export function useProjectData<T = any>(options: {
   filterWS?: (msg: any) => boolean;
   transformHTTP?: (data: any) => unknown;
   transformWS?: (data: any) => unknown;
+  onNewWSData?: (transformed: any) => void;
 }) {
   const { type, projectId, runId, limit, transformWS = (x) => x, transformHTTP = (x) => x } = options;
   const { data, mutate } = useAPI(
@@ -82,6 +83,7 @@ export function useProjectData<T = any>(options: {
       // }
       if (data) {
         mutate((arr) => [...arr, transformed], { revalidate: false });
+        options.onNewWSData?.(transformed);
       }
       // setRealtimeData((arr) => [...arr, transformed]);
     }

@@ -1,10 +1,9 @@
 import { memo, useEffect, useState } from "react";
 import { Button, Card, Input, Popover, Space, Typography } from "@douyinfe/semi-ui";
 import { IconDownload } from "@douyinfe/semi-icons";
-import { useCurrentProject, useProjectWebSocket } from "../../../hooks/useProject";
+import { useCurrentProject, useProjectData, useProjectWebSocket } from "../../../hooks/useProject";
 import { useAPI } from "../../../services/api";
 import Loading from "../../loading";
-import { createCondition } from "../../../utils/condition";
 import { CenterBox } from "../../centerBox";
 
 export const Images = memo(() => {
@@ -19,7 +18,8 @@ export const AllImageViewers = memo(() => {
   const { projectId } = useCurrentProject()!;
   const { data: series, mutate } = useAPI(`/series/${projectId}/image`);
   useProjectWebSocket(projectId, "image", (msg) => {
-    const newSeries = msg.metadata.series;
+    //@ts-expect-error TODO
+    const newSeries = msg.payload.series;
     if (newSeries != null && series && !series.includes(newSeries)) {
       mutate([...series, newSeries]);
     }
@@ -29,34 +29,35 @@ export const AllImageViewers = memo(() => {
 
 const SeriesViewer = memo(({ series }: { series: string }) => {
   const { projectId, runId } = useCurrentProject()!;
-  const { data, mutate } = useAPI(
-    runId == null
-      ? null
-      : `/image/${projectId}/history?${createCondition({
-          series,
-          limit: 1000,
-          order: {
-            id: "DESC",
-          },
-          runId,
-        })}`,
-  );
-  const [index, setIndex] = useState(0);
-  useProjectWebSocket(projectId, "image", (msg) => {
-    if (msg.metadata.series === series) {
-      mutate([msg, ...data], { revalidate: false });
-      if (index > 0) {
-        setIndex((i) => i + 1);
-      }
-    }
+  const data = useProjectData({
+    type: "image",
+    projectId,
+    runId,
+    conditions: {
+      series,
+    },
+    limit: 1000,
+    transformHTTP: (x) => ({ id: x.imageId, ...JSON.parse(x.metadata) }),
+    transformWS: (x) => ({ ...x, ...x.payload }),
+    filterWS: (x) => x.payload.series == series,
+    onNewWSData: () => {
+      if (index == length - 1) setIndex((i) => i + 1);
+    },
   });
+  const [index, setIndex] = useState(0);
   const img = data?.[index];
   const length = data?.length ?? 0;
   const has = (delta: number) => Boolean(data?.[index + delta]);
   const go = (delta: number) => {
     setIndex(Math.max(0, Math.min(index + delta, length - 1)));
   };
-  const imgSrc = img ? `/web/image/${projectId}/${img.imageId}` : null;
+  useEffect(() => {
+    if (length > 0) {
+      setIndex(length - 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [length > 0]);
+  const imgSrc = img ? `/web/image/${projectId}/${img.id}` : null;
   return (
     <Card bodyStyle={{ position: "relative" }}>
       <Space vertical>
@@ -86,17 +87,17 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
           <Loading width="450px" height="300px" />
         )}
         <Space>
-          <Button onClick={() => go(+10)} disabled={!has(1)}>
+          <Button onClick={() => go(-10)} disabled={!has(-1)}>
             {"<<"}
           </Button>
-          <Button onClick={() => go(+1)} disabled={!has(1)}>
+          <Button onClick={() => go(-1)} disabled={!has(-1)}>
             {"<"}
           </Button>
           <InputChangeOnEnter
             type="text"
-            value={length - index}
+            value={index + 1}
             onChange={(x) => {
-              const i = length - parseInt(x);
+              const i = parseInt(x) - 1;
               if (data?.[i]) {
                 setIndex(i);
               }
@@ -104,10 +105,10 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
             style={{ width: "60px" }}
           />{" "}
           / {data?.length ?? "..."}
-          <Button onClick={() => go(-1)} disabled={!has(-1)}>
+          <Button onClick={() => go(+1)} disabled={!has(1)}>
             {">"}
           </Button>
-          <Button onClick={() => go(-10)} disabled={!has(-1)}>
+          <Button onClick={() => go(+10)} disabled={!has(1)}>
             {">>"}
           </Button>
         </Space>
