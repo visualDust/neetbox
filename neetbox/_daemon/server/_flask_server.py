@@ -136,7 +136,11 @@ def get_flask_server(debug=False):
         message = EventMsg.loads(request.form["json"])
         image_bytes = request.files["image"].read()
         lastrowid = Bridge.of_id(project_id).save_blob_to_history(
-            table_name="image", meta_data=message.payload, blob_data=image_bytes
+            table_name="image",
+            meta_data=message.payload,
+            run_id=message.run_id,
+            timestamp=message.timestamp,
+            blob_data=image_bytes,
         )
         message.payload[ID_KEY] = lastrowid
         Bridge.of_id(project_id).ws_send_to_frontends(message)
