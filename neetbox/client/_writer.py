@@ -143,7 +143,6 @@ def add_image(name: str, image, dataformats: str = None):
             event_type=EVENT_TYPE_NAME_IMAGE,
             payload={SERIES_KEY: name},
         )
-        print(message)
         connection.post(
             api=f"/image/{project_id}",
             data={"json": message.dumps()},

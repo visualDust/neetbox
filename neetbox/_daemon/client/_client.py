@@ -79,7 +79,7 @@ class ClientConn(metaclass=Singleton):
     def _ws_subscribe(function: Callable, event_type_name: str, name=None):
         name = name or function.__name__
         ClientConn.__ws_subscription[event_type_name][name] = function
-        logger.info(f"ws: {name} subscribed to '{event_type_name}'")
+        # logger.info(f"ws: {name} subscribed to '{event_type_name}'")
 
     @classmethod
     def _init_ws(cls):
@@ -152,10 +152,14 @@ class ClientConn(metaclass=Singleton):
                     f"Subscriber {name} crashed on message event {message.event_type}, ignoring."
                 )
 
+    _ws_message_query = []
+
     @classmethod
     def _ws_send(cls, message: EventMsg):
+        cls._ws_message_query.append(message)
         if cls.__ws_client:  # if ws client exist
-            cls.__ws_client.send(message.dumps())
+            while cls._ws_message_query:
+                cls.__ws_client.send(cls._ws_message_query.pop(0).dumps())
 
     @classmethod
     def ws_send(

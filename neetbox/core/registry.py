@@ -5,10 +5,12 @@
 # Date:   20230413
 
 import functools
+import inspect
 import json
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 from uuid import uuid4
 
+from neetbox.logging import logger
 from neetbox.utils.formatting import *
 
 
@@ -83,7 +85,7 @@ class Registry(dict):
                 pass
             else:
                 raise RuntimeError(f"")
-            # logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
+            logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
             self[name] = _endp
         else:
             self[name] = _endp
@@ -152,7 +154,10 @@ class Registry(dict):
                 raise RuntimeError(f"key {key} not found")
 
     def __setitem__(self, k, v) -> None:
-        assert is_pure_ansi(k), "Only ANSI chars are allowed for registering things."
+        if not is_pure_ansi(k):
+            logger.warn(
+                f"None ANSI chars are used for names: {k}. Ignoring anyway"
+            )  # todo (visualdust)
         self.__dict__[k] = v
 
     def clear(self):

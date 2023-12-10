@@ -137,7 +137,7 @@ class _Hardware(dict, metaclass=Singleton):
 hardware = _Hardware()
 
 
-@export_default_config()
+@export_default_config
 def return_default_config() -> dict:
     return {"monit": True, "interval": 0.5}
 

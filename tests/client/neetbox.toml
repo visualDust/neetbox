@@ -23,6 +23,3 @@ uploadInterval = 0.5
 [extension.environment.hardware]
 monit = true
 interval = 0.5
-
-[extension.environment.platform]
-monit = true
