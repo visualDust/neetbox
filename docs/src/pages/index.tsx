@@ -139,6 +139,13 @@ const FeatureList = [
     link: "/docs/howto",
   },
   {
+    image: "/img/index/view-everywhere.jpg",
+    subtitle: "View everywhere",
+    description:
+      "Monit your projects everywhere on any devides with a browser. visit neetbox frontend console on PC, tablets, even phones.",
+    link: "/docs/howto",
+  },
+  {
     image: "/img/index/simple-apis.jpg",
     subtitle: "Easy python APIs",
     description:
@@ -154,7 +161,7 @@ const FeatureList = [
   },
   {
     image: "/img/index/monit-multiple-projects.jpg",
-    subtitle: "Monit everywhere",
+    subtitle: "View projects on different machines",
     description:
       "View multiple projects running on different machines remotely, or view history data when projects are offline. Select project to view in you frontend sidebar.",
     link: "/docs/howto",
@@ -193,15 +200,59 @@ export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout title={`Hello from ${siteConfig.title}`} description="">
-      <div>
-        <header
-          className={clsx("hero hero--primary")}
-          style={{ display: "flex", flexDirection: "column" }}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          backgroundImage: "url('/img/index/background.jpg')",
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+          height: "100vh",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            paddingLeft: "10vh",
+            maxWidth: "1000px",
+          }}
         >
-          <h1 className="hero__title">
-            <div>{siteConfig.title}</div>
+          <h1
+            style={{
+              fontSize: "80px",
+              color: "white",
+              textShadow: "3px 3px 3px black",
+            }}
+          >
+            {siteConfig.title}
           </h1>
-        </header>
+          <div
+            style={{
+              fontSize: "30px",
+              color: "white",
+              textShadow: "1px 1px 1px black",
+            }}
+          >
+            A tool box for Logging/Debugging/Tracing/Managing/Facilitating long
+            running python projects, especially a replacement of tensorboard for
+            deep learning projects.
+          </div>
+          <div style={{ paddingTop: "30px" }}>
+            <a
+              href="#howtos"
+              className="button button--secondary"
+              style={{ fontSize: "20px" }}
+            >
+              Try Try Need
+            </a>
+          </div>
+        </div>
+      </div>
+      <div id="howtos">
         <div
           style={{
             padding: "10px",
