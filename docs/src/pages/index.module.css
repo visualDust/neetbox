@@ -35,8 +35,8 @@ html {
 
 .feature-card {
   background-color: var(--ifm-color-emphasis-100);
-  box-shadow: 3px 3px 10px #0008;
-  border-radius: 19px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+  border-radius: 5px;
   padding: 20px;
   margin-bottom: 20px !important;
 }
