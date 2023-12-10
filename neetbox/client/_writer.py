@@ -179,7 +179,7 @@ def add_figure(
 
 
 def add_scalar(name: str, x: Union[int, float], y: Union[int, float]):
-    """send an scalar to frontend display
+    """send a scalar to frontend display
 
     Args:
         name (str): name of the image, used in frontend display
@@ -190,6 +190,32 @@ def add_scalar(name: str, x: Union[int, float], y: Union[int, float]):
     connection.ws_send(
         event_type=EVENT_TYPE_NAME_SCALAR, payload={SERIES_KEY: name, "x": x, "y": y}
     )
+
+
+def add_hist(name: str, data: Union[int, float], mode: str="scalar", **kwargs):
+    """send a histogram figure to frontend display
+
+    Args:
+        name (str): name of the hist, used in frontend display
+        x (Union[int, float]): x
+        y (Union[int, float]): y
+    """
+    if mode == "scalar":
+        # send
+        connection.ws_send(
+            event_type=EVENT_TYPE_NAME_HIST, payload={SERIES_KEY: name, "data": data}
+        )
+    elif mode == "image":
+        try:
+            import matplotlib.pyplot as plt
+        except ModuleNotFoundError:
+            print("please install matplotlib")
+
+        fig = plt.figure()
+        plt.hist(data, **kwargs)
+        add_figure(fig, close=True)
+    else:
+        raise ValueError(f"mode {mode} not supported")
 
 
 # ===================== HYPERPARAM things ===================== #
