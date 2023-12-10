@@ -162,7 +162,7 @@ def get_flask_server(debug=False):
     def get_history_image_metadata_of(project_id):
         if not Bridge.has(project_id):
             abort(404)
-        _json_data = json.loads(request.args.get("condition"))
+        _json_data = json.loads(request.args.get("condition", default="{}"))
         try:
             condition = QueryCondition.from_json(_json_data)
         except Exception as e:  # if failed to parse
