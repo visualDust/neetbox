@@ -12,6 +12,7 @@ import { getProject } from "../../services/projects";
 import { RunSelect } from "../../components/dashboard/project/runSelect";
 import PlatformProps from "../../components/dashboard/project/platformProps";
 import Loading from "../../components/loading";
+import { useAPI } from "../../services/api";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
@@ -31,16 +32,26 @@ function ProjectDashboard() {
     }
   }, [projectId, projectName]);
 
+  const { data: runIds } = useAPI(`/runids/${projectId}`, { refreshInterval: 5000 });
   const [runId, setRunId] = useState<string | undefined>(undefined);
+
+  const lastRunId = runIds ? runIds[runIds.length - 1].id : undefined;
+  useEffect(() => {
+    if (runId === undefined && lastRunId) {
+      setRunId(lastRunId);
+    }
+  }, [lastRunId, runId, setRunId]);
+
+  const isOnlineRun = Boolean(runId && runId == lastRunId && status.online);
 
   const projectContextData = useMemo(
     () => ({
       projectId,
       projectName,
       runId,
-      setRunId,
+      isOnlineRun,
     }),
-    [projectId, projectName, runId],
+    [projectId, projectName, runId, isOnlineRun],
   );
 
   return (
@@ -49,7 +60,7 @@ function ProjectDashboard() {
         <AppTitle
           extra={
             <ProjectContext.Provider key={projectId} value={projectContextData}>
-              <RunSelect />
+              <RunSelect runIds={runIds} setRunId={setRunId} />
             </ProjectContext.Provider>
           }
         >

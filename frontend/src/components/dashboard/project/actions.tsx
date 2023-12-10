@@ -58,7 +58,7 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
   );
   const [running, setCurrentBlocking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const { projectId } = useCurrentProject()!;
+  const { projectId, isOnlineRun } = useCurrentProject()!;
   const handleRun = () => {
     if (options.blocking) setBlocking(true);
     setCurrentBlocking(true);
@@ -114,11 +114,14 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
         onClick={handleRun}
         type="warning"
         theme="solid"
-        disabled={blocking}
+        disabled={blocking || !isOnlineRun}
         icon={<IconPlay />}
       >
         Run
       </Button>
+      {!isOnlineRun && (
+        <Typography.Text type="tertiary">(can not run in offline / history view)</Typography.Text>
+      )}
       {result && <div style={{ margin: 0, whiteSpace: "pre-wrap" }}>{result}</div>}
     </Space>
   );
