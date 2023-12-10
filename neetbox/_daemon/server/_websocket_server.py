@@ -156,8 +156,7 @@ def get_web_socket_server(config, debug=False):
         if not Bridge.has(message.project_id):
             # project id must exist
             # drop anyway if not exist
-            if debug:
-                console.log(f"handle {message.event_type}. {message.project_id} not found.")
+            logger.warn(f"handle {message.event_type}. {message.project_id} not found.")
             return
         bridge = Bridge.of_id(message.project_id)
         if forward_to:
@@ -165,7 +164,7 @@ def get_web_socket_server(config, debug=False):
                 forward_to = message.who
             if forward_to == IdentityType.OTHERS:
                 forward_to = (
-                    IdentityType.WEB if message.who == IdentityType.CLI else IdentityType.WEB
+                    IdentityType.WEB if message.who == IdentityType.CLI else IdentityType.CLI
                 )
             if forward_to in [IdentityType.WEB, IdentityType.BOTH]:
                 bridge.ws_send_to_frontends(message)  # forward to frontends
@@ -188,7 +187,13 @@ def get_web_socket_server(config, debug=False):
             return  # return after handling handshake
         if client["id"] not in connected_clients:
             return  # !!! not handling messages from cli/web without handshake. handshake is aspecial   case and should be handled anyway before this check.
-        if message.who != connected_clients[client["id"]][1]:
+        expected_identity_type = connected_clients[client["id"]][1]
+        if not message.who:
+            message.who = expected_identity_type
+        if message.who != expected_identity_type:
+            logger.warn(
+                f"Illegal IdentityType: expect {expected_identity_type} but got {message.who}"
+            )
             return  # !!! security check, who should match who
         else:  # handle regular event types
             if message.event_type == EVENT_TYPE_NAME_HPARAMS:

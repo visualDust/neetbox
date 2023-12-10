@@ -109,7 +109,6 @@ def convert_to_HWC(tensor, input_format):  # tensor: numpy array
         return tensor
 
 
-@nonblocking
 def add_image(name: str, image, dataformats: str = None):
     """send an image to frontend display
 
@@ -135,15 +134,19 @@ def add_image(name: str, image, dataformats: str = None):
 
     # send bytes
     project_id = get_project_id()
+    run_id = get_run_id()
     try:
+        message = EventMsg(
+            project_id=project_id,
+            run_id=run_id,
+            who=IdentityType.CLI,
+            event_type=EVENT_TYPE_NAME_IMAGE,
+            payload={SERIES_KEY: name},
+        )
+        print(message)
         connection.post(
             api=f"/image/{project_id}",
-            data=EventMsg(
-                project_id=project_id,
-                run_id=get_run_id(),
-                event_type=EVENT_TYPE_NAME_IMAGE,
-                payload={SERIES_KEY: name},
-            ).json(),
+            data={"json": message.dumps()},
             files={"image": image_bytes},
         )
     except Exception as e:

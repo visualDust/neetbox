@@ -84,6 +84,7 @@ class _NeetActionManager(metaclass=Singleton):
                 returned_data = target_action.eval_call(params)
             except Exception as e:
                 returned_data = e
+                logger.warn(f"action {target_action} failed with exception {e}")
             if callback:
                 callback(returned_data)
 
@@ -145,7 +146,7 @@ class _NeetActionManager(metaclass=Singleton):
 
 
 @connection.ws_subscribe(event_type_name=EVENT_TYPE_NAME_ACTION)
-def __listen_to_actions(message: EventMsg):
+def _listen_to_actions(message: EventMsg):
     _NeetActionManager.eval_call(
         name=message.payload[NAME_KEY],
         params=message.payload[ARGS_KEY],

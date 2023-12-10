@@ -138,6 +138,7 @@ class ClientConn(metaclass=Singleton):
             ClientConn.ws_send(  # send config
                 event_type=EVENT_TYPE_NAME_STATUS, payload={"config": get_module_level_config("@")}
             )
+            # return # DO NOT return!
         if message.event_type not in ClientConn.__ws_subscription:
             logger.warn(
                 f"Client received a(n) {message.event_type} event but nobody subscribes it. Ignoring anyway."

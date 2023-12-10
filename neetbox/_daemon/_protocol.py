@@ -45,11 +45,11 @@ REASON_KEY = "reason"
 @dataclass
 class EventMsg:
     project_id: str
+    run_id: str
     event_type: str
-    who: str
     payload: Any = None
-    run_id: str = None
     event_id: int = -1
+    who: str = None
     timestamp: str = get_timestamp()
     history_len: int = -1
 

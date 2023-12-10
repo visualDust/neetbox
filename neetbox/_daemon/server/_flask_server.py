@@ -131,10 +131,9 @@ def get_flask_server(debug=False):
         if not Bridge.has(project_id):
             # project id must exist
             # drop anyway if not exist
-            if debug:
-                logger.log(f"handle log. {project_id} not found.")
+            logger.debug(f"{project_id} not found, dropping")
             return abort(404)
-        message = EventMsg.loads(request.form.to_dict())
+        message = EventMsg.loads(request.form["json"])
         image_bytes = request.files["image"].read()
         lastrowid = Bridge.of_id(project_id).save_blob_to_history(
             table_name="image", meta_data=message.payload, blob_data=image_bytes
