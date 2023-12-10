@@ -26,7 +26,7 @@ _DEFAULT_WORKSPACE_CONFIG = {
     "name": os.path.basename(os.path.normpath(os.getcwd())),
     "version": NEETBOX_VERSION,
     "projectid": str(uuid4()),  # later will be overwrite by workspace config file
-    "logging": {"level": "INFO", "logdir": None},
+    "logging": {"level": "DEBUG", "logdir": "logs"},
     "pipeline": {
         "updateInterval": 0.5,
     },
@@ -131,9 +131,12 @@ def _init_workspace(path=None, **kwargs) -> bool:
         os.chdir(path=path)
     current_path = os.getcwd()
     config_file_path = os.path.join(current_path, CONFIG_FILE_NAME)
-    if not os.path.isfile(config_file_path):  # config file not exist
+    if not os.path.exists(config_file_path):  # config file not exist
         try:  # creating config file using default config
             with open(config_file_path, "w+") as config_file:
+                import neetbox.extension as extension
+
+                extension._scan_sub_modules()
                 _update_default_config_from_config_register()  # load custom config into default config
                 _config = _DEFAULT_WORKSPACE_CONFIG
                 if "name" in kwargs and kwargs["name"]:  # using given name
@@ -146,7 +149,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
         except Exception as e:
             raise e
     else:  # config file exist:
-        return False
+        raise RuntimeError(f"{config_file_path} already exist")
 
 
 def _check_if_workspace_config_valid(path=None) -> bool:
@@ -161,15 +164,25 @@ def _check_if_workspace_config_valid(path=None) -> bool:
         return False
 
 
+_IS_EXTENSION_INITED = False
+
+
 def _load_workspace_config(folder="."):
+    global _IS_EXTENSION_INITED
     config_file_path = _check_if_workspace_config_valid(
         path=folder
     )  # check if config file is valid
     if not config_file_path:  # failed to load workspace config, exiting
         raise RuntimeError(f"Config file not exists in '{folder}'")
+    import neetbox.extension as extension
+
+    extension._scan_sub_modules()
     _update_default_config_from_config_register()  # load custom config into default config
-    _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
     _obtain_new_run_id()  # obtain new run id
+    _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
+    if not _IS_EXTENSION_INITED:
+        extension._init_extensions()
+        _IS_EXTENSION_INITED = True
 
 
 def _create_load_workspace(path=None):

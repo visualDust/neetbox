@@ -1,6 +1,4 @@
 codecov:
- token: 89d5d00f-39e7-4e79-9d63-165b5efee4cb
-cli:
-  plugins:
-    pycoverage:
-      report_type: "json"
+  token: 89d5d00f-39e7-4e79-9d63-165b5efee4cb
+ignore:
+  - "frontend"

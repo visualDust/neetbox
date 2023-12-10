@@ -1,9 +1,9 @@
-import { ProjectStatus } from "../../../../services/types";
+import { TimeDataMapper } from "../../../../utils/timeDataMapper";
 
-export function getTimeAxisOptions(hardwareData: Array<ProjectStatus["hardware"]>) {
-  const latestTime = new Date(hardwareData[hardwareData.length - 1].timestamp).getTime();
+export function getTimeAxisOptions(mapper: TimeDataMapper) {
+  const latestTime = new Date(mapper.data[mapper.data.length - 1].timestamp).getTime();
   return {
-    min: latestTime - 60 * 1000,
+    min: latestTime - 120 * 1000,
     max: latestTime,
   };
 }

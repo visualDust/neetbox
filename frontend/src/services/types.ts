@@ -5,7 +5,7 @@ export interface ProjectStatusHistory {
 }
 
 export interface ProjectStatus {
-  config: WithTimestamp<ProjectConfig>;
+  config: ProjectConfig;
   platform: WithTimestamp<Record<string, string | string[]>>;
   hardware: WithTimestamp<HardwareInfo>;
   __action: WithTimestamp<ActionInfo>;
@@ -15,32 +15,39 @@ interface ProjectConfig {
   name: string;
 }
 
-interface HardwareInfo {
-  cpus: Array<{
-    id: number;
-    percent: number;
-    freq: [current: number, min: number, max: number];
-  }>;
-  gpus: Array<{
-    id: number;
-    name: string;
-    load: number;
-    memoryUtil: number;
-    memoryTotal: number;
-    memoryFree: number;
-    memoryUsed: number;
-    temperature: number;
-    driver: string;
-  }>;
-  ram: {
-    total: number;
-    available: number;
-    used: number;
-    free: number;
-  };
+export interface CpuInfo {
+  id: number;
+  percent: number;
+  freq: [current: number, min: number, max: number];
 }
 
-type ActionInfo = Record<
+export interface GpuInfo {
+  id: number;
+  name: string;
+  load: number;
+  memoryUtil: number;
+  memoryTotal: number;
+  memoryFree: number;
+  memoryUsed: number;
+  temperature: number;
+  driver: string;
+}
+
+export interface RamInfo {
+  total: number;
+  available: number;
+  used: number;
+  free: number;
+}
+
+export interface HardwareInfo {
+  timestamp: string;
+  cpus: Array<CpuInfo>;
+  gpus: Array<GpuInfo>;
+  ram: RamInfo;
+}
+
+export type ActionInfo = Record<
   string,
   {
     args: Record<string, string>;
@@ -57,14 +64,14 @@ export interface WithTimestamp<T> {
 
 export interface LogData {
   series: string;
-  datetime: string;
+  timestamp: string;
   whom: string;
-  msg: string;
-  /** frontend only */
-  _id: number;
+  message: string;
 }
 
 export interface ImageMetadata {
   imageId: number;
-  metadata: any;
+  metadata: {
+    series: string;
+  };
 }

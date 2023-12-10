@@ -31,8 +31,12 @@ export const ECharts = (props: EChartsProps) => {
       chart.setOption(props.updatingOption);
       chartRef.current = chart;
 
+      let resizeTimer: number | null = null;
       const handleResize = () => {
-        chart?.resize();
+        if (resizeTimer != null) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          chart?.resize();
+        }, 20) as unknown as number;
       };
       const resizeObserver = new ResizeObserver(handleResize);
       resizeObserver.observe(chartContainerRef.current!);
@@ -54,6 +58,6 @@ export const ECharts = (props: EChartsProps) => {
   return echartsModule ? (
     <div ref={chartContainerRef} style={props.style} />
   ) : (
-    <Loading height={props.style?.height as string} />
+    <Loading width={props.style?.width as string} height={props.style?.height as string} />
   );
 };

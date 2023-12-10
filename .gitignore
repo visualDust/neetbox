@@ -17,10 +17,11 @@ test/optional
 build_and_reinstall_wheel.cmd
 
 # log files
-log
+logs/
 for_debug.txt
 .neethistory/
 .neetory
+.log
 
 # others
 other/

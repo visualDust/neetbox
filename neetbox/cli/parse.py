@@ -63,13 +63,14 @@ def list_command():
 
         table = Table(title="Running NEETBOX Projects")
 
-        table.add_column("name", justify="center", style="cyan")
         table.add_column("project id", justify="center", style="magenta", no_wrap=True)
-        table.add_column("config", justify="center", style="green")
+        table.add_column("online", justify="center", style="cyan")
+        table.add_column("status", justify="center", style="green")
 
         for pjt in _response:
-            config = pjt["config"]["value"]
-            table.add_row(config["name"], pjt["id"], json.dumps(config))
+            table.add_row(
+                pjt[PROJECT_ID_KEY], str(pjt["online"]), json.dumps(pjt[STATUS_TABLE_NAME])
+            )
 
         console.print(table)
 
@@ -141,7 +142,8 @@ def shutdown_server(port):
 def init(name: str):
     """initialize current folder as workspace and generate the config file from defaults"""
     try:
-        if _init_workspace(name=name):
+        init_succeed = _init_workspace(name=name)
+        if init_succeed:
             logger.console_banner("neetbox", font="ansishadow")
             logger.log("Welcome to NEETBOX")
     except Exception as e:

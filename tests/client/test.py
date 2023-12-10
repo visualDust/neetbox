@@ -1,15 +1,18 @@
+import math
 import os
 import time
 from random import random
 from time import sleep
 
 import neetbox
-from neetbox.logging import logger
+from neetbox import logger
 
 
 @neetbox.watch("train", initiative=True)
 def train(epoch):
     loss, acc = random(), random()
+    neetbox.add_scalar("sin", epoch, math.sin(epoch * 0.1))
+    neetbox.add_scalar("cos", epoch, math.cos(epoch * 0.1))
     return {"loss": loss, "acc": acc}
 
 
@@ -25,6 +28,13 @@ def log_with_some_prefix():
     logger.debug("some debug")
     logger.warn("some warn")
     logger.err("some error")
+
+
+@neetbox.action()
+def scalar_perf_test(interval: float, count: int):
+    for i in range(count):
+        sleep(interval)
+        neetbox.add_scalar("scalar_perf_test", i, math.cos(i * 0.1))
 
 
 @neetbox.action()

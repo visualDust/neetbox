@@ -34,32 +34,30 @@ describe("test dashboard", () => {
     cy.contains(".log-tag", "error");
   });
 
-  it("has status", () => {
+  it("has platform", () => {
+    cy.contains("h3", "Platform").scrollIntoView();
     cy.contains("h3", "Platform").parent().next().contains(".semi-card", "Python version");
   });
 
   it("can run action", () => {
     cy.contains("button", "action-1").click();
     cy.contains("button", "Run").prev().find("input").type("{leftArrow}auto-testing");
-    cy.contains("button", "Run").click();
+    cy.contains("button", "Run").click().type("{esc}");
     cy.contains("action 1 triggered. text = auto-testing");
-    cy.get("body").click();
   });
 
   it("can add images", () => {
     cy.contains("button", "send_image").click();
-    cy.contains("button", "Run").click();
-    const imgs = () => cy.contains("h3", "Images").parent().next();
-    imgs()
-      .find("img")
-      .then((x) => {
-        const beforeLength = x.length;
-        cy.contains("button", "send_image").click();
-        cy.contains("button", "Run").click();
-        imgs()
-          .find("img")
-          .should("have.length", beforeLength + 1);
-      });
+    cy.contains("button", "Run").click().type("{esc}");
+    cy.wait(1000);
+    const indexInput = () => cy.contains("h4", "weights visualize").parent().find("input");
+    indexInput().then((x) => {
+      const beforeLength = parseInt(x.val());
+      cy.log(`it had ${beforeLength} images before sending one more`);
+      cy.contains("button", "send_image").click();
+      cy.contains("button", "Run").click().type("{esc}");
+      indexInput().should("have.value", beforeLength + 1);
+    });
   });
 
   // it("can add new todo items", () => {

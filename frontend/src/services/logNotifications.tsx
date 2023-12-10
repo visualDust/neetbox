@@ -1,4 +1,4 @@
-import { Notification as SemiNotification } from "@douyinfe/semi-ui";
+import { addNotice } from "../utils/notification";
 import { Project } from "./projects";
 import { LogData } from "./types";
 
@@ -9,8 +9,8 @@ let lastNotification: Notification | null = null;
 export function checkLogForNotification(log: LogData, project: Project) {
   if (NotificationSeries.includes(log.series)) {
     const title = `${log.series} from ${project.nameOrId}`;
-    const body = `${log.whom}: ${log.msg}`;
-    SemiNotification.addNotice({
+    const body = `${log.whom}: ${log.message}`;
+    addNotice({
       id: "log-mentions",
       type: log.series == "mention" ? "info" : "error",
       title,

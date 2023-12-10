@@ -8,6 +8,7 @@ import logging
 import os
 import time
 from threading import Thread
+from typing import Union
 
 import werkzeug
 
@@ -30,12 +31,12 @@ def get_flask_server(debug=False):
         logger.log(f"Running with debug, using APIFlask")
         from apiflask import APIFlask
 
-        app = APIFlask(__PROC_NAME)
+        app = APIFlask(__PROC_NAME, static_folder=None)
     else:
         logger.log(f"Running in production mode, using Flask")
         from flask import Flask
 
-        app = Flask(__PROC_NAME)
+        app = Flask(__PROC_NAME, static_folder=None)
 
     front_end_dist_path = os.path.join(os.path.dirname(__file__), "../../frontend_dist")
 
@@ -55,54 +56,60 @@ def get_flask_server(debug=False):
         return {"hello": "hello"}
 
     @app.route(f"{FRONTEND_API_ROOT}/list", methods=["GET"])
-    def get_list_of_connected_project_ids():
-        result = []
-        for id, bridge in Bridge.items():
-            status = bridge.get_status()
-            result.append({"id": id, "online": status["online"], "config": status["config"]})
-        return result
+    def get_status_of_all_proejcts():
+        return [_project_status_from_bridge(bridge) for _, bridge in Bridge.items()]
+
+    @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>", methods=["GET"])
+    def get_status_of_project_id(project_id: str):
+        bridge = Bridge.of_id(project_id)
+        return _project_status_from_bridge(bridge)
+
+    def _project_status_from_bridge(bridge: Bridge):
+        status = bridge.get_status()
+        last_run_id = bridge.get_run_ids()[0][0]
+        config_last_run = bridge.get_status(run_id=last_run_id, series="config")
+        return {
+            PROJECT_ID_KEY: bridge.project_id,
+            "online": bridge.is_online(),
+            NAME_KEY: config_last_run[NAME_KEY],
+            STATUS_TABLE_NAME: status,
+        }
+
+    def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, str]):
+        if not Bridge.has(project_id):
+            abort(404)
+        try:
+            condition = QueryCondition.from_json(
+                json.loads(condition) if isinstance(condition, str) else condition
+            )
+        except Exception as e:  # if failed to parse
+            return abort(400)
+        return Bridge.of_id(project_id).read_json_from_history(
+            table_name=table_name, condition=condition
+        )
 
     @app.route(f"{FRONTEND_API_ROOT}/log/<project_id>/history", methods=["GET"])
     def get_history_log_of(project_id):
-        if not Bridge.has(project_id):
-            abort(404)
-        _json_data = json.loads(request.args.get("condition"))
-        try:
-            condition = QueryCondition.from_json(_json_data)
-        except Exception as e:  # if failed to parse
-            return abort(400)
-        result_list = Bridge.of_id(project_id).read_json_from_history(
-            table_name="log", condition=condition
+        return get_history_json_of(
+            project_id=project_id,
+            table_name=LOG_TABLE_NAME,
+            condition=request.args.get("condition"),
         )
-        return result_list
 
-    @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>", methods=["GET"])
-    def get_status_of(project_id):
-        if not Bridge.has(project_id):
-            abort(404)
-        _returning_stat = Bridge.of_id(project_id).get_status()  # returning specific status
-        return _returning_stat
-
-    @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>/history", methods=["GET"])
-    def get_history_status_of(project_id):
-        if not Bridge.has(project_id):
-            abort(404)
-        _json_data = json.loads(request.args.get("condition"))
-        try:
-            condition = QueryCondition.from_json(_json_data)
-        except Exception as e:  # if failed to parse
-            return abort(400)
-        result_list = Bridge.of_id(project_id).read_json_from_history(
-            table_name="status", condition=condition
+    @app.route(f"{FRONTEND_API_ROOT}/hardware/<project_id>/history", methods=["GET"])
+    def get_history_hardware_of(project_id):
+        return get_history_json_of(
+            project_id=project_id,
+            table_name=EVENT_TYPE_NAME_HARDWARE,
+            condition=request.args.get("condition"),
         )
-        return result_list
 
-    @app.route(f"{CLIENT_API_ROOT}/sync/<project_id>", methods=["POST"])
-    def upload_status_of(project_id):  # client side function
-        _json_data = request.get_json()
-        target_bridge = Bridge(project_id)  # Create from sync request
-        target_bridge.set_status(_json_data)
-        return {"result": "ok"}
+    @app.route(f"{FRONTEND_API_ROOT}/status/<project_id>/<run_id>", methods=["GET"])
+    def get_status_of(project_id, run_id):
+        if not Bridge.has(project_id):
+            abort(404)
+        result = Bridge.of_id(project_id).get_status(run_id=run_id)
+        return result
 
     @app.route(f"{FRONTEND_API_ROOT}/series/<project_id>/<table_name>", methods=["GET"])
     def get_series_list_of(project_id: str, table_name: str):  # client side function
@@ -116,6 +123,7 @@ def get_flask_server(debug=False):
         if not Bridge.has(project_id):
             abort(404)
         result = Bridge.of_id(project_id).get_run_ids()
+        result = [{"id": r[0], "timestamp": r[1]} for r in result]
         return result
 
     @app.route(f"/image/<project_id>", methods=["POST"])
@@ -123,17 +131,19 @@ def get_flask_server(debug=False):
         if not Bridge.has(project_id):
             # project id must exist
             # drop anyway if not exist
-            if debug:
-                logger.log(f"handle log. {project_id} not found.")
+            logger.debug(f"{project_id} not found, dropping")
             return abort(404)
-        _json_data = request.form.to_dict()
+        message = EventMsg.loads(request.form["json"])
         image_bytes = request.files["image"].read()
         lastrowid = Bridge.of_id(project_id).save_blob_to_history(
-            table_name="image", meta_data=_json_data, blob_data=image_bytes
+            table_name="image",
+            meta_data=message.payload,
+            run_id=message.run_id,
+            timestamp=message.timestamp,
+            blob_data=image_bytes,
         )
-        Bridge.of_id(project_id).ws_send_to_frontends(
-            json.dumps({"event-type": "image", "imageId": lastrowid, "metadata": _json_data})
-        )
+        message.payload[ID_KEY] = lastrowid
+        Bridge.of_id(project_id).ws_send_to_frontends(message)
         return {"result": "ok", "id": lastrowid}
 
     @app.route(f"{FRONTEND_API_ROOT}/image/<project_id>/<image_id>", methods=["GET"])
@@ -156,7 +166,7 @@ def get_flask_server(debug=False):
     def get_history_image_metadata_of(project_id):
         if not Bridge.has(project_id):
             abort(404)
-        _json_data = json.loads(request.args.get("condition"))
+        _json_data = json.loads(request.args.get("condition", default="{}"))
         try:
             condition = QueryCondition.from_json(_json_data)
         except Exception as e:  # if failed to parse
@@ -166,6 +176,12 @@ def get_flask_server(debug=False):
         )  # todo ?
         result = [{"imageId": id, "metadata": meta_data} for id, _, meta_data in query_results]
         return result
+
+    @app.route(f"{FRONTEND_API_ROOT}/scalar/<project_id>/history", methods=["GET"])
+    def get_history_scalar_of(project_id):
+        return get_history_json_of(
+            project_id=project_id, table_name="scalar", condition=request.args.get("condition")
+        )
 
     @app.route(f"/shutdown", methods=["POST"])
     def shutdown():

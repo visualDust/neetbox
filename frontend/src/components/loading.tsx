@@ -1,14 +1,17 @@
-import { Spin } from "@douyinfe/semi-ui";
+import { Space, Spin } from "@douyinfe/semi-ui";
 import { SpinSize } from "@douyinfe/semi-ui/lib/es/spin";
+import { ReactNode } from "react";
 
 export default function Loading({
   width = "",
   height = "100px",
   size = "middle",
+  text,
 }: {
   width?: string;
   height?: string;
   size?: SpinSize;
+  text?: ReactNode;
 }) {
   return (
     <div
@@ -20,7 +23,14 @@ export default function Loading({
         height,
       }}
     >
-      <Spin size={size} />
+      {text ? (
+        <Space>
+          <Spin size={size} />
+          {text}
+        </Space>
+      ) : (
+        <Spin size={size} />
+      )}
     </div>
   );
 }
