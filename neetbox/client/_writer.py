@@ -175,6 +175,9 @@ def add_figure(
         add_image(image=figure_to_image(figure, close), dataformats="CHW")
 
 
+# ===================== PLOTTING things ===================== #
+
+
 def add_scalar(name: str, x: Union[int, float], y: Union[int, float]):
     """send an scalar to frontend display
 
