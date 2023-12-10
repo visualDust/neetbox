@@ -32,7 +32,7 @@ function ProjectDashboard() {
     }
   }, [projectId, projectName]);
 
-  const { data: runIds } = useAPI(`/runids/${projectId}`, { refreshInterval: 5000 });
+  const { data: runIds } = useAPI(`/project/${projectId}/runids`, { refreshInterval: 5000 });
   const [runId, setRunId] = useState<string | undefined>(undefined);
 
   const lastRunId = runIds ? runIds[runIds.length - 1].id : undefined;

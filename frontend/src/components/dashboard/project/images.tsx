@@ -1,8 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import { Button, Card, Input, Popover, Space, Typography } from "@douyinfe/semi-ui";
 import { IconDownload } from "@douyinfe/semi-icons";
-import { useCurrentProject, useProjectData, useProjectWebSocket } from "../../../hooks/useProject";
-import { useAPI } from "../../../services/api";
+import { useCurrentProject, useProjectData, useProjectSeries } from "../../../hooks/useProject";
 import Loading from "../../loading";
 import { CenterBox } from "../../centerBox";
 
@@ -16,14 +15,7 @@ export const Images = memo(() => {
 
 export const AllImageViewers = memo(() => {
   const { projectId } = useCurrentProject()!;
-  const { data: series, mutate } = useAPI(`/series/${projectId}/image`);
-  useProjectWebSocket(projectId, "image", (msg) => {
-    //@ts-expect-error TODO
-    const newSeries = msg.payload.series;
-    if (newSeries != null && series && !series.includes(newSeries)) {
-      mutate([...series, newSeries]);
-    }
-  });
+  const series = useProjectSeries(projectId, "image");
   return series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading text="Images loading" />;
 });
 

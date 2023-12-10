@@ -106,7 +106,7 @@ EVENT_TYPE_NAME_HARDWARE = "hardware"
 
 # ===================== HTTP things =====================
 
-FRONTEND_API_ROOT = "/web"
+FRONTEND_API_ROOT = "/api"
 CLIENT_API_ROOT = "/cli"
 
 # ===================== DB things =====================

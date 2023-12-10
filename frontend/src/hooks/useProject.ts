@@ -52,6 +52,18 @@ export function useProjectWebSocket<T extends WsMsg["event-type"]>(
   }, [project, type, onMessage]);
 }
 
+export function useProjectSeries(projectId: string, type: string) {
+  const { data: series, mutate } = useAPI(`/project/${projectId}/series/${type}`);
+  useProjectWebSocket(projectId, type, (msg) => {
+    //@ts-expect-error TODO
+    const newSeries = msg.payload.series;
+    if (newSeries != null && series && !series.includes(newSeries)) {
+      mutate([...series, newSeries]);
+    }
+  });
+  return series;
+}
+
 export function useProjectData<T = any>(options: {
   type: string;
   disable?: boolean;
@@ -69,7 +81,7 @@ export function useProjectData<T = any>(options: {
   const url =
     options.disable || !wsReady
       ? null
-      : `/${type}/${projectId}/history?${createCondition({
+      : `/project/${projectId}/${type}?${createCondition({
           runId,
           ...(!limit ? null : { limit, order: { id: "DESC" } }),
           ...options.conditions,

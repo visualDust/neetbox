@@ -1,9 +1,8 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Space, Typography } from "@douyinfe/semi-ui";
 import { IconClose, IconMaximize } from "@douyinfe/semi-icons";
-import { useCurrentProject, useProjectData, useProjectWebSocket } from "../../../hooks/useProject";
+import { useCurrentProject, useProjectData, useProjectSeries } from "../../../hooks/useProject";
 import { ECharts } from "../../echarts";
-import { useAPI } from "../../../services/api";
 import Loading from "../../loading";
 
 export const Scatters = memo(() => {
@@ -16,12 +15,7 @@ export const Scatters = memo(() => {
 
 export const AllScatterViewers = memo(() => {
   const { projectId } = useCurrentProject();
-  const { data: series, mutate } = useAPI(`/series/${projectId}/scalar`);
-  useProjectWebSocket(projectId, "scalar", (msg) => {
-    if (msg.payload.series != null && series && !series.includes(msg.payload.series)) {
-      mutate([...series, msg.payload.series]);
-    }
-  });
+  const series = useProjectSeries(projectId, "scalar");
   return series?.map((s) => <ScatterViewer key={s} series={s} />) ?? <Loading text="Scalars loading" />;
 });
 

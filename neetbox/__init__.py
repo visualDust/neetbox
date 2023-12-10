@@ -22,7 +22,7 @@ if len(sys.argv) > 0 and sys.argv[0].endswith("neet") or is_in_daemon_process:
 else:
     _load_workspace(connect_daemon=True)
 
-from neetbox.client import action, add_image, add_scalar, add_tensor, listen, watch
+from neetbox.client import action, add_image, add_scalar, listen, watch
 from neetbox.logging import logger
 
 __all__ = ["add_image", "add_scalar", "action", "logger", "watch", "listen"]

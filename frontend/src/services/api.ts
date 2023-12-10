@@ -1,8 +1,8 @@
 import useSWR from "swr";
 
-export const API_BASEURL = "/web";
+export const API_BASEURL = "/api";
 export const WEBSOCKET_URL =
-  import.meta.env.DEV || process.env.NODE_ENV === "development"
+  process.env.NODE_ENV === "development"
     ? `ws://${location.host}/ws/`
     : `ws://${location.hostname}:${Number(location.port) + 1}`;
 
