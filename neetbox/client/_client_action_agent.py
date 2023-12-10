@@ -48,7 +48,10 @@ class PackedAction(Callable):
         self.function(argv)  # ignore blocking
 
     def eval_call(self, params: dict):
-        eval_params = dict((k, literal_eval(v)) for k, v in params.items())
+        eval_params = {}
+        for k, v in params.items():
+            if v:
+                eval_params[k] = literal_eval(v)
         return self.function(**eval_params)
 
 
@@ -74,7 +77,7 @@ class _NeetActionManager(metaclass=Singleton):
         if name not in _NeetActionManager.__ACTION_POOL:
             logger.err(f"Could not find action with name {name}, action stopped.")
             return False
-        target_action = _NeetActionManager.__ACTION_POOL[name]
+        target_action: PackedAction = _NeetActionManager.__ACTION_POOL[name]
         logger.log(
             f"Agent runs function '{target_action.name}', blocking = {target_action.blocking}"
         )

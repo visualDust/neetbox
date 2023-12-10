@@ -60,10 +60,10 @@ the table is increasing. a frequent check would keep you up to date.
 
 | event-type |      accepting direction      |                            means                             |
 | :--------: | :---------------------------: | :----------------------------------------------------------: |
-| handshake  | cli <--> server <--> frontend |  string in `payload` indicate connection type ('cli'/'web')  |
-|    log     |   cli -> server -> frontend   |                 `payload` contains log data                  |
-|   action   |   cli <- server <- frontend   |              `payload` contains action trigger               |
-|    ack     | cli <--> server <--> frontend | `payload` contains ack, and `event-id` should be a valid key |
+| handshake  | cli ←→ server ←→ frontend |  string in `payload` indicate connection type ('cli'/'web')  |
+|    log     |   cli → server → frontend   |                 `payload` contains log data                  |
+|   action   |   cli ← server ← frontend   |              `payload` contains action trigger               |
+|    ack     | cli ←→ server ←→ frontend | `payload` contains ack, and `event-id` should be a valid key |
 
 ## Examples of websocket data
 

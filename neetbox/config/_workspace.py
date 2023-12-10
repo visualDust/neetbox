@@ -15,7 +15,6 @@ from uuid import uuid4
 
 import toml
 
-from neetbox.core import Registry
 from neetbox.utils.framing import get_frame_module_traceback
 from neetbox.utils.massive import update_dict_recursively
 
@@ -56,8 +55,13 @@ def _obtain_new_run_id():
     return _DEFAULT_WORKSPACE_CONFIG["runid"]
 
 
-_QUERY_ADD_EXTENSION_DEFAULT_CONFIG = Registry("__QUERY_ADD_EXTENSION_DEFAULT_CONFIG")
-export_default_config = _QUERY_ADD_EXTENSION_DEFAULT_CONFIG.register
+_QUERY_ADD_EXTENSION_DEFAULT_CONFIG = []
+
+
+def export_default_config(func):
+    global _QUERY_ADD_EXTENSION_DEFAULT_CONFIG
+    _QUERY_ADD_EXTENSION_DEFAULT_CONFIG.append(func)
+    return func
 
 
 def _build_global_config_dict_for_module(module, local_config):
@@ -109,7 +113,7 @@ def _update_default_config_from_config_register():
         e: any possible exception
     """
     global _DEFAULT_WORKSPACE_CONFIG
-    for _, fun in _QUERY_ADD_EXTENSION_DEFAULT_CONFIG.items():
+    for fun in _QUERY_ADD_EXTENSION_DEFAULT_CONFIG:
         try:
             local_config = fun()
             parsed_local_config = _build_global_config_dict_for_module(
