@@ -16,7 +16,7 @@ export default function ConsoleNavBar() {
       }}
       style={{ height: "100%", overflowY: "auto" }}
       items={[
-        { itemKey: "/console/overview", text: "Overview", icon: <IconHome /> },
+        { itemKey: "/", text: "Overview", icon: <IconHome /> },
         {
           text: "Projects",
           icon: <IconListView />,
@@ -33,7 +33,7 @@ export default function ConsoleNavBar() {
                     )}
                   </Space>
                 ),
-                itemKey: "/console/project/" + id,
+                itemKey: "/project/" + id,
               }))
             : [{ text: "", itemKey: "loading" }],
         },

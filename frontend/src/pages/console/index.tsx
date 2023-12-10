@@ -6,15 +6,15 @@ import Overview from "./overview";
 
 export function consoleRoutes(): RouteObject {
   return {
-    path: "console",
+    path: "",
     element: <ConsoleLayout />,
     children: [
+      { path: "", element: <Overview /> },
       {
         path: "project/:projectId",
         element: <Dashboard />,
         errorElement: <RouteError />,
       },
-      { path: "overview", element: <Overview /> },
     ],
   };
 }

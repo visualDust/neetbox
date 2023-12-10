@@ -18,11 +18,10 @@ const router = createBrowserRouter([
     element: <App />,
     errorElement: <RouteError />,
     children: [
-      {
-        path: "",
-        // element: <Home />,
-        element: <ConsoleLayout />,
-      },
+      // {
+      //   path: "",
+      //   element: <Home />,
+      // },
       consoleRoutes(),
       {
         path: "/login",

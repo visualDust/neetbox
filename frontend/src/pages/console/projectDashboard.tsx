@@ -10,6 +10,8 @@ import { AppTitle } from "../../components/appTitle";
 import { ImagesAndScatters } from "../../components/dashboard/project/imagesAndScatters";
 import { getProject } from "../../services/projects";
 import { RunSelect } from "../../components/dashboard/project/runSelect";
+import PlatformProps from "../../components/dashboard/project/platformProps";
+import Loading from "../../components/loading";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
@@ -53,30 +55,30 @@ function ProjectDashboard() {
         >
           Project "{projectName ?? projectId}"
         </AppTitle>
-        <SectionTitle title="Logs" />
-        <Logs />
-        <Divider />
-        <SectionTitle title="Actions" />
-        <Actions />
-        <Divider />
-        <SectionTitle title="Images & Scalars" />
-        <ImagesAndScatters />
-        {/* <SectionTitle title="Images" />
-        <Images /> */}
-        {/* <SectionTitle title="Scatters" />
-        <Scatters /> */}
-        <Divider />
-        <SectionTitle title="Hardware" />
-        <Hardware />
-        <Divider />
-        {/* {data.current ? (
+        {runId ? (
           <>
+            <SectionTitle title="Logs" />
+            <Logs />
+            <Divider />
+            <SectionTitle title="Actions" />
+            <Actions />
+            <Divider />
+            <SectionTitle title="Images & Scalars" />
+            <ImagesAndScatters />
+            {/* <SectionTitle title="Images" />
+        <Images /> */}
+            {/* <SectionTitle title="Scatters" />
+        <Scatters /> */}
+            <Divider />
+            <SectionTitle title="Hardware" />
+            <Hardware />
+            <Divider />
             <SectionTitle title="Platform" />
-            <PlatformProps data={data.current.platform} />
+            <PlatformProps />
           </>
         ) : (
-          <Loading size="large" />
-        )} */}
+          <Loading size="large" height="70vh" />
+        )}
       </div>
     </ProjectContext.Provider>
   );
