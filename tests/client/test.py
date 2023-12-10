@@ -78,7 +78,7 @@ def sys_exit():
     os._exit(0)
 
 
-@neetbox.action(name="Generate random niose image")
+@neetbox.action(name="Generate random noise image")
 def send_image(width=400, height=300, num_channels=3):
     """Send a random noise image from numpy.array.
 
