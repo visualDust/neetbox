@@ -51,7 +51,7 @@ export function startBackgroundTasks() {
     dispose: () => {
       for (const [name, project] of projects) {
         projects.delete(name);
-        project.wsClient.ws.close();
+        project.wsClient.close();
       }
     },
   };

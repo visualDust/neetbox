@@ -1,4 +1,5 @@
 import { BetterAtom } from "../utils/betterAtom";
+import { addNotice } from "../utils/notification";
 import { WEBSOCKET_URL } from "./api";
 import { Project } from "./projects";
 import { ImageMetadata } from "./types";
@@ -35,8 +36,13 @@ export class WsClient {
   callbacks = new Map<number, (msg: WsMsg) => void>();
   wsListeners = new Set<(msg: WsMsg) => void>();
   isReady = new BetterAtom(false);
+  activeClose = false;
 
   constructor(readonly project: Project) {
+    this.connect();
+  }
+
+  connect(reconnect = false) {
     this.ws = new WebSocket(WEBSOCKET_URL);
     this.ws.onopen = () => {
       console.info("ws open");
@@ -48,6 +54,14 @@ export class WsClient {
         (msg) => {
           console.info("ws joined", msg);
           this.isReady.value = true;
+          if (reconnect) {
+            addNotice({
+              id: "ws-connection-state",
+              type: "success",
+              title: "WebSocket reconnected",
+              content: `project "${this.project.nameOrId}"`,
+            });
+          }
         },
       );
     };
@@ -61,7 +75,7 @@ export class WsClient {
         this.callbacks.delete(eventId);
       } else {
         if (eventType === "log") {
-          project.handleLog({
+          this.project.handleLog({
             timestamp: json.timestamp,
             ...(json.payload as any),
           });
@@ -72,6 +86,15 @@ export class WsClient {
     };
     this.ws.onclose = (e) => {
       this.isReady.value = false;
+      if (!this.activeClose) {
+        addNotice({
+          id: "ws-connection-state",
+          type: "error",
+          title: "WebSocket disconnected",
+          content: `project "${this.project.nameOrId}"`,
+        });
+        setTimeout(() => this.connect(true), 5000);
+      }
     };
   }
 
@@ -85,5 +108,10 @@ export class WsClient {
     console.info("ws send", json);
     this.ws.send(JSON.stringify(json));
     if (onReply) this.callbacks.set(eventId, onReply);
+  }
+
+  close() {
+    this.activeClose = true;
+    this.ws.close();
   }
 }
