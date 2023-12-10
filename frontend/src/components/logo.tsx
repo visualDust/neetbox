@@ -17,7 +17,7 @@ export default function Logo(props: LogoProps) {
     ...{}, // add default style here
     ...props.styles,
   };
-  const imageComponent = <img className={glowStyleClassName} src="/logo.svg" />;
+  const imageComponent = <img className={glowStyleClassName} src={process.env.ASSET_PREFIX + "/logo.svg"} />;
   const titleComponent = withTitle ? <span>NEETBOX</span> : null;
   return (
     <div className={props.className} style={combinedStyles}>

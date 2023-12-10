@@ -52,7 +52,7 @@ export default defineConfig({
   //   writeToDisk: true,
   // },
   output: {
-    assetPrefix: "/web",
+    assetPrefix: "/web/",
     distPath: {
       root: "../neetbox/frontend_dist",
     },

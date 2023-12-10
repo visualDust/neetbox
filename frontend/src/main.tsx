@@ -30,7 +30,7 @@ const router = createBrowserRouter(
       ],
     },
   ],
-  { basename: "/web" },
+  { basename: "/web/" },
 );
 
 if (process.env.NODE_ENV === "development") {
