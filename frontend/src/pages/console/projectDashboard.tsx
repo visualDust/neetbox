@@ -42,7 +42,7 @@ function ProjectDashboard() {
     }
   }, [lastRunId, runId, setRunId]);
 
-  const isOnlineRun = Boolean(runId && runId == lastRunId && status.online);
+  const isOnlineRun = Boolean(runId && runId == lastRunId && status?.online);
 
   const projectContextData = useMemo(
     () => ({
