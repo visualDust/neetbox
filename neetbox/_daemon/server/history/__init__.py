@@ -13,8 +13,8 @@ from ._db import (
     TIMESTAMP_COLUMN_NAME,
     DBConnection,
     DbQueryFetchType,
-    QueryCondition,
     DbQuerySortType,
+    QueryCondition,
 )
 
 if not os.path.exists(HISTORY_FILE_ROOT):
@@ -26,7 +26,6 @@ if not os.path.isdir(HISTORY_FILE_ROOT):
 
 
 def load_db_of_path(path):
-    print(path)
     if not os.path.isfile(path):
         raise RuntimeError(f"{path} is not a file")
     conn = DBConnection(path=path)

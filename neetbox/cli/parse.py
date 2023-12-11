@@ -60,22 +60,24 @@ def list_command():
     _try_load_workspace_if_applicable()
     try:
         _response = get_list()
-
         table = Table(title="Running NEETBOX Projects")
-
-        table.add_column("project id", justify="center", style="magenta", no_wrap=True)
+        table.add_column(NAME_KEY, justify="center", style="magenta", no_wrap=True)
         table.add_column("online", justify="center", style="cyan")
-        table.add_column("status", justify="center", style="green")
+        table.add_column("project id", justify="center", no_wrap=True)
+        table.add_column("runs", justify="center", style="green")
 
         for pjt in _response:
             table.add_row(
-                pjt[PROJECT_ID_KEY], str(pjt["online"]), json.dumps(pjt[STATUS_TABLE_NAME])
+                pjt[NAME_KEY],
+                str(pjt["online"]),
+                pjt[PROJECT_ID_KEY],
+                "\n".join(pjt[STATUS_TABLE_NAME].keys()),
             )
 
         console.print(table)
 
         if not len(_response):
-            console.print("*There is no running project")
+            console.print("*There is project no server")
 
     except Exception as e:  # noqa
         logger.log("Could not fetch data. Is there any project with NEETBOX running?")

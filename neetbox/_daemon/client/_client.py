@@ -49,16 +49,20 @@ class ClientConn(metaclass=Singleton):
     http: httpx.Client = _load_http_client()
 
     def post(api: str, *args, **kwargs):
-        return ClientConn.http.post(addr_of_api(api), *args, **kwargs)
+        url = addr_of_api(api)
+        return ClientConn.http.post(url, *args, **kwargs)
 
     def get(api: str, *args, **kwargs):
-        return ClientConn.http.get(addr_of_api(api), *args, **kwargs)
+        url = addr_of_api(api)
+        return ClientConn.http.get(url, *args, **kwargs)
 
     def put(api: str, *args, **kwargs):
-        return ClientConn.http.put(addr_of_api(api), *args, **kwargs)
+        url = addr_of_api(api)
+        return ClientConn.http.put(url, *args, **kwargs)
 
     def delete(api: str, *args, **kwargs):
-        return ClientConn.http.delete(addr_of_api(api), *args, **kwargs)
+        url = addr_of_api(api)
+        return ClientConn.http.delete(url, *args, **kwargs)
 
     __ws_client: websocket.WebSocketApp = None  # _websocket_client
     __ws_subscription = defaultdict(lambda: {})  # default to no subscribers
