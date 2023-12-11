@@ -14,8 +14,8 @@ export const Scatters = memo(() => {
 });
 
 export const AllScatterViewers = memo(() => {
-  const { projectId } = useCurrentProject();
-  const series = useProjectSeries(projectId, "scalar");
+  const { projectId, runId } = useCurrentProject();
+  const series = useProjectSeries(projectId, runId!, "scalar");
   return series?.map((s) => <ScatterViewer key={s} series={s} />) ?? <Loading text="Scalars loading" />;
 });
 

@@ -214,7 +214,7 @@ class DBConnection:
         return result, cur.lastrowid
 
     def _query(self, query, *args, fetch: DbQueryFetchType = None, **kwargs):
-        return self._execute(query=query, *args, fetch=fetch, **kwargs)
+        return self._execute(query, *args, fetch=fetch, **kwargs)
 
     def table_exist(self, table_name):
         sql_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
@@ -287,11 +287,16 @@ class DBConnection:
         result = [(run_id, timestamp) for run_id, timestamp in result]
         return result
 
-    def get_series_of_table(self, table_name):
+    def get_series_of_table(self, table_name, run_id=None):
         if not self.table_exist(table_name):
             return []
-        sql_query = f"SELECT DISTINCT series FROM {table_name}"
-        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        if run_id is not None:
+            sql_query = f"SELECT DISTINCT t.series as series FROM {table_name} t RIGHT JOIN {RUN_IDS_TABLE_NAME} r ON r.runid == ? WHERE t.runid == r.id"
+            args = (run_id,)
+        else:
+            sql_query = f"SELECT DISTINCT series FROM {table_name}"
+            args = ()
+        result, _ = self._query(sql_query, *args, fetch=DbQueryFetchType.ALL)
         return [result for (result,) in result]
 
     def write_json(

@@ -53,8 +53,8 @@ export function useProjectWebSocket<T extends WsMsg["event-type"]>(
   }, [project, type, onMessage]);
 }
 
-export function useProjectSeries(projectId: string, type: string) {
-  const { data: series, mutate } = useAPI(`/project/${projectId}/series/${type}`);
+export function useProjectSeries(projectId: string, runId: string, type: string) {
+  const { data: series, mutate } = useAPI(`/project/${projectId}/series/${type}?runid=${runId}`);
   useProjectWebSocket(projectId, type, (msg) => {
     //@ts-expect-error TODO
     const newSeries = msg.payload.series;

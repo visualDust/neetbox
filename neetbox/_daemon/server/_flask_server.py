@@ -116,7 +116,9 @@ def get_flask_server(debug=False):
     def get_series_list_of(project_id: str, table_name: str):  # client side function
         if not Bridge.has(project_id):
             abort(404)
-        result = Bridge.of_id(project_id).get_series_of(table_name)
+        result = Bridge.of_id(project_id).get_series_of(
+            table_name, run_id=request.args.get("runid")
+        )
         return result
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/runids", methods=["GET"])

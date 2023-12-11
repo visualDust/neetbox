@@ -135,8 +135,8 @@ class Bridge:
     def is_online(self):
         return self.cli_ws is not None
 
-    def get_series_of(self, table_name):
-        return self.historyDB.get_series_of_table(table_name=table_name)
+    def get_series_of(self, table_name, run_id=None):
+        return self.historyDB.get_series_of_table(table_name=table_name, run_id=run_id)
 
     def get_run_ids(self):
         return self.historyDB.get_run_ids()
