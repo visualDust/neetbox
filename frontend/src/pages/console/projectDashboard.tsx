@@ -1,5 +1,5 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo } from "react";
 import { Divider } from "@douyinfe/semi-ui";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/dashboard/project/logs/logs";
@@ -13,6 +13,7 @@ import { RunSelect } from "../../components/dashboard/project/runSelect";
 import PlatformProps from "../../components/dashboard/project/platformProps";
 import Loading from "../../components/loading";
 import { useAPI } from "../../services/api";
+import { addNotice } from "../../utils/notification";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
@@ -21,6 +22,7 @@ export default function ProjectDashboardButRecreateOnRouteChange() {
 
 function ProjectDashboard() {
   const { projectId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   if (!projectId) throw new Error("projectId required");
 
   const status = useProjectStatus(projectId);
@@ -33,16 +35,30 @@ function ProjectDashboard() {
   }, [projectId, projectName]);
 
   const { data: runIds } = useAPI(`/project/${projectId}/runids`, { refreshInterval: 5000 });
-  const [runId, setRunId] = useState<string | undefined>(undefined);
-
   const lastRunId = runIds ? runIds[runIds.length - 1].id : undefined;
-  useEffect(() => {
-    if (runId === undefined && lastRunId) {
-      setRunId(lastRunId);
-    }
-  }, [lastRunId, runId, setRunId]);
-
+  const paramRun = searchParams.get("run");
+  const paramRunFound = runIds?.find((x) => x.id == paramRun)?.id;
+  const runId = paramRunFound ?? lastRunId;
+  const projectOnline = Boolean(status?.online);
   const isOnlineRun = Boolean(runId && runId == lastRunId && status?.online);
+
+  useEffect(() => {
+    if (paramRun && !paramRunFound) {
+      addNotice({
+        type: "error",
+        title: `Can not find run "${paramRun}"`,
+        content: "Showing the latest run",
+      });
+    }
+  }, [paramRun, paramRunFound]);
+
+  const setRunId = (id: string) => {
+    if (id === lastRunId) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ run: id });
+    }
+  };
 
   const projectContextData = useMemo(
     () => ({
@@ -50,8 +66,9 @@ function ProjectDashboard() {
       projectName,
       runId,
       isOnlineRun,
+      projectOnline,
     }),
-    [projectId, projectName, runId, isOnlineRun],
+    [projectId, projectName, runId, isOnlineRun, projectOnline],
   );
 
   return (

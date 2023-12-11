@@ -24,11 +24,17 @@ export default function ConsoleNavBar() {
           items: data
             ? data.map(({ projectid: id, name, online }) => ({
                 text: (
-                  <Space>
-                    <Typography.Text type={online ? "primary" : "tertiary"}>{name}</Typography.Text>
-                    {!online && (
-                      <Tag style={{ marginLeft: "10px" }} color="orange">
-                        offline
+                  <Space style={{ width: "100%" }}>
+                    <Typography.Text
+                      type={online ? "primary" : "tertiary"}
+                      style={{ flex: "1 1 50%" }}
+                      ellipsis={{ showTooltip: true }}
+                    >
+                      {name}
+                    </Typography.Text>
+                    {online && (
+                      <Tag style={{ marginLeft: "10px" }} color="green">
+                        Online
                       </Tag>
                     )}
                   </Space>
