@@ -198,7 +198,6 @@ def get_flask_server(debug=False):
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/scalar", methods=["GET"])
     def get_history_scalar_of(project_id):
-        time.sleep(2)
         return get_history_json_of(
             project_id=project_id, table_name="scalar", condition=request.args.get("condition")
         )

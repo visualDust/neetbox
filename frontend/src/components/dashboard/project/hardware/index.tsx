@@ -18,7 +18,7 @@ export function Hardware() {
     transformWS: (x) => ({ timestamp: x.timestamp, ...x.payload }),
     limit: fetchDataCount,
   });
-  return data ? (
+  return data?.length ? (
     <div>
       {data.every((x) => x.gpus?.length) ? (
         data[0].gpus.map((_, i) => <GPUGraph key={i} data={new TimeDataMapper(data, (x) => x.gpus[i])} />)
