@@ -56,47 +56,58 @@ export const RunSelect = memo(({ setRunId }: { setRunId }) => {
             </>
           )}
         >
-          {items.map((x, i) => (
-            <Select.Option style={{ gap: "5px" }} key={x.id} value={x.id}>
-              <span style={{ fontFamily: "monospace", fontSize: 12 }}>{x.timestamp}</span>
-              <span style={{ fontFamily: "monospace", fontSize: 12 }}>({x.metadata?.name ?? x.id})</span>
-              <Button
-                type="secondary"
-                icon={<IconEdit />}
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  closeDropDown();
-                  setEditing(x);
-                }}
-              />
-              {!(i == 0 && projectOnline) && (
+          {items.map((item, i) => {
+            return (
+              <Select.Option
+                style={{ gap: "5px" }}
+                // workaround for semi-design select: won't update label unless key changed
+                // https://github.com/DouyinFE/semi-design/blob/c7982af07ad92e6cafe72d96604ed63a8ca595d6/packages/semi-ui/select/index.tsx#L640
+                key={item.id + "-" + item.metadata?.name + "-" + (i == 0 ? projectOnline : "")}
+                value={item.id}
+              >
+                <span style={{ fontFamily: "monospace", fontSize: 12 }}>{item.timestamp}</span>
+                <span style={{ fontFamily: "monospace", fontSize: 12 }}>
+                  ({item.metadata?.name ?? item.id})
+                </span>
+                <span style={{ flex: 1 }}></span>
                 <Button
-                  type="danger"
-                  icon={<IconDelete />}
+                  type="secondary"
+                  icon={<IconEdit />}
                   size="small"
                   onClick={(e) => {
                     e.stopPropagation();
                     closeDropDown();
-                    Modal.error({
-                      title: "Are you sure?",
-                      content: `Deleting run ${x.timestamp} (${x.id})`,
-                      centered: true,
-                      onOk: async () => {
-                        // await new Promise((r) => setTimeout(r, 1000));
-                        await fetcher(`/project/${projectId}/run/${x.id}`, { method: "DELETE" });
-                        mutateRunIds();
-                        Toast.success({
-                          content: `Deleted ${x.timestamp}`,
-                        });
-                      },
-                    });
+                    setEditing(item);
                   }}
                 />
-              )}
-              {i == 0 && (projectOnline ? <Tag color="green">Online</Tag> : <Tag color="red">Offline</Tag>)}
-            </Select.Option>
-          ))}
+                {!(i == 0 && projectOnline) && (
+                  <Button
+                    type="danger"
+                    icon={<IconDelete />}
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeDropDown();
+                      Modal.error({
+                        title: "Are you sure?",
+                        content: `Deleting run ${item.timestamp} (${item.id})`,
+                        centered: true,
+                        onOk: async () => {
+                          // await new Promise((r) => setTimeout(r, 1000));
+                          await fetcher(`/project/${projectId}/run/${item.id}`, { method: "DELETE" });
+                          mutateRunIds();
+                          Toast.success({
+                            content: `Deleted ${item.timestamp}`,
+                          });
+                        },
+                      });
+                    }}
+                  />
+                )}
+                {i == 0 && (projectOnline ? <Tag color="green">Online</Tag> : <Tag color="red">Offline</Tag>)}
+              </Select.Option>
+            );
+          })}
         </Select>
       ) : (
         <Loading height="30px" />
