@@ -130,7 +130,7 @@ def get_flask_server(debug=False):
         new_metadata = request.json
         bridge = Bridge.of_id(project_id)
         old_metadata = bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id)  # get old metadata
-        for k, v in new_metadata:
+        for k, v in new_metadata.items():
             old_metadata[k] = v
         return bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id, metadata=new_metadata)
 

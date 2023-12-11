@@ -299,7 +299,10 @@ class DBConnection:
             raise RuntimeError("should not get run id of id before run id table creation")
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}, {METADATA_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
         result, _ = self._query(sql_query)
-        result = [(run_id, timestamp, metadata or {}) for run_id, timestamp, metadata in result]
+        result = [
+            (run_id, timestamp, json.loads(metadata) if metadata else {})
+            for run_id, timestamp, metadata in result
+        ]
         return result
 
     def delete_run_id(self, run_id: str):
