@@ -4,6 +4,7 @@ import { IconDownload } from "@douyinfe/semi-icons";
 import { useCurrentProject, useProjectData, useProjectSeries } from "../../../hooks/useProject";
 import Loading from "../../loading";
 import { CenterBox } from "../../centerBox";
+import { API_BASEURL } from "../../../services/api";
 
 export const Images = memo(() => {
   return (
@@ -46,7 +47,7 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
     goto(Math.max(0, Math.min(index + delta, length - 1)));
   };
   const goto = (newIndex: number) => setIndex(newIndex == length - 1 ? -1 : newIndex);
-  const imgSrc = img ? `/web/image/${projectId}/${img.id}` : null;
+  const imgSrc = img ? `${API_BASEURL}/project/${projectId}/image/${img.id}` : null;
   return (
     <Card bodyStyle={{ position: "relative" }}>
       <Space vertical>
@@ -64,7 +65,7 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
         {img ? (
           <a href={imgSrc!} target="_blank" style={{ display: "block", position: "relative" }}>
             <img
-              style={{ background: "white", objectFit: "contain", width: "450px", height: "300px" }}
+              style={{ display: "block", objectFit: "contain", width: "450px", height: "300px" }}
               src={imgSrc!}
             />
           </a>
