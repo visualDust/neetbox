@@ -6,10 +6,8 @@ import Loading from "../../loading";
 import { useCurrentProject, useProjectRunIds } from "../../../hooks/useProject";
 import { fetcher } from "../../../services/api";
 
-export const RunSelect = memo(({ setRunId }: { setRunId }) => {
-  const { projectId, runId, isOnlineRun, projectOnline } = useCurrentProject();
-  const { data: runIds, mutate: mutateRunIds } = useProjectRunIds(projectId);
-
+export const RunSelect = memo((props: any) => {
+  const { setRunId, runIds, mutateRunIds, projectId, runId, isOnlineRun, projectOnline } = props;
   const items = useMemo(
     () =>
       [...(runIds ?? [])]

@@ -24,7 +24,7 @@ function ProjectDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   if (!projectId) throw new Error("projectId required");
 
-  const status = useProjectStatus(projectId);
+  const { data: status, mutate } = useProjectStatus(projectId);
   const projectName = status?.name ?? projectId;
 
   useEffect(() => {
@@ -33,7 +33,7 @@ function ProjectDashboard() {
     }
   }, [projectId, projectName]);
 
-  const { data: runIds } = useProjectRunIds(projectId);
+  const runIds = status?.runids;
   const lastRunId = runIds ? runIds[runIds.length - 1].id : undefined;
   const paramRun = searchParams.get("run");
   const paramRunFound = runIds?.find((x) => x.id == paramRun)?.id;
@@ -76,7 +76,9 @@ function ProjectDashboard() {
         <AppTitle
           extra={
             <ProjectContext.Provider key={projectId} value={projectContextData}>
-              <RunSelect setRunId={setRunId} />
+              <RunSelect
+                {...{ setRunId, runIds, mutateRunIds: mutate, projectId, runId, isOnlineRun, projectOnline }}
+              />
             </ProjectContext.Provider>
           }
         >
