@@ -33,14 +33,14 @@ def _load_http_client():
     return __local_http_client
 
 
-@functools.lru_cache()
-def addr_of_api(api):
-    _cfg = get_module_level_config()
-    _daemon_server_address = f"{_cfg['host']}:{_cfg['port']}"
-    _base_addr = f"http://{_daemon_server_address}"
+def addr_of_api(api, root=None):
+    if not root:
+        _cfg = get_module_level_config()
+        _daemon_server_address = f"{_cfg['host']}:{_cfg['port']}"
+        root = f"http://{_daemon_server_address}"
     if not api.startswith("/"):
         api = f"/{api}"
-    return f"{_base_addr}{api}"
+    return f"{root}{api}"
 
 
 # singleton

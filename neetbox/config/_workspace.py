@@ -16,7 +16,7 @@ from uuid import uuid4
 import toml
 
 from neetbox.utils.framing import get_frame_module_traceback
-from neetbox.utils.massive import update_dict_recursively
+from neetbox.utils.massive import check_read_toml, update_dict_recursively
 
 CONFIG_FILE_NAME = f"neetbox.toml"
 NEETBOX_VERSION = version("neetbox")
@@ -26,9 +26,6 @@ _DEFAULT_WORKSPACE_CONFIG = {
     "version": NEETBOX_VERSION,
     "projectid": str(uuid4()),  # later will be overwrite by workspace config file
     "logging": {"level": "DEBUG", "logdir": "logs"},
-    "pipeline": {
-        "updateInterval": 0.5,
-    },
     "extension": {
         "autoload": True,
     },
@@ -189,10 +186,10 @@ def _load_workspace_config(folder="."):
         _IS_EXTENSION_INITED = True
 
 
-def _create_load_workspace(path=None):
-    is_workspace = _check_if_workspace_config_valid(path)
+def _create_load_workspace(folder="."):
+    is_workspace = check_read_toml(path=os.path.join(folder, CONFIG_FILE_NAME))
     if not is_workspace:
-        _init_workspace(path)
+        _init_workspace(folder)
     _load_workspace_config()
 
 
