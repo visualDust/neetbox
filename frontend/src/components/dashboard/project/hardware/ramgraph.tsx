@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback } from "react";
 import { ECharts } from "../../../echarts";
 import { RamInfo } from "../../../../services/types";
 import { TimeDataMapper } from "../../../../utils/timeDataMapper";
@@ -42,7 +42,7 @@ export const RAMGraph = ({ data }: { data: TimeDataMapper<RamInfo> }) => {
     } as echarts.EChartsOption;
   };
 
-  const updatingOption = useMemo(() => {
+  const updatingOption = useCallback(() => {
     const newOption = {
       series: [
         {

@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Button, Card, Space, Typography } from "@douyinfe/semi-ui";
 import { IconClose, IconMaximize } from "@douyinfe/semi-icons";
 import { useCurrentProject, useProjectData, useProjectSeries } from "../../../hooks/useProject";
@@ -31,6 +31,13 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
     transformHTTP: (x) => ({ x: x.metadata.x, y: x.metadata.y }),
     filterWS: (x) => x.payload.series == series,
   });
+  const [hadZoom, setHadZoom] = useState<string | null>(null);
+  const dataZoomOption = (init = false) => {
+    if (points && points.length > 1000 && (init || hadZoom !== runId)) {
+      setHadZoom(runId!);
+      return { start: 90 };
+    }
+  };
 
   const initialOption = () => {
     return {
@@ -52,6 +59,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
           type: "slider",
           show: true,
           xAxisIndex: [0],
+          ...dataZoomOption(true),
         },
         // {
         //   type: "slider",
@@ -61,6 +69,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
         {
           type: "inside",
           xAxisIndex: [0],
+          ...dataZoomOption(true),
         },
         // {
         //   type: "inside",
@@ -89,9 +98,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
     } as echarts.EChartsOption;
   };
 
-  const [hadZoom, setHadZoom] = useState<string | null>(null);
-
-  const updatingOption = useMemo(() => {
+  const updatingOption = useCallback(() => {
     const newOption = {
       series: [
         {
@@ -103,18 +110,8 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
           large: true,
         },
       ],
+      dataZoom: [{ ...dataZoomOption() }, { ...dataZoomOption() }],
     } as echarts.EChartsOption;
-    if (points && points.length > 1000 && hadZoom != runId) {
-      setHadZoom(runId!);
-      newOption.dataZoom = [
-        {
-          start: 90,
-        },
-        {
-          start: 90,
-        },
-      ];
-    }
     return newOption;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [points]);

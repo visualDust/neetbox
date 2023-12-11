@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback } from "react";
 import { ECharts } from "../../../echarts";
 import { GpuInfo } from "../../../../services/types";
 import { TimeDataMapper } from "../../../../utils/timeDataMapper";
@@ -51,7 +51,7 @@ export const GPUGraph = ({ data }: { data: TimeDataMapper<GpuInfo> }) => {
     } as echarts.EChartsOption;
   };
 
-  const updatingOption = useMemo(() => {
+  const updatingOption = useCallback(() => {
     const newOption = {
       series: [
         {

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback } from "react";
 import { ECharts } from "../../../echarts";
 import { CpuInfo } from "../../../../services/types";
 import { TimeDataMapper } from "../../../../utils/timeDataMapper";
@@ -40,7 +40,7 @@ export const CPUGraph = ({ data }: { data: TimeDataMapper<CpuInfo[]> }) => {
     } as echarts.EChartsOption;
   };
 
-  const updatingOption = useMemo(() => {
+  const updatingOption = useCallback(() => {
     const newOption = {
       series: cpus.map((cpu) => ({
         name: `CPU${cpu.id}`,
