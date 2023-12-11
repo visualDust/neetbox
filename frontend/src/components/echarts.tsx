@@ -2,6 +2,7 @@ import { useRef, useEffect, HTMLAttributes, useState } from "react";
 import type * as echarts from "echarts";
 import { useTheme } from "../hooks/useTheme";
 import Loading from "./loading";
+import { IdleTimer } from "../utils/timer";
 
 export interface EChartsProps {
   initialOption: () => echarts.EChartsOption;
@@ -16,7 +17,10 @@ export const ECharts = (props: EChartsProps) => {
   const { darkMode } = useTheme();
 
   useEffect(() => {
-    import("echarts").then((mod) => setEchartsModule(mod));
+    import("echarts").then((mod) => {
+      // setEchartsModule(mod);
+      new IdleTimer(() => setEchartsModule(mod)).schedule(1000);
+    });
   });
 
   useEffect(() => {
@@ -31,12 +35,9 @@ export const ECharts = (props: EChartsProps) => {
       chart.setOption(props.updatingOption);
       chartRef.current = chart;
 
-      let resizeTimer: number | null = null;
+      const resizeTimer = new IdleTimer(() => chart?.resize());
       const handleResize = () => {
-        if (resizeTimer != null) clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-          chart?.resize();
-        }, 20) as unknown as number;
+        resizeTimer.schedule(100);
       };
       const resizeObserver = new ResizeObserver(handleResize);
       resizeObserver.observe(chartContainerRef.current!);

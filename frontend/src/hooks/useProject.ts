@@ -6,6 +6,7 @@ import { fetcher, useAPI } from "../services/api";
 import { Condition, createCondition } from "../utils/condition";
 import { ActionInfo, PlatformInfo } from "../services/types";
 import { slideWindow } from "../utils/array";
+import { IdleTimer } from "../utils/timer";
 
 export const ProjectContext = createContext<{
   projectId: string;
@@ -95,49 +96,60 @@ export function useProjectData<T = any>(options: {
       return result;
     },
   });
-  const refQueue = useRef<{ timer: number | null; queue: T[] }>({ timer: null, queue: [] });
   const flushQueue = () => {
-    let queue = refQueue.current.queue;
-    if (!queue.length) {
-      console.warn("flushQueue called when the queue is empty");
-      return;
-    }
-    const lastData = data[data.length - 1];
-    const firstQueue = queue[0];
-    const seqKey =
-      lastData && firstQueue && ["id", "timestamp"].find((key) => lastData[key] && firstQueue[key]);
-    if (seqKey) {
-      queue = queue.filter((x) => x[seqKey] > lastData[seqKey]);
-    }
-    mutate((arr) => slideWindow(arr, queue, limit, limit ? limit * 1.2 : undefined), {
-      revalidate: false,
-    });
+    mutate(
+      (arr) => {
+        if (!arr) {
+          console.warn("flushQueue called when the data is null/undefined");
+          return arr;
+        }
+        let queue = refQueue.current.queue;
+        if (!queue.length) {
+          console.warn("flushQueue called when the queue is empty");
+          return arr;
+        }
+        const lastData = arr[arr.length - 1];
+        const firstQueue = queue[0];
+        const seqKey =
+          lastData && firstQueue && ["id", "timestamp"].find((key) => lastData[key] && firstQueue[key]);
+        if (seqKey) {
+          queue = queue.filter((x) => x[seqKey] > lastData[seqKey]);
+        }
+        return slideWindow(arr, queue, limit, limit ? limit * 1.2 : undefined);
+      },
+      {
+        revalidate: false,
+      },
+    );
     refQueue.current.queue = [];
-    refQueue.current.timer = null;
   };
+
+  const refQueue = useRef<{ timer: IdleTimer; queue: T[] }>(null!);
+  if (!refQueue.current) refQueue.current = { timer: new IdleTimer(flushQueue), queue: [] };
+
   useProjectWebSocket(projectId, type, (msg) => {
     if (options.disable) return;
     if (!runId || (msg.runid == runId && (!options.filterWS || options.filterWS(msg)))) {
       const transformed = transformWS(msg);
-      if (data && !isLoading && !refQueue.current.timer) {
-        refQueue.current.timer = setTimeout(flushQueue, 50) as unknown as number;
+      if (data && !isLoading && !refQueue.current.timer.running) {
+        refQueue.current.timer.schedule(100);
       }
       refQueue.current.queue.push(transformed);
     }
   });
+
   useEffect(() => {
     if (data && !isLoading && refQueue.current.queue.length && !refQueue.current.timer) {
       flushQueue();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isLoading]);
+
   useEffect(() => {
-    if (refQueue.current.timer) {
-      clearTimeout(refQueue.current.timer);
-      refQueue.current.timer = null;
-    }
+    refQueue.current.timer.cancel();
     refQueue.current.queue = [];
   }, [url]);
+
   // console.debug("useProjectData", options.type, data);
   return data as T[] | null;
 }
