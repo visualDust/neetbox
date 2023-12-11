@@ -6,15 +6,17 @@ import { TimeDataMapper } from "../../../../utils/timeDataMapper";
 import { CPUGraph } from "./cpugraph";
 import { GPUGraph } from "./gpugraph";
 import { RAMGraph } from "./ramgraph";
+import { fetchDataCount } from "./utils";
 
 export function Hardware() {
-  const { projectId } = useCurrentProject();
+  const { projectId, runId } = useCurrentProject();
   const data = useProjectData<HardwareInfo>({
     projectId,
+    runId,
     type: "hardware",
     transformHTTP: (x) => ({ timestamp: x.timestamp, ...x.metadata }),
     transformWS: (x) => ({ timestamp: x.timestamp, ...x.payload }),
-    limit: 240,
+    limit: fetchDataCount,
   });
   return data ? (
     <div>

@@ -139,7 +139,7 @@ hardware = _Hardware()
 
 @export_default_config
 def return_default_config() -> dict:
-    return {"monit": True, "interval": 0.5}
+    return {"monit": True, "interval": 2}
 
 
 # watch updates in daemon
