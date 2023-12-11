@@ -13,6 +13,7 @@ export const ProjectContext = createContext<{
   projectName?: string;
   runId?: string;
   isOnlineRun: boolean;
+  projectOnline: boolean;
 } | null>(null);
 
 export function useCurrentProject() {
