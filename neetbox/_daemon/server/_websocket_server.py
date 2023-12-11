@@ -144,6 +144,15 @@ def get_web_socket_server(config, debug=False):
             logger.warn(f"handle {message.event_type}. {message.project_id} not found.")
             return
         bridge = Bridge.of_id(message.project_id)
+        if save_history:
+            message.id = bridge.save_json_to_history(
+                table_name=message.event_type,
+                json_data=message.payload,
+                series=message.series,
+                run_id=message.run_id,
+                timestamp=message.timestamp,
+                num_row_limit=message.history_len,
+            )
         if forward_to:
             if forward_to == IdentityType.SELF:
                 forward_to = message.who
@@ -155,15 +164,7 @@ def get_web_socket_server(config, debug=False):
                 bridge.ws_send_to_frontends(message)  # forward to frontends
             elif forward_to in [IdentityType.CLI, IdentityType.BOTH]:
                 bridge.ws_send_to_client(message)  # forward to frontends
-        if save_history:
-            bridge.save_json_to_history(
-                table_name=message.event_type,
-                json_data=message.payload,
-                series=message.series,
-                run_id=message.run_id,
-                timestamp=message.timestamp,
-                num_row_limit=message.history_len,
-            )
+
         return  # return after handling log forwarding
 
     def on_event_type_status(message: EventMsg):

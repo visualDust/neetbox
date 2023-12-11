@@ -152,7 +152,7 @@ def get_flask_server(debug=False):
             return abort(404)
         message = EventMsg.loads(request.form["json"])
         image_bytes = request.files["image"].read()
-        lastrowid = Bridge.of_id(project_id).save_blob_to_history(
+        message.id = Bridge.of_id(project_id).save_blob_to_history(
             table_name="image",
             run_id=message.run_id,
             series=message.series,
@@ -162,9 +162,8 @@ def get_flask_server(debug=False):
             num_row_limit=message.history_len,
         )
         message.payload = message.payload or {}
-        message.payload[ID_KEY] = lastrowid
         Bridge.of_id(project_id).ws_send_to_frontends(message)
-        return {"result": "ok", "id": lastrowid}
+        return {"result": "ok", "id": message.id}
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/image/<image_id>", methods=["GET"])
     def get_image_of(project_id, image_id: int):
@@ -199,6 +198,7 @@ def get_flask_server(debug=False):
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/scalar", methods=["GET"])
     def get_history_scalar_of(project_id):
+        time.sleep(2)
         return get_history_json_of(
             project_id=project_id, table_name="scalar", condition=request.args.get("condition")
         )

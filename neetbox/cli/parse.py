@@ -18,7 +18,6 @@ from neetbox.logging.logger import Logger
 from neetbox.utils.massive import check_read_toml
 
 from ._client_web_apis import *
-from .app._app import NeetBoxApp
 
 console = Console()
 
