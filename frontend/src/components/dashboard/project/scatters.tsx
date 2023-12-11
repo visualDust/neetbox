@@ -29,7 +29,6 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
     conditions: { series },
     transformWS: (x) => ({ x: x.payload.x, y: x.payload.y }),
     transformHTTP: (x) => ({ x: x.metadata.x, y: x.metadata.y }),
-    filterWS: (x) => x.payload.series == series,
   });
   const [hadZoom, setHadZoom] = useState<string | null>(null);
   const dataZoomOption = (init = false) => {

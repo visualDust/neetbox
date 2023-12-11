@@ -13,6 +13,7 @@ export interface WsMsgBase<Type extends string = string, Payload = undefined> {
   projectid: string;
   runid: string;
   timestamp: string;
+  series?: string;
 }
 
 export type WsMsg =

@@ -26,12 +26,13 @@ export function useProjectStatus(id: string) {
 }
 
 export function useProjectRunIds(id: string) {
-  return useAPI(`/project/${id}/runids`, { refreshInterval: 5000 });
+  const { data, mutate } = useAPI(`/project/${id}`, { refreshInterval: 5000 });
+  return { data: data?.runids, mutate };
 }
 
 export function useProjectRunStatus(id: string, runId?: string) {
-  const data = useProjectStatus(id);
-  return !runId ? undefined : (data?.status[runId] as { action: ActionInfo; platform: PlatformInfo });
+  const { data } = useAPI(`/project/${id}/run/${runId}`, { refreshInterval: 5000 });
+  return !runId ? undefined : (data as { action: ActionInfo; platform: PlatformInfo });
 }
 
 export function useProjectWebSocketReady(id: string) {
@@ -51,9 +52,7 @@ export function useProjectWebSocket<T extends WsMsg["event-type"]>(
         onMessage(msg);
       }
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     project.wsClient.wsListeners.add(handle as any);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return () => void project.wsClient.wsListeners.delete(handle as any);
   }, [project, type, onMessage]);
 }
@@ -61,10 +60,8 @@ export function useProjectWebSocket<T extends WsMsg["event-type"]>(
 export function useProjectSeries(projectId: string, runId: string, type: string) {
   const { data: series, mutate } = useAPI(`/project/${projectId}/series/${type}?runid=${runId}`);
   useProjectWebSocket(projectId, type, (msg) => {
-    //@ts-expect-error TODO
-    const newSeries = msg.payload.series;
-    if (newSeries != null && series && !series.includes(newSeries) && msg.runid == runId) {
-      mutate([...series, newSeries]);
+    if (msg.series != null && series && !series.includes(msg.series) && msg.runid == runId) {
+      mutate([...series, msg.series]);
     }
   });
   return series;
@@ -134,7 +131,12 @@ export function useProjectData<T = any>(options: {
 
   useProjectWebSocket(projectId, type, (msg) => {
     if (options.disable) return;
-    if (!runId || (msg.runid == runId && (!options.filterWS || options.filterWS(msg)))) {
+    if (
+      !runId ||
+      (msg.runid == runId &&
+        (!options.conditions?.series || options.conditions.series == msg.series) &&
+        (!options.filterWS || options.filterWS(msg)))
+    ) {
       const transformed = transformWS(msg);
       if (data && !isLoading && !refQueue.current.timer.running) {
         refQueue.current.timer.schedule(100);

@@ -9,6 +9,7 @@ export const WEBSOCKET_URL =
 export async function fetcher(url: string, fetchInit?: RequestInit) {
   const res = await fetch(API_BASEURL + url, fetchInit);
   try {
+    if (!res.ok) new Error(`HTTP status ${res.status}: ${res.body}`);
     return await res.json();
   } catch (e) {
     throw new Error(`fetching ${url}: ${e}`);

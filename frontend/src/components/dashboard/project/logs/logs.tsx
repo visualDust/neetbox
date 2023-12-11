@@ -61,11 +61,13 @@ export const Logs = React.memo(() => {
     transformHTTP: (x) => ({
       id: x.id,
       timestamp: x.timestamp,
+      series: x.series,
       ...x.metadata,
     }),
     transformWS: (x) => ({
       id: x.id,
       timestamp: x.timestamp,
+      series: x.series,
       ...x.payload,
     }),
   });

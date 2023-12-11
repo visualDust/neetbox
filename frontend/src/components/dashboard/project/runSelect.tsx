@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Space, Select, Tag, Button, Modal, Form, Toast } from "@douyinfe/semi-ui";
 import { IconDelete, IconEdit } from "@douyinfe/semi-icons";
+import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
 import Loading from "../../loading";
 import { useCurrentProject, useProjectRunIds } from "../../../hooks/useProject";
 import { fetcher } from "../../../services/api";
@@ -57,8 +58,8 @@ export const RunSelect = memo(({ setRunId }: { setRunId }) => {
         >
           {items.map((x, i) => (
             <Select.Option style={{ gap: "5px" }} key={x.id} value={x.id}>
-              {x.timestamp}
-              <span style={{ fontFamily: "monospace", fontSize: 12 }}>({x.id})</span>
+              <span style={{ fontFamily: "monospace", fontSize: 12 }}>{x.timestamp}</span>
+              <span style={{ fontFamily: "monospace", fontSize: 12 }}>({x.metadata?.name ?? x.id})</span>
               <Button
                 type="secondary"
                 icon={<IconEdit />}
@@ -103,17 +104,25 @@ export const RunSelect = memo(({ setRunId }: { setRunId }) => {
       {changing && <Loading height="30px" />}
       <RunEditor
         data={editing}
-        onResult={useCallback(() => {
-          setEditing(null);
-        }, [])}
+        onResult={useCallback(
+          (edited) => {
+            setEditing(null);
+            if (edited) {
+              mutateRunIds();
+            }
+          },
+          [mutateRunIds],
+        )}
       />
     </Space>
   );
 });
 
-const RunEditor = memo((props: { data: any; onResult: (data: any) => void }) => {
+const RunEditor = memo((props: { data: any; onResult: (edited: boolean) => void }) => {
+  const { projectId } = useCurrentProject();
   const [data, setData] = useState<any>({});
   const [visible, setVisible] = useState(false);
+  const formRef = useRef<{ formApi: FormApi }>(null!);
   useEffect(() => {
     if (props.data) {
       setData(props.data);
@@ -124,17 +133,24 @@ const RunEditor = memo((props: { data: any; onResult: (data: any) => void }) => 
     <Modal
       title={`Run Info`}
       visible={visible}
-      onCancel={() => props.onResult(null)}
+      onCancel={() => props.onResult(false)}
       onOk={async () => {
-        await new Promise((r) => setTimeout(r, 1000));
-        props.onResult(data);
+        const values = formRef.current.formApi.getValues();
+        await fetcher(`/project/${projectId}/run/${data.id}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            name: values.metadata.name,
+          }),
+        });
+        props.onResult(true);
       }}
       okText="Submit"
       centered
     >
-      <Form initValues={data}>
+      <Form initValues={data} ref={formRef as any}>
         <Form.Input field="id" label="ID" disabled></Form.Input>
-        <Form.Input field="name" label="Name"></Form.Input>
+        <Form.Input field="metadata.name" label="Name"></Form.Input>
       </Form>
     </Modal>
   );
