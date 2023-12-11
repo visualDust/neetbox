@@ -47,6 +47,7 @@ class EventMsg:
     project_id: str
     run_id: str
     event_type: str
+    series: str = None
     payload: Any = None
     event_id: int = -1
     who: str = None
@@ -60,6 +61,7 @@ class EventMsg:
             EVENT_TYPE_KEY: self.event_type,
             EVENT_ID_KEY: self.event_id,
             WHO_KEY: self.who,
+            SERIES_KEY: self.series,
             PAYLOAD_KEY: self.payload,
             TIMESTAMP_KEY: self.timestamp,
             HISTORY_LEN_KEY: self.history_len,
@@ -77,6 +79,7 @@ class EventMsg:
             run_id=src.get(RUN_ID_KEY),
             event_type=src.get(EVENT_TYPE_KEY),
             who=src.get(WHO_KEY),
+            series=src.get(SERIES_KEY),
             payload=src.get(PAYLOAD_KEY),
             event_id=src.get(EVENT_ID_KEY, -1),
             timestamp=src.get(TIMESTAMP_KEY, get_timestamp()),

@@ -143,7 +143,8 @@ class _NeetActionManager(metaclass=Singleton):
         _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, overwrite=True)
         connection.ws_send(
             event_type=EVENT_TYPE_NAME_STATUS,
-            payload={"action": _NeetActionManager.get_action_dict()},
+            series="action",
+            payload=_NeetActionManager.get_action_dict(),
         )
         return function
 

@@ -182,7 +182,10 @@ def _load_workspace_config(folder="."):
     _obtain_new_run_id()  # obtain new run id
     _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
     if not _IS_EXTENSION_INITED:
-        extension._init_extensions()
+        if not (
+            "NEETBOX_DAEMON_PROCESS" in os.environ and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
+        ):
+            extension._init_extensions()
         _IS_EXTENSION_INITED = True
 
 

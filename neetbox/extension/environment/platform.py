@@ -64,4 +64,6 @@ def load_send_platform_info():
 
     @connection.ws_subscribe(event_type_name=EVENT_TYPE_NAME_HANDSHAKE)
     def ws_send_platform_info(message: EventMsg):
-        connection.ws_send(event_type=EVENT_TYPE_NAME_STATUS, payload=dict({"platform": platform}))
+        connection.ws_send(
+            event_type=EVENT_TYPE_NAME_STATUS, series="platform", payload=dict(platform)
+        )

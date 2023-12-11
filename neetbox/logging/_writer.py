@@ -8,8 +8,10 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Callable, Iterable, Optional, Union
-from neetbox.config import get_run_id, get_project_id
+
 from rich.console import Console
+
+from neetbox.config import get_project_id, get_run_id
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
 from neetbox.utils import formatting
 
@@ -188,10 +190,11 @@ class _WebSocketLogWriter(LogWriter):
 
     def write(self, raw_log: RawLog):
         json_data = raw_log.json()
-        payload = {"whom": json_data["whom"], "message": json_data["message"], "series":json_data["series"]}
+        payload = {"whom": json_data["whom"], "message": json_data["message"]}
         if _WebSocketLogWriter.connection:
             _WebSocketLogWriter.connection.ws_send(
                 event_type="log",
+                series=json_data["series"],
                 payload=payload,
                 timestamp=json_data["timestamp"],
             )

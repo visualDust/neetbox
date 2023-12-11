@@ -140,7 +140,9 @@ class ClientConn(metaclass=Singleton):
             logger.ok(f"handshake succeed.")
             ClientConn.__ws_client = ws
             ClientConn.ws_send(  # send config
-                event_type=EVENT_TYPE_NAME_STATUS, payload={"config": get_module_level_config("@")}
+                event_type=EVENT_TYPE_NAME_STATUS,
+                series="config",
+                payload=get_module_level_config("@"),
             )
             # return # DO NOT return!
         if message.event_type not in ClientConn.__ws_subscription:
@@ -167,7 +169,13 @@ class ClientConn(metaclass=Singleton):
 
     @classmethod
     def ws_send(
-        cls, event_type: str, payload: dict, timestamp: str = None, event_id=-1, _history_len=-1
+        cls,
+        event_type: str,
+        payload: dict,
+        series=None,
+        timestamp: str = None,
+        event_id=-1,
+        _history_len=-1,
     ):
         try:
             message = EventMsg(
@@ -176,6 +184,7 @@ class ClientConn(metaclass=Singleton):
                 event_type=event_type,
                 event_id=event_id,
                 who=IdentityType.CLI,
+                series=series,
                 payload=payload,
                 timestamp=timestamp or get_timestamp(),
                 history_len=_history_len,

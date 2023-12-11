@@ -145,8 +145,8 @@ def add_image(name: str, image, dataformats: str = None):
             project_id=project_id,
             run_id=run_id,
             who=IdentityType.CLI,
+            series=name,
             event_type=EVENT_TYPE_NAME_IMAGE,
-            payload={SERIES_KEY: name},
         )
         connection.post(
             api=f"/image/{project_id}",

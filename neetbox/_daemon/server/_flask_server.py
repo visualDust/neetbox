@@ -67,14 +67,17 @@ def get_flask_server(debug=False):
         return _project_status_from_bridge(bridge)
 
     def _project_status_from_bridge(bridge: Bridge):
-        status = bridge.get_status()
-        last_run_id = bridge.get_run_ids()[-1][0]
+        run_id_info_list = bridge.get_run_ids()
+        last_run_id = run_id_info_list[-1][0]
         config_last_run = bridge.get_status(run_id=last_run_id, series="config")
+        run_id_info = [
+            {ID_KEY: r[0], TIMESTAMP_KEY: r[1], METADATA_KEY: r[2]} for r in run_id_info_list
+        ]
         return {
             PROJECT_ID_KEY: bridge.project_id,
             "online": bridge.is_online(),
             NAME_KEY: config_last_run[NAME_KEY],
-            STATUS_TABLE_NAME: status,
+            "runids": run_id_info,
         }
 
     def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, str]):
@@ -115,14 +118,6 @@ def get_flask_server(debug=False):
         )
         return result
 
-    @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/runids", methods=["GET"])
-    def get_run_ids_of_projectid(project_id: str):
-        if not Bridge.has(project_id):
-            abort(404)
-        result = Bridge.of_id(project_id).get_run_ids()
-        result = [{ID_KEY: r[0], TIMESTAMP_KEY: r[1], NAME_KEY: r[2]} for r in result]
-        return result
-
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["GET"])
     def get_status_of(project_id, run_id):
         if not Bridge.has(project_id):
@@ -131,11 +126,13 @@ def get_flask_server(debug=False):
         return result
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["PUT"])
-    def set_get_name_of_run_id(project_id: str, run_id: str):
-        name = request.json.get("name")
+    def set_get_metadata_of_run_id(project_id: str, run_id: str):
+        new_metadata = request.json
         bridge = Bridge.of_id(project_id)
-        name = bridge.historyDB.fetch_name_of_run_id(run_id=run_id, name=name)
-        return {RESULT_KEY: "success"}
+        old_metadata = bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id)  # get old metadata
+        for k, v in new_metadata:
+            old_metadata[k] = v
+        return bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id, metadata=new_metadata)
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["DELETE"])
     def delete_run_id(project_id: str, run_id: str):
@@ -157,11 +154,13 @@ def get_flask_server(debug=False):
         image_bytes = request.files["image"].read()
         lastrowid = Bridge.of_id(project_id).save_blob_to_history(
             table_name="image",
-            meta_data=message.payload,
             run_id=message.run_id,
+            series=message.series,
+            meta_data=message.payload,
             timestamp=message.timestamp,
             blob_data=image_bytes,
         )
+        message.payload = message.payload or {}
         message.payload[ID_KEY] = lastrowid
         Bridge.of_id(project_id).ws_send_to_frontends(message)
         return {"result": "ok", "id": lastrowid}
