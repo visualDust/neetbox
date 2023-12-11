@@ -159,6 +159,7 @@ def get_flask_server(debug=False):
             meta_data=message.payload,
             timestamp=message.timestamp,
             blob_data=image_bytes,
+            num_row_limit=message.history_len,
         )
         message.payload = message.payload or {}
         message.payload[ID_KEY] = lastrowid

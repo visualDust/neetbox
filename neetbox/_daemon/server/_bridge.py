@@ -140,13 +140,16 @@ class Bridge:
     def get_run_ids(self):
         return self.historyDB.get_run_ids()
 
-    def save_json_to_history(self, table_name, json_data, series=None, run_id=None, timestamp=None):
+    def save_json_to_history(
+        self, table_name, json_data, series=None, run_id=None, timestamp=None, num_row_limit=-1
+    ):
         lastrowid = Bridge.of_id(self.project_id).historyDB.write_json(
             table_name=table_name,
             json_data=json_data,
             series=series,
             run_id=run_id,
             timestamp=timestamp,
+            num_row_limit=num_row_limit,
         )
         return lastrowid
 
@@ -154,7 +157,14 @@ class Bridge:
         return self.historyDB.read_json(table_name=table_name, condition=condition)
 
     def save_blob_to_history(
-        self, table_name, meta_data, blob_data, series=None, run_id=None, timestamp=None
+        self,
+        table_name,
+        meta_data,
+        blob_data,
+        series=None,
+        run_id=None,
+        timestamp=None,
+        num_row_limit=-1,
     ):
         lastrowid = Bridge.of_id(self.project_id).historyDB.write_blob(
             table_name=table_name,
@@ -163,6 +173,7 @@ class Bridge:
             series=series,
             run_id=run_id,
             timestamp=timestamp,
+            num_row_limit=num_row_limit,
         )
         return lastrowid
 

@@ -1,8 +1,8 @@
 import collections
 import json
 import sqlite3
-from datetime import datetime, timedelta
-from enum import Enum
+from datetime import datetime
+from random import random
 from typing import Dict, Tuple, Union
 
 from neetbox._daemon._protocol import *
@@ -201,7 +201,7 @@ class DBConnection:
             return cls._id2dbc[project_id]
         return DBConnection(project_id)
 
-    def _execute(self, query, *args, fetch: DbQueryFetchType = None, **kwargs):
+    def _execute(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
         cur = self.connection.cursor()
         # logger.info(f"executing sql='{query}', params={args}")
         result = cur.execute(query, args)
@@ -214,7 +214,7 @@ class DBConnection:
                 result = result.fetchmany(kwargs["many"])
         return result, cur.lastrowid
 
-    def _query(self, query, *args, fetch: DbQueryFetchType = None, **kwargs):
+    def _query(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
         return self._execute(query, *args, fetch=fetch, **kwargs)
 
     def table_exist(self, table_name):
@@ -321,6 +321,17 @@ class DBConnection:
         result, _ = self._query(sql_query, *args, fetch=DbQueryFetchType.ALL)
         return [result for (result,) in result]
 
+    def do_limit_num_row_for(self, table_name: str, run_id: str, num_row_limit: int):
+        if num_row_limit <= 0:  # no limit or random not triggered
+            return
+        sql_query = f"SELECT count(*) from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id}"  # count rows for runid in specific table
+        num_rows, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+        if num_rows[0] > num_row_limit:  # num rows exceeded limit
+            sql_query = f"SELECT {ID_COLUMN_NAME} from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id} ORDER BY {ID_COLUMN_NAME} DESC LIMIT 1 OFFSET {num_row_limit - 1}"  # get max id to delete of row for specific run id
+            max_id_to_del, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+            sql_query = f"DELETE FROM {table_name} WHERE {ID_COLUMN_NAME} < {max_id_to_del[0]} AND {RUN_ID_COLUMN_NAME} = {run_id}"
+            self._query(sql_query)  # delete rows with smaller id and specific run id
+
     def write_json(
         self,
         table_name: str,
@@ -328,6 +339,7 @@ class DBConnection:
         series: str = None,
         run_id: str = None,
         timestamp: str = None,
+        num_row_limit=-1,
     ):
         if not isinstance(json_data, dict):
             json_data = json.loads(json_data)
@@ -344,6 +356,7 @@ class DBConnection:
         if isinstance(json_data, dict):
             json_data = json.dumps(json_data)
         _, lastrowid = self._execute(sql_query, timestamp, series, run_id, json_data)
+        self.do_limit_num_row_for(table_name, run_id, num_row_limit)
         return lastrowid
 
     def read_json(self, table_name: str, condition: QueryCondition = None):
@@ -411,6 +424,7 @@ class DBConnection:
         series: str = None,
         run_id: str = None,
         timestamp: str = None,
+        num_row_limit=-1,
     ):
         meta_data = meta_data or {}
         meta_data = meta_data if isinstance(meta_data, dict) else json.loads(meta_data)
@@ -430,6 +444,7 @@ class DBConnection:
 
         sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME}, {METADATA_COLUMN_NAME}, {BLOB_COLUMN_NAME}) VALUES (?, ?, ?, ?, ?)"
         _, lastrowid = self._execute(sql_query, timestamp, series, run_id, meta_data, blob_data)
+        self.do_limit_num_row_for(table_name, run_id, num_row_limit)
         return lastrowid
 
     def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):

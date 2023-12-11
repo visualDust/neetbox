@@ -133,19 +133,6 @@ def get_web_socket_server(config, debug=False):
             console.print(table)
         return
 
-    def on_event_type_status(message: EventMsg):
-        bridge = Bridge.of_id(message.project_id)
-        bridge.set_status(run_id=message.run_id, series=message.series, value=message.payload)
-
-    def on_event_type_hyperparams(message: EventMsg):
-        bridge = Bridge.of_id(message.project_id)
-        current_hyperparams = bridge.get_status(
-            run_id=message.run_id, series=EVENT_TYPE_NAME_HPARAMS
-        )[STATUS_TABLE_NAME]
-        current_hyperparams[message.series] = message.payload
-        message.payload = {EVENT_TYPE_NAME_HPARAMS: current_hyperparams}
-        on_event_type_status(message)
-
     def on_event_type_json(
         message: EventMsg,
         forward_to: IdentityType = IdentityType.OTHERS,
@@ -175,8 +162,22 @@ def get_web_socket_server(config, debug=False):
                 series=message.series,
                 run_id=message.run_id,
                 timestamp=message.timestamp,
+                num_row_limit=message.history_len,
             )
         return  # return after handling log forwarding
+
+    def on_event_type_status(message: EventMsg):
+        bridge = Bridge.of_id(message.project_id)
+        bridge.set_status(run_id=message.run_id, series=message.series, value=message.payload)
+
+    def on_event_type_hyperparams(message: EventMsg):
+        bridge = Bridge.of_id(message.project_id)
+        current_hyperparams = bridge.get_status(
+            run_id=message.run_id, series=EVENT_TYPE_NAME_HPARAMS
+        )[STATUS_TABLE_NAME]
+        current_hyperparams[message.series] = message.payload
+        message.payload = {EVENT_TYPE_NAME_HPARAMS: current_hyperparams}
+        on_event_type_status(message)
 
     def handle_ws_message(client, server: WebsocketServer, message):
         message = EventMsg.loads(message)
