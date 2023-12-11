@@ -15,9 +15,8 @@ from uuid import uuid4
 
 import toml
 
-from neetbox.core import Registry
 from neetbox.utils.framing import get_frame_module_traceback
-from neetbox.utils.massive import update_dict_recursively
+from neetbox.utils.massive import check_read_toml, update_dict_recursively
 
 CONFIG_FILE_NAME = f"neetbox.toml"
 NEETBOX_VERSION = version("neetbox")
@@ -27,9 +26,6 @@ _DEFAULT_WORKSPACE_CONFIG = {
     "version": NEETBOX_VERSION,
     "projectid": str(uuid4()),  # later will be overwrite by workspace config file
     "logging": {"level": "DEBUG", "logdir": "logs"},
-    "pipeline": {
-        "updateInterval": 0.5,
-    },
     "extension": {
         "autoload": True,
     },
@@ -56,8 +52,13 @@ def _obtain_new_run_id():
     return _DEFAULT_WORKSPACE_CONFIG["runid"]
 
 
-_QUERY_ADD_EXTENSION_DEFAULT_CONFIG = Registry("__QUERY_ADD_EXTENSION_DEFAULT_CONFIG")
-export_default_config = _QUERY_ADD_EXTENSION_DEFAULT_CONFIG.register
+_QUERY_ADD_EXTENSION_DEFAULT_CONFIG = []
+
+
+def export_default_config(func):
+    global _QUERY_ADD_EXTENSION_DEFAULT_CONFIG
+    _QUERY_ADD_EXTENSION_DEFAULT_CONFIG.append(func)
+    return func
 
 
 def _build_global_config_dict_for_module(module, local_config):
@@ -109,7 +110,7 @@ def _update_default_config_from_config_register():
         e: any possible exception
     """
     global _DEFAULT_WORKSPACE_CONFIG
-    for _, fun in _QUERY_ADD_EXTENSION_DEFAULT_CONFIG.items():
+    for fun in _QUERY_ADD_EXTENSION_DEFAULT_CONFIG:
         try:
             local_config = fun()
             parsed_local_config = _build_global_config_dict_for_module(
@@ -135,6 +136,7 @@ def _init_workspace(path=None, **kwargs) -> bool:
         try:  # creating config file using default config
             with open(config_file_path, "w+") as config_file:
                 import neetbox.extension as extension
+
                 extension._scan_sub_modules()
                 _update_default_config_from_config_register()  # load custom config into default config
                 _config = _DEFAULT_WORKSPACE_CONFIG
@@ -163,23 +165,35 @@ def _check_if_workspace_config_valid(path=None) -> bool:
         return False
 
 
+_IS_EXTENSION_INITED = False
+
+
 def _load_workspace_config(folder="."):
+    global _IS_EXTENSION_INITED
     config_file_path = _check_if_workspace_config_valid(
         path=folder
     )  # check if config file is valid
     if not config_file_path:  # failed to load workspace config, exiting
         raise RuntimeError(f"Config file not exists in '{folder}'")
+    import neetbox.extension as extension
+
+    extension._scan_sub_modules()
     _update_default_config_from_config_register()  # load custom config into default config
     _obtain_new_run_id()  # obtain new run id
     _update_default_workspace_config_with(toml.load(config_file_path))  # load config file in
+    if not _IS_EXTENSION_INITED:
+        if not (
+            "NEETBOX_DAEMON_PROCESS" in os.environ and os.environ["NEETBOX_DAEMON_PROCESS"] == "1"
+        ):
+            extension._init_extensions()
+        _IS_EXTENSION_INITED = True
 
-def _create_load_workspace(path=None):
-    is_workspace = _check_if_workspace_config_valid(path)
+
+def _create_load_workspace(folder="."):
+    is_workspace = check_read_toml(path=os.path.join(folder, CONFIG_FILE_NAME))
     if not is_workspace:
-        _init_workspace(path)
+        _init_workspace(folder)
     _load_workspace_config()
-    import neetbox.extension as extension
-    extension._scan_sub_modules()
 
 
 def _get_module_level_config(module: Union[str, types.ModuleType] = None, **kwargs):

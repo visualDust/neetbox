@@ -47,14 +47,14 @@ describe("test dashboard", () => {
   });
 
   it("can add images", () => {
-    cy.contains("button", "send_image").click();
+    cy.contains("button", "Generate random noise image").click();
     cy.contains("button", "Run").click().type("{esc}");
     cy.wait(1000);
-    const indexInput = () => cy.contains("h4", "weights visualize").parent().find("input");
+    const indexInput = () => cy.contains("h4", "random noise").parent().find("input");
     indexInput().then((x) => {
       const beforeLength = parseInt(x.val());
       cy.log(`it had ${beforeLength} images before sending one more`);
-      cy.contains("button", "send_image").click();
+      cy.contains("button", "Generate random noise image").click();
       cy.contains("button", "Run").click().type("{esc}");
       indexInput().should("have.value", beforeLength + 1);
     });

@@ -1,11 +1,10 @@
 import { memo, useEffect, useState } from "react";
 import { Button, Card, Input, Popover, Space, Typography } from "@douyinfe/semi-ui";
 import { IconDownload } from "@douyinfe/semi-icons";
-import { useCurrentProject, useProjectWebSocket } from "../../../hooks/useProject";
-import { useAPI } from "../../../services/api";
+import { useCurrentProject, useProjectData, useProjectSeries } from "../../../hooks/useProject";
 import Loading from "../../loading";
-import { createCondition } from "../../../utils/condition";
 import { CenterBox } from "../../centerBox";
+import { API_BASEURL } from "../../../services/api";
 
 export const Images = memo(() => {
   return (
@@ -16,47 +15,38 @@ export const Images = memo(() => {
 });
 
 export const AllImageViewers = memo(() => {
-  const { projectId } = useCurrentProject()!;
-  const { data: series, mutate } = useAPI(`/series/${projectId}/image`);
-  useProjectWebSocket(projectId, "image", (msg) => {
-    const newSeries = msg.metadata.series;
-    if (newSeries != null && series && !series.includes(newSeries)) {
-      mutate([...series, newSeries]);
-    }
-  });
-  return series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading />;
+  const { projectId, runId } = useCurrentProject()!;
+  const series = useProjectSeries(projectId, runId!, "image");
+  return series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading text="Images loading" />;
 });
 
 const SeriesViewer = memo(({ series }: { series: string }) => {
   const { projectId, runId } = useCurrentProject()!;
-  const { data, mutate } = useAPI(
-    runId == null
-      ? null
-      : `/image/${projectId}/history?${createCondition({
-          series,
-          limit: 1000,
-          order: {
-            id: "DESC",
-          },
-          runId,
-        })}`,
-  );
-  const [index, setIndex] = useState(0);
-  useProjectWebSocket(projectId, "image", (msg) => {
-    if (msg.metadata.series === series) {
-      mutate([msg, ...data], { revalidate: false });
-      if (index > 0) {
-        setIndex((i) => i + 1);
-      }
-    }
+  const data = useProjectData({
+    type: "image",
+    disable: !runId,
+    projectId,
+    runId,
+    conditions: {
+      series,
+    },
+    limit: 1000,
+    transformHTTP: (x) => ({ id: x.imageId, ...JSON.parse(x.metadata) }),
+    transformWS: (x) => ({ ...x, ...x.payload }),
+    onNewWSData: () => {
+      if (index == length - 1) setIndex((i) => i + 1);
+    },
   });
-  const img = data?.[index];
+  const [realIndex, setIndex] = useState(-1);
   const length = data?.length ?? 0;
+  const index = realIndex < 0 ? length - 1 : realIndex;
+  const img = data?.[index];
   const has = (delta: number) => Boolean(data?.[index + delta]);
-  const go = (delta: number) => {
-    setIndex(Math.max(0, Math.min(index + delta, length - 1)));
+  const move = (delta: number) => {
+    goto(Math.max(0, Math.min(index + delta, length - 1)));
   };
-  const imgSrc = img ? `/web/image/${projectId}/${img.imageId}` : null;
+  const goto = (newIndex: number) => setIndex(newIndex == length - 1 ? -1 : newIndex);
+  const imgSrc = img ? `${API_BASEURL}/project/${projectId}/image/${img.id}` : null;
   return (
     <Card bodyStyle={{ position: "relative" }}>
       <Space vertical>
@@ -74,7 +64,7 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
         {img ? (
           <a href={imgSrc!} target="_blank" style={{ display: "block", position: "relative" }}>
             <img
-              style={{ background: "white", objectFit: "contain", width: "450px", height: "300px" }}
+              style={{ display: "block", objectFit: "contain", width: "450px", height: "300px" }}
               src={imgSrc!}
             />
           </a>
@@ -86,28 +76,28 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
           <Loading width="450px" height="300px" />
         )}
         <Space>
-          <Button onClick={() => go(+10)} disabled={!has(1)}>
+          <Button onClick={() => move(-10)} disabled={!has(-1)}>
             {"<<"}
           </Button>
-          <Button onClick={() => go(+1)} disabled={!has(1)}>
+          <Button onClick={() => move(-1)} disabled={!has(-1)}>
             {"<"}
           </Button>
           <InputChangeOnEnter
             type="text"
-            value={length - index}
+            value={index + 1}
             onChange={(x) => {
-              const i = length - parseInt(x);
+              const i = parseInt(x) - 1;
               if (data?.[i]) {
-                setIndex(i);
+                goto(i);
               }
             }}
             style={{ width: "60px" }}
           />{" "}
           / {data?.length ?? "..."}
-          <Button onClick={() => go(-1)} disabled={!has(-1)}>
+          <Button onClick={() => move(+1)} disabled={!has(1)}>
             {">"}
           </Button>
-          <Button onClick={() => go(-10)} disabled={!has(-1)}>
+          <Button onClick={() => move(+10)} disabled={!has(1)}>
             {">>"}
           </Button>
         </Space>

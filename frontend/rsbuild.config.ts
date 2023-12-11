@@ -10,7 +10,7 @@ export default defineConfig({
     rspack: (config) => {
       config.plugins!.push(
         new SemiRspackPlugin({
-          theme: "@semi-bot/semi-theme-nyx-c",
+          // theme: "@semi-bot/semi-theme-nyx-c",
         }),
       );
       // config.optimization = { ...config.optimization, minimize: false };
@@ -39,7 +39,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/web/": {
+      "/api/": {
         target: server.href,
       },
       "/ws/": {
@@ -48,10 +48,11 @@ export default defineConfig({
       },
     },
   },
-  dev: {
-    writeToDisk: true,
-  },
+  // dev: {
+  //   writeToDisk: true,
+  // },
   output: {
+    assetPrefix: "/web/",
     distPath: {
       root: "../neetbox/frontend_dist",
     },

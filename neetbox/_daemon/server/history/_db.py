@@ -1,48 +1,15 @@
 import collections
 import json
 import sqlite3
-from datetime import datetime, timedelta
-from enum import Enum
-from importlib.metadata import version
-from typing import Dict, List, Tuple, Union
+from datetime import datetime
+from random import random
+from typing import Dict, Tuple, Union
 
+from neetbox._daemon._protocol import *
 from neetbox.logging import logger
 from neetbox.logging.formatting import LogStyle
 
-logger = logger("NEETBOX HISTORY", LogStyle(skip_writers=["ws", "file"]))
-
-NEETBOX_VERSION = version("neetbox")
-HISTORY_FILE_ROOT = ".neethistory"
-HISTORY_FILE_TYPE_NAME = "neetory"
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.SSS
-
-
-class FetchType(Enum):
-    ALL = "all"
-    ONE = "one"
-    MANY = "many"
-
-
-class SortType(Enum):
-    ASC = "ASC"
-    DESC = "DESC"
-
-
-# === COLUMN NAMES ===
-ID_COLUMN_NAME = "id"
-TIMESTAMP_COLUMN_NAME = "timestamp"
-SERIES_COLUMN_NAME = "series"
-RUN_ID_COLUMN_NAME = "runid"
-JSON_COLUMN_NAME = METADATA_COLUMN_NAME = "metadata"
-BLOB_COLUMN_NAME = "data"
-
-# === TABLE NAMES ===
-PROJECT_ID_TABLE_NAME = "projectid"
-VERSION_TABLE_NAME = "version"
-RUN_IDS_TABLE_NAME = "runid"
-STATUS_TABLE_NAME = "status"
-LOG_TABLE_NAME = "log"
-IMAGE_TABLE_NAME = "image"
+logger = logger("NEETBOX", LogStyle(skip_writers=["ws", "file"]))
 
 
 class QueryCondition:
@@ -51,9 +18,9 @@ class QueryCondition:
         id: Union[Tuple[int, int], int] = None,
         timestamp: Union[Tuple[str, str], str] = None,
         series: str = None,
-        run_id: str = None,
+        run_id: Union[str, int] = None,
         limit: int = None,
-        order: Dict[str, SortType] = {},
+        order: Dict[str, DbQuerySortType] = {},
     ) -> None:
         self.id_range = id if isinstance(id, tuple) else (id, None)
         self.timestamp_range = timestamp if isinstance(timestamp, tuple) else (timestamp, None)
@@ -161,7 +128,7 @@ class QueryCondition:
         if self.order:
             for _col_name, _sort in self.order.items():
                 _order_cond += (
-                    f"{_col_name} {_sort.value if isinstance(_sort,SortType) else _sort}, "
+                    f"{_col_name} {_sort.value if isinstance(_sort,DbQuerySortType) else _sort}, "
                 )
             _order_cond = _order_cond[:-2]  # remove last ','
         # === LIMIT ===
@@ -204,6 +171,8 @@ class DBConnection:
         new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
         new_dbc.connection = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
+        new_dbc.connection.execute("pragma journal_mode=wal")  # set journal mode WAL
+        new_dbc.connection.execute("PRAGMA foreign_keys = ON")  # enable foreign keys features
         new_dbc._inited_tables = collections.defaultdict(lambda: False)
         # check neetbox version
         _db_file_project_id = new_dbc.fetch_db_project_id(project_id)
@@ -232,30 +201,30 @@ class DBConnection:
             return cls._id2dbc[project_id]
         return DBConnection(project_id)
 
-    def _execute(self, query, *args, fetch: FetchType = None, **kwargs):
+    def _execute(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
         cur = self.connection.cursor()
         # logger.info(f"executing sql='{query}', params={args}")
         result = cur.execute(query, args)
         if fetch:
-            if fetch == FetchType.ALL:
+            if fetch == DbQueryFetchType.ALL:
                 result = result.fetchall()
-            elif fetch == FetchType.ONE:
+            elif fetch == DbQueryFetchType.ONE:
                 result = result.fetchone()
-            elif fetch == FetchType.MANY:
+            elif fetch == DbQueryFetchType.MANY:
                 result = result.fetchmany(kwargs["many"])
         return result, cur.lastrowid
 
-    def _query(self, query, *args, fetch: FetchType = None, **kwargs):
-        return self._execute(query=query, *args, fetch=fetch, **kwargs)
+    def _query(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
+        return self._execute(query, *args, fetch=fetch, **kwargs)
 
     def table_exist(self, table_name):
         sql_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
-        result, _ = self._query(sql_query, fetch=FetchType.ALL)
+        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         return result != []
 
     def get_table_names(self):
         sql_query = "SELECT name FROM sqlite_master;"
-        table_names, _ = self._query(sql_query, fetch=FetchType.ALL)
+        table_names, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         return table_names
 
     def fetch_db_version(self, default=None):
@@ -264,7 +233,7 @@ class DBConnection:
             self._execute(sql_query)
             self._inited_tables[VERSION_TABLE_NAME] = True
         sql_query = f"SELECT {VERSION_TABLE_NAME} FROM {VERSION_TABLE_NAME}"
-        _version, _ = self._query(sql_query, fetch=FetchType.ONE)
+        _version, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         if _version is None:
             if default is None:
                 raise RuntimeError(
@@ -281,7 +250,7 @@ class DBConnection:
             self._execute(sql_query)
             self._inited_tables[PROJECT_ID_TABLE_NAME] = True
         sql_query = f"SELECT {PROJECT_ID_TABLE_NAME} FROM {PROJECT_ID_TABLE_NAME}"
-        _projectid, _ = self._query(sql_query, fetch=FetchType.ONE)
+        _projectid, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         if _projectid is None:
             if default is None:
                 raise RuntimeError(
@@ -294,11 +263,11 @@ class DBConnection:
 
     def fetch_id_of_run_id(self, run_id: str, timestamp: str = None):
         if not self._inited_tables[RUN_IDS_TABLE_NAME]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {RUN_IDS_TABLE_NAME} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {RUN_ID_COLUMN_NAME} TEXT NON NULL, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, CONSTRAINT run_id_unique UNIQUE ({RUN_ID_COLUMN_NAME}));"
+            sql_query = f"CREATE TABLE IF NOT EXISTS {RUN_IDS_TABLE_NAME} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {RUN_ID_COLUMN_NAME} TEXT NON NULL, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {METADATA_COLUMN_NAME} TEXT, CONSTRAINT run_id_unique UNIQUE ({RUN_ID_COLUMN_NAME}));"
             self._execute(sql_query)
             self._inited_tables[RUN_IDS_TABLE_NAME] = True
         sql_query = f"SELECT {ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {RUN_ID_COLUMN_NAME} == '{run_id}'"
-        _id, _ = self._query(sql_query, fetch=FetchType.ONE)
+        _id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         if _id is None:
             timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
             sql_query = f"INSERT INTO {RUN_IDS_TABLE_NAME}({RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}) VALUES (?, ?)"
@@ -306,25 +275,62 @@ class DBConnection:
             return lastrowid
         return _id[0]
 
+    def fetch_metadata_of_run_id(self, run_id: str, metadata: Union[dict, str] = None):
+        id = self.fetch_id_of_run_id(run_id=run_id)
+        if metadata:  # if update name
+            metadata = json.dumps(metadata) if isinstance(metadata, dict) else metadata
+            sql_query = f"UPDATE {RUN_IDS_TABLE_NAME} SET {METADATA_COLUMN_NAME} = ? WHERE {ID_COLUMN_NAME} = ?"
+            _, _ = self._execute(sql_query, metadata, id)
+        # get name
+        sql_query = f"SELECT {METADATA_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id}"
+        (metadata,), _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+        metadata = (
+            json.loads(metadata) if metadata else {}
+        )  # if does not have metadata, return an empty one
+        return metadata
+
     def run_id_of_id(self, id_of_run_id):
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
-        run_id, _ = self._query(sql_query, fetch=FetchType.ONE)
+        run_id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         return run_id[0]
 
     def get_run_ids(self):
         if not self.table_exist(RUN_IDS_TABLE_NAME):
             raise RuntimeError("should not get run id of id before run id table creation")
-        sql_query = f"SELECT {RUN_ID_COLUMN_NAME},{TIMESTAMP_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
+        sql_query = f"SELECT {RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}, {METADATA_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
         result, _ = self._query(sql_query)
-        result = [{run_id: timestamp} for run_id, timestamp in result]
+        result = [
+            (run_id, timestamp, json.loads(metadata) if metadata else {})
+            for run_id, timestamp, metadata in result
+        ]
         return result
 
-    def get_series_of_table(self, table_name):
+    def delete_run_id(self, run_id: str):
+        sql_query = f"DELETE FROM {RUN_IDS_TABLE_NAME} where {RUN_ID_COLUMN_NAME} = ?"
+        _, _ = self._execute(sql_query, run_id)
+
+    def get_series_of_table(self, table_name, run_id=None):
         if not self.table_exist(table_name):
             return []
-        sql_query = f"SELECT DISTINCT series FROM {table_name}"
-        result, _ = self._query(sql_query, fetch=FetchType.ALL)
+        if run_id is not None:
+            sql_query = f"SELECT DISTINCT t.series as series FROM {table_name} t RIGHT JOIN {RUN_IDS_TABLE_NAME} r ON r.runid == ? WHERE t.runid == r.id"
+            args = (run_id,)
+        else:
+            sql_query = f"SELECT DISTINCT series FROM {table_name}"
+            args = ()
+        result, _ = self._query(sql_query, *args, fetch=DbQueryFetchType.ALL)
         return [result for (result,) in result]
+
+    def do_limit_num_row_for(self, table_name: str, run_id: str, num_row_limit: int):
+        if num_row_limit <= 0:  # no limit or random not triggered
+            return
+        sql_query = f"SELECT count(*) from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id}"  # count rows for runid in specific table
+        num_rows, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+        if num_rows[0] > num_row_limit:  # num rows exceeded limit
+            sql_query = f"SELECT {ID_COLUMN_NAME} from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id} ORDER BY {ID_COLUMN_NAME} DESC LIMIT 1 OFFSET {num_row_limit - 1}"  # get max id to delete of row for specific run id
+            max_id_to_del, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+            sql_query = f"DELETE FROM {table_name} WHERE {ID_COLUMN_NAME} < {max_id_to_del[0]} AND {RUN_ID_COLUMN_NAME} = {run_id}"
+            self._query(sql_query)  # delete rows with smaller id and specific run id
 
     def write_json(
         self,
@@ -333,19 +339,14 @@ class DBConnection:
         series: str = None,
         run_id: str = None,
         timestamp: str = None,
+        num_row_limit=-1,
     ):
         if not isinstance(json_data, dict):
             json_data = json.loads(json_data)
-        timestamp = (
-            json_data[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in json_data else timestamp
-        )
-        timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-        series = json_data[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in json_data else series
-        run_id = json_data[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in json_data else run_id
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
         if not self._inited_tables[table_name]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {JSON_COLUMN_NAME} TEXT NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
+            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {JSON_COLUMN_NAME} TEXT NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}) ON DELETE CASCADE);"
             self._execute(sql_query)
             sql_query = f"CREATE INDEX IF NOT EXISTS series_and_runid_index ON {table_name} ({SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME})"
             self._execute(sql_query)
@@ -355,7 +356,65 @@ class DBConnection:
         if isinstance(json_data, dict):
             json_data = json.dumps(json_data)
         _, lastrowid = self._execute(sql_query, timestamp, series, run_id, json_data)
+        self.do_limit_num_row_for(table_name, run_id, num_row_limit)
         return lastrowid
+
+    def read_json(self, table_name: str, condition: QueryCondition = None):
+        if not self.table_exist(table_name):
+            return []
+        if isinstance(condition.run_id, str):
+            condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
+        condition = condition.dumps() if condition else ""
+        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
+        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        try:
+            result = [
+                {
+                    ID_COLUMN_NAME: w,
+                    TIMESTAMP_COLUMN_NAME: x,
+                    SERIES_COLUMN_NAME: y,
+                    JSON_COLUMN_NAME: json.loads(z),
+                }
+                for w, x, y, z in result
+            ]
+        except:
+            print(result)
+            raise
+        return result
+
+    def set_status(self, run_id: str, series: str, json_data):
+        if not (isinstance(json_data, str) or isinstance(json_data, dict)):
+            raise
+        if isinstance(json_data, str):
+            json_data = json.loads(json_data)
+        if run_id:
+            run_id = self.fetch_id_of_run_id(run_id)
+        if not self._inited_tables[STATUS_TABLE_NAME]:  # create if there is no version table
+            sql_query = f"CREATE TABLE IF NOT EXISTS {STATUS_TABLE_NAME} ({ID_COLUMN_NAME} INTEGER PRIMARY KEY,{RUN_ID_COLUMN_NAME} INTEGER NON NULL, {SERIES_COLUMN_NAME} TEXT NON NULL, {JSON_COLUMN_NAME} TEXT NON NULL, UNIQUE({RUN_ID_COLUMN_NAME}, {SERIES_COLUMN_NAME}) ON CONFLICT REPLACE, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}) ON DELETE CASCADE);"
+            self._execute(sql_query)
+            self._inited_tables[STATUS_TABLE_NAME] = True
+        sql_query = f"INSERT OR REPLACE INTO {STATUS_TABLE_NAME}({RUN_ID_COLUMN_NAME},{SERIES_COLUMN_NAME}, {JSON_COLUMN_NAME}) VALUES (?, ?, ?)"
+        if isinstance(json_data, dict):
+            json_data = json.dumps(json_data)
+        _, lastrowid = self._execute(sql_query, run_id, series, json_data)
+        return lastrowid
+
+    def get_status(self, run_id: str = None, series: str = None):
+        if not self.table_exist(STATUS_TABLE_NAME):
+            return {}
+        condition = QueryCondition(run_id=run_id, series=series)
+        if isinstance(condition.run_id, str):
+            condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
+        condition = condition.dumps() if condition else ""
+        sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {condition}"
+        query_result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        result = {}
+        for id_of_runid, series_name, value in query_result:
+            _run_id = self.run_id_of_id(id_of_runid)
+            if _run_id not in result:
+                result[_run_id] = {}
+            result[_run_id][series_name] = json.loads(value)
+        return result
 
     def write_blob(
         self,
@@ -365,14 +424,10 @@ class DBConnection:
         series: str = None,
         run_id: str = None,
         timestamp: str = None,
+        num_row_limit=-1,
     ):
+        meta_data = meta_data or {}
         meta_data = meta_data if isinstance(meta_data, dict) else json.loads(meta_data)
-        timestamp = (
-            meta_data[TIMESTAMP_COLUMN_NAME] if TIMESTAMP_COLUMN_NAME in meta_data else timestamp
-        )
-        timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-        series = meta_data[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in meta_data else series
-        run_id = meta_data[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in meta_data else run_id
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
         if isinstance(blob_data, bytes):
@@ -380,8 +435,8 @@ class DBConnection:
         if isinstance(meta_data, dict):
             meta_data = json.dumps(meta_data)
 
-        if not self._inited_tables[table_name]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
+        if not self._inited_tables[table_name]:  # create if not exist
+            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}) ON DELETE CASCADE);"
             self._execute(sql_query)
             sql_query = f"CREATE INDEX IF NOT EXISTS series_and_runid_index ON {table_name} ({SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME})"
             self._execute(sql_query)
@@ -389,56 +444,15 @@ class DBConnection:
 
         sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME}, {METADATA_COLUMN_NAME}, {BLOB_COLUMN_NAME}) VALUES (?, ?, ?, ?, ?)"
         _, lastrowid = self._execute(sql_query, timestamp, series, run_id, meta_data, blob_data)
+        self.do_limit_num_row_for(table_name, run_id, num_row_limit)
         return lastrowid
-
-    def read_json(self, table_name: str, condition: QueryCondition = None):
-        if not self.table_exist(table_name):
-            return []
-        if condition.run_id:
-            condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
-        condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
-        result, _ = self._query(sql_query, fetch=FetchType.ALL)
-        try:
-            result = [
-                {ID_COLUMN_NAME: x, TIMESTAMP_COLUMN_NAME: y, JSON_COLUMN_NAME: json.loads(z)}
-                for x, y, z in result
-            ]
-        except:
-            print(result)
-            raise
-        return result
 
     def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
         if not self.table_exist(table_name):
             return []
-        if condition.run_id:
+        if isinstance(condition.run_id, str):
             condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
-        result, _ = self._query(sql_query, fetch=FetchType.ALL)
+        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         return result
-
-
-if __name__ == "__main__":
-    conn = DBConnection(project_id="test_project_id", path=".ignore/some.db")
-    conn.write_json(
-        table_name="test_log",
-        json_data={
-            "enable": True,
-            "host": "localhost",
-            "port": 5000,
-            "allowIpython": False,
-            "mute": True,
-            "mode": "detached",
-            "uploadInterval": 10,
-        },
-    )
-    for item in conn.read_json(
-        table_name="test_log",
-        condition=QueryCondition(
-            timestamp=(datetime.now() - timedelta(days=1)).strftime(DATETIME_FORMAT)
-        ),
-    ):
-        print(item)
-        print()

@@ -12,7 +12,6 @@ import GPUtil
 import psutil
 from GPUtil import GPU
 
-from neetbox.client._signal_and_slot import SYSTEM_CHANNEL, watch
 from neetbox.config import export_default_config, get_module_level_config
 from neetbox.extension import on_workspace_loaded
 from neetbox.utils import pkg
@@ -95,6 +94,8 @@ class _Hardware(dict, metaclass=Singleton):
         self._do_watch = True
         self._update_interval = intervel
         if not self._watcher or not self._watcher.is_alive():
+            from neetbox._daemon._protocol import EVENT_TYPE_NAME_HARDWARE
+            from neetbox._daemon.client._client import connection
 
             def watcher_fun(env_instance: _Hardware, do_update_gpus: bool):
                 while env_instance._do_watch:
@@ -111,7 +112,7 @@ class _Hardware(dict, metaclass=Singleton):
                         )
                     # update memory usage
                     ram_stat = psutil.virtual_memory()
-                    self["ram"] = {
+                    env_instance["ram"] = {
                         "total": ram_stat[0] / 1e9,
                         "available": ram_stat[1] / 1e9,
                         "used": ram_stat[3] / 1e9,
@@ -122,6 +123,11 @@ class _Hardware(dict, metaclass=Singleton):
                         env_instance["gpus"] = [_GPU_STAT.parse(_gpu) for _gpu in GPUtil.getGPUs()]
                     env_instance[""] = psutil.cpu_stats()
                     time.sleep(env_instance._update_interval)
+                    connection.ws_send(
+                        event_type=EVENT_TYPE_NAME_HARDWARE,
+                        payload=env_instance.json(),
+                        _history_len=1000,
+                    )
 
             self._watcher = Thread(target=watcher_fun, args=(self, self._with_gpu), daemon=True)
             self._watcher.start()
@@ -131,7 +137,7 @@ class _Hardware(dict, metaclass=Singleton):
 hardware = _Hardware()
 
 
-@export_default_config()
+@export_default_config
 def return_default_config() -> dict:
     return {"monit": True, "interval": 0.5}
 
@@ -142,8 +148,3 @@ def load_monit_hardware():
     cfg = get_module_level_config()
     if cfg["monit"]:  # if do monit hardware
         hardware.set_update_intervel(cfg["interval"])
-
-        # watch updates in daemon
-        @watch(name="hardware", _channel=SYSTEM_CHANNEL, interval=cfg["interval"], initiative=False)
-        def update_env_stat():
-            return hardware.json()

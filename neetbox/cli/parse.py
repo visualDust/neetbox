@@ -6,17 +6,19 @@ from rich.console import Console
 from rich.table import Table
 
 import neetbox._daemon as daemon_module
+import neetbox.config._cli_user_config as cliconfig
 from neetbox._daemon.server._server import server_process
 from neetbox.config._workspace import (
-    _check_if_workspace_config_valid,
     _get_module_level_config,
     _init_workspace,
     _load_workspace_config,
 )
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
+from neetbox.utils.massive import check_read_toml
 
 from ._client_web_apis import *
+from .app._app import NeetBoxApp
 
 console = Console()
 
@@ -49,7 +51,8 @@ def main(ctx, verbose: bool):
 
 
 def _try_load_workspace_if_applicable():
-    is_workspace = _check_if_workspace_config_valid()
+    CONFIG_FILE_NAME = f"neetbox.toml"
+    is_workspace = check_read_toml(CONFIG_FILE_NAME)
     if is_workspace:
         _load_workspace_config()
 
@@ -60,21 +63,24 @@ def list_command():
     _try_load_workspace_if_applicable()
     try:
         _response = get_list()
-
         table = Table(title="Running NEETBOX Projects")
-
-        table.add_column("name", justify="center", style="cyan")
-        table.add_column("project id", justify="center", style="magenta", no_wrap=True)
-        table.add_column("config", justify="center", style="green")
+        table.add_column(NAME_KEY, justify="center", style="magenta", no_wrap=True)
+        table.add_column("online", justify="center", style="cyan")
+        table.add_column("project id", justify="center", no_wrap=True)
+        table.add_column("runs", justify="center", style="green")
 
         for pjt in _response:
-            config = pjt["config"]
-            table.add_row(config["name"], pjt["id"], json.dumps(config))
+            table.add_row(
+                pjt[NAME_KEY],
+                str(pjt["online"]),
+                pjt[PROJECT_ID_KEY],
+                "\n".join(pjt[STATUS_TABLE_NAME].keys()),
+            )
 
         console.print(table)
 
         if not len(_response):
-            console.print("*There is no running project")
+            console.print("*There is project no server")
 
     except Exception as e:  # noqa
         logger.log("Could not fetch data. Is there any project with NEETBOX running?")
@@ -141,8 +147,6 @@ def shutdown_server(port):
 def init(name: str):
     """initialize current folder as workspace and generate the config file from defaults"""
     try:
-        import neetbox.extension as extension
-        extension._scan_sub_modules()
         init_succeed = _init_workspace(name=name)
         if init_succeed:
             logger.console_banner("neetbox", font="ansishadow")

@@ -9,7 +9,7 @@ let lastNotification: Notification | null = null;
 export function checkLogForNotification(log: LogData, project: Project) {
   if (NotificationSeries.includes(log.series)) {
     const title = `${log.series} from ${project.nameOrId}`;
-    const body = `${log.whom}: ${log.msg}`;
+    const body = `${log.whom}: ${log.message}`;
     addNotice({
       id: "log-mentions",
       type: log.series == "mention" ? "info" : "error",

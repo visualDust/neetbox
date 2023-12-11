@@ -1,17 +1,18 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo } from "react";
 import { Divider } from "@douyinfe/semi-ui";
-import PlatformProps from "../../components/dashboard/project/platformProps";
-import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
+import { ProjectContext, useProjectRunIds, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/dashboard/project/logs/logs";
 import { Actions } from "../../components/dashboard/project/actions";
-import Loading from "../../components/loading";
 import { Hardware } from "../../components/dashboard/project/hardware";
 import { SectionTitle } from "../../components/sectionTitle";
 import { AppTitle } from "../../components/appTitle";
 import { ImagesAndScatters } from "../../components/dashboard/project/imagesAndScatters";
 import { getProject } from "../../services/projects";
 import { RunSelect } from "../../components/dashboard/project/runSelect";
+import PlatformProps from "../../components/dashboard/project/platformProps";
+import Loading from "../../components/loading";
+import { addNotice } from "../../utils/notification";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
@@ -20,29 +21,53 @@ export default function ProjectDashboardButRecreateOnRouteChange() {
 
 function ProjectDashboard() {
   const { projectId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   if (!projectId) throw new Error("projectId required");
 
-  const data = useProjectStatus(projectId);
+  const status = useProjectStatus(projectId);
+  const projectName = status?.name ?? projectId;
+
   useEffect(() => {
-    const project = getProject(projectId);
-    if (!project.status.value.current) {
-      project.updateData();
+    if (projectName) {
+      getProject(projectId).name = projectName;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [projectId, projectName]);
 
-  const projectName = data.current?.config.name;
+  const { data: runIds } = useProjectRunIds(projectId);
+  const lastRunId = runIds ? runIds[runIds.length - 1].id : undefined;
+  const paramRun = searchParams.get("run");
+  const paramRunFound = runIds?.find((x) => x.id == paramRun)?.id;
+  const runId = paramRunFound ?? lastRunId;
+  const projectOnline = Boolean(status?.online);
+  const isOnlineRun = Boolean(runId && runId == lastRunId && status?.online);
 
-  const [runId, setRunId] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (paramRun && !paramRunFound) {
+      addNotice({
+        type: "error",
+        title: `Can not find run "${paramRun}"`,
+        content: "Showing the latest run",
+      });
+    }
+  }, [paramRun, paramRunFound]);
+
+  const setRunId = (id: string) => {
+    if (id === lastRunId) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ run: id });
+    }
+  };
 
   const projectContextData = useMemo(
     () => ({
       projectId,
       projectName,
       runId,
-      setRunId,
+      isOnlineRun,
+      projectOnline,
     }),
-    [projectId, projectName, runId],
+    [projectId, projectName, runId, isOnlineRun, projectOnline],
   );
 
   return (
@@ -51,37 +76,35 @@ function ProjectDashboard() {
         <AppTitle
           extra={
             <ProjectContext.Provider key={projectId} value={projectContextData}>
-              <RunSelect />
+              <RunSelect setRunId={setRunId} />
             </ProjectContext.Provider>
           }
         >
           Project "{projectName ?? projectId}"
         </AppTitle>
-        <SectionTitle title="Logs" />
-        <Logs />
-        <Divider />
-        <SectionTitle title="Actions" />
-        {data.current ? <Actions actions={data.current.__action} /> : <Loading size="large" />}
-        <Divider />
-        <SectionTitle title="Images & Scalars" />
-        <ImagesAndScatters />
-        {/* <SectionTitle title="Images" />
-        <Images /> */}
-        {/* <SectionTitle title="Scatters" />
-        <Scatters /> */}
-        <Divider />
-        {data.current ? (
+        {runId ? (
           <>
+            <SectionTitle title="Logs" />
+            <Logs />
+            <Divider />
+            <SectionTitle title="Actions" />
+            <Actions />
+            <Divider />
+            <SectionTitle title="Images & Scalars" />
+            <ImagesAndScatters />
+            {/* <SectionTitle title="Images" />
+        <Images /> */}
+            {/* <SectionTitle title="Scatters" />
+        <Scatters /> */}
+            <Divider />
             <SectionTitle title="Hardware" />
-            {data.history.every((x) => x.hardware) ? (
-              <Hardware hardwareData={data.history.map((x) => x.hardware)} />
-            ) : null}
+            <Hardware />
             <Divider />
             <SectionTitle title="Platform" />
-            <PlatformProps data={data.current.platform} />
+            <PlatformProps />
           </>
         ) : (
-          <Loading size="large" />
+          <Loading size="large" height="70vh" />
         )}
       </div>
     </ProjectContext.Provider>

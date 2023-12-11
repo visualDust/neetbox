@@ -1,5 +1,11 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# URL:    https://gong.host
+# Date:   20231211
+
 import io
-from typing import Optional, Union
+from typing import Optional
 
 import cv2
 import numpy as np
@@ -10,6 +16,8 @@ from neetbox._daemon.client._client import connection
 from neetbox.config import get_project_id, get_run_id
 from neetbox.logging import logger
 from neetbox.utils.x2numpy import *
+
+# ===================== IMAGE things ===================== #
 
 
 def figure_to_image(figures, close=True):
@@ -131,11 +139,25 @@ def add_image(name: str, image, dataformats: str = None):
 
     # send bytes
     project_id = get_project_id()
-    connection.post(
-        api=f"/image/{project_id}",
-        data={PROJECT_ID_KEY: project_id, SERIES_ID_KEY: name, RUN_ID_KEY: get_run_id()},
-        files={"image": image_bytes},
-    )
+    run_id = get_run_id()
+    try:
+        message = EventMsg(
+            project_id=project_id,
+            run_id=run_id,
+            who=IdentityType.CLI,
+            series=name,
+            event_type=EVENT_TYPE_NAME_IMAGE,
+        )
+        connection.post(
+            api=f"/image/{project_id}",
+            data={"json": message.dumps()},
+            files={"image": image_bytes},
+        )
+    except Exception as e:
+        logger.warn(f"unable to upload image: {e}")
+
+
+# ===================== MATPLOTLIB things ===================== #
 
 
 def add_figure(

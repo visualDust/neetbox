@@ -3,17 +3,17 @@ import { memo, useState } from "react";
 import { IconChevronDown, IconPlay } from "@douyinfe/semi-icons";
 import { getProject } from "../../../services/projects";
 import { useMemoJSON } from "../../../hooks/useMemoJSON";
-import { ProjectStatus } from "../../../services/types";
-import { useCurrentProject } from "../../../hooks/useProject";
+import { ActionInfo } from "../../../services/types";
+import { useCurrentProject, useProjectRunStatus } from "../../../hooks/useProject";
+import Loading from "../../loading";
 
-interface Props {
-  actions: ProjectStatus["__action"];
-}
-
-export function Actions({ actions }: Props) {
+export function Actions() {
+  const { projectId, runId } = useCurrentProject();
+  const status = useProjectRunStatus(projectId, runId);
+  const actions = status?.action as ActionInfo;
+  const actionList = Object.entries(useMemoJSON(actions ?? {}));
   const [blocking, setBlocking] = useState(false);
-  const actionList = Object.entries(useMemoJSON(actions?.value ?? {}));
-  return (
+  return actions ? (
     <Space style={{ marginBottom: "20px" }} spacing="medium" wrap>
       {actionList.length ? (
         actionList.map(([actionName, actionOptions]) => (
@@ -35,12 +35,14 @@ export function Actions({ actions }: Props) {
         </Typography.Text>
       )}
     </Space>
+  ) : (
+    <Loading size="large" />
   );
 }
 
 interface ActionItemProps {
   name: string;
-  actionOptions: ProjectStatus["__action"]["value"][string];
+  actionOptions: ActionInfo[string];
   blocking: boolean;
   setBlocking: (blocking: boolean) => void;
 }
@@ -56,7 +58,7 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
   );
   const [running, setCurrentBlocking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const { projectId } = useCurrentProject()!;
+  const { projectId, isOnlineRun } = useCurrentProject()!;
   const handleRun = () => {
     if (options.blocking) setBlocking(true);
     setCurrentBlocking(true);
@@ -67,7 +69,7 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
     });
   };
   const renderContent = () => (
-    <Space vertical spacing={"tight"} style={{ padding: "10px", minWidth: "200px", maxWidth: "500px" }}>
+    <Space vertical spacing={"tight"} style={{ minWidth: "200px", maxWidth: "500px" }}>
       <Typography.Title heading={5}>{name}</Typography.Title>
       {options.description && <div style={{ margin: 0, whiteSpace: "pre-wrap" }}>{options.description}</div>}
       {Object.entries(options.args).map(([argName, argType]) => (
@@ -81,7 +83,7 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
           <Col span={6}>
             <Typography.Text ellipsis={{ showTooltip: true }}>{argName}</Typography.Text>
           </Col>
-          <Col span={12}>
+          <Col span={13}>
             {argType == "bool" ? (
               <Checkbox
                 checked={args[argName] == "True"}
@@ -102,7 +104,7 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
               />
             )}
           </Col>
-          <Col span={6}>
+          <Col span={4}>
             <Typography.Text ellipsis={{ showTooltip: true }}>({argType})</Typography.Text>
           </Col>
         </Row>
@@ -112,11 +114,14 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
         onClick={handleRun}
         type="warning"
         theme="solid"
-        disabled={blocking}
+        disabled={blocking || !isOnlineRun}
         icon={<IconPlay />}
       >
         Run
       </Button>
+      {!isOnlineRun && (
+        <Typography.Text type="tertiary">(can not run in offline / history view)</Typography.Text>
+      )}
       {result && <div style={{ margin: 0, whiteSpace: "pre-wrap" }}>{result}</div>}
     </Space>
   );

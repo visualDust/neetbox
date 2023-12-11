@@ -1,22 +1,26 @@
 import { useRef, useEffect, HTMLAttributes, useState } from "react";
-import type * as echarts from "echarts";
+import * as echarts from "echarts";
 import { useTheme } from "../hooks/useTheme";
+import { IdleTimer } from "../utils/timer";
 import Loading from "./loading";
 
 export interface EChartsProps {
   initialOption: () => echarts.EChartsOption;
-  updatingOption: echarts.EChartsOption;
+  updatingOption: () => echarts.EChartsOption;
   style?: HTMLAttributes<HTMLElement>["style"];
 }
 
 export const ECharts = (props: EChartsProps) => {
   const chartContainerRef = useRef(null);
-  const chartRef = useRef<echarts.ECharts>(null!);
   const [echartsModule, setEchartsModule] = useState<typeof echarts | null>(null);
+  const [echartsInstance, setEChartsInstance] = useState<echarts.ECharts | null>(null);
   const { darkMode } = useTheme();
 
   useEffect(() => {
-    import("echarts").then((mod) => setEchartsModule(mod));
+    import("echarts").then((mod) => {
+      // setEchartsModule(mod);
+      new IdleTimer(() => setEchartsModule(mod)).schedule(1000);
+    });
   });
 
   useEffect(() => {
@@ -28,11 +32,11 @@ export const ECharts = (props: EChartsProps) => {
       );
 
       chart.setOption(props.initialOption(), false, true);
-      chart.setOption(props.updatingOption);
-      chartRef.current = chart;
+      setEChartsInstance(chart);
 
+      const resizeTimer = new IdleTimer(() => chart?.resize());
       const handleResize = () => {
-        chart?.resize();
+        resizeTimer.schedule(100);
       };
       const resizeObserver = new ResizeObserver(handleResize);
       resizeObserver.observe(chartContainerRef.current!);
@@ -46,10 +50,11 @@ export const ECharts = (props: EChartsProps) => {
   }, [echartsModule, darkMode]);
 
   useEffect(() => {
-    if (chartRef.current) {
-      chartRef.current.setOption(props.updatingOption);
+    if (echartsInstance) {
+      echartsInstance.setOption(props.updatingOption());
     }
-  }, [echartsModule, props.updatingOption]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [echartsInstance, props.updatingOption]);
 
   return echartsModule ? (
     <div ref={chartContainerRef} style={props.style} />

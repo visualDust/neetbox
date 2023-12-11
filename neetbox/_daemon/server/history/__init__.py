@@ -12,9 +12,9 @@ from ._db import (
     SERIES_COLUMN_NAME,
     TIMESTAMP_COLUMN_NAME,
     DBConnection,
-    FetchType,
+    DbQueryFetchType,
+    DbQuerySortType,
     QueryCondition,
-    SortType,
 )
 
 if not os.path.exists(HISTORY_FILE_ROOT):
@@ -26,7 +26,6 @@ if not os.path.isdir(HISTORY_FILE_ROOT):
 
 
 def load_db_of_path(path):
-    print(path)
     if not os.path.isfile(path):
         raise RuntimeError(f"{path} is not a file")
     conn = DBConnection(path=path)
@@ -51,8 +50,8 @@ def get_db_of_id(project_id, rescan: bool = True):
 
 
 __all__ = [
-    "FetchType",
-    "SortType",
+    "DbQueryFetchType",
+    "DbQuerySortType",
     "QueryCondition",
     "DBConnection",
     "get_db_of_id",

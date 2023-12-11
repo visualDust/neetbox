@@ -6,7 +6,6 @@ from typing import Callable, Optional
 
 from neetbox._daemon._protocol import *
 from neetbox._daemon.client._client import connection
-from neetbox.client._signal_and_slot import SYSTEM_CHANNEL, watch
 from neetbox.core import Registry
 from neetbox.logging import logger
 from neetbox.utils.mvc import Singleton
@@ -49,7 +48,10 @@ class PackedAction(Callable):
         self.function(argv)  # ignore blocking
 
     def eval_call(self, params: dict):
-        eval_params = dict((k, literal_eval(v)) for k, v in params.items())
+        eval_params = {}
+        for k, v in params.items():
+            if v:
+                eval_params[k] = literal_eval(v)
         return self.function(**eval_params)
 
 
@@ -75,7 +77,7 @@ class _NeetActionManager(metaclass=Singleton):
         if name not in _NeetActionManager.__ACTION_POOL:
             logger.err(f"Could not find action with name {name}, action stopped.")
             return False
-        target_action = _NeetActionManager.__ACTION_POOL[name]
+        target_action: PackedAction = _NeetActionManager.__ACTION_POOL[name]
         logger.log(
             f"Agent runs function '{target_action.name}', blocking = {target_action.blocking}"
         )
@@ -85,6 +87,7 @@ class _NeetActionManager(metaclass=Singleton):
                 returned_data = target_action.eval_call(params)
             except Exception as e:
                 returned_data = e
+                logger.warn(f"action {target_action} failed with exception {e}")
             if callback:
                 callback(returned_data)
 
@@ -97,11 +100,6 @@ class _NeetActionManager(metaclass=Singleton):
         else:  # blocking run
             run_and_callback()
             return
-
-    @watch(name="__action", _channel=SYSTEM_CHANNEL, initiative=True)
-    def _update_action_dict():
-        # for status updater
-        return _NeetActionManager.get_action_dict()
 
     def register(name: Optional[str] = None, description: str = None, blocking: bool = False):
         """register function as action visiable on frontend page
@@ -143,23 +141,26 @@ class _NeetActionManager(metaclass=Singleton):
             function=function, name=name, description=description, blocking=blocking
         )
         _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, overwrite=True)
-        _NeetActionManager._update_action_dict()  # update for sync
+        connection.ws_send(
+            event_type=EVENT_TYPE_NAME_STATUS,
+            series="action",
+            payload=_NeetActionManager.get_action_dict(),
+        )
         return function
 
 
-@connection.ws_subscribe(event_type_name="action")
-def __listen_to_actions(msg):
-    _payload = msg[PAYLOAD_NAME_KEY]
-    _event_id = msg[EVENT_ID_NAME_KEY]
-    _action_name = _payload["name"]
-    _action_args = _payload["args"]
+@connection.ws_subscribe(event_type_name=EVENT_TYPE_NAME_ACTION)
+def _listen_to_actions(message: EventMsg):
     _NeetActionManager.eval_call(
-        name=_action_name,
-        params=_action_args,
+        name=message.payload[NAME_KEY],
+        params=message.payload[ARGS_KEY],
         callback=lambda x: connection.ws_send(
-            event_type="action",
-            payload={"name": _action_name, ("error" if isinstance(x, Exception) else "result"): x},
-            event_id=_event_id,
+            event_type=EVENT_TYPE_NAME_ACTION,
+            payload={
+                NAME_KEY: message.payload[NAME_KEY],
+                (ERROR_KEY if isinstance(x, Exception) else RESULT_KEY): x,
+            },
+            event_id=message.event_id,
         ),
     )
 

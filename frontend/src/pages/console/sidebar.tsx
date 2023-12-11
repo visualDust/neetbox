@@ -1,4 +1,4 @@
-import { Nav, Tag, Typography } from "@douyinfe/semi-ui";
+import { Nav, Space, Tag, Typography } from "@douyinfe/semi-ui";
 import { IconHome, IconListView } from "@douyinfe/semi-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAPI } from "../../services/api";
@@ -11,29 +11,35 @@ export default function ConsoleNavBar() {
   return (
     <Nav
       renderWrapper={(args) => {
-        if (args.props.itemKey === "loading") return <Loading height="60px" />;
+        if (args.props.itemKey === "loading") return <Loading height="60px" size="large" />;
         return args.itemElement;
       }}
       style={{ height: "100%", overflowY: "auto" }}
       items={[
-        { itemKey: "/console/overview", text: "Overview", icon: <IconHome /> },
+        { itemKey: "/", text: "Overview", icon: <IconHome /> },
         {
           text: "Projects",
           icon: <IconListView />,
           itemKey: "projects",
           items: data
-            ? data.map(({ id, config, online }) => ({
+            ? data.map(({ projectid: id, name, online }) => ({
                 text: (
-                  <Typography.Text type={online ? "primary" : "tertiary"}>
-                    {config.name}
-                    {!online && (
-                      <Tag style={{ marginLeft: "10px" }} color="orange">
-                        offline
+                  <Space style={{ width: "100%" }}>
+                    <Typography.Text
+                      type={online ? "primary" : "tertiary"}
+                      style={{ flex: "1 1 50%" }}
+                      ellipsis={{ showTooltip: true }}
+                    >
+                      {name}
+                    </Typography.Text>
+                    {online && (
+                      <Tag style={{ marginLeft: "10px" }} color="green">
+                        Online
                       </Tag>
                     )}
-                  </Typography.Text>
+                  </Space>
                 ),
-                itemKey: "/console/project/" + id,
+                itemKey: "/project/" + id,
               }))
             : [{ text: "", itemKey: "loading" }],
         },

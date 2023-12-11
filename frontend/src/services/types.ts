@@ -1,46 +1,36 @@
-export interface ProjectStatusHistory {
-  enablePolling: boolean;
-  current?: ProjectStatus;
-  history: Array<ProjectStatus>;
+export interface CpuInfo {
+  id: number;
+  percent: number;
+  freq: [current: number, min: number, max: number];
 }
 
-export interface ProjectStatus {
-  config: ProjectConfig;
-  platform: WithTimestamp<Record<string, string | string[]>>;
-  hardware: WithTimestamp<HardwareInfo>;
-  __action: WithTimestamp<ActionInfo>;
-}
-
-interface ProjectConfig {
+export interface GpuInfo {
+  id: number;
   name: string;
+  load: number;
+  memoryUtil: number;
+  memoryTotal: number;
+  memoryFree: number;
+  memoryUsed: number;
+  temperature: number;
+  driver: string;
 }
 
-interface HardwareInfo {
-  cpus: Array<{
-    id: number;
-    percent: number;
-    freq: [current: number, min: number, max: number];
-  }>;
-  gpus: Array<{
-    id: number;
-    name: string;
-    load: number;
-    memoryUtil: number;
-    memoryTotal: number;
-    memoryFree: number;
-    memoryUsed: number;
-    temperature: number;
-    driver: string;
-  }>;
-  ram: {
-    total: number;
-    available: number;
-    used: number;
-    free: number;
-  };
+export interface RamInfo {
+  total: number;
+  available: number;
+  used: number;
+  free: number;
 }
 
-type ActionInfo = Record<
+export interface HardwareInfo {
+  timestamp: string;
+  cpus: Array<CpuInfo>;
+  gpus: Array<GpuInfo>;
+  ram: RamInfo;
+}
+
+export type ActionInfo = Record<
   string,
   {
     args: Record<string, string>;
@@ -48,6 +38,8 @@ type ActionInfo = Record<
     description: string;
   }
 >;
+
+export type PlatformInfo = Record<string, string | string[]>;
 
 export interface WithTimestamp<T> {
   value: T;
@@ -57,9 +49,9 @@ export interface WithTimestamp<T> {
 
 export interface LogData {
   series: string;
-  datetime: string;
+  timestamp: string;
   whom: string;
-  msg: string;
+  message: string;
 }
 
 export interface ImageMetadata {

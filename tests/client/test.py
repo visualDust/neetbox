@@ -4,41 +4,15 @@ import time
 from random import random
 from time import sleep
 
+import numpy as np
+from PIL import Image
+
 import neetbox
 from neetbox import logger
 
 
-@neetbox.watch("train", initiative=True)
-def train(epoch):
-    loss, acc = random(), random()
-    neetbox.add_scalar("sin", epoch, math.sin(epoch * 0.1))
-    neetbox.add_scalar("cos", epoch, math.cos(epoch * 0.1))
-    return {"loss": loss, "acc": acc}
-
-
-@neetbox.listen("train")
-def print_to_console(metrix):
-    logger.log(f"metrix from train: {metrix}")
-
-
-@neetbox.watch("log-some-prefix", initiative=False, interval=5.0)
-def log_with_some_prefix():
-    logger.ok("some ok")
-    logger.info("some info")
-    logger.debug("some debug")
-    logger.warn("some warn")
-    logger.err("some error")
-
-
-@neetbox.action()
-def log_perf_test(interval: int, count: int):
-    for i in range(count):
-        sleep(interval)
-        logger.info(f"log_perf_test {i + 1}/{count}")
-
-
 @neetbox.action(name="action-1")
-def action_1(text: str):
+def print_text_to_console(text: str):
     """take action 1
 
     Args:
@@ -54,11 +28,6 @@ def action_bool(enable: bool):
     return {"enable": enable}
 
 
-@neetbox.action()
-def action_very_long_name(arg_with_very_long_long_name: int):
-    return {"very_long_long_result_key": arg_with_very_long_long_name}
-
-
 def def_plus_1(val):
     @neetbox.action(name="plus1", description=f"val={val}")
     def plus_1():
@@ -66,11 +35,6 @@ def def_plus_1(val):
 
 
 def_plus_1(0)
-
-
-@neetbox.action(name="action-2")
-def action_2(text1, text2):
-    logger.log(f"action 2 triggered. text1 = {text1}, text2 = {text2}")
 
 
 @neetbox.action(name="wait-for-sec", blocking=False)
@@ -100,8 +64,9 @@ _id_indexer = 0
 def new_action(id: int):
     global _id_indexer
 
-    @neetbox.action(name=f"new_action_{_id_indexer}")
+    @neetbox.action(name=f"empty_action_{_id_indexer}")
     def action_():
+        """this action does nothing"""
         pass
 
     _id_indexer += 1
@@ -113,12 +78,26 @@ def sys_exit():
     os._exit(0)
 
 
-@neetbox.action()
-def send_image():
-    from PIL import Image
+@neetbox.action(name="Generate random noise image")
+def send_image(width=400, height=300, num_channels=3):
+    """Send a random noise image from numpy.array.
 
-    with Image.open("weight_visualize_conv1_0_1.png") as logo_image:
-        neetbox.add_image(name="weights visualize", image=logo_image)
+    If nc is 1, the Grayscale image will be created.
+    If nc is 3, the RGB image will be generated.
+
+    Args:
+        nc (int): (1 or 3) number of channels.
+        width (int): width of output image.
+        height (int): height of output image.
+    """
+    img = (np.random.rand(height, width, num_channels) * 255).astype(np.uint8)
+    if num_channels == 3:
+        img = Image.fromarray(img, mode="RGB")
+    elif num_channels == 1:
+        img = Image.fromarray(np.squeeze(img), mode="L")
+    else:
+        raise ValueError(f"Input nc should be 1/3. Got {num_channels}.")
+    neetbox.add_image(name="random noise", image=img)
 
 
 @logger.mention()
@@ -129,6 +108,28 @@ def test_mention(text: str):
 @neetbox.action()
 def run_test_mention(text: str):
     test_mention(text)
+
+
+@neetbox.watch("train")
+def train(epoch):
+    loss, acc = random(), random()
+    neetbox.add_scalar("sin", epoch, math.sin(epoch * 0.1))
+    neetbox.add_scalar("cos", epoch, math.cos(epoch * 0.1))
+    return {"loss": loss, "acc": acc}
+
+
+@neetbox.listen("train")  # listen to train
+def print_to_console(metrix):
+    logger.log(f"metrix from train: {metrix}")
+
+
+@neetbox.watch("log-some-prefix", initiative=False, interval=5.0)  # run each 5 secs
+def log_with_some_prefix():
+    logger.ok("some ok")
+    logger.info("some info")
+    logger.debug("some debug")
+    logger.warn("some warn")
+    logger.err("some error")
 
 
 for i in range(99999):
