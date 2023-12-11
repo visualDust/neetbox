@@ -155,12 +155,5 @@ def init(name: str):
         logger.err(f"Failed to init here: {e}")
 
 
-@main.command()
-def app():
-    """initialize current folder as workspace and generate the config file from defaults"""
-    app = NeetBoxApp()
-    app.run()
-
-
 if __name__ == "__main__":
     main()
