@@ -1,11 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Space, Select, Tag, Button, Modal, Form } from "@douyinfe/semi-ui";
+import { Space, Select, Tag, Button, Modal, Form, Toast } from "@douyinfe/semi-ui";
 import { IconDelete, IconEdit } from "@douyinfe/semi-icons";
 import Loading from "../../loading";
-import { useCurrentProject } from "../../../hooks/useProject";
+import { useCurrentProject, useProjectRunIds } from "../../../hooks/useProject";
+import { fetcher } from "../../../services/api";
 
-export const RunSelect = memo(({ runIds, setRunId }: { runIds; setRunId }) => {
-  const { runId, isOnlineRun, projectOnline } = useCurrentProject();
+export const RunSelect = memo(({ setRunId }: { setRunId }) => {
+  const { projectId, runId, isOnlineRun, projectOnline } = useCurrentProject();
+  const { data: runIds, mutate: mutateRunIds } = useProjectRunIds(projectId);
 
   const items = useMemo(
     () =>
@@ -80,7 +82,12 @@ export const RunSelect = memo(({ runIds, setRunId }: { runIds; setRunId }) => {
                       content: `Deleting run ${x.timestamp} (${x.id})`,
                       centered: true,
                       onOk: async () => {
-                        await new Promise((r) => setTimeout(r, 1000));
+                        // await new Promise((r) => setTimeout(r, 1000));
+                        await fetcher(`/project/${projectId}/run/${x.id}`, { method: "DELETE" });
+                        mutateRunIds();
+                        Toast.success({
+                          content: `Deleted ${x.timestamp}`,
+                        });
                       },
                     });
                   }}

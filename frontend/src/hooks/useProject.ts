@@ -25,6 +25,10 @@ export function useProjectStatus(id: string) {
   return data;
 }
 
+export function useProjectRunIds(id: string) {
+  return useAPI(`/project/${id}/runids`, { refreshInterval: 5000 });
+}
+
 export function useProjectRunStatus(id: string, runId?: string) {
   const data = useProjectStatus(id);
   return !runId ? undefined : (data?.status[runId] as { action: ActionInfo; platform: PlatformInfo });
@@ -59,7 +63,7 @@ export function useProjectSeries(projectId: string, runId: string, type: string)
   useProjectWebSocket(projectId, type, (msg) => {
     //@ts-expect-error TODO
     const newSeries = msg.payload.series;
-    if (newSeries != null && series && !series.includes(newSeries)) {
+    if (newSeries != null && series && !series.includes(newSeries) && msg.runid == runId) {
       mutate([...series, newSeries]);
     }
   });

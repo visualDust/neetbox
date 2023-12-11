@@ -6,8 +6,8 @@ export const WEBSOCKET_URL =
     ? `ws://${location.host}/ws/`
     : `ws://${location.hostname}:${Number(location.port) + 1}`;
 
-export async function fetcher(url: string) {
-  const res = await fetch(API_BASEURL + url);
+export async function fetcher(url: string, fetchInit?: RequestInit) {
+  const res = await fetch(API_BASEURL + url, fetchInit);
   try {
     return await res.json();
   } catch (e) {

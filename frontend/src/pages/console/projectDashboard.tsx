@@ -1,7 +1,7 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import { Divider } from "@douyinfe/semi-ui";
-import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
+import { ProjectContext, useProjectRunIds, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/dashboard/project/logs/logs";
 import { Actions } from "../../components/dashboard/project/actions";
 import { Hardware } from "../../components/dashboard/project/hardware";
@@ -12,7 +12,6 @@ import { getProject } from "../../services/projects";
 import { RunSelect } from "../../components/dashboard/project/runSelect";
 import PlatformProps from "../../components/dashboard/project/platformProps";
 import Loading from "../../components/loading";
-import { useAPI } from "../../services/api";
 import { addNotice } from "../../utils/notification";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
@@ -34,7 +33,7 @@ function ProjectDashboard() {
     }
   }, [projectId, projectName]);
 
-  const { data: runIds } = useAPI(`/project/${projectId}/runids`, { refreshInterval: 5000 });
+  const { data: runIds } = useProjectRunIds(projectId);
   const lastRunId = runIds ? runIds[runIds.length - 1].id : undefined;
   const paramRun = searchParams.get("run");
   const paramRunFound = runIds?.find((x) => x.id == paramRun)?.id;
@@ -77,7 +76,7 @@ function ProjectDashboard() {
         <AppTitle
           extra={
             <ProjectContext.Provider key={projectId} value={projectContextData}>
-              <RunSelect runIds={runIds} setRunId={setRunId} />
+              <RunSelect setRunId={setRunId} />
             </ProjectContext.Provider>
           }
         >
