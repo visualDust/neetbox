@@ -89,8 +89,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
     } as echarts.EChartsOption;
   };
 
-  const [hadZoom, setHadZoom] = useState(false);
-  useEffect(() => setHadZoom(false), [series]);
+  const [hadZoom, setHadZoom] = useState<string | null>(null);
 
   const updatingOption = useMemo(() => {
     const newOption = {
@@ -105,8 +104,8 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
         },
       ],
     } as echarts.EChartsOption;
-    if (points && points.length > 1000 && !hadZoom) {
-      setHadZoom(true);
+    if (points && points.length > 1000 && hadZoom != runId) {
+      setHadZoom(runId!);
       newOption.dataZoom = [
         {
           start: 90,
