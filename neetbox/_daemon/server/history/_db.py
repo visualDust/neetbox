@@ -9,7 +9,7 @@ from neetbox._daemon._protocol import *
 from neetbox.logging import logger
 from neetbox.logging.formatting import LogStyle
 
-logger = logger("NEETBOX HISTORY", LogStyle(skip_writers=["ws", "file"]))
+logger = logger("NEETBOX", LogStyle(skip_writers=["ws", "file"]))
 
 
 class QueryCondition:
@@ -171,7 +171,8 @@ class DBConnection:
         new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
         new_dbc.connection = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
-        new_dbc.connection.execute("pragma journal_mode=wal")
+        new_dbc.connection.execute("pragma journal_mode=wal")  # set journal mode WAL
+        new_dbc.connection.execute("PRAGMA foreign_keys = ON")  # enable foreign keys features
         new_dbc._inited_tables = collections.defaultdict(lambda: False)
         # check neetbox version
         _db_file_project_id = new_dbc.fetch_db_project_id(project_id)
@@ -262,7 +263,7 @@ class DBConnection:
 
     def fetch_id_of_run_id(self, run_id: str, timestamp: str = None):
         if not self._inited_tables[RUN_IDS_TABLE_NAME]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {RUN_IDS_TABLE_NAME} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {RUN_ID_COLUMN_NAME} TEXT NON NULL, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, CONSTRAINT run_id_unique UNIQUE ({RUN_ID_COLUMN_NAME}));"
+            sql_query = f"CREATE TABLE IF NOT EXISTS {RUN_IDS_TABLE_NAME} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {RUN_ID_COLUMN_NAME} TEXT NON NULL, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {NAME_COLUMN_NAME} TEXT, CONSTRAINT run_id_unique UNIQUE ({RUN_ID_COLUMN_NAME}));"
             self._execute(sql_query)
             self._inited_tables[RUN_IDS_TABLE_NAME] = True
         sql_query = f"SELECT {ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {RUN_ID_COLUMN_NAME} == '{run_id}'"
@@ -274,6 +275,21 @@ class DBConnection:
             return lastrowid
         return _id[0]
 
+    def fetch_name_of_run_id(self, run_id: str, name: str = None):
+        id = self.fetch_id_of_run_id(run_id=run_id)
+        if name:  # if update name
+            sql_query = (
+                f"UPDATE {RUN_IDS_TABLE_NAME} SET {NAME_COLUMN_NAME} = ? WHERE {ID_COLUMN_NAME} = ?"
+            )
+            _, _ = self._execute(sql_query, name, id)
+        # get name
+        sql_query = (
+            f"SELECT {NAME_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id}"
+        )
+        name, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+        name = name or run_id  # if does not have a name, use runid itself
+        return name
+
     def run_id_of_id(self, id_of_run_id):
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
         run_id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
@@ -282,10 +298,14 @@ class DBConnection:
     def get_run_ids(self):
         if not self.table_exist(RUN_IDS_TABLE_NAME):
             raise RuntimeError("should not get run id of id before run id table creation")
-        sql_query = f"SELECT {RUN_ID_COLUMN_NAME},{TIMESTAMP_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
+        sql_query = f"SELECT {RUN_ID_COLUMN_NAME},{TIMESTAMP_COLUMN_NAME},{NAME_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
         result, _ = self._query(sql_query)
-        result = [(run_id, timestamp) for run_id, timestamp in result]
+        result = [(run_id, timestamp, name) for run_id, timestamp, name in result]
         return result
+
+    def delete_run_id(self, run_id: str):
+        sql_query = f"DELETE FROM {RUN_IDS_TABLE_NAME} where {RUN_ID_COLUMN_NAME} = ?"
+        _, _ = self._execute(sql_query, run_id)
 
     def get_series_of_table(self, table_name, run_id=None):
         if not self.table_exist(table_name):
@@ -313,7 +333,7 @@ class DBConnection:
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
         if not self._inited_tables[table_name]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {JSON_COLUMN_NAME} TEXT NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
+            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {JSON_COLUMN_NAME} TEXT NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}) ON DELETE CASCADE);"
             self._execute(sql_query)
             sql_query = f"CREATE INDEX IF NOT EXISTS series_and_runid_index ON {table_name} ({SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME})"
             self._execute(sql_query)
@@ -351,7 +371,7 @@ class DBConnection:
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id)
         if not self._inited_tables[STATUS_TABLE_NAME]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {STATUS_TABLE_NAME} ({ID_COLUMN_NAME} INTEGER PRIMARY KEY,{RUN_ID_COLUMN_NAME} INTEGER NON NULL, {SERIES_COLUMN_NAME} TEXT NON NULL, {JSON_COLUMN_NAME} TEXT NON NULL, UNIQUE({RUN_ID_COLUMN_NAME}, {SERIES_COLUMN_NAME}) ON CONFLICT REPLACE, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
+            sql_query = f"CREATE TABLE IF NOT EXISTS {STATUS_TABLE_NAME} ({ID_COLUMN_NAME} INTEGER PRIMARY KEY,{RUN_ID_COLUMN_NAME} INTEGER NON NULL, {SERIES_COLUMN_NAME} TEXT NON NULL, {JSON_COLUMN_NAME} TEXT NON NULL, UNIQUE({RUN_ID_COLUMN_NAME}, {SERIES_COLUMN_NAME}) ON CONFLICT REPLACE, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}) ON DELETE CASCADE);"
             self._execute(sql_query)
             self._inited_tables[STATUS_TABLE_NAME] = True
         sql_query = f"INSERT OR REPLACE INTO {STATUS_TABLE_NAME}({RUN_ID_COLUMN_NAME},{SERIES_COLUMN_NAME}, {JSON_COLUMN_NAME}) VALUES (?, ?, ?)"
@@ -396,8 +416,8 @@ class DBConnection:
         if isinstance(meta_data, dict):
             meta_data = json.dumps(meta_data)
 
-        if not self._inited_tables[table_name]:  # create if there is no version table
-            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}));"
+        if not self._inited_tables[table_name]:  # create if not exist
+            sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {METADATA_COLUMN_NAME} TEXT, {BLOB_COLUMN_NAME} BLOB NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}) ON DELETE CASCADE);"
             self._execute(sql_query)
             sql_query = f"CREATE INDEX IF NOT EXISTS series_and_runid_index ON {table_name} ({SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME})"
             self._execute(sql_query)

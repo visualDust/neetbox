@@ -11,22 +11,23 @@ from threading import Thread
 from typing import Union
 
 import werkzeug
-
-werkzeug_log = logging.getLogger("werkzeug")
-werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 from flask import Response, abort, json, redirect, request, send_from_directory
 
 from neetbox._daemon._protocol import *
 from neetbox._daemon.server._bridge import Bridge
-from neetbox.logging import LogStyle, logger
 
 from .history import *
 
-__PROC_NAME = "NEETBOX SERVER"
-logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))
+werkzeug_log = logging.getLogger("werkzeug")
+werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 
 
 def get_flask_server(debug=False):
+    __PROC_NAME = "NEETBOX"
+    from neetbox.logging import LogStyle, logger
+
+    logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))
+
     if debug:
         logger.log(f"Running with debug, using APIFlask")
         from apiflask import APIFlask
@@ -67,7 +68,7 @@ def get_flask_server(debug=False):
 
     def _project_status_from_bridge(bridge: Bridge):
         status = bridge.get_status()
-        last_run_id = bridge.get_run_ids()[0][0]
+        last_run_id = bridge.get_run_ids()[-1][0]
         config_last_run = bridge.get_status(run_id=last_run_id, series="config")
         return {
             PROJECT_ID_KEY: bridge.project_id,
@@ -105,13 +106,6 @@ def get_flask_server(debug=False):
             condition=request.args.get("condition"),
         )
 
-    @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["GET"])
-    def get_status_of(project_id, run_id):
-        if not Bridge.has(project_id):
-            abort(404)
-        result = Bridge.of_id(project_id).get_status(run_id=run_id)
-        return result
-
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/series/<table_name>", methods=["GET"])
     def get_series_list_of(project_id: str, table_name: str):  # client side function
         if not Bridge.has(project_id):
@@ -126,8 +120,31 @@ def get_flask_server(debug=False):
         if not Bridge.has(project_id):
             abort(404)
         result = Bridge.of_id(project_id).get_run_ids()
-        result = [{"id": r[0], "timestamp": r[1]} for r in result]
+        result = [{ID_KEY: r[0], TIMESTAMP_KEY: r[1], NAME_KEY: r[2]} for r in result]
         return result
+
+    @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["GET"])
+    def get_status_of(project_id, run_id):
+        if not Bridge.has(project_id):
+            abort(404, {ERROR_KEY: "project id not found"})
+        result = Bridge.of_id(project_id).get_status(run_id=run_id)
+        return result
+
+    @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["PUT"])
+    def set_get_name_of_run_id(project_id: str, run_id: str):
+        name = request.json.get("name")
+        bridge = Bridge.of_id(project_id)
+        name = bridge.historyDB.fetch_name_of_run_id(run_id=run_id, name=name)
+        return {RESULT_KEY: "success"}
+
+    @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["DELETE"])
+    def delete_run_id(project_id: str, run_id: str):
+        bridge = Bridge.of_id(project_id)
+        last_run_id = bridge.get_run_ids()[-1][0]
+        if run_id == last_run_id:  # cannot delete running projects
+            abort(400, {ERROR_KEY: "can only delete history run id."})
+        bridge.historyDB.delete_run_id(run_id)
+        return {RESULT_KEY: "success"}
 
     @app.route(f"/image/<project_id>", methods=["POST"])
     def upload_image(project_id):
@@ -194,6 +211,6 @@ def get_flask_server(debug=False):
 
         Thread(target=__sleep_and_shutdown).start()  # shutdown after 3 seconds
         logger.log(f"BYE.")
-        return f"shutdown in 1 seconds."
+        return {RESULT_KEY: f"shutdown in 1 seconds."}
 
     return app

@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# URL:    https://gong.host
+# Date:   20231211
+
 import io
 from typing import Optional
 
@@ -9,7 +15,6 @@ from neetbox._daemon._protocol import *
 from neetbox._daemon.client._client import connection
 from neetbox.config import get_project_id, get_run_id
 from neetbox.logging import logger
-from neetbox.utils.massive import nonblocking
 from neetbox.utils.x2numpy import *
 
 # ===================== IMAGE things ===================== #
@@ -173,53 +178,3 @@ def add_figure(
         add_image(image=figure_to_image(figure, close), dataformats="NCHW")
     else:
         add_image(image=figure_to_image(figure, close), dataformats="CHW")
-
-
-# ===================== PLOTTING things ===================== #
-
-
-def add_scalar(name: str, x: Union[int, float], y: Union[int, float]):
-    """send a scalar to frontend display
-
-    Args:
-        name (str): name of the image, used in frontend display
-        x (Union[int, float]): x
-        y (Union[int, float]): y
-    """
-    # send
-    connection.ws_send(
-        event_type=EVENT_TYPE_NAME_SCALAR, payload={SERIES_KEY: name, "x": x, "y": y}
-    )
-
-
-def add_hist(name: str, data: Union[int, float], mode: str="scalar", **kwargs):
-    """send a histogram figure to frontend display
-
-    Args:
-        name (str): name of the hist, used in frontend display
-        x (Union[int, float]): x
-        y (Union[int, float]): y
-    """
-    if mode == "scalar":
-        # send
-        connection.ws_send(
-            event_type=EVENT_TYPE_NAME_HIST, payload={SERIES_KEY: name, "data": data}
-        )
-    elif mode == "image":
-        try:
-            import matplotlib.pyplot as plt
-        except ModuleNotFoundError:
-            print("please install matplotlib")
-
-        fig = plt.figure()
-        plt.hist(data, **kwargs)
-        add_figure(fig, close=True)
-    else:
-        raise ValueError(f"mode {mode} not supported")
-
-
-# ===================== HYPERPARAM things ===================== #
-
-
-def add_hyperparams(name: str, value: dict):
-    connection.ws_send(event_type=EVENT_TYPE_NAME_HPARAMS, payload={name: value})

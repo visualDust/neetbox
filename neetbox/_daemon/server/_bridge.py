@@ -14,8 +14,7 @@ from neetbox.logging import LogStyle, logger
 
 from .history import *
 
-__PROC_NAME = "NEETBOX SERVER"
-logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))
+logger = logger("NEETBOX", LogStyle(skip_writers=["ws"]))
 
 
 class Bridge:

@@ -21,8 +21,8 @@ def get_web_socket_server(config, debug=False):
     from neetbox._daemon.server._bridge import Bridge
     from neetbox.logging import LogStyle, logger
 
+    logger = logger("NEETBOX", LogStyle(skip_writers=["ws"]))
     console = Console()
-    logger = logger("NEETBOX SERVER", LogStyle(skip_writers=["ws"]))
     ws_server = WebsocketServer(host="0.0.0.0", port=config["port"] + 1)
     connected_clients: Dict(
         int, Tuple(str, IdentityType)
