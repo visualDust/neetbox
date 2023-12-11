@@ -31,7 +31,7 @@ export type WsMsg =
     >;
 
 export class WsClient {
-  ws: WebSocket;
+  ws!: WebSocket;
   nextId = ~~(Math.random() * 100000000) * 1000;
   callbacks = new Map<number, (msg: WsMsg) => void>();
   wsListeners = new Set<(msg: WsMsg) => void>();

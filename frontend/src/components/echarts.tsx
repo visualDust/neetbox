@@ -1,8 +1,8 @@
 import { useRef, useEffect, HTMLAttributes, useState } from "react";
 import type * as echarts from "echarts";
 import { useTheme } from "../hooks/useTheme";
-import Loading from "./loading";
 import { IdleTimer } from "../utils/timer";
+import Loading from "./loading";
 
 export interface EChartsProps {
   initialOption: () => echarts.EChartsOption;
