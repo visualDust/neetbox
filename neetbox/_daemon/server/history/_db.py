@@ -349,12 +349,17 @@ class DBConnection:
         if isinstance(condition.run_id, str):
             condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
+        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
         result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         try:
             result = [
-                {ID_COLUMN_NAME: x, TIMESTAMP_COLUMN_NAME: y, JSON_COLUMN_NAME: json.loads(z)}
-                for x, y, z in result
+                {
+                    ID_COLUMN_NAME: w,
+                    TIMESTAMP_COLUMN_NAME: x,
+                    SERIES_COLUMN_NAME: y,
+                    JSON_COLUMN_NAME: json.loads(z),
+                }
+                for w, x, y, z in result
             ]
         except:
             print(result)
