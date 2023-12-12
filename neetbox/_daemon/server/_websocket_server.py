@@ -74,25 +74,26 @@ def get_web_socket_server(config, debug=False):
             return  # client cannot handshake again
         # assign this client to a Bridge
         console.log(f"handling handshake for {message.who} with project id '{message.project_id}'")
-        if not Bridge.has(message.project_id):  # there is no such bridge
-            merge_msg = {
-                PAYLOAD_KEY: {ERROR_KEY: 404, REASON_KEY: "project id not found"},
-                WHO_KEY: IdentityType.SERVER,
-            }
-            # no such bridge, dropping...
-        elif message.who == IdentityType.WEB:
-            # new connection from frontend
-            bridge = Bridge.of_id(message.project_id)
-            bridge.web_ws_list.append(client)
-            connected_clients[ws_client_id] = (
-                message.project_id,
-                None,
-                IdentityType.WEB,
-            )  # web have None run id
-            merge_msg = {
-                PAYLOAD_KEY: {RESULT_KEY: 200, REASON_KEY: "join success"},
-                WHO_KEY: IdentityType.SERVER,
-            }
+
+        if message.who == IdentityType.WEB:
+            if not Bridge.has(message.project_id):  # there is no such bridge
+                merge_msg = {
+                    PAYLOAD_KEY: {ERROR_KEY: 404, REASON_KEY: "project id not found"},
+                    WHO_KEY: IdentityType.SERVER,
+                }  # no such bridge, dropping...
+
+            else:  # new connection from frontend
+                bridge = Bridge.of_id(message.project_id)
+                bridge.web_ws_list.append(client)
+                connected_clients[ws_client_id] = (
+                    message.project_id,
+                    None,
+                    IdentityType.WEB,
+                )  # web have None run id
+                merge_msg = {
+                    PAYLOAD_KEY: {RESULT_KEY: 200, REASON_KEY: "join success"},
+                    WHO_KEY: IdentityType.SERVER,
+                }
         elif message.who == IdentityType.CLI:
             # new connection from cli
             bridge = Bridge(project_id=message.project_id)
@@ -185,10 +186,15 @@ def get_web_socket_server(config, debug=False):
         bridge = Bridge.of_id(message.project_id)
         current_hyperparams = bridge.get_status(
             run_id=message.run_id, series=EVENT_TYPE_NAME_HPARAMS
-        )[STATUS_TABLE_NAME]
-        current_hyperparams[message.series] = message.payload
-        message.payload = {EVENT_TYPE_NAME_HPARAMS: current_hyperparams}
-        on_event_type_status(message)
+        )  # get hyper params from status
+        if message.series:  # if series of hyperparams specified
+            current_hyperparams[message.series] = message.payload
+        else:
+            for k, v in message.payload.items():
+                current_hyperparams[k] = v
+        bridge.set_status(
+            run_id=message.run_id, series=EVENT_TYPE_NAME_HPARAMS, value=current_hyperparams
+        )
 
     def handle_ws_message(client, server: WebsocketServer, message):
         message = EventMsg.loads(message)

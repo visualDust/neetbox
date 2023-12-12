@@ -41,5 +41,7 @@ def add_scalar(name: str, x: Union[int, float], y: Union[int, float]):
 # ===================== HYPERPARAM things ===================== #
 
 
-def add_hyperparams(name: str, value: dict):
-    connection.ws_send(event_type=EVENT_TYPE_NAME_HPARAMS, payload={name: value})
+def add_hyperparams(hparam: dict, name: str = None):
+    assert isinstance(hparam, dict)
+    hparam = {name: hparam} if name else hparam
+    connection.ws_send(event_type=EVENT_TYPE_NAME_HPARAMS, series=name, payload=hparam)
