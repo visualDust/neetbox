@@ -18,20 +18,19 @@ logger = logger("NEETBOX", LogStyle(skip_writers=["ws"]))
 
 
 class Bridge:
-    """Server works as a bridge between client and frontends. Bridge connects one client and multiple frontend. Since client means a running project, a bridge represents a running(connected) or not running(not connected, loaded from history database) project.
+    """Server works as a bridge between clients and frontends. Bridge connects one client and multiple frontend. Since client means a running project, a bridge represents a running(connected) or not running(not connected, loaded from history database) project.
     You can:
-    - send websocket message to client or frontends connected to specific bridge
+    - send websocket message to clients or frontends connected to specific bridge
     - read and write history db(sqlite3) via bridge
     HTTP server should serves information via bridges.
 
-                ┌──--> Frontend
-                |
-                ↓
-    Client<--> Server --> Frontend
-                ↑
-                │
-                └──--> Frontend
-
+            Client  ┌──--> Frontend
+                |   |
+                ↓   ↓
+    Client<--> Server--> Frontend
+                ↑   ↑
+                │   │
+            Client  └──--> Frontend
     """
 
     # static
@@ -41,8 +40,8 @@ class Bridge:
     # instance vars
     project_id: str
     status: dict
-    cli_ws: dict
-    web_ws_list: list
+    cli_ws_dict: dict  # { run_id : client}
+    web_ws_list: list  # since web do not have run id, use list instead of dict
     historyDB: DBConnection
 
     def __new__(cls, project_id: str, **kwargs) -> None:
@@ -55,7 +54,7 @@ class Bridge:
         if project_id not in cls._id2bridge:
             new_bridge = super().__new__(cls)
             new_bridge.project_id = project_id
-            new_bridge.cli_ws: dict = None  # cli ws sid
+            new_bridge.cli_ws_dict: dict = {}  # cli ws sid
             new_bridge.web_ws_list: list = (
                 []
             )  # frontend ws sids. client data should be able to be shown on multiple frontend
@@ -110,8 +109,9 @@ class Bridge:
                 logger.err(e)
         return
 
-    def ws_send_to_client(self, message: EventMsg):
-        _client = self.cli_ws
+    def ws_send_to_client(self, message: EventMsg, run_id: str = None):
+        target_run_id = run_id or message.run_id
+        _client = self.cli_ws_dict[target_run_id]
         try:
             Bridge._ws_server.send_message(
                 client=_client, msg=message.dumps()
@@ -131,14 +131,19 @@ class Bridge:
             status = status.get(series, {})
         return status
 
-    def is_online(self):
-        return self.cli_ws is not None
+    def is_online(self, run_id: str = None):
+        if run_id:  # if checking client run with specific run id
+            return run_id in self.cli_ws_dict
+        return len(self.cli_ws_dict.keys()) != 0
 
     def get_series_of(self, table_name, run_id=None):
         return self.historyDB.get_series_of_table(table_name=table_name, run_id=run_id)
 
     def get_run_ids(self):
-        return self.historyDB.get_run_ids()
+        info_run_ids = self.historyDB.get_run_ids()
+        for info_run_id in info_run_ids:
+            info_run_id["online"] = info_run_id[RUN_ID_KEY] in self.cli_ws_dict
+        return info_run_ids
 
     def save_json_to_history(
         self, table_name, json_data, series=None, run_id=None, timestamp=None, num_row_limit=-1

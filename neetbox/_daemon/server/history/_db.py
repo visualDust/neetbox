@@ -300,7 +300,11 @@ class DBConnection:
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}, {METADATA_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
         result, _ = self._query(sql_query)
         result = [
-            (run_id, timestamp, json.loads(metadata) if metadata else {})
+            {
+                RUN_ID_KEY: run_id,
+                TIMESTAMP_KEY: timestamp,
+                METADATA_KEY: json.loads(metadata) if metadata else {},
+            }
             for run_id, timestamp, metadata in result
         ]
         return result
