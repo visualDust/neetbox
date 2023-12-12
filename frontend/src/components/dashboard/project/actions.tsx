@@ -58,11 +58,11 @@ export const ActionItem = memo(({ name, actionOptions: options, blocking, setBlo
   );
   const [running, setCurrentBlocking] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const { projectId, isOnlineRun } = useCurrentProject()!;
+  const { projectId, runId, isOnlineRun } = useCurrentProject()!;
   const handleRun = () => {
     if (options.blocking) setBlocking(true);
     setCurrentBlocking(true);
-    getProject(projectId).sendAction(name, args, ({ error: err, result: res }) => {
+    getProject(projectId).sendAction(runId!, name, args, ({ error: err, result: res }) => {
       if (options.blocking) setBlocking(false);
       setCurrentBlocking(false);
       setResult(err ? `error:\n${err}` : `result:\n${JSON.stringify(res)}`);

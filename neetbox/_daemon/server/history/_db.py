@@ -296,7 +296,7 @@ class DBConnection:
 
     def get_run_ids(self):
         if not self.table_exist(RUN_IDS_TABLE_NAME):
-            raise RuntimeError("should not get run id of id before run id table creation")
+            return []
         sql_query = f"SELECT {RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}, {METADATA_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME}"
         result, _ = self._query(sql_query)
         result = [

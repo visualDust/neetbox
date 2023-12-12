@@ -20,10 +20,16 @@ export class Project {
     checkLogForNotification(log, this);
   }
 
-  sendAction(action: string, args: Record<string, string>, onReply?: (result: { error; result }) => void) {
+  sendAction(
+    runId: string,
+    action: string,
+    args: Record<string, string>,
+    onReply?: (result: { error; result }) => void,
+  ) {
     this.wsClient.send(
       {
         "event-type": "action",
+        runid: runId,
         payload: {
           name: action,
           args,

@@ -7,7 +7,7 @@ import { useCurrentProject, useProjectRunIds } from "../../../hooks/useProject";
 import { fetcher } from "../../../services/api";
 
 export const RunSelect = memo((props: any) => {
-  const { setRunId, runIds, mutateRunIds, projectId, runId, isOnlineRun, projectOnline } = props;
+  const { setRunId, runIds, mutateRunIds, projectId, runId, isOnlineRun } = props;
   const items = useMemo(
     () =>
       [...(runIds ?? [])]
@@ -45,12 +45,12 @@ export const RunSelect = memo((props: any) => {
             <>
               {isOnlineRun ? (
                 <Tag color="green">Online</Tag>
-              ) : runId != items[0].id ? (
+              ) : runId != items[0].runid ? (
                 <Tag color="orange">History</Tag>
               ) : (
                 <Tag color="red">Offline</Tag>
               )}
-              {items.find((x) => x.id == p.value).timestamp}
+              {items.find((x) => x.runid == p.value).timestamp}
             </>
           )}
         >
@@ -60,12 +60,12 @@ export const RunSelect = memo((props: any) => {
                 style={{ gap: "5px" }}
                 // workaround for semi-design select: won't update label unless key changed
                 // https://github.com/DouyinFE/semi-design/blob/c7982af07ad92e6cafe72d96604ed63a8ca595d6/packages/semi-ui/select/index.tsx#L640
-                key={item.id + "-" + item.metadata?.name + "-" + (i == 0 ? projectOnline : "")}
-                value={item.id}
+                key={item.runid + "-" + item.metadata?.name + "-" + item.online}
+                value={item.runid}
               >
                 <span style={{ fontFamily: "monospace", fontSize: 12 }}>{item.timestamp}</span>
                 <span style={{ fontFamily: "monospace", fontSize: 12 }}>
-                  ({item.metadata?.name ?? item.id})
+                  ({item.metadata?.name ?? item.runid})
                 </span>
                 <span style={{ flex: 1 }}></span>
                 <Button
@@ -78,7 +78,7 @@ export const RunSelect = memo((props: any) => {
                     setEditing(item);
                   }}
                 />
-                {!(i == 0 && projectOnline) && (
+                {!item.online && (
                   <Button
                     type="danger"
                     icon={<IconDelete />}
@@ -88,11 +88,11 @@ export const RunSelect = memo((props: any) => {
                       closeDropDown();
                       Modal.error({
                         title: "Are you sure?",
-                        content: `Deleting run ${item.timestamp} (${item.id})`,
+                        content: `Deleting run ${item.timestamp} (${item.runid})`,
                         centered: true,
                         onOk: async () => {
                           // await new Promise((r) => setTimeout(r, 1000));
-                          await fetcher(`/project/${projectId}/run/${item.id}`, { method: "DELETE" });
+                          await fetcher(`/project/${projectId}/run/${item.runid}`, { method: "DELETE" });
                           mutateRunIds();
                           Toast.success({
                             content: `Deleted ${item.timestamp}`,
@@ -102,7 +102,7 @@ export const RunSelect = memo((props: any) => {
                     }}
                   />
                 )}
-                {i == 0 && (projectOnline ? <Tag color="green">Online</Tag> : <Tag color="red">Offline</Tag>)}
+                {item.online ? <Tag color="green">Online</Tag> : <Tag color="red">Offline</Tag>}
               </Select.Option>
             );
           })}
@@ -145,7 +145,7 @@ const RunEditor = memo((props: { data: any; onResult: (edited: boolean) => void 
       onCancel={() => props.onResult(false)}
       onOk={async () => {
         const values = formRef.current.formApi.getValues();
-        await fetcher(`/project/${projectId}/run/${data.id}`, {
+        await fetcher(`/project/${projectId}/run/${data.runid}`, {
           method: "PUT",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -158,7 +158,7 @@ const RunEditor = memo((props: { data: any; onResult: (edited: boolean) => void 
       centered
     >
       <Form initValues={data} ref={formRef as any}>
-        <Form.Input field="id" label="ID" disabled></Form.Input>
+        <Form.Input field="runid" label="ID" disabled></Form.Input>
         <Form.Input field="metadata.name" label="Name"></Form.Input>
       </Form>
     </Modal>

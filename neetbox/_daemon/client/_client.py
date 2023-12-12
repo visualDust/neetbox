@@ -138,12 +138,17 @@ class ClientConn(metaclass=Singleton):
         if message.event_type == EVENT_TYPE_NAME_HANDSHAKE:
             assert message.payload["result"] == 200
             logger.ok(f"handshake succeed.")
-            ClientConn.__ws_client = ws
-            ClientConn.ws_send(  # send config
-                event_type=EVENT_TYPE_NAME_STATUS,
-                series="config",
-                payload=get_module_level_config("@"),
+            ws.send(
+                EventMsg(
+                    project_id=get_project_id(),
+                    event_id=message.event_id,
+                    event_type=EVENT_TYPE_NAME_STATUS,
+                    series="config",
+                    run_id=get_run_id(),
+                    payload=get_module_level_config("@"),
+                ).dumps()
             )
+            ClientConn.__ws_client = ws
             # return # DO NOT return!
         if message.event_type not in ClientConn.__ws_subscription:
             logger.warn(
@@ -158,18 +163,11 @@ class ClientConn(metaclass=Singleton):
                     f"Subscriber {name} crashed on message event {message.event_type}, ignoring."
                 )
 
-    _ws_message_query = []
-
     @classmethod
     def _ws_send(cls, message: EventMsg):
-        cls._ws_message_query.append(message)
-        if cls.__ws_client:  # if ws client exist
-            try:
-                while cls._ws_message_query:
-                    cls.__ws_client.send(cls._ws_message_query[0].dumps())
-                    cls._ws_message_query.pop(0)
-            except Exception as e:
-                logger.warn(f"websocket send fialed: {e}, message appended to query.")
+        cls.__ws_client.send(message.dumps())
+
+    _ws_message_query = []
 
     @classmethod
     def ws_send(
@@ -192,7 +190,19 @@ class ClientConn(metaclass=Singleton):
             timestamp=timestamp or get_timestamp(),
             history_len=_history_len,
         )
-        cls._ws_send(message=message)
+        cls._ws_message_query.append(message)
+        send_result = ""
+        if cls.__ws_client is not None:  # if ws client exist
+            try:
+                while len(cls._ws_message_query):
+                    cls._ws_send(message=cls._ws_message_query[0])
+                    cls._ws_message_query.pop(0)
+                return
+            except Exception as e:
+                send_result = f"{e}"
+        else:
+            send_result = "web socket not connected"
+        logger.warn(f"websocket send fialed: {send_result}, message appended to query.")
 
 
 # assign this connection to websocket log writer
