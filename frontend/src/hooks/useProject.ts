@@ -13,7 +13,6 @@ export const ProjectContext = createContext<{
   projectName?: string;
   runId?: string;
   isOnlineRun: boolean;
-  projectOnline: boolean;
 } | null>(null);
 
 export function useCurrentProject() {
@@ -21,8 +20,7 @@ export function useCurrentProject() {
 }
 
 export function useProjectStatus(id: string) {
-  const { data } = useAPI(`/project/${id}`, { refreshInterval: 5000 });
-  return data;
+  return useAPI(`/project/${id}`, { refreshInterval: 5000 });
 }
 
 export function useProjectRunIds(id: string) {

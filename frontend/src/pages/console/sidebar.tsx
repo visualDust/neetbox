@@ -3,6 +3,7 @@ import { IconHome, IconListView } from "@douyinfe/semi-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAPI } from "../../services/api";
 import Loading from "../../components/loading";
+import "./sidebarStyleFix.css";
 
 export default function ConsoleNavBar() {
   const location = useLocation();
@@ -24,7 +25,7 @@ export default function ConsoleNavBar() {
           items: data
             ? data.map(({ projectid: id, name, online }) => ({
                 text: (
-                  <Space style={{ width: "100%" }}>
+                  <Space style={{ width: "100%", minWidth: "140px" }}>
                     <Typography.Text
                       type={online ? "primary" : "tertiary"}
                       style={{ flex: "1 1 50%" }}

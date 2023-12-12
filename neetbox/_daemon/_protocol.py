@@ -53,6 +53,7 @@ class EventMsg:
     who: str = None
     timestamp: str = get_timestamp()
     history_len: int = -1
+    id: int = None  # id in database
 
     def json(self):
         return {
@@ -65,6 +66,7 @@ class EventMsg:
             PAYLOAD_KEY: self.payload,
             TIMESTAMP_KEY: self.timestamp,
             HISTORY_LEN_KEY: self.history_len,
+            ID_KEY: self.id,
         }
 
     def dumps(self):
@@ -84,6 +86,7 @@ class EventMsg:
             event_id=src.get(EVENT_ID_KEY, -1),
             timestamp=src.get(TIMESTAMP_KEY, get_timestamp()),
             history_len=src.get(HISTORY_LEN_KEY, -1),
+            id=src.get(ID_KEY, None),
         )
 
     @classmethod

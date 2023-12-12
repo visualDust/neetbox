@@ -24,7 +24,7 @@ function ProjectDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   if (!projectId) throw new Error("projectId required");
 
-  const status = useProjectStatus(projectId);
+  const { data: status, mutate } = useProjectStatus(projectId);
   const projectName = status?.name ?? projectId;
 
   useEffect(() => {
@@ -33,26 +33,27 @@ function ProjectDashboard() {
     }
   }, [projectId, projectName]);
 
-  const { data: runIds } = useProjectRunIds(projectId);
-  const lastRunId = runIds ? runIds[runIds.length - 1].id : undefined;
+  const runIds = status?.runids;
+  const lastRunId = runIds ? runIds[runIds.length - 1] : undefined;
   const paramRun = searchParams.get("run");
-  const paramRunFound = runIds?.find((x) => x.id == paramRun)?.id;
-  const runId = paramRunFound ?? lastRunId;
-  const projectOnline = Boolean(status?.online);
-  const isOnlineRun = Boolean(runId && runId == lastRunId && status?.online);
+  const paramRunFound = runIds?.find((x) => x.runid == paramRun);
+  const runInfo = paramRunFound ?? lastRunId;
+  const runId = runInfo?.runid;
+  const isOnlineRun = Boolean(runInfo?.online);
 
   useEffect(() => {
-    if (paramRun && !paramRunFound) {
+    if (runIds && paramRun && !paramRunFound) {
       addNotice({
         type: "error",
         title: `Can not find run "${paramRun}"`,
         content: "Showing the latest run",
       });
     }
-  }, [paramRun, paramRunFound]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!runIds, paramRun, paramRunFound]);
 
   const setRunId = (id: string) => {
-    if (id === lastRunId) {
+    if (id === lastRunId.runid) {
       setSearchParams({});
     } else {
       setSearchParams({ run: id });
@@ -65,9 +66,8 @@ function ProjectDashboard() {
       projectName,
       runId,
       isOnlineRun,
-      projectOnline,
     }),
-    [projectId, projectName, runId, isOnlineRun, projectOnline],
+    [projectId, projectName, runId, isOnlineRun],
   );
 
   return (
@@ -76,7 +76,7 @@ function ProjectDashboard() {
         <AppTitle
           extra={
             <ProjectContext.Provider key={projectId} value={projectContextData}>
-              <RunSelect setRunId={setRunId} />
+              <RunSelect {...{ setRunId, runIds, mutateRunIds: mutate, projectId, runId, isOnlineRun }} />
             </ProjectContext.Provider>
           }
         >

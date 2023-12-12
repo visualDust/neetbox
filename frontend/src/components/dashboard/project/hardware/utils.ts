@@ -1,9 +1,13 @@
 import { TimeDataMapper } from "../../../../utils/timeDataMapper";
 
+const viewRangeSeconds = 300;
+const dataInterval = 2;
+export const fetchDataCount = Math.ceil(viewRangeSeconds / dataInterval);
+
 export function getTimeAxisOptions(mapper: TimeDataMapper) {
   const latestTime = new Date(mapper.data[mapper.data.length - 1].timestamp).getTime();
   return {
-    min: latestTime - 120 * 1000,
+    min: latestTime - viewRangeSeconds * 1000,
     max: latestTime,
   };
 }

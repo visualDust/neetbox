@@ -68,16 +68,13 @@ def get_flask_server(debug=False):
 
     def _project_status_from_bridge(bridge: Bridge):
         run_id_info_list = bridge.get_run_ids()
-        last_run_id = run_id_info_list[-1][0]
+        last_run_id = run_id_info_list[-1][RUN_ID_KEY]
         config_last_run = bridge.get_status(run_id=last_run_id, series="config")
-        run_id_info = [
-            {ID_KEY: r[0], TIMESTAMP_KEY: r[1], METADATA_KEY: r[2]} for r in run_id_info_list
-        ]
         return {
             PROJECT_ID_KEY: bridge.project_id,
             "online": bridge.is_online(),
             NAME_KEY: config_last_run[NAME_KEY],
-            "runids": run_id_info,
+            "runids": run_id_info_list,
         }
 
     def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, str]):
@@ -137,8 +134,7 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["DELETE"])
     def delete_run_id(project_id: str, run_id: str):
         bridge = Bridge.of_id(project_id)
-        last_run_id = bridge.get_run_ids()[-1][0]
-        if run_id == last_run_id:  # cannot delete running projects
+        if bridge.is_online(run_id):  # cannot delete running projects
             abort(400, {ERROR_KEY: "can only delete history run id."})
         bridge.historyDB.delete_run_id(run_id)
         return {RESULT_KEY: "success"}
@@ -152,7 +148,7 @@ def get_flask_server(debug=False):
             return abort(404)
         message = EventMsg.loads(request.form["json"])
         image_bytes = request.files["image"].read()
-        lastrowid = Bridge.of_id(project_id).save_blob_to_history(
+        message.id = Bridge.of_id(project_id).save_blob_to_history(
             table_name="image",
             run_id=message.run_id,
             series=message.series,
@@ -162,9 +158,8 @@ def get_flask_server(debug=False):
             num_row_limit=message.history_len,
         )
         message.payload = message.payload or {}
-        message.payload[ID_KEY] = lastrowid
         Bridge.of_id(project_id).ws_send_to_frontends(message)
-        return {"result": "ok", "id": lastrowid}
+        return {"result": "ok", "id": message.id}
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/image/<image_id>", methods=["GET"])
     def get_image_of(project_id, image_id: int):

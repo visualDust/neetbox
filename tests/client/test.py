@@ -132,6 +132,10 @@ def log_with_some_prefix():
     logger.err("some error")
 
 
-for i in range(99999):
-    sleep(1)
-    train(i)
+train_config = {"epoch": 99999}
+
+if __name__ == "__main__":
+    neetbox.add_hyperparams(train_config)
+    for i in range(train_config["epoch"]):
+        sleep(1)
+        train(i)
