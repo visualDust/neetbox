@@ -1,7 +1,8 @@
 import { Typography } from "@douyinfe/semi-ui";
+import { ReactNode } from "react";
 
 interface Props {
-  title: string;
+  title: ReactNode;
 }
 
 export function SectionTitle(props: Props) {

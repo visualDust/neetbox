@@ -1,7 +1,7 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
-import { Divider } from "@douyinfe/semi-ui";
-import { ProjectContext, useProjectRunIds, useProjectStatus } from "../../hooks/useProject";
+import { Divider, Space } from "@douyinfe/semi-ui";
+import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/dashboard/project/logs/logs";
 import { Actions } from "../../components/dashboard/project/actions";
 import { Hardware } from "../../components/dashboard/project/hardware";
@@ -10,7 +10,7 @@ import { AppTitle } from "../../components/appTitle";
 import { ImagesAndScatters } from "../../components/dashboard/project/imagesAndScatters";
 import { getProject } from "../../services/projects";
 import { RunSelect } from "../../components/dashboard/project/runSelect";
-import PlatformProps from "../../components/dashboard/project/platformProps";
+import PlatformProps, { PlatformTitleJson } from "../../components/dashboard/project/platformProps";
 import Loading from "../../components/loading";
 import { addNotice } from "../../utils/notification";
 
@@ -92,15 +92,18 @@ function ProjectDashboard() {
             <Divider />
             <SectionTitle title="Images & Scalars" />
             <ImagesAndScatters />
-            {/* <SectionTitle title="Images" />
-        <Images /> */}
-            {/* <SectionTitle title="Scatters" />
-        <Scatters /> */}
             <Divider />
             <SectionTitle title="Hardware" />
             <Hardware />
             <Divider />
-            <SectionTitle title="Platform" />
+            <SectionTitle
+              title={
+                <Space>
+                  Platform
+                  <PlatformTitleJson />
+                </Space>
+              }
+            />
             <PlatformProps />
           </>
         ) : (

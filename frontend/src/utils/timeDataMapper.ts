@@ -4,6 +4,10 @@ export class TimeDataMapper<TTarget = any, TSource extends { timestamp: string }
     readonly mapper: (value: TSource) => TTarget,
   ) {}
 
+  get length() {
+    return this.data.length;
+  }
+
   chain<TNewTarget>(chainMapper: (value: TTarget) => TNewTarget) {
     return new TimeDataMapper(this.data, (x) => chainMapper(this.mapper(x)));
   }

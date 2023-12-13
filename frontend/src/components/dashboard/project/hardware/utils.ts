@@ -2,7 +2,7 @@ import { TimeDataMapper } from "../../../../utils/timeDataMapper";
 
 const viewRangeSeconds = 300;
 const dataInterval = 2;
-export const fetchDataCount = Math.ceil(viewRangeSeconds / dataInterval);
+export const fetchDataCount = Math.ceil((viewRangeSeconds / dataInterval) * 1.1);
 
 export function getTimeAxisOptions(mapper: TimeDataMapper) {
   const latestTime = new Date(mapper.data[mapper.data.length - 1].timestamp).getTime();

@@ -3,6 +3,7 @@ import { ECharts } from "../../../echarts";
 import { CpuInfo } from "../../../../services/types";
 import { TimeDataMapper } from "../../../../utils/timeDataMapper";
 import { getTimeAxisOptions } from "./utils";
+import { GraphWrapper } from "./graphWrapper";
 
 export const CPUGraph = ({ data }: { data: TimeDataMapper<CpuInfo[]> }) => {
   const cpus = data.getValue(0);
@@ -18,6 +19,7 @@ export const CPUGraph = ({ data }: { data: TimeDataMapper<CpuInfo[]> }) => {
         bottom: 30,
       },
       title: {
+        left: 20,
         text: `CPU (${cpus.length} threads)`,
         textStyle: {
           fontSize: 12,
@@ -56,6 +58,8 @@ export const CPUGraph = ({ data }: { data: TimeDataMapper<CpuInfo[]> }) => {
   }, [cpus, data]);
 
   return (
-    <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />
+    <GraphWrapper title="CPU" lastValue={data.getValue(data.length - 1)}>
+      <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />
+    </GraphWrapper>
   );
 };

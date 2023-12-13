@@ -3,6 +3,7 @@ import { ECharts } from "../../../echarts";
 import { RamInfo } from "../../../../services/types";
 import { TimeDataMapper } from "../../../../utils/timeDataMapper";
 import { getTimeAxisOptions } from "./utils";
+import { GraphWrapper } from "./graphWrapper";
 
 export const RAMGraph = ({ data }: { data: TimeDataMapper<RamInfo> }) => {
   const initialOption = () => {
@@ -13,6 +14,7 @@ export const RAMGraph = ({ data }: { data: TimeDataMapper<RamInfo> }) => {
         trigger: "axis",
       },
       title: {
+        left: 20,
         text: `RAM`,
         textStyle: {
           fontSize: 12,
@@ -59,6 +61,8 @@ export const RAMGraph = ({ data }: { data: TimeDataMapper<RamInfo> }) => {
   }, [data]);
 
   return (
-    <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />
+    <GraphWrapper title="Memory" lastValue={data.getValue(data.length - 1)}>
+      <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />
+    </GraphWrapper>
   );
 };

@@ -1,0 +1,8 @@
+.w-json-view-container {
+  padding-left: 1em;
+}
+
+span[style="display: inline-flex; align-items: center;"] {
+  /* position: absolute; */
+  transform: translate(-1em, 0);
+}
