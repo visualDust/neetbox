@@ -60,3 +60,9 @@ export interface ImageMetadata {
     series: string;
   };
 }
+
+export interface RunStatus {
+  action: ActionInfo;
+  platform: PlatformInfo;
+  hyperparameters: any;
+}

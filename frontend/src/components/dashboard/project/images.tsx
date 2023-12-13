@@ -17,7 +17,9 @@ export const Images = memo(() => {
 export const AllImageViewers = memo(() => {
   const { projectId, runId } = useCurrentProject()!;
   const series = useProjectSeries(projectId, runId!, "image");
-  return series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading text="Images loading" />;
+  return (
+    series?.map((s) => <SeriesViewer key={s} series={s} />) ?? <Loading text="Images loading" vertical />
+  );
 });
 
 const SeriesViewer = memo(({ series }: { series: string }) => {

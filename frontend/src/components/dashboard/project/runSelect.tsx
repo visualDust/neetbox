@@ -5,6 +5,7 @@ import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
 import Loading from "../../loading";
 import { useCurrentProject, useProjectRunIds } from "../../../hooks/useProject";
 import { fetcher } from "../../../services/api";
+import { HyperParams } from "./hyperParams";
 
 export const RunSelect = memo((props: any) => {
   const { setRunId, runIds, mutateRunIds, projectId, runId, isOnlineRun } = props;
@@ -103,6 +104,7 @@ export const RunSelect = memo((props: any) => {
                   />
                 )}
                 {item.online ? <Tag color="green">Online</Tag> : <Tag color="red">Offline</Tag>}
+                <HyperParams projectId={projectId} runId={item.runid} trigger="hover" position="leftTop" />
               </Select.Option>
             );
           })}
@@ -110,6 +112,7 @@ export const RunSelect = memo((props: any) => {
       ) : (
         <Loading height="30px" />
       )}
+      <HyperParams projectId={projectId} runId={runId} />
       {changing && <Loading height="30px" />}
       <RunEditor
         data={editing}
