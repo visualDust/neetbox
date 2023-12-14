@@ -48,19 +48,19 @@ class ClientConn(metaclass=Singleton):
     # http client
     http: httpx.Client = _load_http_client()
 
-    def post(api: str, *args, **kwargs):
+    def post(api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api)
         return ClientConn.http.post(url, *args, **kwargs)
 
-    def get(api: str, *args, **kwargs):
+    def get(api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api)
         return ClientConn.http.get(url, *args, **kwargs)
 
-    def put(api: str, *args, **kwargs):
+    def put(api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api)
         return ClientConn.http.put(url, *args, **kwargs)
 
-    def delete(api: str, *args, **kwargs):
+    def delete(api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api)
         return ClientConn.http.delete(url, *args, **kwargs)
 
