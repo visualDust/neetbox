@@ -40,6 +40,8 @@ def get_web_socket_server(config, debug=False):
             return  # client disconnected before handshake, returning anyway
         project_id, run_id, who = connected_clients[ws_client_id]
         bridge = Bridge.of_id(project_id)
+        if not bridge:
+            return  # do nothing if bridge has been deleted
         if who == IdentityType.WEB:  # is web ws, remove from bridge's web ws list
             _new_web_ws_list = [
                 c for c in Bridge.of_id(project_id).web_ws_list if c["id"] != ws_client_id

@@ -63,6 +63,8 @@ def get_flask_server(debug=False):
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>", methods=["GET"])
     def get_status_of_project_id(project_id: str):
+        if not Bridge.has(project_id):
+            return abort(404)  # project id must exist
         bridge = Bridge.of_id(project_id)
         return _project_status_from_bridge(bridge)
 
@@ -137,6 +139,8 @@ def get_flask_server(debug=False):
         if bridge.is_online(run_id):  # cannot delete running projects
             abort(400, {ERROR_KEY: "can only delete history run id."})
         bridge.historyDB.delete_run_id(run_id)
+        if 0 == len(bridge.get_run_ids()):  # check if all the run ids are deleted
+            del Bridge._id2bridge[project_id]  # delete the empty bridge
         return {RESULT_KEY: "success"}
 
     @app.route(f"/image/<project_id>", methods=["POST"])

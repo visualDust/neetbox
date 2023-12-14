@@ -1,5 +1,6 @@
 import collections
 import json
+import os
 import sqlite3
 from datetime import datetime
 from random import random
@@ -158,10 +159,14 @@ class DBConnection:
     _id2dbc = {}
 
     # not static. instance level vars
-    connection: sqlite3.Connection
+    project_id: str  # of which project id
+    file_path: str  # where is the db file
+    connection: sqlite3.Connection  # the db connection
     _inited_tables: collections.defaultdict
 
     def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "DBConnection":
+        if path is None and project_id is None:
+            raise RuntimeError(f"please provide at least project id or path when creating db")
         if path is None:  # make path from project id
             path = f"{HISTORY_FILE_ROOT}/{project_id}.{HISTORY_FILE_TYPE_NAME}"
         if path in cls._path2dbc:
@@ -170,6 +175,7 @@ class DBConnection:
             return cls._id2dbc[project_id]
         new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
+        new_dbc.file_path = path
         new_dbc.connection = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
         new_dbc.connection.execute("pragma journal_mode=wal")  # set journal mode WAL
         new_dbc.connection.execute("PRAGMA foreign_keys = ON")  # enable foreign keys features
@@ -188,8 +194,41 @@ class DBConnection:
             )
         cls._path2dbc[path] = new_dbc
         cls._id2dbc[project_id] = new_dbc
+        new_dbc.project_id = project_id
         logger.ok(f"History file(version={_db_file_version}) for project id '{project_id}' loaded.")
         return new_dbc
+
+    def finialize(self):
+        if self.project_id not in DBConnection._id2dbc:
+            logger.err(
+                RuntimeError(f"could not find db to delete with project id {self.project_id}")
+            )
+        del DBConnection._id2dbc[self.project_id]
+        del DBConnection._path2dbc[self.file_path]
+        logger.info(f"deleting history DB for project id {self.project_id}...")
+        if self.connection:
+            try:
+                self.connection.close()
+            except Exception as e:
+                logger.err(
+                    RuntimeError(
+                        f"failed to close DB connection for project id {self.project_id} because {e}"
+                    ),
+                    reraise=True,
+                )
+        try:
+            for suffix in ["", "-shm", "-wal"]:  # remove db files
+                _path = f"{self.file_path}{suffix}"
+                if os.path.exists(_path):
+                    os.remove(_path)
+        except Exception as e:
+            logger.err(
+                RuntimeError(
+                    f"failed to delete DB file for project id {self.project_id} because {e}"
+                ),
+                reraise=True,
+            )
+        logger.info(f"History db for project id {self.project_id} has been deleted.")
 
     @classmethod
     def items(cls):
