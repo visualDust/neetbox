@@ -2,13 +2,15 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Space, Select, Tag, Button, Modal, Form, Toast } from "@douyinfe/semi-ui";
 import { IconDelete, IconEdit } from "@douyinfe/semi-icons";
 import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
+import { useNavigate } from "react-router-dom";
 import Loading from "../../loading";
-import { useCurrentProject, useProjectRunIds } from "../../../hooks/useProject";
+import { useCurrentProject } from "../../../hooks/useProject";
 import { fetcher } from "../../../services/api";
 import { HyperParams } from "./hyperParams";
 
 export const RunSelect = memo((props: any) => {
   const { setRunId, runIds, mutateRunIds, projectId, runId, isOnlineRun } = props;
+  const navigate = useNavigate();
   const items = useMemo(
     () =>
       [...(runIds ?? [])]
@@ -51,7 +53,7 @@ export const RunSelect = memo((props: any) => {
               ) : (
                 <Tag color="red">Offline</Tag>
               )}
-              {items.find((x) => x.runid == p.value).timestamp}
+              {items.find((x) => x.runid == p.value)?.timestamp}
             </>
           )}
         >
@@ -92,7 +94,14 @@ export const RunSelect = memo((props: any) => {
                         content: `Deleting run ${item.timestamp} (${item.runid})`,
                         centered: true,
                         onOk: async () => {
-                          // await new Promise((r) => setTimeout(r, 1000));
+                          if (item.runid === runId) {
+                            const existedId = runIds.find((x) => x.runid !== runId);
+                            if (existedId) {
+                              setRunId(existedId);
+                            } else {
+                              navigate("/");
+                            }
+                          }
                           await fetcher(`/project/${projectId}/run/${item.runid}`, { method: "DELETE" });
                           mutateRunIds();
                           Toast.success({
