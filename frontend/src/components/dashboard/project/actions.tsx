@@ -11,32 +11,30 @@ export function Actions() {
   const { projectId, runId } = useCurrentProject();
   const status = useProjectRunStatus(projectId, runId);
   const actions = status?.action as ActionInfo;
-  const actionList = Object.entries(useMemoJSON(actions ?? {}));
+  const actionListMemo = Object.entries(useMemoJSON(actions ?? {}));
   const [blocking, setBlocking] = useState(false);
-  return actions ? (
-    <Space style={{ marginBottom: "20px" }} spacing="medium" wrap>
-      {actionList.length ? (
-        actionList.map(([actionName, actionOptions]) => (
-          <ActionItem
-            key={actionName}
-            name={actionName}
-            actionOptions={actionOptions}
-            blocking={blocking}
-            setBlocking={setBlocking}
-          />
-        ))
-      ) : (
-        <Typography.Text>
-          No actions (
-          <a target="_blank" href="https://neetbox.550w.host/docs/guide/">
-            docs
-          </a>
-          )
-        </Typography.Text>
-      )}
-    </Space>
-  ) : (
+  return !status ? (
     <Loading size="large" />
+  ) : !status.action ? (
+    <Typography.Text>
+      No actions (
+      <a target="_blank" href="https://neetbox.550w.host/docs/guide/">
+        docs
+      </a>
+      )
+    </Typography.Text>
+  ) : (
+    <Space style={{ marginBottom: "20px" }} spacing="medium" wrap>
+      {actionListMemo.map(([actionName, actionOptions]) => (
+        <ActionItem
+          key={actionName}
+          name={actionName}
+          actionOptions={actionOptions}
+          blocking={blocking}
+          setBlocking={setBlocking}
+        />
+      ))}
+    </Space>
   );
 }
 
