@@ -169,16 +169,11 @@ class FileLogWriter(LogWriter):
     def write(self, raw_log: RawLog):
         _msg_dict = raw_log.json()
         _style = raw_log.style
-        text_msg = str(
-            _msg_dict["series"]
-            + _msg_dict["timestamp"]
-            + _style.split_char_txt * min(len(_msg_dict["timestamp"]), 1)
-            + _msg_dict["whom"]
-            + _style.split_char_txt * min(len(_msg_dict["whom"]), 1)
-            + _msg_dict["message"]
-            + "\n"
+        _series_text = f"[{_msg_dict['series']}]" if _msg_dict["series"] else ""
+        text_msg = _style.split_char_txt.join(
+            [_msg_dict["timestamp"], _series_text, _msg_dict["whom"], _msg_dict["message"]]
         )
-        self.file_writer.write(text_msg)
+        self.file_writer.write(text_msg + "\n")
 
 
 # ================== WS LOG WRITER =====================

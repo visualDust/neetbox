@@ -15,10 +15,10 @@ from neetbox._daemon.server.history import *
 
 def server_process(cfg, debug=False):
     setproctitle.setproctitle("NEETBOX SERVER")
-    from neetbox.logging import LogStyle, logger
+    from neetbox.logging import LogStyle
+    from neetbox.logging.logger import Logger
 
-    logger = logger("NEETBOX", LogStyle(skip_writers=["ws"]))
-
+    logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
     # load bridges
     Bridge.load_histories()  # load history files
 
@@ -33,9 +33,9 @@ def server_process(cfg, debug=False):
     logger.log(f"launching websocket server...")
     ws_server.run_forever(threaded=True)
 
-    _port = cfg["port"]
-    logger.log(f"visit frontend at http://localhost:{_port}")
-    flask_server.run(host="0.0.0.0", port=_port)
+    port = cfg["port"]
+    logger.log(f"launching flask server on port {port}")
+    flask_server.run(host="0.0.0.0", port=port)
 
 
 if __name__ == "__main__":

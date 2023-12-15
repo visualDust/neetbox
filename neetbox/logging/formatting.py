@@ -22,7 +22,7 @@ class LogStyle:
     with_datetime: bool = True
     split_char_cmd = " > "
     split_char_identity = "/"
-    split_char_txt = " | "
+    split_char_txt = " "
     skip_writers: list[str] = None
 
     @classmethod

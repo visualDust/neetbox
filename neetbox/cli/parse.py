@@ -21,7 +21,7 @@ from ._client_web_apis import *
 
 console = Console()
 
-logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws"]))
+logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws", "file"]))
 
 
 def get_daemon_config():

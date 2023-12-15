@@ -93,12 +93,14 @@ class ClientConn(metaclass=Singleton):
 
         cfg = get_module_level_config()
         # ws server url
-        cls.ws_server_addr = f"ws://{cfg['host']}:{cfg['port'] + 1}"
+        host = cfg["host"]
+        port = cfg["port"] + 1
+        cls.ws_server_addr = f"ws://{host}:{port}"
 
         # create websocket app
         logger.log(f"creating websocket connection to {cls.ws_server_addr}", skip_writers=["ws"])
         cls.wsApp = websocket.WebSocketApp(
-            cls.ws_server_addr,
+            url=cls.ws_server_addr,
             on_open=cls.__on_ws_open,
             on_message=cls.__on_ws_message,
             on_error=cls.__on_ws_err,
@@ -106,7 +108,7 @@ class ClientConn(metaclass=Singleton):
         )
 
         Thread(
-            target=cls.wsApp.run_forever, kwargs={"reconnect": True}, daemon=True
+            target=cls.wsApp.run_forever, kwargs={"reconnect": 1}, daemon=True
         ).start()  # initialize and start ws thread
 
         _ws_initialized = True

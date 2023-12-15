@@ -14,7 +14,7 @@ autoload = true
 [daemon]
 enable = true
 host = "127.0.0.1"
-port = 5000
+port = 20202
 allowIpython = false
 mute = true
 mode = "detached"

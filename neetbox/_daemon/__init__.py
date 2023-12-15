@@ -31,9 +31,7 @@ def connect():
                 "ipython, try to set 'allowIpython' to True."
             )
             return False  # ignore if debugging in ipython
-    _is_daemon_server_online = check_server_connectivity()  # try to connect daemon
-    logger.debug("daemon connection status: " + str(_is_daemon_server_online))
-    if not _is_daemon_server_online:  # if no daemon online
+    if not check_server_connectivity():  # if no daemon online
         # check if possible to launch
         if daemon_config["host"] not in ["localhost", "127.0.0.1", "0.0.0.0"]:
             # daemon not running on localhost

@@ -7,10 +7,10 @@ from random import random
 from typing import Dict, Tuple, Union
 
 from neetbox._daemon._protocol import *
-from neetbox.logging import logger
-from neetbox.logging.formatting import LogStyle
+from neetbox.logging import LogStyle
+from neetbox.logging.logger import Logger
 
-logger = logger("NEETBOX", LogStyle(skip_writers=["ws", "file"]))
+logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
 
 
 class QueryCondition:

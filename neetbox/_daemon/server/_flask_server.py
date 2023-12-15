@@ -24,9 +24,10 @@ werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 
 def get_flask_server(debug=False):
     __PROC_NAME = "NEETBOX"
-    from neetbox.logging import LogStyle, logger
+    from neetbox.logging import LogStyle
+    from neetbox.logging.logger import Logger
 
-    logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))
+    logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
 
     if debug:
         logger.log(f"Running with debug, using APIFlask")
