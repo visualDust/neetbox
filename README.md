@@ -20,12 +20,13 @@ NEETBOX is under heavy development.
 - [x] local/remote logging
 - [x] command line cli tools
 - [x] system monitoring
-- [x] post images to frontend
-- [ ] plotting(scatters, line chart...)
+- [x] post images/tensor as images to frontend
+- [x] plotting(scatters, line chart...)
 - [x] run python code by clicking on frontend buttons
 - [x] history automatically saved by backend
+- [x] distinguish different runs
 - [ ] attach remote logging in command line cli
-- [ ] distinguish different runs
+- [ ] compare different runs
 
 ## Docs
 
