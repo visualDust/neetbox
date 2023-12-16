@@ -1,3 +1,4 @@
+import atexit
 import functools
 import json
 import logging
@@ -18,10 +19,8 @@ from neetbox.server._daemonable_process import DaemonableProcess
 from neetbox.utils.massive import is_loopback
 from neetbox.utils.mvc import Singleton
 
+logging.getLogger("httpx").setLevel(logging.ERROR)
 logger = Logger(whom=None, style=LogStyle(skip_writers=["ws"]))
-
-httpx_logger = logging.getLogger("httpx")
-httpx_logger.setLevel(logging.ERROR)
 
 
 def addr_of_api(api, http_root=None):
@@ -287,6 +286,14 @@ class Connection(metaclass=Singleton):  # singleton
 
 connection = Connection
 
+
+def on_exit():
+    if connection.wsApp is not None:
+        connection.wsApp.close()
+        logger.info("client disconnecting...", with_datetime=False)
+
+
+atexit.register(on_exit)
 # assign this connection to websocket log writer
 from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
 

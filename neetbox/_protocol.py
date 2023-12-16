@@ -102,6 +102,7 @@ class EventMsg:
 
 # known event names
 EVENT_TYPE_NAME_HANDSHAKE = "handshake"
+EVENT_TYPE_NAME_WAVEHANDS = "wavehands"
 EVENT_TYPE_NAME_LOG = "log"
 EVENT_TYPE_NAME_ACTION = "action"
 EVENT_TYPE_NAME_SCALAR = "scalar"
@@ -111,6 +112,7 @@ EVENT_TYPE_NAME_VIDEO = "video"
 EVENT_TYPE_NAME_HPARAMS = "hyperparameters"
 EVENT_TYPE_NAME_STATUS = "status"
 EVENT_TYPE_NAME_HARDWARE = "hardware"
+EVENT_TYPE_NAME_PROGRESS = "progress"
 
 # ===================== HTTP things =====================
 
