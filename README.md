@@ -9,7 +9,8 @@ Python API, backend server, frontend, ALL IN ONE. A tool box for Logging/Debuggi
 
 ## Screenshot
 
-![](./docs/static/img/screenshot.jpg)
+![image](https://github.com/visualDust/neetbox/assets/33346934/593df42b-13d4-4239-92ab-a7ca452c904a)
+![image](https://github.com/visualDust/neetbox/assets/33346934/47df39c9-cda2-4dba-a9a2-7ef866c5c8ab)
 
 ## Dev
 
