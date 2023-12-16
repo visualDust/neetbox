@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# Github: github.com/visualDust
+# URL:    https://github.com/visualDust
 # Date:   20230315
 
 import functools
@@ -265,8 +265,11 @@ class Logger:
                 with_identifier=with_identifier,
                 with_datetime=with_datetime,
             )
-        if reraise:
-            raise err
+        if isinstance(err, Exception):
+            if reraise:
+                raise err
+            elif self.log_level >= LogLevel.DEBUG:
+                Logger._console.print_exception(err)
         return self
 
     def mention(

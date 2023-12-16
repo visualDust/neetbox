@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# Github: github.com/visualDust
+# URL:    https://github.com/visualDust
 # Date:   20231206
 
 from ._action_agent import _NeetActionManager as NeetActionManager
