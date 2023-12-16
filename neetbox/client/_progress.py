@@ -1,4 +1,11 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# GITHUB:    github.com/visualDust
+# Date:   20231217
+
 from time import time
+from typing import Callable
 
 from ._client import connection
 
@@ -38,14 +45,21 @@ class Progress:
             rate = (
                 self.done / elapsed_time if elapsed_time > 0 else 0
             )  # Calculate the iteration rate
+            iter_next = next(self.iterator)
+            current_name = f"{iter_next.__name__ if isinstance(iter_next, Callable) else iter_next}"
             connection.ws_send(
                 event_type=EVENT_TYPE_NAME_PROGRESS,
                 series=self.caller_identity.last_traceable,
-                payload={"done": self.done, "total": self.total, "rate": rate},
+                payload={
+                    "step": self.done,
+                    "current": current_name,
+                    "total": self.total,
+                    "rate": rate,
+                },
                 timestamp=self.timestamp,
                 _history_len=1,
             )
-            return next(self.iterator)
+            return iter_next
         else:
             raise StopIteration
 
