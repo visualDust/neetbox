@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://github.com/visualDust
+# Github: github.com/visualDust
 # Date:   20230315
 
 import torch.nn as nn
