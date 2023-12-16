@@ -12,6 +12,7 @@ from .client import (
     add_scalar,
     listen,
     watch,
+    progress
 )
 from .logging import logger
 
@@ -24,4 +25,5 @@ __all__ = [
     "logger",
     "watch",
     "listen",
+    "progress"
 ]

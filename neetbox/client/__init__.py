@@ -8,6 +8,7 @@ from ._action_agent import _NeetActionManager as NeetActionManager
 from ._client import connection
 from ._image import add_figure, add_image
 from ._plot import add_hyperparams, add_scalar
+from ._progress import Progress as progress
 from ._signal_and_slot import listen, watch
 
 action = NeetActionManager.register
@@ -23,4 +24,5 @@ __all__ = [
     "NeetActionManager",
     "watch",
     "listen",
+    "progress",
 ]

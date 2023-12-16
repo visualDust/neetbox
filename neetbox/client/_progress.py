@@ -1,13 +1,13 @@
 from time import time
 
-from neetbox._protocol import *
-from neetbox.utils.framing import get_frame_module_traceback
-
 from ._client import connection
+
+from neetbox._protocol import *
+from neetbox.utils.framing import get_caller_identity_traceback
 
 
 class Progress:
-    def __init__(self, input, name=None):
+    def __init__(self, input):
         if isinstance(input, int):
             self.total = input
             self.iterator = iter(range(input))
@@ -15,18 +15,17 @@ class Progress:
             self.iterable = input
             self.iterator = iter(input)
             self.total = len(input)
-        if name is None:
-            name = get_frame_module_traceback().__name__
-        self.name = name
+        self.caller_identity = get_caller_identity_traceback(traceback=2)
         self.done = 0
         self.start_time = time()  # Track the start time
+        self.timestamp = get_timestamp()
 
     def __enter__(self):
-        # print(f"entering {self.name}")
+        # print(f"entering {self.caller_identity}")
         return self
 
     def __exit__(self, type, value, traceback):
-        # print(f"leaving {self.name}")
+        # print(f"leaving {self.caller_identity}")
         return
 
     def __iter__(self):
@@ -41,11 +40,11 @@ class Progress:
             )  # Calculate the iteration rate
             connection.ws_send(
                 event_type=EVENT_TYPE_NAME_PROGRESS,
-                series=self.name,
+                series=self.caller_identity.func_name,
                 payload={"done": self.done, "total": self.total, "rate": rate},
+                timestamp=self.timestamp,
                 _history_len=1,
             )
-            print(f"{self.done}/{self.total}, {rate}/sec")
             return next(self.iterator)
         else:
             raise StopIteration

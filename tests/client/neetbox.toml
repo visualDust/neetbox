@@ -1,5 +1,5 @@
 name = "client-test-script"
-version = "0.3.1"
+version = "0.3.2"
 projectid = "2757e5c6-7ae2-420c-91ed-85778a3cfd59"
 
 [logging]

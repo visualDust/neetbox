@@ -4,6 +4,7 @@
 # URL:    https://github.com/visualDust
 # Date:   20230319
 
+from dataclasses import dataclass
 import inspect
 import types
 from os import path
@@ -41,49 +42,58 @@ def get_frame_filepath_traceback(traceback=1):
     return frame.filename
 
 
-class TracedIdentity:
-    def __init__(self, frame=None) -> None:
-        self.frame = None
-        self.func_name = None
-        self.locals = None
-        self.class_obj = None
-        self.class_name = None
-        self.module = None
-        self.module_name = None
-        self.filepath = None
-        self.filename = None
-        if frame:
-            self.parse(frame)
+@dataclass
+class TracebackIdentity:
+    frame = None
+    func_name = None
+    locals = None
+    class_obj = None
+    class_name = None
+    module = None
+    module_name = None
+    filepath = None
+    filename = None
 
-    def parse(self, frame):
-        self.frame = frame
-        self.func_name = frame.function
-        self.locals = frame[0].f_locals
-        if "self" in self.locals:
-            self.class_obj = self.locals["self"].__class__
-            if self.class_obj:
-                self.class_name = self.class_obj.__name__
+    @classmethod
+    def parse(cls, frame) -> "TracebackIdentity":
+        instance = TracebackIdentity()
+        instance.frame = frame
+        instance.func_name = frame.function if frame.function != "<module>" else None
+        instance.locals = frame[0].f_locals
+        if "self" in instance.locals:
+            instance.class_obj = instance.locals["self"].__class__
+            if instance.class_obj:
+                instance.class_name = instance.class_obj.__name__
         module: Union[types.ModuleType, None] = inspect.getmodule(frame[0])
-        self.module = module
-        self.module_name = module.__name__ if module else None
-        self.filepath = path.abspath(frame.filename)
-        self.filename = path.basename(frame.filename)
-        return self
+        instance.module = module
+        instance.module_name = module.__name__ if module else None
+        instance.filepath = path.abspath(frame.filename)
+        instance.filename = path.basename(frame.filename)
+        return instance
 
-    def __str__(self) -> str:
+    def __eq__(self, __value: object) -> bool:
+        assert isinstance(
+            __value, TracebackIdentity
+        ), f"cannot compare {__value} as a {TracebackIdentity}"
         return (
-            str(self.func_name)
-            + ","
-            + str(self.class_name)
-            + ","
-            + str(self.module_name)
-            + ","
-            + str(self.filepath)
-            + ","
+            self.filepath == __value.filepath
+            and self.module_name == __value.module_name
+            and self.class_name == __value.class_name
+            and self.func_name == __value.func_name
+        )
+
+    def __repr__(self) -> str:
+        return "\n".join(
+            [
+                f"in file: \t {self.filepath}",
+                f"in modlue: \t {self.module_name}",
+                f"in class: \t {self.class_name}",
+                f"in function: \t {self.func_name}",
+            ]
         )
 
 
 def get_caller_identity_traceback(traceback=1):
     frame = get_frame_traceback(traceback + 1)
-    traced_identity = TracedIdentity().parse(frame)
+    traced_identity = TracebackIdentity.parse(frame)
     return traced_identity
