@@ -1,25 +1,22 @@
 name = "client-test-script"
-projectid = "a7a5572f-9bd8-4f3d-9dfc-78b01bd805ec"
-version = "0.2.6"
+version = "0.3.1"
+projectid = "2757e5c6-7ae2-420c-91ed-85778a3cfd59"
 
 [logging]
-level = "INFO"
-
-[pipeline]
-updateInterval = 0.5
+level = "DEBUG"
+logdir = "logs"
 
 [extension]
 autoload = true
 
-[daemon]
+[client]
 enable = true
 host = "127.0.0.1"
-port = 20202
+port = 5000
 allowIpython = false
 mute = true
 mode = "detached"
-uploadInterval = 0.5
+uploadInterval = 1
 
 [extension.environment.hardware]
-monit = true
 interval = 2

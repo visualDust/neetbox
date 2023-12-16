@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# URL:    https://github.com/visualDust
 # Date:   20230413
 
 
@@ -94,8 +94,8 @@ class _Hardware(dict, metaclass=Singleton):
         self._do_watch = True
         self._update_interval = intervel
         if not self._watcher or not self._watcher.is_alive():
-            from neetbox._daemon._protocol import EVENT_TYPE_NAME_HARDWARE
-            from neetbox._daemon.client._client import connection
+            from neetbox._protocol import EVENT_TYPE_NAME_HARDWARE
+            from neetbox.client import connection
 
             def watcher_fun(env_instance: _Hardware, do_update_gpus: bool):
                 while env_instance._do_watch:
@@ -139,12 +139,12 @@ hardware = _Hardware()
 
 @export_default_config
 def return_default_config() -> dict:
-    return {"monit": True, "interval": 2}
+    return {"interval": 2}
 
 
 # watch updates in daemon
 @on_workspace_loaded(name="hardware-monit")
 def load_monit_hardware():
     cfg = get_module_level_config()
-    if cfg["monit"]:  # if do monit hardware
+    if cfg["interval"] > 0:  # if do monit hardware
         hardware.set_update_intervel(cfg["interval"])

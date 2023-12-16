@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# URL:    https://github.com/visualDust
 # Date:   20230318
 
 from dataclasses import dataclass

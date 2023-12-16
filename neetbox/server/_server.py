@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# URL:    https://github.com/visualDust
 # Date:   20230414
 
 import setproctitle
 
-from neetbox._daemon._protocol import *
-from neetbox._daemon.server._bridge import Bridge
-from neetbox._daemon.server._flask_server import get_flask_server
-from neetbox._daemon.server._websocket_server import get_web_socket_server
-from neetbox._daemon.server.history import *
+from neetbox._protocol import *
+from neetbox.server._bridge import Bridge
+from neetbox.server._flask_server import get_flask_server
+from neetbox.server._websocket_server import get_web_socket_server
+from neetbox.server.history import *
 
 
 def server_process(cfg, debug=False):

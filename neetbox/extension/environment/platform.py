@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# URL:    https://github.com/visualDust
 # Date:   20230417
 
 import getpass
@@ -53,12 +53,12 @@ class __Platform(dict, metaclass=Singleton):
 # watch updates in daemon
 @on_workspace_loaded(name="show-platform-information")
 def load_send_platform_info():
-    from neetbox._daemon._protocol import (
+    from neetbox._protocol import (
         EVENT_TYPE_NAME_HANDSHAKE,
         EVENT_TYPE_NAME_STATUS,
         EventMsg,
     )
-    from neetbox._daemon.client._client import connection
+    from neetbox.client import connection
 
     platform = __Platform()
 

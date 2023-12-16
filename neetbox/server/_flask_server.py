@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# URL:    https://github.com/visualDust
 # Date:   20231204
 
 import logging
@@ -13,8 +13,8 @@ from typing import Union
 import werkzeug
 from flask import Response, abort, json, redirect, request, send_from_directory
 
-from neetbox._daemon._protocol import *
-from neetbox._daemon.server._bridge import Bridge
+from neetbox._protocol import *
+from neetbox.server._bridge import Bridge
 
 from .history import *
 

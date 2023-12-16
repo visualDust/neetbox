@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# URL:    https://github.com/visualDust
 # Date:   20231204
 
-import json
 from typing import Dict
 
 from websocket_server import WebsocketServer
 
-from neetbox._daemon._protocol import *
+from neetbox._protocol import *
 from neetbox.logging import LogStyle, logger
 
 from .history import *

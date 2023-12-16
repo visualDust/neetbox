@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# URL:    https://github.com/visualDust
 # Date:   20230414
 
 
-from neetbox._daemon._protocol import *
-from neetbox._daemon.client._client import connection
+from neetbox._protocol import *
+from neetbox.client import connection
 
 
 def _get(api, root=None):

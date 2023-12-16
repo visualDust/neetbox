@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# URL:    https://github.com/visualDust
 # Date:   20231204
 
 from typing import Dict, Tuple
@@ -10,7 +10,7 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 
-from neetbox._daemon._protocol import *
+from neetbox._protocol import *
 
 from .history import *
 
@@ -18,9 +18,9 @@ from .history import *
 def get_web_socket_server(config, debug=False):
     from websocket_server import WebsocketServer
 
-    from neetbox._daemon.server._bridge import Bridge
     from neetbox.logging import LogStyle
     from neetbox.logging.logger import Logger
+    from neetbox.server._bridge import Bridge
 
     console = Console()
     logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))

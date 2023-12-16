@@ -3,10 +3,9 @@ import json
 import os
 import sqlite3
 from datetime import datetime
-from random import random
 from typing import Dict, Tuple, Union
 
-from neetbox._daemon._protocol import *
+from neetbox._protocol import *
 from neetbox.logging import LogStyle
 from neetbox.logging.logger import Logger
 

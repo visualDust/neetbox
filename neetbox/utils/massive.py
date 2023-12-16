@@ -1,9 +1,33 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# URL:    https://github.com/visualDust
+# Date:   20231216
+
 import functools
 import os
+import socket
+import struct
 import time
 from concurrent.futures import ThreadPoolExecutor
 
 _ThreadPoolExecutor = ThreadPoolExecutor()
+
+
+def is_loopback(host):
+    loopback_checker = {
+        socket.AF_INET: lambda x: struct.unpack("!I", socket.inet_aton(x))[0] >> (32 - 8) == 127,
+        socket.AF_INET6: lambda x: x == "::1",
+    }
+    for family in (socket.AF_INET, socket.AF_INET6):
+        try:
+            r = socket.getaddrinfo(host, None, family, socket.SOCK_STREAM)
+        except socket.gaierror:
+            return False
+        for family, _, _, _, sockaddr in r:
+            if not loopback_checker[family](sockaddr[0]):
+                return False
+    return True
 
 
 def nonblocking(func):
