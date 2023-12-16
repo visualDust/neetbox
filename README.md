@@ -9,7 +9,8 @@ Python API, backend server, frontend, ALL IN ONE. A tool box for Logging/Debuggi
 
 ## Screenshot
 
-![](./docs/static/img/screenshot.jpg)
+![image](https://github.com/visualDust/neetbox/assets/33346934/593df42b-13d4-4239-92ab-a7ca452c904a)
+![image](https://github.com/visualDust/neetbox/assets/33346934/47df39c9-cda2-4dba-a9a2-7ef866c5c8ab)
 
 ## Dev
 
@@ -19,12 +20,13 @@ NEETBOX is under heavy development.
 - [x] local/remote logging
 - [x] command line cli tools
 - [x] system monitoring
-- [x] post images to frontend
-- [ ] plotting(scatters, line chart...)
+- [x] post images/tensor as images to frontend
+- [x] plotting(scatters, line chart...)
 - [x] run python code by clicking on frontend buttons
 - [x] history automatically saved by backend
+- [x] distinguish different runs
 - [ ] attach remote logging in command line cli
-- [ ] distinguish different runs
+- [ ] compare different runs
 
 ## Docs
 
