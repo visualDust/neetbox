@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# Github: github.com/visualDust
+# Date:   20231201
+
 import json
 from dataclasses import dataclass
 from datetime import datetime as dt

@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# Github: github.com/visualDust
+# Date:   20230413
+
 import inspect
 import io
 import json

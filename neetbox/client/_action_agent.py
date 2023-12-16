@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# Github: github.com/visualDust
+# Date:   20231122
+
 import functools
 import inspect
 from ast import literal_eval

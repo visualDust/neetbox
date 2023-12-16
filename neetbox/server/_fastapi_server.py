@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: PuQing
+# Github: github.com/andPuQing
+# Date:   20231103
+
 from typing import Any, Dict, List
 
 import uvicorn

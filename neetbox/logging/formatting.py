@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# GITHUB:    github.com/visualDust
+# Github: github.com/visualDust
 # Date:   20230318
 
 from dataclasses import dataclass

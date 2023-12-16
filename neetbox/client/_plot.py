@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# GITHUB:    github.com/visualDust
+# Github: github.com/visualDust
 # Date:   20231211
 
 from neetbox._protocol import *
