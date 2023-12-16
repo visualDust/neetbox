@@ -71,6 +71,21 @@ class TracebackIdentity:
         instance.filename = path.basename(frame.filename)
         return instance
 
+    @property
+    def last_traceable(self):
+        for identity in [self.func_name, self.class_name, self.module_name, self.filepath, None]:
+            if identity is not None:
+                return identity
+
+    @property
+    def json(self):
+        return {
+            "file": f"{self.filepath}",
+            "modlue": f"{self.module_name}",
+            "class": f"{self.class_name}",
+            "function": f"{self.func_name}",
+        }
+
     def __eq__(self, __value: object) -> bool:
         assert isinstance(
             __value, TracebackIdentity
@@ -83,17 +98,9 @@ class TracebackIdentity:
         )
 
     def __repr__(self) -> str:
-        return "\n".join(
-            [
-                f"in file: \t {self.filepath}",
-                f"in modlue: \t {self.module_name}",
-                f"in class: \t {self.class_name}",
-                f"in function: \t {self.func_name}",
-            ]
-        )
+        return "\n".join([f"{k}:\t{v}" for k, v in self.json.items()])
 
 
 def get_caller_identity_traceback(traceback=1):
     frame = get_frame_traceback(traceback + 1)
-    traced_identity = TracebackIdentity.parse(frame)
-    return traced_identity
+    return TracebackIdentity.parse(frame)

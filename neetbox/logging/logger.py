@@ -265,7 +265,7 @@ class Logger:
                 with_identifier=with_identifier,
                 with_datetime=with_datetime,
             )
-        if type(err) is Exception:
+        if isinstance(err, Exception):
             if reraise:
                 raise err
             elif self.log_level >= LogLevel.DEBUG:

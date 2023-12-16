@@ -40,7 +40,7 @@ class Progress:
             )  # Calculate the iteration rate
             connection.ws_send(
                 event_type=EVENT_TYPE_NAME_PROGRESS,
-                series=self.caller_identity.func_name,
+                series=self.caller_identity.last_traceable,
                 payload={"done": self.done, "total": self.total, "rate": rate},
                 timestamp=self.timestamp,
                 _history_len=1,

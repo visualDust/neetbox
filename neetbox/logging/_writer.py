@@ -45,6 +45,7 @@ class RawLog:
         writer.write(self)
         return False
 
+    @property
     def json(self) -> dict:
         _default_style = self.style
         # prefix
@@ -89,7 +90,7 @@ class RawLog:
         return {"series": prefix, "timestamp": timestamp, "whom": whom, "message": self.rich_msg}
 
     def __repr__(self) -> str:
-        return json.dumps(self.json(), default=str)
+        return json.dumps(self.json, default=str)
 
 
 # ================== CONSOLE LOG WRITER =====================
@@ -117,7 +118,7 @@ class __ConsoleLogWriter(LogWriter):
     _console = Console()
 
     def write(self, raw_log: RawLog):
-        _msg_dict = raw_log.json()
+        _msg_dict = raw_log.json
         _style = raw_log.style
         _prefix = _msg_dict["series"]
         _prefix = _console_prefix_2_colored_text[_prefix] + " " if _prefix else _prefix
@@ -167,7 +168,7 @@ class FileLogWriter(LogWriter):
         self.file_writer = open(path, "a", encoding="utf-8", buffering=1)
 
     def write(self, raw_log: RawLog):
-        _msg_dict = raw_log.json()
+        _msg_dict = raw_log.json
         _style = raw_log.style
         _series_text = f"[{_msg_dict['series']}]" if _msg_dict["series"] else ""
         text_msg = _style.split_char_txt.join(
@@ -184,7 +185,7 @@ class _WebSocketLogWriter(LogWriter):
     connection = None  # connection should be assigned by neetbox._daemon.client._client to avoid recursive import
 
     def write(self, raw_log: RawLog):
-        json_data = raw_log.json()
+        json_data = raw_log.json
         payload = {"whom": json_data["whom"], "message": json_data["message"]}
         if _WebSocketLogWriter.connection:
             _WebSocketLogWriter.connection.ws_send(

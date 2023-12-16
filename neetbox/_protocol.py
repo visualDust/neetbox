@@ -55,6 +55,7 @@ class EventMsg:
     history_len: int = -1
     id: int = None  # id in database
 
+    @property
     def json(self):
         return {
             PROJECT_ID_KEY: self.project_id,
@@ -70,7 +71,7 @@ class EventMsg:
         }
 
     def dumps(self):
-        return json.dumps(self.json(), default=str)
+        return json.dumps(self.json, default=str)
 
     @classmethod
     def loads(cls, src):
@@ -91,8 +92,8 @@ class EventMsg:
 
     @classmethod
     def merge(cls, x: Union["EventMsg", dict], y: Union["EventMsg", dict]):
-        _x = x if isinstance(x, dict) else x.json()
-        _y = y if isinstance(y, dict) else y.json()
+        _x = x if isinstance(x, dict) else x.json
+        _y = y if isinstance(y, dict) else y.json
         for _k, _v in _y.items():
             _x[_k] = _v
         return cls.loads(_x)

@@ -84,6 +84,7 @@ class _Hardware(dict, metaclass=Singleton):
         # the environment shoube be imported in the __init__.py of the outer module. And the watcher thread should be auto started
         # self.set_update_intervel() # do not watch by default
 
+    @property
     def json(self):
         return {"cpus": self["cpus"], "ram": self["ram"], "gpus": self["gpus"]}
 
@@ -125,7 +126,7 @@ class _Hardware(dict, metaclass=Singleton):
                     time.sleep(env_instance._update_interval)
                     connection.ws_send(
                         event_type=EVENT_TYPE_NAME_HARDWARE,
-                        payload=env_instance.json(),
+                        payload=env_instance.json,
                         _history_len=1000,
                     )
 
