@@ -170,11 +170,9 @@ class Connection(metaclass=Singleton):  # singleton
             _retry_timeout = 10
             _time_begin = time.perf_counter()
             logger.log("Created daemon process, trying to connect to daemon...")
-
+            online_flag = False
             while time.perf_counter() - _time_begin < 10:  # try connect daemon
-                if cls.check_server_connectivity():
-                    break
-                else:
+                if not cls.check_server_connectivity():
                     exit_code = popen.poll()
                     if exit_code is not None:
                         logger.err(
@@ -182,10 +180,16 @@ class Connection(metaclass=Singleton):  # singleton
                         )
                         return False
                     time.sleep(0.5)
-            logger.err(
-                RuntimeError(f"Failed to connect to daemon after {_retry_timeout}s, stopping..."),
-                reraise=True,
-            )
+                else:
+                    online_flag = True
+                    break
+            if not online_flag:
+                logger.err(
+                    RuntimeError(
+                        f"Failed to connect to daemon after {_retry_timeout}s, stopping..."
+                    ),
+                    reraise=True,
+                )
 
         cls.online_mode = True  # enable online mode
         cls.ws_server_url = f"ws://{server_host}:{server_port + 1}"  # ws server url
