@@ -12,9 +12,10 @@ from .client import (
     add_scalar,
     listen,
     watch,
-    progress
+    progress,
 )
 from .logging import logger
+from ._protocol import VERSION as __version__
 
 __all__ = [
     "add_image",
@@ -25,5 +26,5 @@ __all__ = [
     "logger",
     "watch",
     "listen",
-    "progress"
+    "progress",
 ]

@@ -10,6 +10,9 @@ from datetime import datetime as dt
 from enum import Enum
 from importlib.metadata import version
 from typing import Any, Union
+from importlib.metadata import version
+
+VERSION = version("neetbox")
 
 # ===================== common things =====================
 

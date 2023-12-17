@@ -1,27 +1,22 @@
 name = "neetbox"
-projectid = "b42c4749-1fa8-4a9d-ae30-80e2c69309f8"
+version = "0.3.2"
+projectid = "fd9ba05f-5f33-4afb-9156-08caae9ab37a"
 
 [logging]
 level = "INFO"
-
-[pipeline]
-updateInterval = 0.5
+logdir = "logs"
 
 [extension]
-autoload = false
+autoload = true
 
-[daemon]
+[client]
 enable = true
 host = "127.0.0.1"
 port = 20202
 allowIpython = false
-mute = false
-mode = "attached"
-uploadInterval = 0.5
+mute = true
+mode = "detached"
+uploadInterval = 1
 
 [extension.environment.hardware]
-monit = true
-interval = 0.5
-
-[extension.environment.platform]
-monit = true
+interval = 2

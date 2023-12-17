@@ -13,6 +13,7 @@ from typing import Union
 import werkzeug
 from flask import Response, abort, json, redirect, request, send_from_directory
 
+import neetbox
 from neetbox._protocol import *
 from neetbox.server._bridge import Bridge
 
@@ -40,7 +41,7 @@ def get_flask_server(debug=False):
 
         app = Flask(__PROC_NAME, static_folder=None)
 
-    front_end_dist_path = os.path.join(os.path.dirname(__file__), "../frontend_dist")
+    front_end_dist_path = os.path.join(os.path.dirname(neetbox.__file__), "frontend_dist")
 
     @app.route("/")
     def static_serve_root():
