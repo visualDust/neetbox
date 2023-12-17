@@ -1,6 +1,6 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
-import { Divider, Space } from "@douyinfe/semi-ui";
+import { Divider, Progress, Space } from "@douyinfe/semi-ui";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/dashboard/project/logs/logs";
 import { Actions } from "../../components/dashboard/project/actions";
@@ -13,6 +13,7 @@ import { RunSelect } from "../../components/dashboard/project/runSelect";
 import PlatformProps, { PlatformTitleJson } from "../../components/dashboard/project/platformProps";
 import Loading from "../../components/loading";
 import { addNotice } from "../../utils/notification";
+import { Progresses } from "../../components/dashboard/project/progress";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
@@ -86,6 +87,9 @@ function ProjectDashboard() {
           <>
             <SectionTitle title="Logs" />
             <Logs />
+            <Divider />
+            <SectionTitle title="Progresses" />
+            <Progresses />
             <Divider />
             <SectionTitle title="Actions" />
             <Actions />

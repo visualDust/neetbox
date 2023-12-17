@@ -12,7 +12,7 @@ autoload = true
 [client]
 enable = true
 host = "127.0.0.1"
-port = 20202
+port = 5000
 allowIpython = false
 mute = true
 mode = "detached"

@@ -203,6 +203,12 @@ def get_flask_server(debug=False):
             project_id=project_id, table_name="scalar", condition=request.args.get("condition")
         )
 
+    @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/progress", methods=["GET"])
+    def get_history_progress_of(project_id):
+        return get_history_json_of(
+            project_id=project_id, table_name="progress", condition=request.args.get("condition")
+        )
+
     @app.route(f"/shutdown", methods=["POST"])
     def shutdown():
         def __sleep_and_shutdown(secs=1):
