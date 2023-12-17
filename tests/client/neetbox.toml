@@ -1,9 +1,9 @@
-name = "client-test-script"
-version = "0.3.2"
-projectid = "2757e5c6-7ae2-420c-91ed-85778a3cfd59"
+name = "client"
+version = "0.3.3"
+projectid = "d5628d20-99b9-4d40-ae6f-c7824256cb14"
 
 [logging]
-level = "DEBUG"
+level = "INFO"
 logdir = "logs"
 
 [extension]
@@ -12,7 +12,7 @@ autoload = true
 [client]
 enable = true
 host = "127.0.0.1"
-port = 5000
+port = 20202
 allowIpython = false
 mute = true
 mode = "detached"

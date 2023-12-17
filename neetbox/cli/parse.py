@@ -57,7 +57,7 @@ def _try_load_workspace_if_applicable():
     CONFIG_FILE_NAME = f"neetbox.toml"
     is_workspace = check_read_toml(CONFIG_FILE_NAME)
     if is_workspace:
-        _load_workspace_config()
+        _load_workspace_config(load_only=True)
 
 
 @main.command(name="list")
@@ -119,7 +119,7 @@ def serve(port, debug):
         server_process(cfg=_daemon_config, debug=debug)
     except Exception as e:
         logger.err(f"Failed to launch a neetbox server: {e}")
-        raise e
+        os._exit(-1)
 
 
 @main.command(name="shutdown")
@@ -141,8 +141,9 @@ def shutdown_server(port):
         _response = shutdown()
         click.echo(_response)
     except Exception as e:
-        logger.err(f"Failed to shutdown the neetbox server: {e}")
-        raise e
+        logger.err(
+            f"Failed to shutdown the neetbox server: {e}. Is the server running on port {daemon_config['port']}?"
+        )
 
 
 @main.command()

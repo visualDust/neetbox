@@ -10,7 +10,6 @@ import time
 from threading import Thread
 from typing import Union
 
-import werkzeug
 from flask import Response, abort, json, redirect, request, send_from_directory
 
 import neetbox
@@ -26,11 +25,12 @@ werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 def get_flask_server(debug=False):
     __PROC_NAME = "NEETBOX"
     from neetbox.logging import LogStyle
-    from neetbox.logging.logger import Logger
+    from neetbox.logging.logger import Logger, LogLevel
 
     logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
 
     if debug:
+        logger.set_log_level(LogLevel.DEBUG)
         logger.log(f"Running with debug, using APIFlask")
         from apiflask import APIFlask
 
@@ -49,11 +49,10 @@ def get_flask_server(debug=False):
 
     @app.route("/web/")
     @app.route("/web/<path:name>")
-    def static_serve(name=""):
-        try:
-            return send_from_directory(front_end_dist_path, name)
-        except werkzeug.exceptions.NotFound:
-            return send_from_directory(front_end_dist_path, "index.html")
+    def static_serve(name=None):
+        name = name or "index.html"
+        logger.debug(f"visiting static file {front_end_dist_path}/{name}")
+        return send_from_directory(front_end_dist_path, name)
 
     @app.route("/hello", methods=["GET"])
     def just_send_hello():
