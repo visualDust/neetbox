@@ -101,11 +101,14 @@ class Connection(metaclass=Singleton):  # singleton
 
         # check if daemon is alive
         def fetch_hello(root):
+            response = None
             try:
-                r = cls.get(api="hello", root=root)
-                assert r.json()["hello"] == "hello"
+                response = cls.get(api="hello", root=root)
+                assert response.json()["hello"] == "hello"
             except:
-                raise IOError(f"Daemon at {root} is not alive. ({r. status_code})")
+                raise IOError(
+                    f"Daemon at {root} is not alive: {response.status_code if response else 'no response'}"
+                )
 
         try:
             fetch_hello(http_root)
@@ -143,7 +146,9 @@ class Connection(metaclass=Singleton):  # singleton
         server_host = config["host"]
         server_port = config["port"]
         if not cls.check_server_connectivity():  # if daemon not online
-            if not is_loopback(server_host):  # daemon not running on localhost
+            if not (
+                is_loopback(server_host) or server_host in ["127.0.0.1"]
+            ):  # daemon not running on localhost
                 logger.err(
                     RuntimeError(
                         f"No daemon running at {server_host}:{server_port}, daemon will not be attached, stopping..."
