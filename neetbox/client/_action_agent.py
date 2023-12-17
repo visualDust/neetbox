@@ -1,14 +1,21 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# Github: github.com/visualDust
+# Date:   20231122
+
 import functools
 import inspect
 from ast import literal_eval
 from threading import Thread
 from typing import Callable, Optional
 
-from neetbox._daemon._protocol import *
-from neetbox._daemon.client._client import connection
+from neetbox._protocol import *
 from neetbox.core import Registry
 from neetbox.logging import logger
 from neetbox.utils.mvc import Singleton
+
+from ._client import Connection as connection
 
 
 class PackedAction(Callable):

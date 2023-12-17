@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# Github: github.com/visualDust
 # Date:   20231204
 
-import json
 from typing import Dict
 
 from websocket_server import WebsocketServer
 
-from neetbox._daemon._protocol import *
+from neetbox._protocol import *
 from neetbox.logging import LogStyle, logger
 
 from .history import *
@@ -63,6 +62,13 @@ class Bridge:
             cls._id2bridge[project_id] = new_bridge
             logger.info(f"created new Bridge for project id '{project_id}'")
         return cls._id2bridge[project_id]
+
+    def __del__(self):  # on delete
+        logger.info(f"bridge project id {self.project_id} handling on delete...")
+        if 0 == len(self.get_run_ids()):  # if there is no active run id
+            self.historyDB.finialize()
+            del self.historyDB  # delete history db
+        logger.info(f"bridge of project id {self.project_id} deleted.")
 
     @classmethod
     def items(cls):

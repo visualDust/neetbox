@@ -7,11 +7,13 @@ export default function Loading({
   height = "100px",
   size = "middle",
   text,
+  vertical,
 }: {
   width?: string;
   height?: string;
   size?: SpinSize;
   text?: ReactNode;
+  vertical?: boolean;
 }) {
   return (
     <div
@@ -24,7 +26,7 @@ export default function Loading({
       }}
     >
       {text ? (
-        <Space vertical>
+        <Space vertical={vertical}>
           <Spin size={size} />
           {text}
         </Space>

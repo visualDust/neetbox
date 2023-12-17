@@ -1397,6 +1397,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@uiw/react-json-view@npm:^2.0.0-alpha.10":
+  version: 2.0.0-alpha.10
+  resolution: "@uiw/react-json-view@npm:2.0.0-alpha.10"
+  peerDependencies:
+    "@babel/runtime": ">=7.10.0"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
+  checksum: d1278e92320251b1b61ecacd5c701989bd732ce4155b14a00b674d151c5b0da1b4a043b8696d23675006bf345559e56492960e33a9c0f40bc3c18eed031a136d
+  languageName: node
+  linkType: hard
+
 "@ungap/structured-clone@npm:^1.2.0":
   version: 1.2.0
   resolution: "@ungap/structured-clone@npm:1.2.0"
@@ -4299,6 +4310,7 @@ __metadata:
     "@types/react-dom": "npm:^18.2.15"
     "@typescript-eslint/eslint-plugin": "npm:^6.10.0"
     "@typescript-eslint/parser": "npm:^6.10.0"
+    "@uiw/react-json-view": "npm:^2.0.0-alpha.10"
     "@vitejs/plugin-react": "npm:^4.2.0"
     cypress: "npm:^13.6.1"
     echarts: "npm:^5.4.3"

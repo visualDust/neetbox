@@ -1,5 +1,6 @@
 name = "snake"
 projectid = "cfaf7fd6-a82f-4de7-aa74-013a6e826bef"
+version = "0.2.6"
 
 [logging]
 level = "INFO"
@@ -10,7 +11,7 @@ updateInterval = 0.5
 [extension]
 autoload = true
 
-[daemon]
+[client]
 enable = true
 host = "127.0.0.1"
 port = 5000
@@ -21,7 +22,4 @@ uploadInterval = 0.5
 
 [extension.environment.hardware]
 monit = true
-interval = 0.5
-
-[extension.environment.platform]
-monit = true
+interval = 2

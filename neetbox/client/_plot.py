@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# Github: github.com/visualDust
 # Date:   20231211
 
-from typing import Optional
-
-import numpy as np
-
-from neetbox._daemon._protocol import *
-from neetbox._daemon.client._client import connection
+from neetbox._protocol import *
 from neetbox.utils.x2numpy import *
+
+from ._client import connection
 
 # ===================== PLOTTING things ===================== #
 

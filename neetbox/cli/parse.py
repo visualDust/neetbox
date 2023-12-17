@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# Github: github.com/visualDust
+# Date:   20231013
+
 import json
 import os
 
@@ -5,9 +11,8 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-import neetbox._daemon as daemon_module
 import neetbox.config._cli_user_config as cliconfig
-from neetbox._daemon.server._server import server_process
+from neetbox.client._client_web_apis import *
 from neetbox.config._workspace import (
     _get_module_level_config,
     _init_workspace,
@@ -15,17 +20,16 @@ from neetbox.config._workspace import (
 )
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
+from neetbox.server._server import server_process
 from neetbox.utils.massive import check_read_toml
-
-from ._client_web_apis import *
 
 console = Console()
 
-logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws"]))
+logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws", "file"]))
 
 
-def get_daemon_config():
-    return _get_module_level_config(daemon_module)
+def get_connection_config():
+    return _get_module_level_config("client")
 
 
 # def get_base_addr(port=0):
@@ -107,7 +111,7 @@ def status_command(name):
 def serve(port, debug):
     """serve neetbox server in attached mode"""
     _try_load_workspace_if_applicable()
-    _daemon_config = get_daemon_config()
+    _daemon_config = get_connection_config()
     try:
         logger.log(f"Launching server using config: {_daemon_config}")
         if port:
@@ -131,7 +135,7 @@ def shutdown_server(port):
     """shutdown neetbox server on specific port"""
     _try_load_workspace_if_applicable()
     try:
-        daemon_config = get_daemon_config()
+        daemon_config = get_connection_config()
         if port:
             daemon_config["port"] = port
         _response = shutdown()

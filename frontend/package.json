@@ -20,6 +20,7 @@
     "@douyinfe/semi-icons": "^2.47.1",
     "@douyinfe/semi-ui": "^2.47.1",
     "@semi-bot/semi-theme-nyx-c": "^1.0.8",
+    "@uiw/react-json-view": "^2.0.0-alpha.10",
     "echarts": "^5.4.3",
     "jotai": "^2.5.1",
     "nanoid": "^5.0.3",

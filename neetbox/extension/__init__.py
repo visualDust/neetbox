@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# Github: github.com/visualDust
 # Date:   20230417
 
 import importlib
@@ -10,6 +10,7 @@ import pkgutil
 from neetbox.config._workspace import (
     _get_module_level_config as get_module_level_config,
 )
+from neetbox.config._workspace import on_config_loaded
 from neetbox.core import Registry
 from neetbox.utils.framing import get_frame_module_traceback
 
@@ -23,6 +24,7 @@ def _scan_sub_modules():
         importlib.import_module(f"{__THIS_MODULE.__name__}.{sub_module_info.name}")
 
 
+@on_config_loaded
 def _init_extensions():
     """
     DO NOT call before workspace config load

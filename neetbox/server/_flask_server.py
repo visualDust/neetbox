@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# Github: github.com/visualDust
 # Date:   20231204
 
 import logging
@@ -13,8 +13,9 @@ from typing import Union
 import werkzeug
 from flask import Response, abort, json, redirect, request, send_from_directory
 
-from neetbox._daemon._protocol import *
-from neetbox._daemon.server._bridge import Bridge
+import neetbox
+from neetbox._protocol import *
+from neetbox.server._bridge import Bridge
 
 from .history import *
 
@@ -24,9 +25,10 @@ werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 
 def get_flask_server(debug=False):
     __PROC_NAME = "NEETBOX"
-    from neetbox.logging import LogStyle, logger
+    from neetbox.logging import LogStyle
+    from neetbox.logging.logger import Logger
 
-    logger = logger(__PROC_NAME, LogStyle(skip_writers=["ws"]))
+    logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
 
     if debug:
         logger.log(f"Running with debug, using APIFlask")
@@ -39,7 +41,7 @@ def get_flask_server(debug=False):
 
         app = Flask(__PROC_NAME, static_folder=None)
 
-    front_end_dist_path = os.path.join(os.path.dirname(__file__), "../../frontend_dist")
+    front_end_dist_path = os.path.join(os.path.dirname(neetbox.__file__), "frontend_dist")
 
     @app.route("/")
     def static_serve_root():
@@ -63,6 +65,8 @@ def get_flask_server(debug=False):
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>", methods=["GET"])
     def get_status_of_project_id(project_id: str):
+        if not Bridge.has(project_id):
+            return abort(404)  # project id must exist
         bridge = Bridge.of_id(project_id)
         return _project_status_from_bridge(bridge)
 
@@ -137,6 +141,8 @@ def get_flask_server(debug=False):
         if bridge.is_online(run_id):  # cannot delete running projects
             abort(400, {ERROR_KEY: "can only delete history run id."})
         bridge.historyDB.delete_run_id(run_id)
+        if 0 == len(bridge.get_run_ids()):  # check if all the run ids are deleted
+            del Bridge._id2bridge[project_id]  # delete the empty bridge
         return {RESULT_KEY: "success"}
 
     @app.route(f"/image/<project_id>", methods=["POST"])

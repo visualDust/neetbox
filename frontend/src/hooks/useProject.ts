@@ -4,7 +4,7 @@ import { getProject } from "../services/projects";
 import { WsMsg } from "../services/projectWebsocket";
 import { fetcher, useAPI } from "../services/api";
 import { Condition, createCondition } from "../utils/condition";
-import { ActionInfo, PlatformInfo } from "../services/types";
+import { ActionInfo, PlatformInfo, RunStatus } from "../services/types";
 import { slideWindow } from "../utils/array";
 import { IdleTimer } from "../utils/timer";
 
@@ -28,9 +28,9 @@ export function useProjectRunIds(id: string) {
   return { data: data?.runids, mutate };
 }
 
-export function useProjectRunStatus(id: string, runId?: string) {
+export function useProjectRunStatus(id: string, runId?: string): RunStatus | undefined {
   const { data } = useAPI(`/project/${id}/run/${runId}`, { refreshInterval: 5000 });
-  return !runId ? undefined : (data as { action: ActionInfo; platform: PlatformInfo });
+  return !runId ? undefined : data;
 }
 
 export function useProjectWebSocketReady(id: string) {

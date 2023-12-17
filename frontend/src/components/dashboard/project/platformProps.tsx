@@ -4,6 +4,7 @@ import { IconCopy } from "@douyinfe/semi-icons";
 import { useMemoJSON } from "../../../hooks/useMemoJSON";
 import { useCurrentProject, useProjectRunStatus } from "../../../hooks/useProject";
 import { PlatformInfo } from "../../../services/types";
+import { JsonPopover } from "./jsonView";
 
 const PropCard = memo(({ propName, propValue }: { propName: string; propValue: PlatformInfo[string] }) => {
   const { Text } = Typography;
@@ -72,4 +73,10 @@ export default function PlatformProps(): React.JSX.Element {
       </CardGroup>
     </div>
   );
+}
+
+export function PlatformTitleJson() {
+  const { projectId, runId } = useCurrentProject();
+  const runStatus = useProjectRunStatus(projectId, runId);
+  return <JsonPopover value={runStatus?.platform} position="right" />;
 }

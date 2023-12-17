@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# Github: github.com/visualDust
 # Date:   20231211
 
 import io
@@ -11,11 +11,12 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from neetbox._daemon._protocol import *
-from neetbox._daemon.client._client import connection
+from neetbox._protocol import *
 from neetbox.config import get_project_id, get_run_id
 from neetbox.logging import logger
 from neetbox.utils.x2numpy import *
+
+from ._client import connection
 
 # ===================== IMAGE things ===================== #
 

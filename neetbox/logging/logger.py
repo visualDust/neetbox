@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# Github: github.com/visualDust
 # Date:   20230315
 
 import functools
@@ -70,8 +70,10 @@ class Logger:
         self.ws_writer = webSocketLogWriter
         self.file_writer = None
         _cfg = get_module_level_config()
-        self.set_log_dir(_cfg["logdir"])
         self.set_log_level(_cfg["level"])
+        if style:
+            if style.skip_writers and "file" not in style.skip_writers:
+                self.set_log_dir(_cfg["logdir"])
 
     def __call__(self, whom: Any = None, style: Optional[LogStyle] = None) -> "Logger":
         """Attention! do not call this logger instance unless you know what are you doing. Users should use the default logger by import logger from neetbox.logging.
@@ -263,11 +265,8 @@ class Logger:
                 with_identifier=with_identifier,
                 with_datetime=with_datetime,
             )
-        if type(err) is Exception:
-            if reraise:
-                raise err
-            elif self.log_level >= LogLevel.DEBUG:
-                Logger._console.print_exception(err)
+        if reraise:
+            raise err
         return self
 
     def mention(

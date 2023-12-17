@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# Github: github.com/visualDust
 # Date:   20230318
 
 from dataclasses import dataclass
@@ -22,7 +22,7 @@ class LogStyle:
     with_datetime: bool = True
     split_char_cmd = " > "
     split_char_identity = "/"
-    split_char_txt = " | "
+    split_char_txt = " "
     skip_writers: list[str] = None
 
     @classmethod
@@ -87,5 +87,5 @@ def styled_text(text, style: LogStyle):
 
 
 def colored_text(text: str, color):
-    text = text.replace("[", "\[")
+    text = text.replace("[", r"\[")
     return f"[{color}]{text}[/{color}]"

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Author: GavinGong aka VisualDust
-# URL:    https://gong.host
+# Github: github.com/visualDust
 # Date:   20231204
 
 from typing import Dict, Tuple
@@ -10,7 +10,7 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 
-from neetbox._daemon._protocol import *
+from neetbox._protocol import *
 
 from .history import *
 
@@ -18,12 +18,16 @@ from .history import *
 def get_web_socket_server(config, debug=False):
     from websocket_server import WebsocketServer
 
-    from neetbox._daemon.server._bridge import Bridge
-    from neetbox.logging import LogStyle, logger
+    from neetbox.logging import LogStyle
+    from neetbox.logging.logger import Logger
+    from neetbox.server._bridge import Bridge
 
-    logger = logger("NEETBOX", LogStyle(skip_writers=["ws"]))
     console = Console()
-    ws_server = WebsocketServer(host="0.0.0.0", port=config["port"] + 1)
+    logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
+
+    port = config["port"] + 1
+    logger.info(f"creating web socket server on port {port}")
+    ws_server = WebsocketServer(host="0.0.0.0", port=port)
     connected_clients: Dict(
         int, Tuple(str, str, IdentityType)
     ) = {}  # {cid:(project_id, run_id,type)} store connection only
@@ -40,6 +44,8 @@ def get_web_socket_server(config, debug=False):
             return  # client disconnected before handshake, returning anyway
         project_id, run_id, who = connected_clients[ws_client_id]
         bridge = Bridge.of_id(project_id)
+        if not bridge:
+            return  # do nothing if bridge has been deleted
         if who == IdentityType.WEB:  # is web ws, remove from bridge's web ws list
             _new_web_ws_list = [
                 c for c in Bridge.of_id(project_id).web_ws_list if c["id"] != ws_client_id
@@ -53,7 +59,6 @@ def get_web_socket_server(config, debug=False):
         logger.info(
             f"a {who}(ws client id {ws_client_id}) disconnected from project '{project_id}'"
         )
-        # logger.info(f"Websocket ({conn_type}) for {name} disconnected")
 
     def on_event_type_handshake(client, server, message: EventMsg):
         ws_client_id = client["id"]
@@ -125,6 +130,8 @@ def get_web_socket_server(config, debug=False):
             client=client,
             msg=EventMsg.merge(message, merge_msg).dumps(),
         )
+
+        logger.ok(f"client(id={client['id']}) on {client['address']} handshake succeed.")
 
         if debug:
             table = Table(

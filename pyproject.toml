@@ -24,7 +24,7 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-include = ["neetbox/frontend_dist/*"]
+include = ["neetbox/frontend_dist/**/*"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
