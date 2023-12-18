@@ -39,7 +39,8 @@ export const ProgressViewer = memo(({ series }: { series: string }) => {
   });
   const lastProgressData = progressData?.at(-1);
   if (lastProgressData == undefined) return <Loading />;
-  const percentage = Math.round((100 * lastProgressData.step) / lastProgressData.total);
+  const percentage =
+    lastProgressData.total == null ? 100 : Math.round((100 * lastProgressData.step) / lastProgressData.total);
 
   return (
     <Card
@@ -59,7 +60,7 @@ export const ProgressViewer = memo(({ series }: { series: string }) => {
     >
       <Typography.Text>current iter {lastProgressData.current}</Typography.Text>
       <Typography.Text>
-        step {lastProgressData.step}/{lastProgressData.total}
+        step {lastProgressData.step}/{lastProgressData.total == null ? "unknown" : lastProgressData.total}
       </Typography.Text>
       <Typography.Text>launched at {lastProgressData.timestamp}</Typography.Text>
       <Progress
