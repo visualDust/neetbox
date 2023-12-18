@@ -71,12 +71,16 @@ def get_flask_server(debug=False):
 
     def _project_status_from_bridge(bridge: Bridge):
         run_id_info_list = bridge.get_run_ids()
-        last_run_id = run_id_info_list[-1][RUN_ID_KEY]
-        config_last_run = bridge.get_status(run_id=last_run_id, series="config")
+        name_of_project = None
+        for run_id_info in reversed(run_id_info_list):
+            config = bridge.get_status(run_id=run_id_info[RUN_ID_KEY], series="config")
+            if NAME_KEY in config:
+                name_of_project = config[NAME_KEY]
+                break
         return {
             PROJECT_ID_KEY: bridge.project_id,
             "online": bridge.is_online(),
-            NAME_KEY: config_last_run[NAME_KEY],
+            NAME_KEY: name_of_project,
             "runids": run_id_info_list,
         }
 
