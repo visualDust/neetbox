@@ -361,7 +361,7 @@ class DBConnection:
         if not self.table_exist(table_name):
             return []
         if run_id is not None:
-            sql_query = f"SELECT DISTINCT t.series as series FROM {table_name} t RIGHT JOIN {RUN_IDS_TABLE_NAME} r ON r.runid == ? WHERE t.runid == r.id"
+            sql_query = f"SELECT DISTINCT t.series as series FROM {RUN_IDS_TABLE_NAME} r LEFT JOIN {table_name} t ON r.runid == ? WHERE t.runid == r.id"
             args = (run_id,)
         else:
             sql_query = f"SELECT DISTINCT series FROM {table_name}"
