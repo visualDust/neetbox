@@ -955,15 +955,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rsbuild/plugin-react@npm:^0.1.8":
-  version: 0.1.9
-  resolution: "@rsbuild/plugin-react@npm:0.1.9"
+"@rsbuild/plugin-react@npm:^0.2.6":
+  version: 0.2.6
+  resolution: "@rsbuild/plugin-react@npm:0.2.6"
   dependencies:
-    "@rsbuild/shared": "npm:0.1.9"
-    "@rspack/plugin-react-refresh": "npm:0.4.1-canary-10d4cb5-20231204024139"
+    "@rsbuild/shared": "npm:0.2.6"
+    "@rspack/plugin-react-refresh": "npm:0.4.3"
     react-refresh: "npm:^0.14.0"
-    semver: "npm:^7.5.4"
-  checksum: d9221e96f4d6b2653c13838f18bd1eead14ec53ff38c5d8625f96d5afc24ac027031128569dd4d0e922dcac179be4a1340df1c72f60adaf3126efc7eade4fa13
+  checksum: 135d95601827d6d5dca4ceb83469023e23f8b87819613a5cb7cb34fb68cf565ef6c6b9116cef2fcfffb29fb016135928e507d88ef65ebe7dfc5d4d805918117c
   languageName: node
   linkType: hard
 
@@ -980,9 +979,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rsbuild/shared@npm:0.2.6":
+  version: 0.2.6
+  resolution: "@rsbuild/shared@npm:0.2.6"
+  dependencies:
+    "@rspack/core": "npm:0.4.3"
+    caniuse-lite: "npm:^1.0.30001559"
+    lodash: "npm:^4.17.21"
+    postcss: "npm:8.4.31"
+  checksum: a1f9d465068a91059b18300bec3a02deb60f7a0c46f611312fe3f3565fe0ed5bac6e83b40a65004ff3975ea5468c0efeb6ec2c4b1e43ad9009e6d052d0495238
+  languageName: node
+  linkType: hard
+
 "@rspack/binding-darwin-arm64@npm:0.4.1":
   version: 0.4.1
   resolution: "@rspack/binding-darwin-arm64@npm:0.4.1"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@rspack/binding-darwin-arm64@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding-darwin-arm64@npm:0.4.3"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
@@ -994,9 +1012,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rspack/binding-darwin-x64@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding-darwin-x64@npm:0.4.3"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@rspack/binding-linux-arm64-gnu@npm:0.4.1":
   version: 0.4.1
   resolution: "@rspack/binding-linux-arm64-gnu@npm:0.4.1"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@rspack/binding-linux-arm64-gnu@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding-linux-arm64-gnu@npm:0.4.3"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
@@ -1008,9 +1040,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rspack/binding-linux-arm64-musl@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding-linux-arm64-musl@npm:0.4.3"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
 "@rspack/binding-linux-x64-gnu@npm:0.4.1":
   version: 0.4.1
   resolution: "@rspack/binding-linux-x64-gnu@npm:0.4.1"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@rspack/binding-linux-x64-gnu@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding-linux-x64-gnu@npm:0.4.3"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
@@ -1022,9 +1068,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rspack/binding-linux-x64-musl@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding-linux-x64-musl@npm:0.4.3"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
 "@rspack/binding-win32-arm64-msvc@npm:0.4.1":
   version: 0.4.1
   resolution: "@rspack/binding-win32-arm64-msvc@npm:0.4.1"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@rspack/binding-win32-arm64-msvc@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding-win32-arm64-msvc@npm:0.4.3"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -1036,9 +1096,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rspack/binding-win32-ia32-msvc@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding-win32-ia32-msvc@npm:0.4.3"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
 "@rspack/binding-win32-x64-msvc@npm:0.4.1":
   version: 0.4.1
   resolution: "@rspack/binding-win32-x64-msvc@npm:0.4.1"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@rspack/binding-win32-x64-msvc@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding-win32-x64-msvc@npm:0.4.3"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -1079,6 +1153,42 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rspack/binding@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/binding@npm:0.4.3"
+  dependencies:
+    "@rspack/binding-darwin-arm64": "npm:0.4.3"
+    "@rspack/binding-darwin-x64": "npm:0.4.3"
+    "@rspack/binding-linux-arm64-gnu": "npm:0.4.3"
+    "@rspack/binding-linux-arm64-musl": "npm:0.4.3"
+    "@rspack/binding-linux-x64-gnu": "npm:0.4.3"
+    "@rspack/binding-linux-x64-musl": "npm:0.4.3"
+    "@rspack/binding-win32-arm64-msvc": "npm:0.4.3"
+    "@rspack/binding-win32-ia32-msvc": "npm:0.4.3"
+    "@rspack/binding-win32-x64-msvc": "npm:0.4.3"
+  dependenciesMeta:
+    "@rspack/binding-darwin-arm64":
+      optional: true
+    "@rspack/binding-darwin-x64":
+      optional: true
+    "@rspack/binding-linux-arm64-gnu":
+      optional: true
+    "@rspack/binding-linux-arm64-musl":
+      optional: true
+    "@rspack/binding-linux-x64-gnu":
+      optional: true
+    "@rspack/binding-linux-x64-musl":
+      optional: true
+    "@rspack/binding-win32-arm64-msvc":
+      optional: true
+    "@rspack/binding-win32-ia32-msvc":
+      optional: true
+    "@rspack/binding-win32-x64-msvc":
+      optional: true
+  checksum: d10275da5f54feaeebeb27e016b0606452f126c6beb5ef1a346e976cf3a8d4343b8c04311237c2f8b2c74747d72535b8f37411c1352d1dccf1b20c306712379f
+  languageName: node
+  linkType: hard
+
 "@rspack/core@npm:0.4.1":
   version: 0.4.1
   resolution: "@rspack/core@npm:0.4.1"
@@ -1103,15 +1213,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rspack/plugin-react-refresh@npm:0.4.1-canary-10d4cb5-20231204024139":
-  version: 0.4.1-canary-10d4cb5-20231204024139
-  resolution: "@rspack/plugin-react-refresh@npm:0.4.1-canary-10d4cb5-20231204024139"
+"@rspack/core@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/core@npm:0.4.3"
+  dependencies:
+    "@rspack/binding": "npm:0.4.3"
+    "@swc/helpers": "npm:0.5.1"
+    browserslist: "npm:^4.21.3"
+    compare-versions: "npm:6.0.0-rc.1"
+    enhanced-resolve: "npm:5.12.0"
+    fast-querystring: "npm:1.1.2"
+    graceful-fs: "npm:4.2.10"
+    json-parse-even-better-errors: "npm:^3.0.0"
+    neo-async: "npm:2.6.2"
+    react-refresh: "npm:0.14.0"
+    tapable: "npm:2.2.1"
+    terminal-link: "npm:^2.1.1"
+    watchpack: "npm:^2.4.0"
+    webpack-sources: "npm:3.2.3"
+    zod: "npm:^3.21.4"
+    zod-validation-error: "npm:1.3.1"
+  checksum: fee77f310028209b399c086340a369013d0637bd8c6bddfa8ea0b89fa7836459d6cd3e402f54a1dc17070aca19d5a110ee5069862a93bcff23d5429c06aebef2
+  languageName: node
+  linkType: hard
+
+"@rspack/plugin-react-refresh@npm:0.4.3":
+  version: 0.4.3
+  resolution: "@rspack/plugin-react-refresh@npm:0.4.3"
   peerDependencies:
     react-refresh: ">=0.10.0 <1.0.0"
   peerDependenciesMeta:
     react-refresh:
       optional: true
-  checksum: fdd99e6af8972cd511dfb484105e521162e70d598a16eb5466856a8f9f07f88bbfbd907f872c25cbae1ec06c971502806df38c400bd91aaaa8fd2aa480c6e0c5
+  checksum: a7f491b17feab8829ea98f4e9ac9bab955ce8ca4795aa65585dc20588c8ecd466a63d9d1b4430e04cd3ff85e42dfac42fe4bad7dc02a3184c8836418d4c5e03d
   languageName: node
   linkType: hard
 
@@ -4304,7 +4438,7 @@ __metadata:
     "@douyinfe/semi-rspack-plugin": "npm:^2.48.0"
     "@douyinfe/semi-ui": "npm:^2.47.1"
     "@rsbuild/core": "npm:^0.1.8"
-    "@rsbuild/plugin-react": "npm:^0.1.8"
+    "@rsbuild/plugin-react": "npm:^0.2.6"
     "@semi-bot/semi-theme-nyx-c": "npm:^1.0.8"
     "@types/react": "npm:^18.2.37"
     "@types/react-dom": "npm:^18.2.15"
