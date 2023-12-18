@@ -20,6 +20,7 @@ from rich.console import Console
 from neetbox.config import get_project_id, get_run_id
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
 from neetbox.utils import formatting
+from neetbox.utils.framing import TracebackIdentity
 
 
 class LogWriter(ABC):
@@ -35,7 +36,7 @@ class LogWriter(ABC):
 class RawLog:
     rich_msg: str
     style: LogStyle
-    caller_identity: Any
+    caller_identity: TracebackIdentity
     whom: Any = None
     prefix: Optional[str] = None
     datetime_format: Optional[str] = None
@@ -44,8 +45,8 @@ class RawLog:
     skip_writers: Optional[list[str]] = None
 
     def write_by(self, writer: LogWriter) -> bool:
-        _skip_writers = (self.style.skip_writers or []) + (self.skip_writers or [])
-        for swr in _skip_writers:
+        skip_writers = (self.style.skip_writers or []) + (self.skip_writers or [])
+        for swr in skip_writers:
             if isinstance(writer, RawLog.name2writerType[swr]):
                 return False  # skip this writer, do not write
         writer.write(self)
@@ -53,46 +54,34 @@ class RawLog:
 
     @property
     def json(self) -> dict:
-        _default_style = self.style
+        default_style = self.style
         # prefix
-        prefix = self.prefix or _default_style.prefix
+        prefix = self.prefix or default_style.prefix
         # composing datetime
-        _with_datetime = (
-            _default_style.with_datetime if self.with_datetime is None else self.with_datetime
+        with_datetime = (
+            default_style.with_datetime if self.with_datetime is None else self.with_datetime
         )
         timestamp = ""
-        if _with_datetime:
-            _datetime_fmt = self.datetime_format or _default_style.datetime_format
-            timestamp = datetime.now().strftime(_datetime_fmt)
+        if with_datetime:
+            datetime_fmt = self.datetime_format or default_style.datetime_format
+            timestamp = datetime.now().strftime(datetime_fmt)
 
         # composing identifier
         whom = ""
-        _with_identifier = (
-            _default_style.with_identifier if self.with_identifier is None else self.with_identifier
+        with_identifier = (
+            default_style.with_identifier if self.with_identifier is None else self.with_identifier
         )
-        if _with_identifier:
-            _caller_identity = self.caller_identity
-            whom = str(self.whom)  # check identity
-            id_seq = []
-            if self.whom is None:  # if using default logger, tracing back to the caller
-                file_level = True
-                whom = ""
-                if _caller_identity.module_name and _default_style.trace_level >= 2:
-                    # trace as module level
-                    id_seq.append(_caller_identity.module_name)
-                    file_level = False
-                if _caller_identity.class_name and _default_style.trace_level >= 1:
-                    # trace as class level
-                    id_seq.append(_caller_identity.class_name)
-                    file_level = False
-                if file_level and _default_style.trace_level >= 1:
-                    id_seq.append(_caller_identity.filename)  # not module level and class level
-            if _caller_identity.func_name != "<module>":
-                id_seq.append(_caller_identity.func_name)  # skip for jupyters
-            for i in range(len(id_seq)):
-                if len(whom) != 0:
-                    whom += _default_style.split_char_identity
-                whom += id_seq[i]
+        if with_identifier:
+            identity_seq = self.caller_identity.sequence
+            if len(identity_seq) > 1:
+                identity_seq = identity_seq[1:]
+            if len(identity_seq) > self.style.trace_level:
+                identity_seq = identity_seq[: self.style.trace_level - 1]
+            whom = (
+                str(self.whom)
+                if self.whom is not None
+                else default_style.split_char_identity.join(identity_seq)
+            )  # check identity
         return {"series": prefix, "timestamp": timestamp, "whom": whom, "message": self.rich_msg}
 
     def __repr__(self) -> str:

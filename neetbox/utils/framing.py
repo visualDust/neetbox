@@ -86,6 +86,14 @@ class TracebackIdentity:
             "function": f"{self.func_name}",
         }
 
+    @property
+    def sequence(self):
+        return [
+            prop
+            for prop in [self.filepath, self.module_name, self.class_name, self.func_name]
+            if prop is not None
+        ]
+
     def __eq__(self, __value: object) -> bool:
         assert isinstance(
             __value, TracebackIdentity
@@ -98,7 +106,7 @@ class TracebackIdentity:
         )
 
     def __repr__(self) -> str:
-        return "\n".join([f"{k}:\t{v}" for k, v in self.json.items()])
+        return "\n".join([f"{k}:\t\t{v}" for k, v in self.json.items()])
 
 
 def get_caller_identity_traceback(traceback=1):
