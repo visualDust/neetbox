@@ -10,6 +10,7 @@ import socket
 import struct
 import time
 from concurrent.futures import ThreadPoolExecutor
+from typing import Callable
 
 _ThreadPoolExecutor = ThreadPoolExecutor()
 
@@ -84,16 +85,13 @@ def check_read_toml(path) -> bool:
         return False
 
 
-if __name__ == "__main__":
-
-    @nonblocking
-    def add_image(image, a=1, b=2):
-        time.sleep(image)
-        print("b")
-        print(a, b)
-        return 5
-
-    for i in range(10):
-        print(f"i: {i}")
-        add_image(i)
-        add_image(i, a=2, b=2)
+def describe_object(obj, length_limit=None) -> str:
+    if hasattr(obj, "__name__"):
+        description = obj.__name__
+    elif hasattr(obj, "__class__"):
+        description = f"obj of {obj.__class__}"
+    else:
+        description = str(obj)
+    if length_limit and len(description) > length_limit:
+        description = description[:length_limit] + "..."
+    return description

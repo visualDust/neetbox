@@ -5,12 +5,10 @@
 # Date:   20231217
 
 from time import time
-from typing import Callable
-
 from ._client import connection
-
 from neetbox._protocol import *
 from neetbox.utils.framing import get_caller_identity_traceback
+from neetbox.utils.massive import describe_object
 
 
 class Progress:
@@ -52,13 +50,13 @@ class Progress:
         elapsed_time = time() - self.start_time
         rate = self.done / elapsed_time if elapsed_time > 0 else 0  # Calculate the iteration rate
         iter_next = next(self.iterator)
-        current_name = f"{iter_next.__name__ if isinstance(iter_next, Callable) else iter_next}"
+
         connection.ws_send(
             event_type=EVENT_TYPE_NAME_PROGRESS,
             series=self.caller_identity.last_traceable,
             payload={
                 "step": self.done,
-                "current": current_name,
+                "current": describe_object(iter_next, length_limit=16),
                 "total": self.total,
                 "rate": rate,
             },
