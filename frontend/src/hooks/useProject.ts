@@ -1,10 +1,10 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { getProject } from "../services/projects";
 import { WsMsg } from "../services/projectWebsocket";
 import { fetcher, useAPI } from "../services/api";
 import { Condition, createCondition } from "../utils/condition";
-import { ActionInfo, PlatformInfo, RunStatus } from "../services/types";
+import { RunStatus } from "../services/types";
 import { slideWindow } from "../utils/array";
 import { IdleTimer } from "../utils/timer";
 
@@ -75,10 +75,11 @@ export function useProjectData<T = any>(options: {
   filterWS?: (msg) => boolean;
   transformHTTP?: (data) => unknown;
   transformWS?: (msg) => unknown;
-  onNewWSData?: (transformed) => void;
 }) {
-  const { type, projectId, runId, limit, transformWS = (x) => x, transformHTTP = (x) => x } = options;
+  const { type, projectId, runId, limit } = options;
+
   const wsReady = useProjectWebSocketReady(projectId);
+
   const url =
     options.disable || !wsReady
       ? null
@@ -87,74 +88,64 @@ export function useProjectData<T = any>(options: {
           ...(!limit ? null : { limit, order: { id: "DESC" } }),
           ...options.conditions,
         })}`;
-  const { data, mutate, isLoading } = useAPI(url, {
-    fetcher: async (url) => {
-      let result = (await fetcher(url)).map(transformHTTP);
-      if (limit) {
-        result = result.reverse();
-      }
-      return result;
-    },
-  });
-  const flushQueue = () => {
-    mutate(
-      (arr) => {
-        if (!arr) {
-          console.warn("flushQueue called when the data is null/undefined");
-          return arr;
-        }
-        let queue = refQueue.current.queue;
-        if (!queue.length) {
-          console.warn("flushQueue called when the queue is empty");
-          return arr;
-        }
-        const lastData = arr[arr.length - 1];
+
+  const [renderData, setRenderData] = useState<T[] | null>(null);
+
+  useEffect(() => {
+    if (!url) {
+      if (renderData) setRenderData(null);
+      return;
+    }
+
+    const { transformWS = (x) => x, transformHTTP = (x) => x } = options;
+
+    let data: T[] | null = null;
+    let queue: T[] = [];
+
+    const renderTimer = new IdleTimer(() => {
+      if (!data) throw new Error("should never happen: !data");
+      if (queue.length) {
+        const lastData = data[data.length - 1];
         const firstQueue = queue[0];
         const seqKey =
           lastData && firstQueue && ["id", "timestamp"].find((key) => lastData[key] && firstQueue[key]);
         if (seqKey) {
           queue = queue.filter((x) => x[seqKey] > lastData[seqKey]);
         }
-        return slideWindow(arr, queue, limit, limit ? limit * 1.2 : undefined);
-      },
-      {
-        revalidate: false,
-      },
-    );
-    refQueue.current.queue = [];
-  };
-
-  const refQueue = useRef<{ timer: IdleTimer; queue: T[] }>(null!);
-  if (!refQueue.current) refQueue.current = { timer: new IdleTimer(flushQueue), queue: [] };
-
-  useProjectWebSocket(projectId, type, (msg) => {
-    if (options.disable) return;
-    if (
-      !runId ||
-      (msg.runid == runId &&
-        (!options.conditions?.series || options.conditions.series == msg.series) &&
-        (!options.filterWS || options.filterWS(msg)))
-    ) {
-      const transformed = transformWS(msg);
-      if (data && !isLoading && !refQueue.current.timer.running) {
-        refQueue.current.timer.schedule(100);
+        data = slideWindow(data, queue, limit, limit ? limit * 1.2 : undefined);
+        queue = [];
       }
-      refQueue.current.queue.push(transformed);
-    }
-  });
+      setRenderData(data);
+    });
 
-  useEffect(() => {
-    if (data && !isLoading && refQueue.current.queue.length && !refQueue.current.timer) {
-      flushQueue();
-    }
+    fetcher(url).then((history) => {
+      data = history.map(transformHTTP);
+      if (!renderTimer.running) renderTimer.schedule(200);
+    });
+
+    const handleWs = (msg: WsMsg) => {
+      if (
+        type === msg["event-type"] &&
+        (!runId || msg.runid == runId) &&
+        (!options.conditions?.series || options.conditions.series === msg.series) &&
+        (!options.filterWS || options.filterWS(msg))
+      ) {
+        const transformed = transformWS(msg);
+        queue.push(transformed);
+        if (data && !renderTimer.running) renderTimer.schedule(200);
+      }
+    };
+
+    const wsClient = getProject(projectId).wsClient;
+    wsClient.wsListeners.add(handleWs);
+
+    return () => {
+      wsClient.wsListeners.delete(handleWs);
+      renderTimer.cancel();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, isLoading]);
-
-  useEffect(() => {
-    refQueue.current.timer.cancel();
-    refQueue.current.queue = [];
   }, [url]);
 
-  // console.debug("useProjectData", options.type, data);
-  return data as T[] | null;
+  // console.debug("useProjectData", options.type, renderData);
+  return renderData;
 }
