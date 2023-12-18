@@ -56,17 +56,19 @@ export function useProjectWebSocket<T extends WsMsg["event-type"]>(
 }
 
 export function useProjectSeries(projectId: string, runId: string, type: string) {
-  const { data: series, mutate } = useAPI(`/project/${projectId}/series/${type}?runid=${runId}`);
-  useProjectWebSocket(projectId, type, (msg) => {
-    if (msg.series != null && series && !series.includes(msg.series) && msg.runid == runId) {
-      mutate([...series, msg.series]);
-    }
+  return useProjectData({
+    type: `${type}`,
+    url: `/project/${projectId}/series/${type}?${new URLSearchParams({ runid: runId })}`,
+    projectId,
+    runId,
+    transformWS: (msg) => msg.series,
+    reducer: (data, queue) => [...new Set([...data, ...queue])],
   });
-  return series;
 }
 
 export function useProjectData<T = any>(options: {
   type: string;
+  url?: string;
   disable?: boolean;
   projectId: string;
   runId?: string;
@@ -75,15 +77,17 @@ export function useProjectData<T = any>(options: {
   filterWS?: (msg) => boolean;
   transformHTTP?: (data) => unknown;
   transformWS?: (msg) => unknown;
+  reducer?: (data: T[], queue: T[]) => T[];
 }) {
-  const { type, projectId, runId, limit } = options;
+  const { type, projectId, runId, limit, url: customUrl } = options;
 
   const wsReady = useProjectWebSocketReady(projectId);
 
   const url =
     options.disable || !wsReady
       ? null
-      : `/project/${projectId}/${type}?${createCondition({
+      : customUrl ??
+        `/project/${projectId}/${type}?${createCondition({
           runId,
           ...(!limit ? null : { limit, order: { id: "DESC" } }),
           ...options.conditions,
@@ -105,15 +109,22 @@ export function useProjectData<T = any>(options: {
     const renderTimer = new IdleTimer(() => {
       if (!data) throw new Error("should never happen: !data");
       if (queue.length) {
-        const lastData = data[data.length - 1];
-        const firstQueue = queue[0];
-        const seqKey =
-          lastData && firstQueue && ["id", "timestamp"].find((key) => lastData[key] && firstQueue[key]);
-        if (seqKey) {
-          queue = queue.filter((x) => x[seqKey] > lastData[seqKey]);
+        if (options.reducer) {
+          data = options.reducer(data, queue);
+        } else {
+          const lastData = data[data.length - 1];
+          const firstQueue = queue[0];
+          const seqKey =
+            lastData &&
+            firstQueue &&
+            typeof lastData == "object" &&
+            ["id", "timestamp"].find((key) => lastData[key] && firstQueue[key]);
+          if (seqKey) {
+            queue = queue.filter((x) => x[seqKey] > lastData[seqKey]);
+          }
+          data = slideWindow(data, queue, limit, limit ? limit * 1.2 : undefined);
+          queue = [];
         }
-        data = slideWindow(data, queue, limit, limit ? limit * 1.2 : undefined);
-        queue = [];
       }
       setRenderData(data);
     });
