@@ -3,8 +3,6 @@ import clsx from "clsx";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
-import HomepageFeatures from "@site/src/components/HomepageFeatures";
-
 import styles from "./index.module.css";
 
 type HowToItem = {
@@ -125,13 +123,16 @@ export function FeatureCard({
           justifyContent: "center",
         }}
       >
-        <img src={image} style={{boxShadow: "rgba(0, 0, 0, 0.05) 0px 0px 0px 1px"}}/>
+        <img
+          src={image}
+          style={{ boxShadow: "rgba(0, 0, 0, 0.05) 0px 0px 0px 1px" }}
+        />
       </div>
     </div>
   );
 }
 
-const FeatureList = [
+export const FeatureList = [
   {
     image: "/img/index/neetbox-consistof.jpg",
     subtitle: "All in one",
@@ -204,7 +205,6 @@ export default function Home(): JSX.Element {
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
           justifyContent: "center",
           backgroundImage: "url('/img/index/background.jpg')",
           backgroundSize: "cover",
@@ -218,36 +218,35 @@ export default function Home(): JSX.Element {
           style={{
             display: "flex",
             flexDirection: "column",
-            paddingLeft: "10vh",
-            maxWidth: "1000px",
+            paddingLeft: "10%",
+            paddingRight: "10%",
+            maxWidth: "90%",
+            justifyContent: "center",
+            paddingBottom: "var(--ifm-navbar-height)",
           }}
         >
           <h1
             style={{
-              fontSize: "80px",
               color: "white",
               textShadow: "3px 3px 3px black",
+              textAlign: "center",
             }}
           >
             {siteConfig.title}
           </h1>
-          <div
+          <h2
             style={{
-              fontSize: "30px",
               color: "white",
               textShadow: "1px 1px 1px black",
+              textAlign: "center",
             }}
           >
-            A tool box for Logging/Debugging/Tracing/Managing/Facilitating long
-            running python projects, especially a replacement of tensorboard for
-            deep learning projects.
-          </div>
-          <div style={{ paddingTop: "30px" }}>
-            <a
-              href="#howtos"
-              className="button button--secondary"
-              style={{ fontSize: "20px" }}
-            >
+            A tool box for Logging / Debugging / Tracing / Managing /
+            Facilitating long running python projects, especially a replacement
+            of tensorboard for deep learning projects.
+          </h2>
+          <div style={{ paddingTop: "30px", textAlign: "center" }}>
+            <a href="#howtos" className="button button--secondary">
               Try Try Need
             </a>
           </div>
