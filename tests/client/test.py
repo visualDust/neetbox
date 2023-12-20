@@ -132,11 +132,20 @@ def log_with_some_prefix():
     logger.err("some error")
 
 
-train_config = {"epoch": 9999}
+train_config = {"epoch": 99, "batch_size": 10}
+
+
+def train_epoch(config):
+    def train_batch_in_epoch(num_batch):
+        for i in neetbox.progress(num_batch):
+            time.sleep(1)
+            train(i)
+
+    with neetbox.progress(config["epoch"]) as progress:
+        for _ in progress:
+            train_batch_in_epoch(config["batch_size"])
+
 
 if __name__ == "__main__":
     neetbox.add_hyperparams(train_config)
-    with neetbox.progress(train_config["epoch"]) as epochs:
-        for i in epochs:
-            sleep(1)
-            train(i)
+    train_epoch(train_config)
