@@ -60,7 +60,7 @@ class Logger:
     __WHOM_2_STYLE = {}
     _console = Console()
 
-    def __init__(self, whom=None, style: Optional[LogStyle] = None):
+    def __init__(self, whom: Any = None, style: Optional[LogStyle] = None):
         self.whom: Any = whom
         if style and style.console_color is None:
             style.randcolor()
@@ -378,9 +378,6 @@ class Logger:
         if not path:
             self._bind_file(None)
             return self
-        if not path:
-            self._bind_file(None)
-            return self
         if os.path.isfile(path):
             raise Exception("Target path is not a directory.")
         if not os.path.exists(path):
@@ -401,9 +398,6 @@ class Logger:
             return self
         self.file_writer = FileLogWriter(path=path)
         return self
-
-    def file_bend(self) -> bool:
-        return self.file_writer is not None
 
 
 DEFAULT_LOGGER = Logger(None)
