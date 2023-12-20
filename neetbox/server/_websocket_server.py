@@ -9,21 +9,20 @@ from typing import Dict, Tuple
 from rich import box
 from rich.console import Console
 from rich.table import Table
-
 from neetbox._protocol import *
-
-from .history import *
 
 
 def get_web_socket_server(config, debug=False):
     from websocket_server import WebsocketServer
 
     from neetbox.logging import LogStyle
-    from neetbox.logging.logger import Logger
+    from neetbox.logging.logger import Logger, LogLevel
     from neetbox.server._bridge import Bridge
 
     console = Console()
     logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
+    if debug:
+        logger.set_log_level(LogLevel.DEBUG)
 
     port = config["port"] + 1
     logger.info(f"creating web socket server on port {port}")
@@ -31,6 +30,14 @@ def get_web_socket_server(config, debug=False):
     connected_clients: Dict(
         int, Tuple(str, str, IdentityType)
     ) = {}  # {cid:(project_id, run_id,type)} store connection only
+
+    def who_is(client):
+        if client["id"] not in connected_clients:
+            raise RuntimeError(
+                f"Could not determine who is {client}, it seems that this client has not done handshake."
+            )
+        project_id, run_id, identity_type = connected_clients[client["id"]]
+        return project_id, run_id, identity_type
 
     def handle_ws_connect(client, server):
         logger.info(
@@ -204,20 +211,26 @@ def get_web_socket_server(config, debug=False):
         )
 
     def handle_ws_message(client, server: WebsocketServer, message):
-        message = EventMsg.loads(message)
+        try:
+            message = EventMsg.loads(message)
+        except Exception as e:
+            logger.err(
+                f"Illegal message format from client {client}: {message}, failed to parse cause {e}, dropping..."
+            )
+            return
         # handle event-type
         if message.event_type == EVENT_TYPE_NAME_HANDSHAKE:  # handle handshake
             on_event_type_handshake(client=client, server=server, message=message)
             return  # return after handling handshake
-        if client["id"] not in connected_clients:
+        try:
+            _, _, identity_type = who_is(client)
+        except:
+            logger.debug(f"ws sending message without handshake, dropping...")
             return  # !!! not handling messages from cli/web without handshake. handshake is aspecial   case and should be handled anyway before this check.
-        expected_identity_type = connected_clients[client["id"]][-1]
         if not message.who:
-            message.who = expected_identity_type
-        if message.who != expected_identity_type:
-            logger.warn(
-                f"Illegal IdentityType: expect {expected_identity_type} but got {message.who}"
-            )
+            message.who = identity_type
+        if message.who != identity_type:
+            logger.warn(f"Illegal IdentityType: expect {identity_type} but got {message.who}")
             return  # !!! security check, who should match who
         else:  # handle regular event types
             if message.event_type == EVENT_TYPE_NAME_HPARAMS:

@@ -45,6 +45,9 @@ class IdentityType(str, Enum):
     OTHERS = "another"
     BOTH = "both"
 
+    def __repr__(self) -> str:
+        return self.value
+
 
 RESULT_KEY = "result"
 ERROR_KEY = "error"
@@ -150,14 +153,3 @@ IMAGE_TABLE_NAME = "image"
 NEETBOX_VERSION = version("neetbox")
 HISTORY_FILE_ROOT = ".neethistory"
 HISTORY_FILE_TYPE_NAME = "neetory"
-
-
-class DbQueryFetchType(str, Enum):
-    ALL = "all"
-    ONE = "one"
-    MANY = "many"
-
-
-class DbQuerySortType(str, Enum):
-    ASC = "ASC"
-    DESC = "DESC"

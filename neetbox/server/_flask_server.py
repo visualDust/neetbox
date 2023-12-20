@@ -11,12 +11,12 @@ from threading import Thread
 from typing import Union
 
 from flask import Response, abort, json, redirect, request, send_from_directory
+import werkzeug
 
 import neetbox
 from neetbox._protocol import *
 from neetbox.server._bridge import Bridge
-
-from .history import *
+from .db import QueryCondition
 
 werkzeug_log = logging.getLogger("werkzeug")
 werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
@@ -49,10 +49,11 @@ def get_flask_server(debug=False):
 
     @app.route("/web/")
     @app.route("/web/<path:name>")
-    def static_serve(name=None):
-        name = name or "index.html"
-        logger.debug(f"visiting static file {front_end_dist_path}/{name}")
-        return send_from_directory(front_end_dist_path, name)
+    def static_serve(name=""):
+        try:
+            return send_from_directory(front_end_dist_path, name)
+        except werkzeug.exceptions.NotFound:
+            return send_from_directory(front_end_dist_path, "index.html")
 
     @app.route("/hello", methods=["GET"])
     def just_send_hello():
@@ -65,7 +66,8 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>", methods=["GET"])
     def get_status_of_project_id(project_id: str):
         if not Bridge.has(project_id):
-            return abort(404)  # project id must exist
+            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            abort(404, {ERROR_KEY: "project id not found"})
         bridge = Bridge.of_id(project_id)
         return _project_status_from_bridge(bridge)
 
@@ -86,13 +88,15 @@ def get_flask_server(debug=False):
 
     def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, str]):
         if not Bridge.has(project_id):
-            abort(404)
+            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            abort(404, {ERROR_KEY: "project id not found"})
         try:
             condition = QueryCondition.from_json(
                 json.loads(condition) if isinstance(condition, str) else condition
             )
         except Exception as e:  # if failed to parse
-            return abort(400)
+            logger.debug(f"failed to parse condition string", prefix="400")
+            abort(400, {ERROR_KEY: "failed to parse condition string"})
         return Bridge.of_id(project_id).read_json_from_history(
             table_name=table_name, condition=condition
         )
@@ -116,7 +120,8 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/series/<table_name>", methods=["GET"])
     def get_series_list_of(project_id: str, table_name: str):  # client side function
         if not Bridge.has(project_id):
-            abort(404)
+            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            abort(404, {ERROR_KEY: "project id not found"})
         result = Bridge.of_id(project_id).get_series_of(
             table_name, run_id=request.args.get("runid")
         )
@@ -125,6 +130,7 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["GET"])
     def get_status_of(project_id, run_id):
         if not Bridge.has(project_id):
+            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
             abort(404, {ERROR_KEY: "project id not found"})
         result = Bridge.of_id(project_id).get_status(run_id=run_id)
         return result
@@ -151,10 +157,8 @@ def get_flask_server(debug=False):
     @app.route(f"/image/<project_id>", methods=["POST"])
     def upload_image(project_id):
         if not Bridge.has(project_id):
-            # project id must exist
-            # drop anyway if not exist
-            logger.debug(f"{project_id} not found, dropping")
-            return abort(404)
+            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            abort(404, {ERROR_KEY: "project id not found"})
         message = EventMsg.loads(request.form["json"])
         image_bytes = request.files["image"].read()
         message.id = Bridge.of_id(project_id).save_blob_to_history(
@@ -173,7 +177,8 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/image/<image_id>", methods=["GET"])
     def get_image_of(project_id, image_id: int):
         if not Bridge.has(project_id):
-            return abort(404)  # cannot operate history if bridge of given id not exist
+            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            abort(404, {ERROR_KEY: "project id not found"})
         meta = request.args.get("meta") is not None
 
         [(_, _, meta_data, image)] = Bridge.of_id(project_id).read_blob_from_history(
@@ -189,7 +194,8 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/image", methods=["GET"])
     def get_history_image_metadata_of(project_id):
         if not Bridge.has(project_id):
-            abort(404)
+            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            abort(404, {ERROR_KEY: "project id not found"})
         _json_data = json.loads(request.args.get("condition", default="{}"))
         try:
             condition = QueryCondition.from_json(_json_data)

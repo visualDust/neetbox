@@ -5,7 +5,7 @@ cd $(dirname $0)/..
 
 tmux new-session -d -s neetbox
 tmux send 'cd tests/client' ENTER
-tmux send 'neet serve' ENTER
+tmux send 'neet serve -d' ENTER
 tmux split-window -h
 tmux send 'cd tests/client' ENTER
 tmux send 'sleep 2' ENTER

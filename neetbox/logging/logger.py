@@ -189,6 +189,7 @@ class Logger:
     def debug(
         self,
         *content,
+        prefix="debug",
         datetime_format: Optional[str] = None,
         with_identifier: Optional[bool] = None,
         with_datetime: Optional[bool] = None,
@@ -197,7 +198,7 @@ class Logger:
         if self.log_level >= LogLevel.DEBUG:
             self.log(
                 *content,
-                prefix=f"debug",
+                prefix=prefix,
                 skip_writers=skip_writers,
                 traceback=3,
                 datetime_format=datetime_format,
