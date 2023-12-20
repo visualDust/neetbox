@@ -74,6 +74,7 @@ export function useProjectData<T = any>(options: {
   runId?: string;
   limit?: number;
   conditions?: Condition;
+  reverse?: boolean;
   filterWS?: (msg) => boolean;
   transformHTTP?: (data) => unknown;
   transformWS?: (msg) => unknown;
@@ -101,7 +102,7 @@ export function useProjectData<T = any>(options: {
       return;
     }
 
-    const { transformWS = (x) => x, transformHTTP = (x) => x } = options;
+    const { transformWS = (x) => x, transformHTTP = (x) => x, reverse = Boolean(options.limit) } = options;
 
     let data: T[] | null = null;
     let queue: T[] = [];
@@ -130,7 +131,10 @@ export function useProjectData<T = any>(options: {
     });
 
     fetcher(url).then((history) => {
-      data = history.map(transformHTTP);
+      data = history.map(transformHTTP) as T[];
+      if (reverse) {
+        data = data.reverse();
+      }
       if (!renderTimer.running) renderTimer.schedule(200);
     });
 
