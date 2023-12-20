@@ -124,8 +124,10 @@ def add_image(name: str, image, dataformats: str = None):
     """send an image to frontend display
 
     Args:
-        image (Union[np.array, Image.Image]): image from cv2 and PIL.Image are supported
+        image (Union[np.array, Image.Image, Tensor]): image from cv2 and PIL.Image as well as tensors are supported
         name (str): name of the image, used in frontend display
+        dataformats (str): if you are passing a tensor as image, please indicate how to understand the tensor. For example, dataformats="NCWH" means the first axis of the tensor is Number of batches, the second axis is Channel, and the third axis is Width, and the fourth axis is Height.
+
     """
     if isinstance(image, Image.Image):  # is PIL Image
         with io.BytesIO() as image_bytes_stream:

@@ -30,28 +30,29 @@ export function HowToCard({
       className={styles["feature-card"]}
       style={{
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "row",
+        alignItems: "stretch",
+        gap: "20px",
       }}
     >
-      <div className="text--center">
+      <div style={{ display: "flex", flex: 1, height: "100%" }}>
         <img src={image} style={{ borderRadius: "5px" }} />
       </div>
       <div
         style={{
           display: "flex",
-          marginBottom: "30px",
-          marginTop: "30px",
+          flex: 1,
           flexDirection: "column",
-          justifyContent: "space-between",
-          height: "100%",
+          justifyContent: "center",
+          paddingRight: "10px",
         }}
       >
-        <div className={clsx("text--center", styles["feature-card-text"])}>
+        <div className={styles["feature-card-text"]}>
           <p>{description}</p>
         </div>
         {buttonLink ? (
           <div style={{ textAlign: "center" }}>
-            <a href={buttonLink} className="button button--secondary">
+            <a href={buttonLink} className="button button--primary">
               {buttonText}
             </a>
           </div>
@@ -64,23 +65,16 @@ export function HowToCard({
 const HowToList = [
   {
     image: "/img/index/monit-one-machine.png",
-    description: "Monit running python codes on your own computer",
+    description: "Monit running python codes on a single computer",
     buttonLink: "/docs/howto",
-    buttonText: "Use on one computer",
+    buttonText: "Use on single machine",
   },
   {
     image: "/img/index/monit-machines-on-local-network.png",
     description:
       "Monit some python codes running on multiple machines connected to same network",
     buttonLink: "/docs/howto",
-    buttonText: "Use on some computers",
-  },
-  {
-    image: "/img/index/monit-machines-online.png",
-    description:
-      "Monit some python codes running on different machines connected to different networks",
-    buttonLink: "/docs/howto",
-    buttonText: "Use on a lot of computers",
+    buttonText: "Use on multiple machine",
   },
 ];
 
@@ -170,7 +164,7 @@ export const FeatureList = [
   },
   {
     image: "/img/index/distinguish-runs.jpg",
-    subtitle: "Distinguish runs",
+    subtitle: "Manage projects and runs",
     description:
       "Neetbox knows each time your project runs. Neetbox provides Tensorboard like viewing strateg. You can specific name of a run or select which run to view in frontend.",
     link: "/docs/howto",
@@ -262,6 +256,7 @@ export default function Home(): JSX.Element {
             marginTop: "50px",
           }}
         >
+          <h2>How To</h2>
           <div
             style={{
               maxWidth: "1000px",
@@ -272,25 +267,28 @@ export default function Home(): JSX.Element {
             }}
           >
             {HowToList.map((props, idx) => (
-              <HowToCard key={idx} {...props} />
+              <div style={{ flex: 1 }}>
+                <HowToCard key={idx} {...props} />
+              </div>
             ))}
           </div>
-          <div style={{ marginTop: "50px" }}>
-            <h2>Why NEETBOX?</h2>
-            <div
-              style={{
-                maxWidth: "1000px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-evenly",
-                marginTop: "20px",
-                gap: "10px",
-              }}
-            >
-              {FeatureList.map((props, idx) => (
-                <FeatureCard key={idx} {...props} />
-              ))}
-            </div>
+          <div style={{ marginTop: "50px" }} />
+
+          <h2>Why NEETBOX?</h2>
+
+          <div
+            style={{
+              maxWidth: "1000px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-evenly",
+              marginTop: "20px",
+              gap: "10px",
+            }}
+          >
+            {FeatureList.map((props, idx) => (
+              <FeatureCard key={idx} {...props} />
+            ))}
           </div>
         </div>
       </div>

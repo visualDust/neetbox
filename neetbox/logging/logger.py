@@ -120,14 +120,14 @@ class Logger:
 
         Args:
             prefix (Optional[str], optional): prefix shows at the start of console log while it shows as a tag on frontend. Defaults to None.
-            datetime_format (Optional[str], optional): change the format neetbox displays time. Defaults to None("%Y-%m-%dT%H:%M:%S.%f").
+            datetime_format (Optional[str], optional): change the format neetbox displays time. Defaults to None, neetbox will use default style ("%Y-%m-%dT%H:%M:%S.%f") if None is passed.
             with_identifier (Optional[bool], optional): whether to show who is logging, note that this option has noting todo with traceback. Defaults to None(True).
             with_datetime (Optional[bool], optional): whether to show datetime in logs. Defaults to None(True).
             skip_writers (list[str], optional): writers to skip, possible writes are 'stdout'(write into console), 'file'(write into file), 'ws'(write to frontend). Defaults to [], which means write to all writers.
-            traceback (int, optional): level of traceback. Defaults to 2.
+            traceback (int, optional): level of traceback. Defaults to 2. Do not change this option unless you know what you are doing.
 
         Returns:
-            _type_: _description_
+            Logger: returns itself that you can do chain function call
         """
         _caller_identity = get_caller_identity_traceback(traceback=traceback)
 

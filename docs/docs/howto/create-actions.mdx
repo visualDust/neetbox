@@ -1,5 +1,44 @@
 ---
 title: Register python function as action
+sidebar_position: 4
 ---
 
+:::tip
+`neetbox.action` allows you to issue a remote function call in browser. Once you register an action, neetbox will create a button on web page and show function docs and input box for parameters.
+:::
+
+## How it looks like
+
 ![image-20231220185856173](./imgs/create-actions/image-20231220185856173.png)
+
+## Basic Usage
+
+```python
+import neetbox
+import os
+
+@neetbox.action(name="shutdown")
+def os_exit():
+    """ shutdown your process """
+    os._exit(0)
+
+while True:
+    pass
+```
+
+Visit [localhost:20202](http://localhost:20202) and you should see a button which will run your function.
+
+![image-20231220213534685](./imgs/create-actions/image-20231220213534685.png)
+
+Once you click the "Run" button, your python code should exit as you wish.
+
+## API description
+
+`@neetbox.action` register function as action visiable on frontend page.
+```python
+@neetbox.action(name: Optional[str] = None, description: str = None, blocking: bool = False)
+```
+Args:
+- name (Optional[str], optional): name of the action. Defaults to None(neetbox will use the function name when set to None).
+- description (str, optional): description of the action. Defaults to None(neetbox will use function docs as default when set to None).
+- blocking (bool, optional): whether to run the action in a blocked query. Defaults to False.
