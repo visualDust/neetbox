@@ -187,7 +187,7 @@ def _load_workspace_config(folder=".", load_only=False):
     if "version" not in config_from_file or config_from_file["version"] != NEETBOX_VERSION:
         print(
             RuntimeError(
-                f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config from version {config_from_file['version']}. Please delete neetbox.toml and recreate by 'neet init'"
+                f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config file version {config_from_file['version']}. Please delete neetbox.toml and recreate by 'neet init'"
             )
         )
         os._exit(-1)

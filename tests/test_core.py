@@ -12,7 +12,7 @@ def test_registry():
     def b():
         pass
 
-    @reg1.register(name="b", tags="function")
+    @reg1.register(name="b", tags="function", overwrite=True)
     def b1():
         pass
 

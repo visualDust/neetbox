@@ -1,6 +1,6 @@
 name = "client"
 version = "0.3.5"
-projectId = "d5628d20-99b9-4d40-ae6f-c7824256cb14"
+projectId = "0aedddf6-c3b1-4e07-8dff-10ba964e4960"
 
 [logging]
 level = "INFO"
@@ -12,11 +12,15 @@ autoload = true
 [client]
 enable = true
 host = "127.0.0.1"
-port = 5000
+port = 20202
 allowIpython = false
 mute = true
 mode = "detached"
 uploadInterval = 1
+
+[client.shell]
+enable = true
+daemon = true
 
 [extension.environment.hardware]
 interval = 2
