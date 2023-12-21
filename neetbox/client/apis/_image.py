@@ -16,7 +16,7 @@ from neetbox.config import get_project_id, get_run_id
 from neetbox.logging import logger
 from neetbox.utils.x2numpy import *
 
-from ._client import connection
+from .._client import connection
 
 # ===================== IMAGE things ===================== #
 
@@ -95,32 +95,39 @@ def convert_to_HWC(tensor, input_format):  # tensor: numpy array
     )
     input_format = input_format.upper()
 
-    if len(input_format) == 4:
-        index = [input_format.find(c) for c in "NCHW"]
-        tensor_NCHW = tensor.transpose(index)
-        tensor_CHW = make_grid(tensor_NCHW)
-        return tensor_CHW.transpose(1, 2, 0)
-
-    if len(input_format) == 3:
-        index = [input_format.find(c) for c in "HWC"]
-        tensor_HWC = tensor.transpose(index)
-        if tensor_HWC.shape[2] == 1:
-            tensor_HWC = np.concatenate([tensor_HWC, tensor_HWC, tensor_HWC], 2)
-        return tensor_HWC
-
     if len(input_format) == 2:
         index = [input_format.find(c) for c in "HW"]
         tensor = tensor.transpose(index)
         tensor = np.stack([tensor, tensor, tensor], 2)
         return tensor
 
+    if len(input_format) == 3:
+        if "N" not in input_format:
+            index = [input_format.find(c) for c in "HWC"]
+            tensor_HWC = tensor.transpose(index)
+            if tensor_HWC.shape[2] == 1:
+                tensor_HWC = np.concatenate([tensor_HWC, tensor_HWC, tensor_HWC], 2)
+            return tensor_HWC
+        else:
+            index = [input_format.find(c) for c in "NHW"]
+            tensor = tensor.transpose(index)[:, None, :, :]
+            input_format = "NCHW"
+
+    if len(input_format) == 4:
+        index = [input_format.find(c) for c in "NCHW"]
+        tensor_NCHW = tensor.transpose(index)
+        tensor_CHW = make_grid(tensor_NCHW)
+        return tensor_CHW.transpose(1, 2, 0)
+
 
 def add_image(name: str, image, dataformats: str = None):
     """send an image to frontend display
 
     Args:
-        image (Union[np.array, Image.Image]): image from cv2 and PIL.Image are supported
+        image (Union[np.array, Image.Image, Tensor]): image from cv2 and PIL.Image as well as tensors are supported
         name (str): name of the image, used in frontend display
+        dataformats (str): if you are passing a tensor as image, please indicate how to understand the tensor. For example, dataformats="NCWH" means the first axis of the tensor is Number of batches, the second axis is Channel, and the third axis is Width, and the fourth axis is Height.
+
     """
     if isinstance(image, Image.Image):  # is PIL Image
         with io.BytesIO() as image_bytes_stream:

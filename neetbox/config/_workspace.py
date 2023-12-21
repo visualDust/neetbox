@@ -17,6 +17,7 @@ from uuid import uuid4
 
 import toml
 
+from neetbox._protocol import NAME_KEY, PROJECT_ID_KEY, RUN_ID_KEY
 from neetbox.utils.framing import get_frame_module_traceback
 from neetbox.utils.massive import check_read_toml, update_dict_recursively
 
@@ -24,9 +25,9 @@ CONFIG_FILE_NAME = f"neetbox.toml"
 NEETBOX_VERSION = version("neetbox")
 
 _DEFAULT_WORKSPACE_CONFIG = {
-    "name": os.path.basename(os.path.normpath(os.getcwd())),
+    NAME_KEY: os.path.basename(os.path.normpath(os.getcwd())),
     "version": NEETBOX_VERSION,
-    "projectid": str(uuid4()),  # later will be overwrite by workspace config file
+    PROJECT_ID_KEY: str(uuid4()),  # later will be overwrite by workspace config file
     "logging": {"level": "INFO", "logdir": "logs"},
     "extension": {
         "autoload": True,
@@ -39,6 +40,7 @@ _DEFAULT_WORKSPACE_CONFIG = {
         "mute": True,
         "mode": "detached",
         "uploadInterval": 1,
+        "shell": {"enable": True, "daemon": True},
     },
 }
 
@@ -50,8 +52,8 @@ def _obtain_new_run_id():
         str: new run id
     """
     global _DEFAULT_WORKSPACE_CONFIG
-    _DEFAULT_WORKSPACE_CONFIG["runid"] = str(uuid4())
-    return _DEFAULT_WORKSPACE_CONFIG["runid"]
+    _DEFAULT_WORKSPACE_CONFIG[RUN_ID_KEY] = str(uuid4())
+    return _DEFAULT_WORKSPACE_CONFIG[RUN_ID_KEY]
 
 
 _QUERY_ADD_EXTENSION_DEFAULT_CONFIG = []
@@ -156,11 +158,11 @@ def _init_workspace(path=None, **kwargs) -> bool:
                 extension._scan_sub_modules()
                 _update_default_config_from_config_register()  # load custom config into default config
                 _config = _DEFAULT_WORKSPACE_CONFIG
-                if "name" in kwargs and kwargs["name"]:  # using given name
-                    _config["name"] = kwargs["name"]
+                if NAME_KEY in kwargs and kwargs[NAME_KEY]:  # using given name
+                    _config[NAME_KEY] = kwargs[NAME_KEY]
                 else:  # using the folder name
-                    _config["name"] = os.path.basename(os.path.normpath(os.getcwd()))
-                _config["projectid"] = str(uuid.uuid4())
+                    _config[NAME_KEY] = os.path.basename(os.path.normpath(os.getcwd()))
+                _config[PROJECT_ID_KEY] = str(uuid.uuid4())
                 toml.dump(_config, config_file)
             return True
         except Exception as e:
@@ -169,36 +171,30 @@ def _init_workspace(path=None, **kwargs) -> bool:
         raise RuntimeError(f"{config_file_path} already exist")
 
 
-def _check_if_workspace_config_valid(path=None) -> bool:
-    path = path or "."
-    config_file_path = os.path.join(path, CONFIG_FILE_NAME)
-    if not os.path.isfile(config_file_path):  # but config file not exist
-        return False
-    try:
-        toml.load(config_file_path)  # try load as toml
-        return config_file_path
-    except Exception as e:
-        return False
-
-
-def _load_workspace_config(folder="."):
+def _load_workspace_config(folder=".", load_only=False):
     global _IS_WORKSPACE_LOADED
-    config_file_path = _check_if_workspace_config_valid(
-        path=folder
-    )  # check if config file is valid
-    if not config_file_path:  # failed to load workspace config, exiting
+    config_from_file = os.path.join(folder, CONFIG_FILE_NAME)
+    config_from_file = check_read_toml(config_from_file)  # check if config file is valid
+    if not config_from_file:  # failed to load workspace config, exiting
         raise RuntimeError(f"Config file not exists in '{folder}'")
-    import neetbox.extension as extension
+    if not load_only:
+        import neetbox.extension as extension
 
-    extension._scan_sub_modules()
-    _update_default_config_from_config_register()  # load custom config into default config
-    _obtain_new_run_id()  # obtain new run id
-    config_from_file = toml.load(config_file_path)
+        extension._scan_sub_modules()
+        _update_default_config_from_config_register()  # load custom config into default config
+        _obtain_new_run_id()  # obtain new run id
+
     if "version" not in config_from_file or config_from_file["version"] != NEETBOX_VERSION:
-        raise RuntimeError(
-            f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config from version {config_from_file['version']}"
+        print(
+            RuntimeError(
+                f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config from version {config_from_file['version']}. Please delete neetbox.toml and recreate by 'neet init'"
+            )
         )
+        os._exit(-1)
     _update_default_workspace_config_with(config_from_file)  # load config file in
+
+    if load_only:
+        return
 
     if (
         len(sys.argv) > 0

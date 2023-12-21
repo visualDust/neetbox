@@ -1,5 +1,5 @@
 name = "snake"
-projectid = "cfaf7fd6-a82f-4de7-aa74-013a6e826bef"
+projectId = "cfaf7fd6-a82f-4de7-aa74-013a6e826bef"
 version = "0.2.6"
 
 [logging]

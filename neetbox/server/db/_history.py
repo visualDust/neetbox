@@ -9,153 +9,16 @@ import json
 import os
 import sqlite3
 from datetime import datetime
-from typing import Dict, Tuple, Union
+from typing import Union
 
 from neetbox._protocol import *
 from neetbox.logging import LogStyle
 from neetbox.logging.logger import Logger
+from neetbox.utils import ResourceLoader
+
+from ._condition import *
 
 logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
-
-
-class QueryCondition:
-    def __init__(
-        self,
-        id: Union[Tuple[int, int], int] = None,
-        timestamp: Union[Tuple[str, str], str] = None,
-        series: str = None,
-        run_id: Union[str, int] = None,
-        limit: int = None,
-        order: Dict[str, DbQuerySortType] = {},
-    ) -> None:
-        self.id_range = id if isinstance(id, tuple) else (id, None)
-        self.timestamp_range = timestamp if isinstance(timestamp, tuple) else (timestamp, None)
-        self.series = series
-        self.run_id = run_id
-        self.limit = limit
-        self.order = {order[0], order[1]} if isinstance(order, tuple) else order
-
-    @classmethod
-    def from_json(cls, json_data):
-        if isinstance(json_data, str):
-            json_data = json.loads(json_data)
-        """
-        {
-            "id" : [int,int], # from,to
-            "timestamp" : [str,str], # from,to
-            "series" : str, # series name
-            "limit" : int,
-            "order" : [
-                {"column name" : "ASC/DESC"},
-                ...
-            ]
-        }
-        """
-        # try load id range
-        id_range = None
-        if ID_COLUMN_NAME in json_data:
-            id_range_str = json_data[ID_COLUMN_NAME]
-            id_range = eval(id_range_str)
-            assert (
-                isinstance(id_range, list)
-                and len(id_range) == 2
-                and type(id_range[0]) is int
-                and type(id_range[1]) is int
-                or type(id_range) is int
-            )
-            id_range = tuple(id_range)  # to tuple
-        # try load timestamp range
-        timestamp_range = None
-        if TIMESTAMP_COLUMN_NAME in json_data:
-            timestamp_range_str = json_data[TIMESTAMP_COLUMN_NAME]
-            timestamp_range = eval(timestamp_range_str)
-            assert (
-                isinstance(timestamp_range, list)
-                and len(timestamp_range) == 2
-                and type(timestamp_range[0]) is str
-                and type(timestamp_range[1]) is str
-                or type(timestamp_range) is str
-            )
-            # datetime.strptime(timestamp_range[0], DATETIME_FORMAT) # try parse to datetime, makesure its valid
-            # datetime.strptime(timestamp_range[1], DATETIME_FORMAT)
-            timestamp_range = tuple(timestamp_range)
-        # try to load series
-        series = json_data[SERIES_COLUMN_NAME] if SERIES_COLUMN_NAME in json_data else None
-        # run-id cond
-        run_id = json_data[RUN_ID_COLUMN_NAME] if RUN_ID_COLUMN_NAME in json_data else None
-        # try load limit
-        limit = None
-        if "limit" in json_data:
-            limit = json_data["limit"]
-            assert type(limit) is int
-        # try load order
-        order = None
-        if "order" in json_data:
-            order = json_data["order"]
-            assert isinstance(order, dict)
-        return QueryCondition(
-            id=id_range,
-            timestamp=timestamp_range,
-            series=series,
-            run_id=run_id,
-            limit=limit,
-            order=order,
-        )
-
-    def dumps(self):
-        # === id condition ===
-        _id_cond = ""
-        if self.id_range[0]:
-            _id_0, _id_1 = self.id_range
-            _id_cond = (
-                f"{ID_COLUMN_NAME}=={_id_0}"
-                if _id_1 is None
-                else f"{ID_COLUMN_NAME} BETWEEN {_id_0} AND {_id_1}"
-            )
-        # === timestamp condition ===
-        _timestamp_cond = ""
-        if self.timestamp_range[0]:
-            _ts_0, _ts_1 = self.timestamp_range
-            _timestamp_cond = (
-                f"{TIMESTAMP_COLUMN_NAME}>='{_ts_0}'"
-                if _ts_1 is None
-                else f"{TIMESTAMP_COLUMN_NAME} BETWEEN '{_ts_0} AND '{_ts_1}"
-            )
-        # === series condition ===
-        _series_cond = ""
-        if self.series:
-            _series_cond = f"{SERIES_COLUMN_NAME} == '{self.series}'"
-        # === run-id condition ===
-        _run_id_cond = ""
-        if self.run_id:
-            _run_id_cond = f"{RUN_ID_COLUMN_NAME} == {self.run_id}"
-        # === ORDER BY ===
-        _order_cond = f"ORDER BY " if self.order else ""
-        if self.order:
-            for _col_name, _sort in self.order.items():
-                _order_cond += (
-                    f"{_col_name} {_sort.value if isinstance(_sort,DbQuerySortType) else _sort}, "
-                )
-            _order_cond = _order_cond[:-2]  # remove last ','
-        # === LIMIT ===
-        _limit_cond = f"LIMIT {self.limit}" if self.limit else ""
-        # === concat conditions ===
-        query_conditions = []
-        for cond in [_id_cond, _timestamp_cond, _series_cond, _run_id_cond]:
-            if cond:
-                query_conditions.append(cond)
-        query_conditions = " AND ".join(query_conditions)
-        # === concat order by and limit ===
-        order_and_limit = []
-        for cond in [_order_cond, _limit_cond]:
-            if cond:
-                order_and_limit.append(cond)
-        order_and_limit = " ".join(order_and_limit)
-        # result
-        if query_conditions:
-            query_conditions = f"WHERE {query_conditions}"
-        query_condition_str = f"{query_conditions} {order_and_limit}"
-        return query_condition_str
 
 
 class DBConnection:
@@ -289,7 +152,7 @@ class DBConnection:
         return _version[0]
 
     def fetch_db_project_id(self, default=None):
-        if not self._inited_tables[PROJECT_ID_TABLE_NAME]:  # create if there is no projectid table
+        if not self._inited_tables[PROJECT_ID_TABLE_NAME]:  # create if there is no project id table
             sql_query = f"CREATE TABLE IF NOT EXISTS {PROJECT_ID_TABLE_NAME} ( {PROJECT_ID_TABLE_NAME} TEXT NON NULL );"
             self._execute(sql_query)
             self._inited_tables[PROJECT_ID_TABLE_NAME] = True
@@ -305,38 +168,50 @@ class DBConnection:
             return default
         return _projectid[0]
 
+    def get_id_of_run_id(self, run_id: str):
+        try:
+            sql_query = f"SELECT {ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {RUN_ID_COLUMN_NAME} == '{run_id}'"
+            _id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+            return _id[0]
+        except:
+            return None
+
     def fetch_id_of_run_id(self, run_id: str, timestamp: str = None):
         if not self._inited_tables[RUN_IDS_TABLE_NAME]:  # create if there is no version table
             sql_query = f"CREATE TABLE IF NOT EXISTS {RUN_IDS_TABLE_NAME} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {RUN_ID_COLUMN_NAME} TEXT NON NULL, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {METADATA_COLUMN_NAME} TEXT, CONSTRAINT run_id_unique UNIQUE ({RUN_ID_COLUMN_NAME}));"
             self._execute(sql_query)
             self._inited_tables[RUN_IDS_TABLE_NAME] = True
-        sql_query = f"SELECT {ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {RUN_ID_COLUMN_NAME} == '{run_id}'"
-        _id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
-        if _id is None:
+        id_of_run_id = self.get_id_of_run_id(run_id)
+        if id_of_run_id is None:
             timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
             sql_query = f"INSERT INTO {RUN_IDS_TABLE_NAME}({RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}) VALUES (?, ?)"
             _, lastrowid = self._execute(sql_query, run_id, timestamp)
             return lastrowid
-        return _id[0]
+        return id_of_run_id
 
     def fetch_metadata_of_run_id(self, run_id: str, metadata: Union[dict, str] = None):
-        id = self.fetch_id_of_run_id(run_id=run_id)
+        id_of_run_id = self.get_id_of_run_id(run_id)
+        if id_of_run_id is None:
+            return None
         if metadata:  # if update name
             metadata = json.dumps(metadata) if isinstance(metadata, dict) else metadata
             sql_query = f"UPDATE {RUN_IDS_TABLE_NAME} SET {METADATA_COLUMN_NAME} = ? WHERE {ID_COLUMN_NAME} = ?"
-            _, _ = self._execute(sql_query, metadata, id)
+            _, _ = self._execute(sql_query, metadata, id_of_run_id)
         # get name
-        sql_query = f"SELECT {METADATA_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id}"
+        sql_query = f"SELECT {METADATA_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
         (metadata,), _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         metadata = (
             json.loads(metadata) if metadata else {}
         )  # if does not have metadata, return an empty one
         return metadata
 
-    def run_id_of_id(self, id_of_run_id):
-        sql_query = f"SELECT {RUN_ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
-        run_id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
-        return run_id[0]
+    def get_run_id_of_id(self, id_of_run_id):
+        try:
+            sql_query = f"SELECT {RUN_ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
+            run_id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+            return run_id[0]
+        except:
+            return None
 
     def get_run_ids(self):
         if not self.table_exist(RUN_IDS_TABLE_NAME):
@@ -361,7 +236,7 @@ class DBConnection:
         if not self.table_exist(table_name):
             return []
         if run_id is not None:
-            sql_query = f"SELECT DISTINCT t.series as series FROM {table_name} t RIGHT JOIN {RUN_IDS_TABLE_NAME} r ON r.runid == ? WHERE t.runid == r.id"
+            sql_query = f"SELECT DISTINCT t.series as series FROM {RUN_IDS_TABLE_NAME} r LEFT JOIN {table_name} t ON r.{RUN_ID_COLUMN_NAME} == ? WHERE t.{RUN_ID_COLUMN_NAME} == r.{ID_COLUMN_NAME}"
             args = (run_id,)
         else:
             sql_query = f"SELECT DISTINCT series FROM {table_name}"
@@ -369,15 +244,21 @@ class DBConnection:
         result, _ = self._query(sql_query, *args, fetch=DbQueryFetchType.ALL)
         return [result for (result,) in result]
 
-    def do_limit_num_row_for(self, table_name: str, run_id: str, num_row_limit: int):
+    def do_limit_num_row_for(
+        self, table_name: str, run_id: str, num_row_limit: int, series: str = None
+    ):
         if num_row_limit <= 0:  # no limit or random not triggered
             return
-        sql_query = f"SELECT count(*) from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id}"  # count rows for runid in specific table
+        sql_query = f"SELECT count(*) from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id}"  # count rows for run id in specific table
+        if series is not None:
+            sql_query += f" AND {SERIES_COLUMN_NAME} = '{series}'"
         num_rows, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
         if num_rows[0] > num_row_limit:  # num rows exceeded limit
             sql_query = f"SELECT {ID_COLUMN_NAME} from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id} ORDER BY {ID_COLUMN_NAME} DESC LIMIT 1 OFFSET {num_row_limit - 1}"  # get max id to delete of row for specific run id
             max_id_to_del, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
             sql_query = f"DELETE FROM {table_name} WHERE {ID_COLUMN_NAME} < {max_id_to_del[0]} AND {RUN_ID_COLUMN_NAME} = {run_id}"
+            if series is not None:
+                sql_query += f" AND {SERIES_COLUMN_NAME} = '{series}'"
             self._query(sql_query)  # delete rows with smaller id and specific run id
 
     def write_json(
@@ -404,14 +285,16 @@ class DBConnection:
         if isinstance(json_data, dict):
             json_data = json.dumps(json_data)
         _, lastrowid = self._execute(sql_query, timestamp, series, run_id, json_data)
-        self.do_limit_num_row_for(table_name, run_id, num_row_limit)
+        self.do_limit_num_row_for(
+            table_name=table_name, run_id=run_id, num_row_limit=num_row_limit, series=series
+        )
         return lastrowid
 
     def read_json(self, table_name: str, condition: QueryCondition = None):
         if not self.table_exist(table_name):
             return []
-        if isinstance(condition.run_id, str):
-            condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
+        if condition and isinstance(condition.run_id, str):
+            condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
         result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
@@ -452,16 +335,16 @@ class DBConnection:
             return {}
         condition = QueryCondition(run_id=run_id, series=series)
         if isinstance(condition.run_id, str):
-            condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
-        condition = condition.dumps() if condition else ""
+            condition.run_id = self.get_id_of_run_id(run_id)
+        condition = condition.dumps()
         sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {condition}"
         query_result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         result = {}
         for id_of_runid, series_name, value in query_result:
-            _run_id = self.run_id_of_id(id_of_runid)
-            if _run_id not in result:
-                result[_run_id] = {}
-            result[_run_id][series_name] = json.loads(value)
+            run_id = self.get_run_id_of_id(id_of_runid)
+            if run_id and run_id not in result:
+                result[run_id] = {}
+            result[run_id][series_name] = json.loads(value)
         return result
 
     def write_blob(
@@ -492,15 +375,51 @@ class DBConnection:
 
         sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME}, {METADATA_COLUMN_NAME}, {BLOB_COLUMN_NAME}) VALUES (?, ?, ?, ?, ?)"
         _, lastrowid = self._execute(sql_query, timestamp, series, run_id, meta_data, blob_data)
-        self.do_limit_num_row_for(table_name, run_id, num_row_limit)
+        self.do_limit_num_row_for(
+            table_name=table_name, run_id=run_id, num_row_limit=num_row_limit, series=series
+        )
         return lastrowid
 
     def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
         if not self.table_exist(table_name):
             return []
-        if isinstance(condition.run_id, str):
-            condition.run_id = self.fetch_id_of_run_id(condition.run_id)  # convert run id
+        if condition and isinstance(condition.run_id, str):
+            condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
         condition = condition.dumps() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
         result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
         return result
+
+
+# === DEFAULT EXPORT FUNCs ===
+
+if not os.path.exists(HISTORY_FILE_ROOT):
+    # create history root dir
+    os.mkdir(HISTORY_FILE_ROOT)
+# check if is dir
+if not os.path.isdir(HISTORY_FILE_ROOT):
+    raise RuntimeError(f"{HISTORY_FILE_ROOT} is not a directory.")
+
+
+def load_db_of_path(path):
+    if not os.path.isfile(path):
+        raise RuntimeError(f"{path} is not a file")
+    conn = DBConnection(path=path)
+    return conn
+
+
+def get_db_list():
+    history_file_loader = ResourceLoader(
+        folder=HISTORY_FILE_ROOT, file_types=[HISTORY_FILE_TYPE_NAME], force_rescan=True
+    )
+    history_file_list = history_file_loader.get_file_list()
+    for path in history_file_list:
+        load_db_of_path(path=path)
+    return DBConnection._id2dbc.items()
+
+
+def get_db_of_id(project_id, rescan: bool = True):
+    if rescan:
+        get_db_list()  # scan for possible file changes
+    conn = DBConnection.of_project_id(project_id=project_id)
+    return conn

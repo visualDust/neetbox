@@ -5,7 +5,10 @@
 		},
 		{
 			"path": "frontend"
-		}
+		},
+		{
+			"path": "docs"
+		},
 	],
 	"settings": {}
 }

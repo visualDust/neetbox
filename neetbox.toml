@@ -1,6 +1,6 @@
 name = "neetbox"
-version = "0.3.2"
-projectid = "fd9ba05f-5f33-4afb-9156-08caae9ab37a"
+version = "0.3.3"
+projectId = "e1b97d6a-089c-433a-a8a5-95be751932fc"
 
 [logging]
 level = "INFO"
@@ -12,7 +12,7 @@ autoload = true
 [client]
 enable = true
 host = "127.0.0.1"
-port = 20202
+port = 5000
 allowIpython = false
 mute = true
 mode = "detached"

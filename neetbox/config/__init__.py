@@ -4,10 +4,10 @@
 # Github: github.com/visualDust
 # Date:   20230413
 
-
-import os
 import types
 from typing import Union
+
+from neetbox._protocol import PROJECT_ID_KEY, RUN_ID_KEY
 
 from ._workspace import _get_module_level_config, export_default_config
 
@@ -27,11 +27,11 @@ def get_module_level_config(module: Union[str, types.ModuleType] = None):
 
 
 def get_project_id():
-    return get_module_level_config("@")["projectid"]
+    return get_module_level_config("@")[PROJECT_ID_KEY]
 
 
 def get_run_id():
-    return get_module_level_config("@")["runid"]
+    return get_module_level_config("@")[RUN_ID_KEY]
 
 
 __all__ = ["get_module_level_config", "export_default_config", "get_project_id", "get_run_id"]

@@ -4,9 +4,7 @@ import sys
 
 from neetbox.server._server import server_process
 
-# sys.stdout=open(r'D:\Projects\ML\neetbox\logdir\daemon.log', 'a+')
-
-print("========= Daemon  =========")
+print("========= Server Daemon  =========")
 
 
 def run(argv):

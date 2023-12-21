@@ -35,9 +35,6 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
     limit: 1000,
     transformHTTP: (x) => ({ id: x.imageId, ...JSON.parse(x.metadata) }),
     transformWS: (x) => ({ ...x, ...x.payload }),
-    onNewWSData: () => {
-      if (index == length - 1) setIndex((i) => i + 1);
-    },
   });
   const [realIndex, setIndex] = useState(-1);
   const length = data?.length ?? 0;

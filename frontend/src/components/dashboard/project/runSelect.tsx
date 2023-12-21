@@ -48,12 +48,12 @@ export const RunSelect = memo((props: any) => {
             <>
               {isOnlineRun ? (
                 <Tag color="green">Online</Tag>
-              ) : runId != items[0].runid ? (
+              ) : runId != items[0].runId ? (
                 <Tag color="orange">History</Tag>
               ) : (
                 <Tag color="red">Offline</Tag>
               )}
-              {items.find((x) => x.runid == p.value)?.timestamp}
+              {items.find((x) => x.runId == p.value)?.timestamp}
             </>
           )}
         >
@@ -63,12 +63,12 @@ export const RunSelect = memo((props: any) => {
                 style={{ gap: "5px" }}
                 // workaround for semi-design select: won't update label unless key changed
                 // https://github.com/DouyinFE/semi-design/blob/c7982af07ad92e6cafe72d96604ed63a8ca595d6/packages/semi-ui/select/index.tsx#L640
-                key={item.runid + "-" + item.metadata?.name + "-" + item.online}
-                value={item.runid}
+                key={item.runId + "-" + item.metadata?.name + "-" + item.online}
+                value={item.runId}
               >
                 <span style={{ fontFamily: "monospace", fontSize: 12 }}>{item.timestamp}</span>
                 <span style={{ fontFamily: "monospace", fontSize: 12 }}>
-                  ({item.metadata?.name ?? item.runid})
+                  ({item.metadata?.name ?? item.runId})
                 </span>
                 <span style={{ flex: 1 }}></span>
                 <Button
@@ -91,18 +91,18 @@ export const RunSelect = memo((props: any) => {
                       closeDropDown();
                       Modal.error({
                         title: "Are you sure?",
-                        content: `Deleting run ${item.timestamp} (${item.runid})`,
+                        content: `Deleting run ${item.timestamp} (${item.runId})`,
                         centered: true,
                         onOk: async () => {
-                          if (item.runid === runId) {
-                            const existedId = runIds.find((x) => x.runid !== runId);
+                          if (item.runId === runId) {
+                            const existedId = runIds.find((x) => x.runId !== runId);
                             if (existedId) {
                               setRunId(existedId);
                             } else {
                               navigate("/");
                             }
                           }
-                          await fetcher(`/project/${projectId}/run/${item.runid}`, { method: "DELETE" });
+                          await fetcher(`/project/${projectId}/run/${item.runId}`, { method: "DELETE" });
                           mutateRunIds();
                           Toast.success({
                             content: `Deleted ${item.timestamp}`,
@@ -113,7 +113,7 @@ export const RunSelect = memo((props: any) => {
                   />
                 )}
                 {item.online ? <Tag color="green">Online</Tag> : <Tag color="red">Offline</Tag>}
-                <HyperParams projectId={projectId} runId={item.runid} trigger="hover" position="leftTop" />
+                <HyperParams projectId={projectId} runId={item.runId} trigger="hover" position="leftTop" />
               </Select.Option>
             );
           })}
@@ -157,7 +157,7 @@ const RunEditor = memo((props: { data: any; onResult: (edited: boolean) => void 
       onCancel={() => props.onResult(false)}
       onOk={async () => {
         const values = formRef.current.formApi.getValues();
-        await fetcher(`/project/${projectId}/run/${data.runid}`, {
+        await fetcher(`/project/${projectId}/run/${data.runId}`, {
           method: "PUT",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
@@ -170,7 +170,7 @@ const RunEditor = memo((props: { data: any; onResult: (edited: boolean) => void 
       centered
     >
       <Form initValues={data} ref={formRef as any}>
-        <Form.Input field="runid" label="ID" disabled></Form.Input>
+        <Form.Input field="runId" label="ID" disabled></Form.Input>
         <Form.Input field="metadata.name" label="Name"></Form.Input>
       </Form>
     </Modal>

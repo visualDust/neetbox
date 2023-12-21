@@ -6,7 +6,8 @@
 
 
 from neetbox._protocol import *
-from neetbox.client import connection
+
+from ._client import connection
 
 
 def _get(api, root=None):

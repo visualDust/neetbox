@@ -28,8 +28,8 @@ export class Project {
   ) {
     this.wsClient.send(
       {
-        "event-type": "action",
-        runid: runId,
+        eventType: "action",
+        runId: runId,
         payload: {
           name: action,
           args,

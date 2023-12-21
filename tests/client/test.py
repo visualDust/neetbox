@@ -111,11 +111,11 @@ def run_test_mention(text: str):
 
 
 @neetbox.watch("train")
-def train(epoch):
+def train(step):
     loss, acc = random(), random()
-    neetbox.add_scalar("sin", epoch, math.sin(epoch * 0.1))
-    neetbox.add_scalar("cos", epoch, math.cos(epoch * 0.1))
-    return {"loss": loss, "acc": acc}
+    neetbox.add_scalar("sin", step, math.sin(step * 0.1))
+    neetbox.add_scalar("cos", step, math.cos(step * 0.1))
+    return {"global_step": step, "loss": loss, "acc": acc}
 
 
 @neetbox.listen("train")  # listen to train
@@ -132,11 +132,20 @@ def log_with_some_prefix():
     logger.err("some error")
 
 
-train_config = {"epoch": 9999}
+train_config = {"epoch": 50, "batch_size": 10}
+
+
+def train_epoch(config):
+    def train_batch_in_epoch(current_epoch, batch_size):
+        for i in neetbox.progress(batch_size):
+            time.sleep(1)
+            train(current_epoch * batch_size + i)
+
+    with neetbox.progress(config["epoch"]) as epoch:
+        for e in epoch:
+            train_batch_in_epoch(current_epoch=e, batch_size=config["batch_size"])
+
 
 if __name__ == "__main__":
     neetbox.add_hyperparams(train_config)
-    with neetbox.progress(train_config["epoch"]) as epochs:
-        for i in epochs:
-            sleep(1)
-            train(i)
+    train_epoch(train_config)

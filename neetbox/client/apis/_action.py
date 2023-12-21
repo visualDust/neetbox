@@ -15,10 +15,10 @@ from neetbox.core import Registry
 from neetbox.logging import logger
 from neetbox.utils.mvc import Singleton
 
-from ._client import Connection as connection
+from .._client import connection
 
 
-class PackedAction(Callable):
+class Action(Callable):
     def __init__(
         self,
         function: Callable,
@@ -62,29 +62,17 @@ class PackedAction(Callable):
         return self.function(**eval_params)
 
 
-class _NeetActionManager(metaclass=Singleton):
-    __ACTION_POOL: Registry = Registry("__NEET_ACTIONS")
+class ActionManager(metaclass=Singleton):
+    ACTION_POOL: Registry = Registry("__NEET_ACTIONS")
 
-    @staticmethod
-    def get_action_names():
-        return {
-            n: _NeetActionManager.__ACTION_POOL[n].argspec
-            for n in _NeetActionManager.__ACTION_POOL.keys()
-        }
+    def get_action_dict(self):
+        return {name: self.ACTION_POOL[name].get_props_dict() for name in self.ACTION_POOL.keys()}
 
-    @staticmethod
-    def get_action_dict():
-        return {
-            name: _NeetActionManager.__ACTION_POOL[name].get_props_dict()
-            for name in _NeetActionManager.__ACTION_POOL.keys()
-        }
-
-    @staticmethod
-    def eval_call(name: str, params: dict, callback: Optional[Callable] = None):
-        if name not in _NeetActionManager.__ACTION_POOL:
+    def eval_call(self, name: str, params: dict, callback: Optional[Callable] = None):
+        if name not in self.ACTION_POOL:
             logger.err(f"Could not find action with name {name}, action stopped.")
             return False
-        target_action: PackedAction = _NeetActionManager.__ACTION_POOL[name]
+        target_action: Action = self.ACTION_POOL[name]
         logger.log(
             f"Agent runs function '{target_action.name}', blocking = {target_action.blocking}"
         )
@@ -108,7 +96,7 @@ class _NeetActionManager(metaclass=Singleton):
             run_and_callback()
             return
 
-    def register(name: Optional[str] = None, description: str = None, blocking: bool = False):
+    def register(self, name: Optional[str] = None, description: str = None, blocking: bool = False):
         """register function as action visiable on frontend page
 
         Args:
@@ -120,11 +108,11 @@ class _NeetActionManager(metaclass=Singleton):
             Callable: the function itself.
         """
         return functools.partial(
-            _NeetActionManager._register, name=name, description=description, blocking=blocking
+            self._register, name=name, description=description, blocking=blocking
         )
 
     def _register(
-        function: Callable, name: str = None, description: str = None, blocking: bool = False
+        self, function: Callable, name: str = None, description: str = None, blocking: bool = False
     ):
         if (
             description is None and function.__doc__ is not None
@@ -144,21 +132,22 @@ class _NeetActionManager(metaclass=Singleton):
                     _parsed_description += _line[min_lstrip:] + "\n"
                 description = _parsed_description
 
-        packed = PackedAction(
-            function=function, name=name, description=description, blocking=blocking
-        )
-        _NeetActionManager.__ACTION_POOL._register(what=packed, name=packed.name, overwrite=True)
+        packed = Action(function=function, name=name, description=description, blocking=blocking)
+        self.ACTION_POOL._register(what=packed, name=packed.name, overwrite=True)
         connection.ws_send(
             event_type=EVENT_TYPE_NAME_STATUS,
             series="action",
-            payload=_NeetActionManager.get_action_dict(),
+            payload=self.get_action_dict(),
         )
         return function
 
 
+actionManager = ActionManager()
+
+
 @connection.ws_subscribe(event_type_name=EVENT_TYPE_NAME_ACTION)
 def _listen_to_actions(message: EventMsg):
-    _NeetActionManager.eval_call(
+    actionManager.eval_call(
         name=message.payload[NAME_KEY],
         params=message.payload[ARGS_KEY],
         callback=lambda x: connection.ws_send(
@@ -170,24 +159,3 @@ def _listen_to_actions(message: EventMsg):
             event_id=message.event_id,
         ),
     )
-
-
-# example
-if __name__ == "__main__":
-    import time
-
-    @_NeetActionManager.register(name="some")
-    def some(a, b):
-        time.sleep(1)
-        return f"a = {a}, b = {b}"
-
-    print("registered actions:")
-    action_dict = _NeetActionManager.get_action_dict()
-    print(action_dict)
-
-    def callback_fun(text):
-        print(f"callback_fun print: {text}")
-
-    _NeetActionManager.eval_call(name="some", params={"a": "3", "b": "4"}, callback=callback_fun)
-    print("you should see this line first before callback_fun print")
-    time.sleep(4)

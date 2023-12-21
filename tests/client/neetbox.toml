@@ -1,9 +1,9 @@
-name = "client-test-script"
-version = "0.3.2"
-projectid = "2757e5c6-7ae2-420c-91ed-85778a3cfd59"
+name = "client"
+version = "0.3.5"
+projectId = "d5628d20-99b9-4d40-ae6f-c7824256cb14"
 
 [logging]
-level = "DEBUG"
+level = "INFO"
 logdir = "logs"
 
 [extension]

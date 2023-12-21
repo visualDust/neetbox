@@ -57,7 +57,7 @@ jobs:
           mkdir logs
           LOGS_DIR=$(pwd)/logs
           cd tests/client
-          neet serve &> $LOGS_DIR/server.log &
+          neet serve -d &> $LOGS_DIR/server.log &
           sleep 3
           python test.py &> $LOGS_DIR/client.log &
 

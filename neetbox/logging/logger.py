@@ -60,7 +60,7 @@ class Logger:
     __WHOM_2_STYLE = {}
     _console = Console()
 
-    def __init__(self, whom=None, style: Optional[LogStyle] = None):
+    def __init__(self, whom: Any = None, style: Optional[LogStyle] = None):
         self.whom: Any = whom
         if style and style.console_color is None:
             style.randcolor()
@@ -120,14 +120,14 @@ class Logger:
 
         Args:
             prefix (Optional[str], optional): prefix shows at the start of console log while it shows as a tag on frontend. Defaults to None.
-            datetime_format (Optional[str], optional): change the format neetbox displays time. Defaults to None("%Y-%m-%dT%H:%M:%S.%f").
+            datetime_format (Optional[str], optional): change the format neetbox displays time. Defaults to None, neetbox will use default style ("%Y-%m-%dT%H:%M:%S.%f") if None is passed.
             with_identifier (Optional[bool], optional): whether to show who is logging, note that this option has noting todo with traceback. Defaults to None(True).
             with_datetime (Optional[bool], optional): whether to show datetime in logs. Defaults to None(True).
             skip_writers (list[str], optional): writers to skip, possible writes are 'stdout'(write into console), 'file'(write into file), 'ws'(write to frontend). Defaults to [], which means write to all writers.
-            traceback (int, optional): level of traceback. Defaults to 2.
+            traceback (int, optional): level of traceback. Defaults to 2. Do not change this option unless you know what you are doing.
 
         Returns:
-            _type_: _description_
+            Logger: returns itself that you can do chain function call
         """
         _caller_identity = get_caller_identity_traceback(traceback=traceback)
 
@@ -189,6 +189,7 @@ class Logger:
     def debug(
         self,
         *content,
+        prefix="debug",
         datetime_format: Optional[str] = None,
         with_identifier: Optional[bool] = None,
         with_datetime: Optional[bool] = None,
@@ -197,7 +198,7 @@ class Logger:
         if self.log_level >= LogLevel.DEBUG:
             self.log(
                 *content,
-                prefix=f"debug",
+                prefix=prefix,
                 skip_writers=skip_writers,
                 traceback=3,
                 datetime_format=datetime_format,
@@ -377,9 +378,6 @@ class Logger:
         if not path:
             self._bind_file(None)
             return self
-        if not path:
-            self._bind_file(None)
-            return self
         if os.path.isfile(path):
             raise Exception("Target path is not a directory.")
         if not os.path.exists(path):
@@ -400,9 +398,6 @@ class Logger:
             return self
         self.file_writer = FileLogWriter(path=path)
         return self
-
-    def file_bend(self) -> bool:
-        return self.file_writer is not None
 
 
 DEFAULT_LOGGER = Logger(None)

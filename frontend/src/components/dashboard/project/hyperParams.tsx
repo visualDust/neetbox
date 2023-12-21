@@ -29,11 +29,7 @@ const HyperParamsContent = memo(({ projectId, runId }: any) => {
       ) : value == null ? (
         <Typography.Text type="tertiary">N/A</Typography.Text>
       ) : (
-        <JsonViewThemed
-          style={{ minWidth: 200, width: 400, maxHeight: "70vh", overflow: "auto" }}
-          value={value}
-          displayDataTypes={false}
-        />
+        <JsonViewThemed value={value} />
       )}
     </Space>
   );

@@ -17,7 +17,7 @@ import neetbox
 from neetbox._protocol import *
 from neetbox.server._bridge import Bridge
 
-from .history import *
+from .db import QueryCondition
 
 werkzeug_log = logging.getLogger("werkzeug")
 werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
@@ -26,11 +26,12 @@ werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs
 def get_flask_server(debug=False):
     __PROC_NAME = "NEETBOX"
     from neetbox.logging import LogStyle
-    from neetbox.logging.logger import Logger
+    from neetbox.logging.logger import Logger, LogLevel
 
     logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
 
     if debug:
+        logger.set_log_level(LogLevel.DEBUG)
         logger.log(f"Running with debug, using APIFlask")
         from apiflask import APIFlask
 
@@ -66,30 +67,37 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>", methods=["GET"])
     def get_status_of_project_id(project_id: str):
         if not Bridge.has(project_id):
-            return abort(404)  # project id must exist
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
+            abort(404, {ERROR_KEY: "project id not found"})
         bridge = Bridge.of_id(project_id)
         return _project_status_from_bridge(bridge)
 
     def _project_status_from_bridge(bridge: Bridge):
         run_id_info_list = bridge.get_run_ids()
-        last_run_id = run_id_info_list[-1][RUN_ID_KEY]
-        config_last_run = bridge.get_status(run_id=last_run_id, series="config")
+        name_of_project = None
+        for run_id_info in reversed(run_id_info_list):
+            config = bridge.get_status(run_id=run_id_info[RUN_ID_KEY], series="config")
+            if NAME_KEY in config:
+                name_of_project = config[NAME_KEY]
+                break
         return {
             PROJECT_ID_KEY: bridge.project_id,
             "online": bridge.is_online(),
-            NAME_KEY: config_last_run[NAME_KEY],
+            NAME_KEY: name_of_project,
             "runids": run_id_info_list,
         }
 
     def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, str]):
         if not Bridge.has(project_id):
-            abort(404)
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
+            abort(404, {ERROR_KEY: "project id not found"})
         try:
             condition = QueryCondition.from_json(
                 json.loads(condition) if isinstance(condition, str) else condition
             )
         except Exception as e:  # if failed to parse
-            return abort(400)
+            logger.debug(f"failed to parse condition string", prefix="400")
+            abort(400, {ERROR_KEY: "failed to parse condition string"})
         return Bridge.of_id(project_id).read_json_from_history(
             table_name=table_name, condition=condition
         )
@@ -113,15 +121,17 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/series/<table_name>", methods=["GET"])
     def get_series_list_of(project_id: str, table_name: str):  # client side function
         if not Bridge.has(project_id):
-            abort(404)
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
+            abort(404, {ERROR_KEY: "project id not found"})
         result = Bridge.of_id(project_id).get_series_of(
-            table_name, run_id=request.args.get("runid")
+            table_name, run_id=request.args.get(RUN_ID_KEY)
         )
         return result
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["GET"])
     def get_status_of(project_id, run_id):
         if not Bridge.has(project_id):
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
             abort(404, {ERROR_KEY: "project id not found"})
         result = Bridge.of_id(project_id).get_status(run_id=run_id)
         return result
@@ -148,10 +158,8 @@ def get_flask_server(debug=False):
     @app.route(f"/image/<project_id>", methods=["POST"])
     def upload_image(project_id):
         if not Bridge.has(project_id):
-            # project id must exist
-            # drop anyway if not exist
-            logger.debug(f"{project_id} not found, dropping")
-            return abort(404)
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
+            abort(404, {ERROR_KEY: "project id not found"})
         message = EventMsg.loads(request.form["json"])
         image_bytes = request.files["image"].read()
         message.id = Bridge.of_id(project_id).save_blob_to_history(
@@ -170,7 +178,8 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/image/<image_id>", methods=["GET"])
     def get_image_of(project_id, image_id: int):
         if not Bridge.has(project_id):
-            return abort(404)  # cannot operate history if bridge of given id not exist
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
+            abort(404, {ERROR_KEY: "project id not found"})
         meta = request.args.get("meta") is not None
 
         [(_, _, meta_data, image)] = Bridge.of_id(project_id).read_blob_from_history(
@@ -186,7 +195,8 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/image", methods=["GET"])
     def get_history_image_metadata_of(project_id):
         if not Bridge.has(project_id):
-            abort(404)
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
+            abort(404, {ERROR_KEY: "project id not found"})
         _json_data = json.loads(request.args.get("condition", default="{}"))
         try:
             condition = QueryCondition.from_json(_json_data)
@@ -202,6 +212,12 @@ def get_flask_server(debug=False):
     def get_history_scalar_of(project_id):
         return get_history_json_of(
             project_id=project_id, table_name="scalar", condition=request.args.get("condition")
+        )
+
+    @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/progress", methods=["GET"])
+    def get_history_progress_of(project_id):
+        return get_history_json_of(
+            project_id=project_id, table_name="progress", condition=request.args.get("condition")
         )
 
     @app.route(f"/shutdown", methods=["POST"])
