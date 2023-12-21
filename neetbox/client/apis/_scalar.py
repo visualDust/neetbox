@@ -7,7 +7,7 @@
 from neetbox._protocol import *
 from neetbox.utils.x2numpy import *
 
-from ._client import connection
+from .._client import connection
 
 # ===================== PLOTTING things ===================== #
 

@@ -40,6 +40,7 @@ _DEFAULT_WORKSPACE_CONFIG = {
         "mute": True,
         "mode": "detached",
         "uploadInterval": 1,
+        "shell": {"enable": True, "daemon": True},
     },
 }
 

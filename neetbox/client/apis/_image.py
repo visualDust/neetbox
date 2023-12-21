@@ -16,7 +16,7 @@ from neetbox.config import get_project_id, get_run_id
 from neetbox.logging import logger
 from neetbox.utils.x2numpy import *
 
-from ._client import connection
+from .._client import connection
 
 # ===================== IMAGE things ===================== #
 

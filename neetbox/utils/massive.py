@@ -54,11 +54,9 @@ def update_dict_recursively(self: dict, the_other: dict):
 
 
 def get_user_config_directory():
-    """Returns a platform-specific root directory for user config settings."""
-    # On Windows, prefer %LOCALAPPDATA%, then %APPDATA%, since we can expect the
-    # AppData directories to be ACLed to be visible only to the user and admin
-    # users (https://stackoverflow.com/a/7617601/1179226). If neither is set,
-    # return None instead of falling back to something that may be world-readable.
+    """Returns a platform-specific root directory for user config settings.
+    On Windows, prefer %LOCALAPPDATA%, then %APPDATA%, since we can expect the AppData directories to be ACLed to be visible only to the user and admin users (https://stackoverflow.com/a/7617601/1179226). If neither is set, return None instead of falling back to something that may be world-readable.
+    """
     if os.name == "nt":
         appdata = os.getenv("LOCALAPPDATA")
         if appdata:

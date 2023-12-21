@@ -132,7 +132,7 @@ def log_with_some_prefix():
     logger.err("some error")
 
 
-train_config = {"epoch": 99, "batch_size": 10}
+train_config = {"epoch": 2, "batch_size": 2}
 
 
 def train_epoch(config):

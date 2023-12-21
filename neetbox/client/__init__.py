@@ -4,15 +4,15 @@
 # Github: github.com/visualDust
 # Date:   20231206
 
-from .api._action_agent import _NeetActionManager as NeetActionManager
-from .api._client import connection
-from .api._image import add_figure, add_image
-from .api._plot import add_hyperparams, add_scalar
-from .api._progress import Progress as progress
-from .api._signal_and_slot import listen, watch
+from ._client import connection
+from ._signal_and_slot import listen, watch
+from .apis._action import actionManager
+from .apis._image import add_figure, add_image
+from .apis._progress import Progress as progress
+from .apis._scalar import add_hyperparams, add_scalar
 
-action = NeetActionManager.register
 ws_subscribe = connection.ws_subscribe
+action = actionManager.register
 
 __all__ = [
     "add_image",
@@ -21,7 +21,6 @@ __all__ = [
     "add_hyperparams",
     "ws_subscribe",
     "action",
-    "NeetActionManager",
     "watch",
     "listen",
     "progress",

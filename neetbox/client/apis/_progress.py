@@ -10,7 +10,7 @@ from neetbox._protocol import *
 from neetbox.utils.framing import get_caller_identity_traceback
 from neetbox.utils.massive import describe_object
 
-from ._client import connection
+from .._client import connection
 
 
 class Progress:
