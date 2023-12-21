@@ -37,9 +37,9 @@ function ProjectDashboard() {
   const runIds = status?.runids;
   const lastRunId = runIds ? runIds[runIds.length - 1] : undefined;
   const paramRun = searchParams.get("run");
-  const paramRunFound = runIds?.find((x) => x.runid == paramRun);
+  const paramRunFound = runIds?.find((x) => x.runId == paramRun);
   const runInfo = paramRunFound ?? lastRunId;
-  const runId = runInfo?.runid;
+  const runId = runInfo?.runId;
   const isOnlineRun = Boolean(runInfo?.online);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ function ProjectDashboard() {
   }, [!!runIds, paramRun, paramRunFound]);
 
   const setRunId = (id: string) => {
-    if (id === lastRunId.runid) {
+    if (id === lastRunId.runId) {
       setSearchParams({});
     } else {
       setSearchParams({ run: id });

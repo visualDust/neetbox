@@ -10,7 +10,6 @@ from datetime import datetime as dt
 from enum import Enum
 from importlib.metadata import version
 from typing import Any, Union
-from importlib.metadata import version
 
 VERSION = version("neetbox")
 
@@ -19,16 +18,17 @@ VERSION = version("neetbox")
 ID_KEY = "id"
 NAME_KEY = "name"
 ARGS_KEY = "args"
-PROJECT_ID_KEY = WORKSPACE_ID_KEY = "projectid"
-RUN_ID_KEY = "runid"
+MACHINE_ID_KEY = "machineId"
+PROJECT_ID_KEY = WORKSPACE_ID_KEY = "projectId"
+RUN_ID_KEY = "runId"
 SERIES_KEY = "series"
-EVENT_TYPE_KEY = "event-type"
-EVENT_ID_KEY = "event-id"
+EVENT_TYPE_KEY = "eventType"
+EVENT_ID_KEY = "eventId"
 WHO_KEY = "who"
 PAYLOAD_KEY = "payload"
 METADATA_KEY = "metadata"
 TIMESTAMP_KEY = "timestamp"
-HISTORY_LEN_KEY = "history-len"
+HISTORY_LEN_KEY = "historyLen"
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"  # YYYY-MM-DDTHH:MM:SS.SSS
 
 

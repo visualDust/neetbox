@@ -38,15 +38,15 @@ export function useProjectWebSocketReady(id: string) {
   return useAtom(project.wsClient.isReady.atom)[0];
 }
 
-export function useProjectWebSocket<T extends WsMsg["event-type"]>(
+export function useProjectWebSocket<T extends WsMsg["eventType"]>(
   id: string,
   type: T | null,
-  onMessage: (msg: Extract<WsMsg, { "event-type": T }>) => void,
+  onMessage: (msg: Extract<WsMsg, { eventType: T }>) => void,
 ) {
   const project = getProject(id);
   useEffect(() => {
     const handle: typeof onMessage = (msg) => {
-      if (!type || msg["event-type"] == type) {
+      if (!type || msg.eventType == type) {
         onMessage(msg);
       }
     };
@@ -58,7 +58,7 @@ export function useProjectWebSocket<T extends WsMsg["event-type"]>(
 export function useProjectSeries(projectId: string, runId: string, type: string) {
   return useProjectData({
     type: `${type}`,
-    url: `/project/${projectId}/series/${type}?${new URLSearchParams({ runid: runId })}`,
+    url: `/project/${projectId}/series/${type}?${new URLSearchParams({ runId: runId })}`,
     projectId,
     runId,
     transformWS: (msg) => msg.series,
@@ -140,8 +140,8 @@ export function useProjectData<T = any>(options: {
 
     const handleWs = (msg: WsMsg) => {
       if (
-        type === msg["event-type"] &&
-        (!runId || msg.runid == runId) &&
+        type === msg.eventType &&
+        (!runId || msg.runId == runId) &&
         (!options.conditions?.series || options.conditions.series === msg.series) &&
         (!options.filterWS || options.filterWS(msg))
       ) {

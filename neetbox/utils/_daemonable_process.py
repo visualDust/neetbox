@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: PaperCube aka 张老师
+# Github: github.com/PaperCube
+# Date:   20230421
+
 import os
 import subprocess
 import sys

@@ -152,7 +152,7 @@ class DBConnection:
         return _version[0]
 
     def fetch_db_project_id(self, default=None):
-        if not self._inited_tables[PROJECT_ID_TABLE_NAME]:  # create if there is no projectid table
+        if not self._inited_tables[PROJECT_ID_TABLE_NAME]:  # create if there is no project id table
             sql_query = f"CREATE TABLE IF NOT EXISTS {PROJECT_ID_TABLE_NAME} ( {PROJECT_ID_TABLE_NAME} TEXT NON NULL );"
             self._execute(sql_query)
             self._inited_tables[PROJECT_ID_TABLE_NAME] = True
@@ -236,7 +236,7 @@ class DBConnection:
         if not self.table_exist(table_name):
             return []
         if run_id is not None:
-            sql_query = f"SELECT DISTINCT t.series as series FROM {RUN_IDS_TABLE_NAME} r LEFT JOIN {table_name} t ON r.runid == ? WHERE t.runid == r.id"
+            sql_query = f"SELECT DISTINCT t.series as series FROM {RUN_IDS_TABLE_NAME} r LEFT JOIN {table_name} t ON r.{RUN_ID_COLUMN_NAME} == ? WHERE t.{RUN_ID_COLUMN_NAME} == r.{ID_COLUMN_NAME}"
             args = (run_id,)
         else:
             sql_query = f"SELECT DISTINCT series FROM {table_name}"
@@ -249,7 +249,7 @@ class DBConnection:
     ):
         if num_row_limit <= 0:  # no limit or random not triggered
             return
-        sql_query = f"SELECT count(*) from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id}"  # count rows for runid in specific table
+        sql_query = f"SELECT count(*) from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id}"  # count rows for run id in specific table
         if series is not None:
             sql_query += f" AND {SERIES_COLUMN_NAME} = '{series}'"
         num_rows, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)

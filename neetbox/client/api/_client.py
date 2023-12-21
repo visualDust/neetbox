@@ -2,7 +2,7 @@
 #
 # Author: GavinGong aka VisualDust
 # Github: github.com/visualDust
-# Date:   2023102
+# Date:   20231022
 
 import atexit
 import functools
@@ -21,7 +21,7 @@ from neetbox._protocol import *
 from neetbox.config import get_module_level_config, get_project_id, get_run_id
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
-from neetbox.server._daemonable_process import DaemonableProcess
+from neetbox.utils._daemonable_process import DaemonableProcess
 from neetbox.utils.massive import is_loopback
 from neetbox.utils.mvc import Singleton
 
@@ -160,7 +160,7 @@ class Connection(metaclass=Singleton):  # singleton
                 f"No daemon running on {server_host}:{server_port}, trying to create daemon..."
             )
             popen = DaemonableProcess(  # server daemon
-                target="neetbox.server._daemon_launcher",
+                target="neetbox.server._daemon_server_launch_script",
                 args=["--config", json.dumps(config)],
                 mode=config["mode"],
                 redirect_stdout=subprocess.DEVNULL if config["mute"] else None,

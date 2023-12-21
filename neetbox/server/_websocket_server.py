@@ -9,6 +9,7 @@ from typing import Dict, Tuple
 from rich import box
 from rich.console import Console
 from rich.table import Table
+
 from neetbox._protocol import *
 
 
@@ -146,7 +147,7 @@ def get_web_socket_server(config, debug=False):
             )
             table.add_column(PROJECT_ID_KEY, justify="center", style="magenta", no_wrap=True)
             table.add_column(WHO_KEY, justify="center", style="cyan")
-            table.add_column("web:ws/cli:runid", justify="center", style="green")
+            table.add_column(f"web:ws/cli:{RUN_ID_KEY}", justify="center", style="green")
             for _, _bridge in Bridge.items():
                 table.add_row(_bridge.project_id, "", "")
                 for cli_run_id, _ in _bridge.cli_ws_dict.items():

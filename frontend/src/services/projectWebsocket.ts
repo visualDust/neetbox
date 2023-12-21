@@ -5,13 +5,13 @@ import { Project } from "./projects";
 import { ImageMetadata } from "./types";
 
 export interface WsMsgBase<Type extends string = string, Payload = undefined> {
-  "event-type": Type;
+  eventType: Type;
   name: string;
   payload: Payload;
-  "event-id": number;
+  eventId: number;
   who: "web" | "cli";
-  projectid: string;
-  runid: string;
+  projectId: string;
+  runId: string;
   timestamp: string;
   series?: string;
 }
@@ -49,7 +49,7 @@ export class WsClient {
       console.info("ws open");
       this.send(
         {
-          "event-type": "handshake",
+          eventType: "handshake",
           who: "web",
         },
         (msg) => {
@@ -69,8 +69,8 @@ export class WsClient {
     this.ws.onmessage = (e) => {
       const json = JSON.parse(e.data) as WsMsg;
       // console.debug("ws receive", json);
-      const eventId = json["event-id"];
-      const eventType = json["event-type"];
+      const eventId = json.eventId;
+      const eventType = json.eventType;
       if (this.callbacks.has(eventId)) {
         this.callbacks.get(eventId)!(json);
         this.callbacks.delete(eventId);
@@ -103,8 +103,8 @@ export class WsClient {
     const eventId = this.nextId++;
     const json = {
       ...msg,
-      projectid: this.project.id,
-      "event-id": eventId,
+      projectId: this.project.id,
+      eventId: eventId,
     };
     console.info("ws send", json);
     this.ws.send(JSON.stringify(json));

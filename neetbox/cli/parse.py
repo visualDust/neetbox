@@ -11,8 +11,8 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-import neetbox.config._cli_user_config as cliconfig
-from neetbox.client._client_web_apis import *
+import neetbox.config._global as global_config
+from neetbox.client.api._client_web_apis import *
 from neetbox.config._workspace import (
     _get_module_level_config,
     _init_workspace,

@@ -23,7 +23,7 @@ export default function ConsoleNavBar() {
           icon: <IconListView />,
           itemKey: "projects",
           items: data
-            ? data.map(({ projectid: id, name, online }) => ({
+            ? data.map(({ projectId: id, name, online }) => ({
                 text: (
                   <Space style={{ width: "100%", minWidth: "140px" }}>
                     <Typography.Text

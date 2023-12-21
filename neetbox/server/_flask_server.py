@@ -10,12 +10,13 @@ import time
 from threading import Thread
 from typing import Union
 
-from flask import Response, abort, json, redirect, request, send_from_directory
 import werkzeug
+from flask import Response, abort, json, redirect, request, send_from_directory
 
 import neetbox
 from neetbox._protocol import *
 from neetbox.server._bridge import Bridge
+
 from .db import QueryCondition
 
 werkzeug_log = logging.getLogger("werkzeug")
@@ -66,7 +67,7 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>", methods=["GET"])
     def get_status_of_project_id(project_id: str):
         if not Bridge.has(project_id):
-            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
             abort(404, {ERROR_KEY: "project id not found"})
         bridge = Bridge.of_id(project_id)
         return _project_status_from_bridge(bridge)
@@ -88,7 +89,7 @@ def get_flask_server(debug=False):
 
     def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, str]):
         if not Bridge.has(project_id):
-            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
             abort(404, {ERROR_KEY: "project id not found"})
         try:
             condition = QueryCondition.from_json(
@@ -120,17 +121,17 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/series/<table_name>", methods=["GET"])
     def get_series_list_of(project_id: str, table_name: str):  # client side function
         if not Bridge.has(project_id):
-            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
             abort(404, {ERROR_KEY: "project id not found"})
         result = Bridge.of_id(project_id).get_series_of(
-            table_name, run_id=request.args.get("runid")
+            table_name, run_id=request.args.get(RUN_ID_KEY)
         )
         return result
 
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/run/<run_id>", methods=["GET"])
     def get_status_of(project_id, run_id):
         if not Bridge.has(project_id):
-            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
             abort(404, {ERROR_KEY: "project id not found"})
         result = Bridge.of_id(project_id).get_status(run_id=run_id)
         return result
@@ -157,7 +158,7 @@ def get_flask_server(debug=False):
     @app.route(f"/image/<project_id>", methods=["POST"])
     def upload_image(project_id):
         if not Bridge.has(project_id):
-            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
             abort(404, {ERROR_KEY: "project id not found"})
         message = EventMsg.loads(request.form["json"])
         image_bytes = request.files["image"].read()
@@ -177,7 +178,7 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/image/<image_id>", methods=["GET"])
     def get_image_of(project_id, image_id: int):
         if not Bridge.has(project_id):
-            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
             abort(404, {ERROR_KEY: "project id not found"})
         meta = request.args.get("meta") is not None
 
@@ -194,7 +195,7 @@ def get_flask_server(debug=False):
     @app.route(f"{FRONTEND_API_ROOT}/project/<project_id>/image", methods=["GET"])
     def get_history_image_metadata_of(project_id):
         if not Bridge.has(project_id):
-            logger.debug(f"visiting none existing project id {project_id}", prefix="404")
+            logger.debug(f"visiting none existing project id {project_id}", prefix="[404]")
             abort(404, {ERROR_KEY: "project id not found"})
         _json_data = json.loads(request.args.get("condition", default="{}"))
         try:

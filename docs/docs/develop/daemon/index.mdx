@@ -42,9 +42,9 @@ class WsMsg:
 
 ```json
 {
-    "event-type" : ...,
+    "eventType" : ...,
     "payload" : ...,
-    "event-id" : ...
+    "eventId" : ...
 }
 ```
 
@@ -73,12 +73,12 @@ for instance, frontend connected to server. frontend should report connection ty
 
 ```json
 {
-  "event-type": "handshake",
+  "eventType": "handshake",
   "name": "project name",
   "payload": {
     "who": "web"
   },
-  "event-id": X
+  "eventId": X
 }
 ```
 
@@ -90,12 +90,12 @@ cli sents log(s) via websocket, server will receives and broadcast this message 
 
 ```json
 {
-  "event-type": "log",
+  "eventType": "log",
   "name": "project name",
   "payload": {
     "log" : {...json representing log data...}
   },
-  "event-id": -1
+  "eventId": -1
 }
 ```
 
@@ -107,12 +107,12 @@ frontend send action request to server, and server will forwards the message to 
 
 ```json
 {
-    "event-type" : "action",
+    "eventType" : "action",
     "name": "project name",
     "payload" : {
       "action" : {...json representing action trigger...}
     },
-    "event-id" : x
+    "eventId" : x
 }
 ```
 
@@ -124,12 +124,12 @@ cli execute action query(s) from frontend, and gives response by sending ack:
 
 ```json
 {
-    "event-type" : "ack",
+    "eventType" : "ack",
     "name": "project name",
     "payload" : {
       "action" : {...json representing action result...}
     },
-    "event-id" : x
+    "eventId" : x
 }
 ```
 
