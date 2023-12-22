@@ -27,7 +27,7 @@ class DaemonableProcess:
     ):
         self.target = target
         self.args = args
-        self.mode = mode
+        self._mode = mode
         self.use_os_spawn_for_daemon = use_os_spawn_for_daemon
         self.redirect_stdin = redirect_stdin
         # self.__is_daemon = is_daemon
@@ -41,11 +41,11 @@ class DaemonableProcess:
 
     @property
     def is_daemon(self):
-        return self.mode == "daemon"
+        return self._mode == "daemon"
 
     @property
     def mode(self):
-        return self.mode
+        return self._mode
 
     # @property
     # def is_detached(self):
@@ -69,7 +69,7 @@ class DaemonableProcess:
                     "attached": 0,
                     "shared": 0,
                     "detached": subprocess.CREATE_NO_WINDOW,  # type: ignore (only for windows)
-                }[self.mode]
+                }[self._mode]
 
                 popen = subprocess.Popen(
                     command_line,
@@ -93,12 +93,12 @@ class DaemonableProcess:
                     stdout=self.redirect_stdout,
                     stderr=self.redirect_stderr,
                     env=self.env,
-                    start_new_session=self.mode == "detached",
+                    start_new_session=self._mode == "detached",
                     cwd=path,
                     shell=shell,
                 )
 
-                if self.mode == "attached":
+                if self._mode == "attached":
                     import atexit
 
                     atexit.register(lambda: popen.terminate())
