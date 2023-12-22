@@ -4,9 +4,9 @@
 # Github: github.com/visualDust
 # Date:   20230319
 
-from dataclasses import dataclass
 import inspect
 import types
+from dataclasses import dataclass
 from os import path
 from typing import Union
 
@@ -45,52 +45,64 @@ def get_frame_filepath_traceback(traceback=1):
 @dataclass
 class TracebackIdentity:
     frame = None
-    func_name = None
+    lineno: int = None
+    func_name: str = None
     locals = None
     class_obj = None
-    class_name = None
+    class_name: str = None
     module = None
-    module_name = None
-    filepath = None
-    filename = None
+    module_name: str = None
+    filepath: str = None
+    filename: str = None
 
     @classmethod
     def parse(cls, frame) -> "TracebackIdentity":
-        instance = TracebackIdentity()
-        instance.frame = frame
-        instance.func_name = frame.function if frame.function != "<module>" else None
-        instance.locals = frame[0].f_locals
-        if "self" in instance.locals:
-            instance.class_obj = instance.locals["self"].__class__
-            if instance.class_obj:
-                instance.class_name = instance.class_obj.__name__
+        stacktrace = TracebackIdentity()
+        stacktrace.frame = frame
+        stacktrace.lineno = frame.lineno
+        stacktrace.func_name = frame.function if frame.function != "<module>" else None
+        stacktrace.locals = frame[0].f_locals
+        if "self" in stacktrace.locals:
+            stacktrace.class_obj = stacktrace.locals["self"].__class__
+            if stacktrace.class_obj:
+                stacktrace.class_name = stacktrace.class_obj.__name__
         module: Union[types.ModuleType, None] = inspect.getmodule(frame[0])
-        instance.module = module
-        instance.module_name = module.__name__ if module else None
-        instance.filepath = path.abspath(frame.filename)
-        instance.filename = path.basename(frame.filename)
-        return instance
+        stacktrace.module = module
+        stacktrace.module_name = module.__name__ if module else None
+        stacktrace.filepath = path.abspath(frame.filename)
+        stacktrace.filename = path.basename(frame.filename)
+        return stacktrace
 
     @property
-    def last_traceable(self):
+    def last_describable(self):
         for identity in [self.func_name, self.class_name, self.module_name, self.filepath, None]:
             if identity is not None:
                 return identity
 
     @property
+    def strid(self):
+        return "-".join(self.as_str_sequence(lineno=True))
+
+    @property
     def json(self):
         return {
             "file": f"{self.filepath}",
+            "lineno": f"{self.lineno}",
             "modlue": f"{self.module_name}",
             "class": f"{self.class_name}",
             "function": f"{self.func_name}",
         }
 
-    @property
-    def sequence(self):
+    def as_str_sequence(self, lineno=False):
         return [
             prop
-            for prop in [self.filepath, self.module_name, self.class_name, self.func_name]
+            for prop in [
+                self.filepath,
+                str(self.lineno) if lineno else None,
+                self.module_name,
+                self.class_name,
+                self.func_name,
+            ]
             if prop is not None
         ]
 
@@ -99,14 +111,15 @@ class TracebackIdentity:
             __value, TracebackIdentity
         ), f"cannot compare {__value} as a {TracebackIdentity}"
         return (
-            self.filepath == __value.filepath
+            self.lineno == __value.lineno
+            and self.filepath == __value.filepath
             and self.module_name == __value.module_name
             and self.class_name == __value.class_name
             and self.func_name == __value.func_name
         )
 
     def __repr__(self) -> str:
-        return "\n".join([f"{k}:\t\t{v}" for k, v in self.json.items()])
+        return "\n".join([f"{k}:\t{v}" for k, v in self.json.items()])
 
 
 def get_caller_identity_traceback(traceback=1):

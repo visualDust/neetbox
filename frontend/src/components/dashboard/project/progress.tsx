@@ -45,7 +45,7 @@ export const ProgressViewer = memo(({ series }: { series: string }) => {
   return (
     <Card
       shadows="hover"
-      title={series}
+      title={lastProgressData.name}
       headerLine={true}
       headerStyle={{ padding: "10px" }}
       bodyStyle={{
@@ -56,7 +56,11 @@ export const ProgressViewer = memo(({ series }: { series: string }) => {
         justifyContent: "center",
       }}
       style={{ width: 260 }}
-      headerExtraContent={<Typography.Text>{lastProgressData.rate.toFixed(5)} iter/s</Typography.Text>}
+      headerExtraContent={
+        <Typography.Text>
+          {lastProgressData.rate == -1 ? "N/A" : lastProgressData.rate.toFixed(5)} iter/s
+        </Typography.Text>
+      }
     >
       <Typography.Text>current iter {lastProgressData.current}</Typography.Text>
       <Typography.Text>

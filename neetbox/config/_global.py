@@ -13,7 +13,7 @@ CONFIG_FILE_NAME = f"cli.neetbox.toml"
 NEETBOX_VERSION = version("neetbox")
 from uuid import uuid4
 
-from neetbox._protocol import ID_KEY
+from neetbox._protocol import MACHINE_ID_KEY
 from neetbox.utils.massive import (
     check_read_toml,
     get_user_config_directory,
@@ -23,7 +23,7 @@ from neetbox.utils.massive import (
 _GLOBAL_CONFIG = {
     "version": NEETBOX_VERSION,
     "servers": [{"address": "localhost", "port": 20202}],
-    ID_KEY: uuid4(),
+    MACHINE_ID_KEY: uuid4(),
 }
 
 CONFIG_FILE_NAME = f"neetbox.toml"
