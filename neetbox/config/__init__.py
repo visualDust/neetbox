@@ -7,8 +7,9 @@
 import types
 from typing import Union
 
-from neetbox._protocol import PROJECT_ID_KEY, RUN_ID_KEY
+from neetbox._protocol import MACHINE_ID_KEY, PROJECT_ID_KEY, RUN_ID_KEY
 
+from ._global import get as get_user_config
 from ._workspace import _get_module_level_config, export_default_config
 
 __IS_WORKSPACE_LOADED = False
@@ -24,6 +25,10 @@ def get_module_level_config(module: Union[str, types.ModuleType] = None):
 
     module_config = _get_module_level_config(module, traceback=3)
     return module_config
+
+
+def get_machine_id():
+    return get_user_config(MACHINE_ID_KEY)
 
 
 def get_project_id():

@@ -19,27 +19,23 @@ from neetbox import logger
 from tqdm import tqdm
 import time
 
-def inner_progress():
-    def a():
-        logger.log("running a")
-    def b():
-        logger.log("running b")
-    def c():
-        logger.log("running c")
-    def d():
-        logger.log("running d")
-    def e():
-        logger.log("running e")
-    for func in neetbox.progress([a, b, c, d, e]):
-        func()
-        time.sleep(1)
+def a():
+    logger.log("running a")
+def b():
+    logger.log("running b")
+def c():
+    logger.log("running c")
+def d():
+    logger.log("running d")
+def e():
+    logger.log("running e")
 
-def outer_progress(how_long):
-    with tqdm(neetbox.progress(how_long)) as progress:
-        for _ in progress:
-            inner_progress()
+with tqdm(neetbox.progress(50)) as progress:
+    for _ in progress:
+        for func in neetbox.progress([a, b, c, d, e]):
+            func()
+            time.sleep(1)
 
-outer_progress(100)
 ```
 
 On frontend web page:

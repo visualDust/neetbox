@@ -72,7 +72,7 @@ class RawLog:
             default_style.with_identifier if self.with_identifier is None else self.with_identifier
         )
         if with_identifier:
-            identity_seq = self.caller_identity.sequence
+            identity_seq = self.caller_identity.as_str_sequence(lineno=False)
             if len(identity_seq) > 1:
                 identity_seq = identity_seq[1:]
             if len(identity_seq) > self.style.trace_level:

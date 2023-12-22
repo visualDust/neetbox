@@ -4,13 +4,12 @@
 # Github: github.com/visualDust
 # Date:   20231216
 
+import collections
 import functools
 import os
 import socket
 import struct
-import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Callable
 
 _ThreadPoolExecutor = ThreadPoolExecutor()
 
@@ -87,7 +86,7 @@ def describe_object(obj, length_limit=None) -> str:
     if hasattr(obj, "__name__"):
         description = obj.__name__
     elif hasattr(obj, "__class__"):
-        description = f"obj of {obj.__class__}"
+        description = f"{obj.__class__.__name__} object"
     else:
         description = str(obj)
     if length_limit and len(description) > length_limit:

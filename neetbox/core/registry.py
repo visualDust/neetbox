@@ -81,11 +81,12 @@ class Registry(dict):
         if name in self.keys():
             if isinstance(overwrite, Callable):
                 name = overwrite(name)
+                logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
             elif overwrite == True:
                 pass
             else:
-                raise RuntimeError(f"")
-            logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
+                raise RuntimeError(f"Unknown overwrite type.")
+
             self[name] = _endp
         else:
             self[name] = _endp

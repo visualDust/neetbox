@@ -18,6 +18,7 @@ build_and_reinstall_wheel.cmd
 
 # log files
 logs/
+log/
 for_debug.txt
 .neethistory/
 .neetory

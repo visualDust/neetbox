@@ -5,6 +5,7 @@
 # Date:   20231217
 
 from time import time
+from uuid import uuid4
 
 from neetbox._protocol import *
 from neetbox.utils.framing import get_caller_identity_traceback
@@ -19,12 +20,13 @@ class Progress:
     iterator: enumerate
     timestamp: str
 
-    def __init__(self, input: Union[int, enumerate, any]):
+    def __init__(self, input: Union[int, enumerate, any], *, name=None):
         """Decorate an iterable object, returning an iterator. Neetbox will send progress to frontend while you are iterating through it.
 
         Args:
             input (Union[int, enumerate, any]): Something to iterate or something to create enumeratable object.
         """
+        self.name = name
         if isinstance(input, int):
             self.total = input
             self.iterator = iter(range(input))
@@ -35,6 +37,7 @@ class Progress:
             self.total = len(input)
             self.iterator = iter(input)
         self.caller_identity = get_caller_identity_traceback(traceback=2)
+
         self.done = 0
         self.start_time = time()  # Track the start time
         self.timestamp = get_timestamp()
@@ -60,12 +63,13 @@ class Progress:
 
         connection.ws_send(
             event_type=EVENT_TYPE_NAME_PROGRESS,
-            series=self.caller_identity.last_traceable,
+            series=self.caller_identity.strid,
             payload={
+                NAME_KEY: self.name or self.caller_identity.last_describable,
                 "step": self.done,
                 "current": describe_object(iter_next, length_limit=16),
                 "total": self.total,
-                "rate": rate,
+                "rate": rate if self.done > 1 else -1.0,
             },
             timestamp=self.timestamp,
             _history_len=1,

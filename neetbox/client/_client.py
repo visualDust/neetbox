@@ -19,7 +19,7 @@ from neetbox._protocol import *
 from neetbox.config import get_module_level_config, get_project_id, get_run_id
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
-from neetbox.utils._daemonable_process import DaemonableProcess
+from neetbox.utils import DaemonableProcess
 from neetbox.utils.massive import is_loopback
 from neetbox.utils.mvc import Singleton
 
@@ -150,8 +150,10 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             logger.log(
                 f"No daemon running on {server_host}:{server_port}, trying to create daemon..."
             )
+            import neetbox.server._daemon_server_launch_script as server_launcher
+
             popen = DaemonableProcess(  # server daemon
-                target="neetbox.server._daemon_server_launch_script",
+                target=server_launcher,
                 args=["--config", json.dumps(config)],
                 mode=config["mode"],
                 redirect_stdout=subprocess.DEVNULL if config["mute"] else None,
@@ -220,7 +222,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         if close_status_code or close_msg:
             logger.warn(f"ws close status code: {close_status_code}")
             logger.warn("ws close message: {close_msg}")
-        NeetboxClient.is_ws_connected = False
+        self.is_ws_connected = False
 
     def on_ws_message(self, ws: websocket.WebSocketApp, message):
         message = EventMsg.loads(message)  # message should be json
@@ -237,13 +239,13 @@ class NeetboxClient(metaclass=Singleton):  # singleton
                     payload=get_module_level_config("@"),
                 ).dumps()
             )
-            NeetboxClient.is_ws_connected = True
+            self.is_ws_connected = True
             # return # DO NOT return!
-        if message.event_type not in NeetboxClient.ws_subscribers:
+        if message.event_type not in self.ws_subscribers:
             logger.warn(
                 f"Client received a(n) {message.event_type} event but nobody subscribes it. Ignoring anyway."
             )
-        for subscriber in NeetboxClient.ws_subscribers[message.event_type]:
+        for subscriber in self.ws_subscribers[message.event_type]:
             try:
                 subscriber(message)  # pass payload message into subscriber
             except Exception as e:
