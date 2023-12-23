@@ -11,3 +11,7 @@ export function getTimeAxisOptions(mapper: TimeDataMapper) {
     max: latestTime,
   };
 }
+
+export function green2redHue(value) {
+  return ((1 - value) * 120).toString(10);
+}
