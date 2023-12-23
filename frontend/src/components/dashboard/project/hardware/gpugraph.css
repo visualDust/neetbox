@@ -1,0 +1,10 @@
+.gpu-temperature {
+  --temperature-bg-brightness: 80%;
+  position: absolute;
+  right: 10%;
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+[theme-mode="dark"] .gpu-temperature {
+  --temperature-bg-brightness: 30%;
+}

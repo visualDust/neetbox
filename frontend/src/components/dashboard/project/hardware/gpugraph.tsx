@@ -2,8 +2,9 @@ import { useCallback } from "react";
 import { ECharts } from "../../../echarts";
 import { GpuInfo } from "../../../../services/types";
 import { TimeDataMapper } from "../../../../utils/timeDataMapper";
-import { getTimeAxisOptions } from "./utils";
+import { getTimeAxisOptions, green2redHue } from "./utils";
 import { GraphWrapper } from "./graphWrapper";
+import "./gpugraph.css";
 
 export const GPUGraph = ({ data }: { data: TimeDataMapper<GpuInfo> }) => {
   const initialOption = () => {
@@ -76,9 +77,18 @@ export const GPUGraph = ({ data }: { data: TimeDataMapper<GpuInfo> }) => {
     } as echarts.EChartsOption;
     return newOption;
   }, [data]);
-
+  const lastValue = data.getValue(data.length - 1);
   return (
-    <GraphWrapper title="GPU" lastValue={data.getValue(data.length - 1)}>
+    <GraphWrapper title="GPU" lastValue={lastValue}>
+      <div
+        className="gpu-temperature"
+        style={{
+          backgroundColor:
+            "hsl(" + green2redHue(lastValue.temperature) + ", 90%, var(--temperature-bg-brightness))",
+        }}
+      >
+        {lastValue.temperature}℃
+      </div>
       <ECharts initialOption={initialOption} updatingOption={updatingOption} style={{ height: "200px" }} />
     </GraphWrapper>
   );
