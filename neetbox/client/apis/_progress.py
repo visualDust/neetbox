@@ -63,7 +63,7 @@ class Progress:
 
         connection.ws_send(
             event_type=EVENT_TYPE_NAME_PROGRESS,
-            series=self.caller_identity.strid,
+            series=self.caller_identity.strid + self.name if self.name else "",
             payload={
                 NAME_KEY: self.name or self.caller_identity.last_describable,
                 "step": self.done,
