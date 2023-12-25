@@ -87,7 +87,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
 
     def check_server_connectivity(self, config=None):
         config = config or get_module_level_config()
-        logger.log(f"Connecting to daemon at {config['host']}:{config   ['port']} ...")
+        logger.debug(f"Connecting to daemon at {config['host']}:{config   ['port']} ...")
         daemon_server_address = f"{config['host']}:{config['port']}"
         http_root = f"http://{daemon_server_address}"
 
@@ -162,7 +162,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             time.sleep(1)
             _retry_timeout = 10
             _time_begin = time.perf_counter()
-            logger.log("Created daemon process, trying to connect to daemon...")
+            logger.debug("Created daemon process, trying to connect to daemon...")
             online_flag = False
             while time.perf_counter() - _time_begin < 10:  # try connect daemon
                 if not self.check_server_connectivity():
@@ -187,7 +187,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         self.online_mode = True  # enable online mode
         self.ws_server_url = f"ws://{server_host}:{server_port + 1}"  # ws server url
 
-        logger.log(f"creating websocket connection to {self.ws_server_url}")
+        logger.debug(f"creating websocket connection to {self.ws_server_url}")
         self.wsApp = websocket.WebSocketApp(  # create websocket client
             url=self.ws_server_url,
             on_open=self.on_ws_open,
@@ -228,7 +228,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         message = EventMsg.loads(message)  # message should be json
         if message.event_type == EVENT_TYPE_NAME_HANDSHAKE:
             assert message.payload["result"] == 200
-            logger.ok(f"handshake succeed.")
+            logger.ok(f"neetbox handshake succeed.")
             ws.send(  # send immediately without querying
                 EventMsg(
                     project_id=get_project_id(),

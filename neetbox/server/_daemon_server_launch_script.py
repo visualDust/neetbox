@@ -4,8 +4,6 @@ import sys
 
 from neetbox.server._server import server_process
 
-print("========= Server Daemon  =========")
-
 
 def run(argv):
     if len(argv) <= 1:
