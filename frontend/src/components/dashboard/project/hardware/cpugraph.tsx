@@ -50,7 +50,7 @@ export const CPUGraph = ({ data }: { data: TimeDataMapper<CpuInfo[]> }) => {
         stack: "cpu",
         areaStyle: {},
         symbol: null,
-        data: data.map((timestamp, cpus) => [new Date(timestamp), cpus[cpu.id].percent]),
+        data: data.map((timestamp, cpus) => [new Date(timestamp), cpus[cpu.id].percentage]),
       })),
       xAxis: getTimeAxisOptions(data),
     } as echarts.EChartsOption;
