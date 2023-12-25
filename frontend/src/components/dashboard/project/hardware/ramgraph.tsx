@@ -35,7 +35,7 @@ export const RAMGraph = ({ data }: { data: TimeDataMapper<RamInfo> }) => {
           type: "value",
           position: "right",
           axisLabel: {
-            formatter: (x) => x.toFixed(1) + " GB",
+            formatter: (x) => (x / 1e3).toFixed(1) + " GB",
           },
           max: data.getValue(0).total,
         },
@@ -48,7 +48,7 @@ export const RAMGraph = ({ data }: { data: TimeDataMapper<RamInfo> }) => {
     const newOption = {
       series: [
         {
-          name: `RAM Used`,
+          name: `RAM Used(GB)`,
           type: "line",
           areaStyle: {},
           symbol: null,

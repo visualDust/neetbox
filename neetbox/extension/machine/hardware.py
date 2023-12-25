@@ -132,10 +132,10 @@ class Hardware(metaclass=Singleton):
         self._with_gpu = False if len(self._gpus) == 0 else True
         virtual_memory = psutil.virtual_memory()
         self._memory = MemoryStatus(
-            total=virtual_memory[0] / 1e9,
-            available=virtual_memory[1] / 1e9,
-            used=virtual_memory[3] / 1e9,
-            free=virtual_memory[4] / 1e9,
+            total=virtual_memory[0] / 1e6,
+            available=virtual_memory[1] / 1e6,
+            used=virtual_memory[3] / 1e6,
+            free=virtual_memory[4] / 1e6,
         )
 
     @property
@@ -145,6 +145,10 @@ class Hardware(metaclass=Singleton):
     @property
     def cpu_statistics(self):
         return self._cpu_statistics
+
+    @property
+    def memory(self):
+        return self._memory
 
     @property
     def gpus(self):
@@ -189,10 +193,10 @@ class Hardware(metaclass=Singleton):
                     # update memory usage
                     virtual_memory = psutil.virtual_memory()
                     env_instance._memory = MemoryStatus(
-                        total=virtual_memory[0] / 1e9,
-                        available=virtual_memory[1] / 1e9,
-                        used=virtual_memory[3] / 1e9,
-                        free=virtual_memory[4] / 1e9,
+                        total=virtual_memory[0] / 1e6,
+                        available=virtual_memory[1] / 1e6,
+                        used=virtual_memory[3] / 1e6,
+                        free=virtual_memory[4] / 1e6,
                     )
                     # update gpu usage
                     if do_update_gpus:
