@@ -12,6 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 import neetbox.config._global as global_config
+from neetbox._protocol import VERSION
 from neetbox.client._client_web_apis import *
 from neetbox.config._workspace import (
     _get_module_level_config,
@@ -58,6 +59,11 @@ def _try_load_workspace_if_applicable():
     is_workspace = check_read_toml(CONFIG_FILE_NAME)
     if is_workspace:
         _load_workspace_config(load_only=True)
+
+
+@main.command(name="version")
+def version_command():
+    print(VERSION)
 
 
 @main.command(name="list")
