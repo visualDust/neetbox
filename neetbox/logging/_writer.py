@@ -13,6 +13,8 @@ from datetime import datetime
 from typing import Any, Optional
 
 from rich.console import Console
+from rich.table import Table
+from rich.text import Text
 
 from neetbox.logging.formatting import LogStyle, colored_text, styled_text
 from neetbox.utils import formatting
@@ -113,15 +115,18 @@ class __ConsoleLogWriter(LogWriter):
         _style = raw_log.style
         _prefix = _msg_dict["series"]
         _prefix = _console_prefix_2_colored_text[_prefix] + " " if _prefix else _prefix
+        table = Table(show_header=False, box=None, expand=True)
+        table.add_column(justify="left")
+        table.add_column(justify="right")
         rich_msg = str(
             _prefix
-            + _msg_dict["timestamp"]
-            + _style.split_char_cmd * min(len(_msg_dict["timestamp"]), 1)
             + styled_text(_msg_dict["whom"], style=_style)
             + _style.split_char_cmd * min(len(_msg_dict["whom"]), 1)
             + _msg_dict["message"]
         )
-        self.__class__._console.print(rich_msg)
+        time_text = Text(_msg_dict["timestamp"], style="dim")
+        table.add_row(rich_msg, time_text)
+        self.__class__._console.print(table)
 
 
 # console writer singleton
