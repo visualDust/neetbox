@@ -114,7 +114,7 @@ class Logger:
         with_identifier: Optional[bool] = None,
         with_datetime: Optional[bool] = None,
         skip_writers: list[str] = [],
-        traceback=2,
+        stack_offset=2,
     ):
         """log something
 
@@ -129,7 +129,7 @@ class Logger:
         Returns:
             Logger: returns itself that you can do chain function call
         """
-        _caller_identity = get_caller_identity_traceback(traceback=traceback)
+        _caller_identity = get_caller_identity_traceback(stack_offset=stack_offset)
 
         # converting args into a single string
         _pure_str_message = ""
@@ -179,7 +179,7 @@ class Logger:
                 *content,
                 prefix=f"ok",
                 skip_writers=skip_writers,
-                traceback=3,
+                stack_offset=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
                 with_datetime=with_datetime,
@@ -200,7 +200,7 @@ class Logger:
                 *content,
                 prefix=prefix,
                 skip_writers=skip_writers,
-                traceback=3,
+                stack_offset=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
                 with_datetime=with_datetime,
@@ -220,7 +220,7 @@ class Logger:
                 *message,
                 prefix=f"info",
                 skip_writers=skip_writers,
-                traceback=3,
+                stack_offset=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
                 with_datetime=with_datetime,
@@ -240,7 +240,7 @@ class Logger:
                 *message,
                 prefix=f"warning",
                 skip_writers=skip_writers,
-                traceback=3,
+                stack_offset=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
                 with_datetime=with_datetime,
@@ -261,7 +261,7 @@ class Logger:
                 str(err),
                 prefix=f"error",
                 skip_writers=skip_writers,
-                traceback=3,
+                stack_offset=3,
                 datetime_format=datetime_format,
                 with_identifier=with_identifier,
                 with_datetime=with_datetime,
@@ -288,7 +288,7 @@ class Logger:
                     else "",
                     prefix=f"mention",
                     skip_writers=skip_writers,
-                    traceback=4,
+                    stack_offset=4,
                     datetime_format=datetime_format,
                     with_identifier=with_identifier,
                     with_datetime=with_datetime,
@@ -303,7 +303,7 @@ class Logger:
                     else "",
                     prefix=f"mention",
                     skip_writers=skip_writers,
-                    traceback=4,
+                    stack_offset=4,
                     datetime_format=datetime_format,
                     with_identifier=with_identifier,
                     with_datetime=with_datetime,

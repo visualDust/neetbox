@@ -23,7 +23,7 @@ def get_module_level_config(module: Union[str, types.ModuleType] = None):
 
         _create_load_workspace()
 
-    module_config = _get_module_level_config(module, traceback=3)
+    module_config = _get_module_level_config(module, stack_offset=3)
     return module_config
 
 

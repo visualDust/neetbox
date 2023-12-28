@@ -11,34 +11,34 @@ from os import path
 from typing import Union
 
 
-def get_frame_traceback(traceback=1):
+def get_frame_traceback(stack_offset=1):
     stack = inspect.stack()
-    traceback = len(stack) - 1 if traceback >= len(stack) else traceback
-    return stack[traceback]
+    stack_offset = len(stack) - 1 if stack_offset >= len(stack) else stack_offset
+    return stack[stack_offset]
 
 
-def get_frame_func_name_traceback(traceback=1):
-    frame = get_frame_traceback(traceback + 1)
+def get_frame_func_name_traceback(stack_offset=1):
+    frame = get_frame_traceback(stack_offset + 1)
     func = frame.function
     return None if func == "<module>" else func
 
 
-def get_frame_class_traceback(traceback=1):
-    frame = get_frame_traceback(traceback + 1)
+def get_frame_class_traceback(stack_offset=1):
+    frame = get_frame_traceback(stack_offset + 1)
     _locals = frame[0].f_locals
     if "self" in _locals:
         return _locals["self"].__class__
     return None
 
 
-def get_frame_module_traceback(traceback=1) -> Union[types.ModuleType, None]:
-    frame = get_frame_traceback(traceback + 1)
+def get_frame_module_traceback(stack_offset=1) -> Union[types.ModuleType, None]:
+    frame = get_frame_traceback(stack_offset + 1)
     module = inspect.getmodule(frame[0])
     return module
 
 
-def get_frame_filepath_traceback(traceback=1):
-    frame = get_frame_traceback(traceback + 1)
+def get_frame_filepath_traceback(stack_offset=1):
+    frame = get_frame_traceback(stack_offset + 1)
     return frame.filename
 
 
@@ -122,6 +122,6 @@ class TracebackIdentity:
         return "\n".join([f"{k}:\t{v}" for k, v in self.json.items()])
 
 
-def get_caller_identity_traceback(traceback=1):
-    frame = get_frame_traceback(traceback + 1)
+def get_caller_identity_traceback(stack_offset=1):
+    frame = get_frame_traceback(stack_offset + 1)
     return TracebackIdentity.parse(frame)

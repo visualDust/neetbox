@@ -36,7 +36,7 @@ class Progress:
         else:
             self.total = len(input)
             self.iterator = iter(input)
-        self.caller_identity = get_caller_identity_traceback(traceback=2)
+        self.caller_identity = get_caller_identity_traceback(stack_offset=2)
 
         self.done = 0
         self.start_time = time()  # Track the start time
