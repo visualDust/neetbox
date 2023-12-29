@@ -17,7 +17,7 @@ def server_process(cfg, debug=False):
     from neetbox.logging import LogStyle
     from neetbox.logging.logger import Logger
 
-    logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
+    logger = Logger("SERVER", LogStyle(skip_writers=["ws"]))
     # load bridges
     Bridge.load_histories()  # load history files
 

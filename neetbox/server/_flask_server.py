@@ -25,7 +25,7 @@ def get_flask_server(debug=False):
     from neetbox.logging import LogStyle
     from neetbox.logging.logger import Logger, LogLevel
 
-    logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
+    logger = Logger("FLASK", LogStyle(skip_writers=["ws"]))
 
     if debug:
         logger.set_log_level(LogLevel.DEBUG)
