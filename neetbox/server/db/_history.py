@@ -295,9 +295,9 @@ class DBConnection:
             return []
         if condition and isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
-        condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
-        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        cond_str, cond_vars = condition.dumpt() if condition else ""
+        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {cond_str}"
+        result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
         try:
             result = [
                 {
@@ -336,9 +336,9 @@ class DBConnection:
         condition = QueryCondition(run_id=run_id, series=series)
         if isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(run_id)
-        condition = condition.dumps()
-        sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {condition}"
-        query_result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        cond_str, cond_vars = condition.dumpt()
+        sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {cond_str}"
+        query_result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
         result = {}
         for id_of_runid, series_name, value in query_result:
             run_id = self.get_run_id_of_id(id_of_runid)
@@ -385,9 +385,9 @@ class DBConnection:
             return []
         if condition and isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
-        condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
-        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        cond_str, cond_vars = condition.dumpt() if condition else ""
+        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {cond_str}"
+        result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
         return result
 
 

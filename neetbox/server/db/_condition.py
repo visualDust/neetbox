@@ -99,33 +99,40 @@ class QueryCondition:
             order=order,
         )
 
-    def dumps(self):
+    def dumpt(self):
+        query_cond_vars = []
         # === id condition ===
-        _id_cond = ""
+        _id_cond_str = ""
         if self.id_range[0]:
             _id_0, _id_1 = self.id_range
-            _id_cond = (
-                f"{ID_COLUMN_NAME}=={_id_0}"
-                if _id_1 is None
-                else f"{ID_COLUMN_NAME} BETWEEN {_id_0} AND {_id_1}"
-            )
+            if _id_1 is None:
+                _id_cond_str = f"{ID_COLUMN_NAME} = ?"
+                query_cond_vars.append(_id_0)
+            else:
+                _id_cond_str = f"{ID_COLUMN_NAME} BETWEEN ? AND ?"
+                query_cond_vars.append(_id_0)
+                query_cond_vars.append(_id_1)
         # === timestamp condition ===
-        _timestamp_cond = ""
+        _timestamp_cond_str = ""
         if self.timestamp_range[0]:
             _ts_0, _ts_1 = self.timestamp_range
-            _timestamp_cond = (
-                f"{TIMESTAMP_COLUMN_NAME}>='{_ts_0}'"
-                if _ts_1 is None
-                else f"{TIMESTAMP_COLUMN_NAME} BETWEEN '{_ts_0} AND '{_ts_1}"
-            )
+            if _ts_1 is None:
+                _timestamp_cond_str = f"{TIMESTAMP_COLUMN_NAME} >= ?"
+                query_cond_vars.append(_ts_0)
+            else:
+                _timestamp_cond_str = f"{TIMESTAMP_COLUMN_NAME} BETWEEN ? AND ?"
+                query_cond_vars.append(_ts_0)
+                query_cond_vars.append(_ts_1)
         # === series condition ===
-        _series_cond = ""
+        _series_cond_str = ""
         if self.series:
-            _series_cond = f"{SERIES_COLUMN_NAME} == '{self.series}'"
+            _series_cond_str = f"{SERIES_COLUMN_NAME} = ?"
+            query_cond_vars.append(self.series)
         # === run-id condition ===
-        _run_id_cond = ""
+        _run_id_cond_str = ""
         if self.run_id:
-            _run_id_cond = f"{RUN_ID_COLUMN_NAME} == {self.run_id}"
+            _run_id_cond_str = f"{RUN_ID_COLUMN_NAME} = ?"
+            query_cond_vars.append(self.run_id)
         # === ORDER BY ===
         _order_cond = f"ORDER BY " if self.order else ""
         if self.order:
@@ -135,21 +142,21 @@ class QueryCondition:
                 )
             _order_cond = _order_cond[:-2]  # remove last ','
         # === LIMIT ===
-        _limit_cond = f"LIMIT {self.limit}" if self.limit else ""
+        _limit_cond_str = f"LIMIT {self.limit}" if self.limit else ""
         # === concat conditions ===
-        query_conditions = []
-        for cond in [_id_cond, _timestamp_cond, _series_cond, _run_id_cond]:
+        query_condition_strs = []
+        for cond in [_id_cond_str, _timestamp_cond_str, _series_cond_str, _run_id_cond_str]:
             if cond:
-                query_conditions.append(cond)
-        query_conditions = " AND ".join(query_conditions)
+                query_condition_strs.append(cond)
+        query_condition_strs = " AND ".join(query_condition_strs)
         # === concat order by and limit ===
         order_and_limit = []
-        for cond in [_order_cond, _limit_cond]:
+        for cond in [_order_cond, _limit_cond_str]:
             if cond:
                 order_and_limit.append(cond)
         order_and_limit = " ".join(order_and_limit)
         # result
-        if query_conditions:
-            query_conditions = f"WHERE {query_conditions}"
-        query_condition_str = f"{query_conditions} {order_and_limit}"
-        return query_condition_str
+        if query_condition_strs:
+            query_condition_strs = f"WHERE {query_condition_strs}"
+        query_cond_str = f"{query_condition_strs} {order_and_limit}"
+        return query_cond_str, query_cond_vars
