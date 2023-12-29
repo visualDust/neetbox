@@ -17,8 +17,8 @@ from neetbox.utils import ResourceLoader
 from .condition import *
 
 logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
-DB_PROJECT_FILE_ROOT = ".neethistory"
-DB_PROJECT_FILE_TYPE_NAME = "neetory"
+DB_PROJECT_FILE_ROOT = f"{NEET_FILE_FOLDER}/history"
+DB_PROJECT_FILE_TYPE_NAME = "projectdb"
 
 
 class ProjectDB:
@@ -415,7 +415,7 @@ class ProjectDB:
 
 if not os.path.exists(DB_PROJECT_FILE_ROOT):
     # create history root dir
-    os.mkdir(DB_PROJECT_FILE_ROOT)
+    os.makedirs(DB_PROJECT_FILE_ROOT)
 # check if is dir
 if not os.path.isdir(DB_PROJECT_FILE_ROOT):
     raise RuntimeError(f"{DB_PROJECT_FILE_ROOT} is not a directory.")

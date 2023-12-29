@@ -5,12 +5,9 @@
 # Date:   20231204
 
 from typing import Dict
-
 from websocket_server import WebsocketServer
-
 from neetbox._protocol import *
 from neetbox.logging import LogStyle, logger
-
 from .db.project import ProjectDB
 
 logger = logger("NEETBOX", LogStyle(skip_writers=["ws"]))

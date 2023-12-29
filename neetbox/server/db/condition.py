@@ -1,7 +1,7 @@
-from enum import Enum
 import json
-from typing import Dict, Tuple, Union
+from enum import Enum
 from neetbox._protocol import *
+from typing import Dict, Tuple, Union
 
 
 class DbQueryFetchType(str, Enum):

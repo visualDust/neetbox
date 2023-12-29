@@ -151,3 +151,4 @@ LOG_TABLE_NAME = "log"
 IMAGE_TABLE_NAME = "image"
 
 NEETBOX_VERSION = version("neetbox")
+NEET_FILE_FOLDER = "neetfiles"

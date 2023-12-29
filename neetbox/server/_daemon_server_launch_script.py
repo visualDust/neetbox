@@ -2,7 +2,7 @@ import argparse
 import json
 import sys
 
-from neetbox.server._server import server_process
+from ._server import server_process
 
 
 def run(argv):

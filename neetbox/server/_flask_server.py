@@ -9,14 +9,11 @@ import os
 import time
 from threading import Thread
 from typing import Union
-
 import werkzeug
 from flask import Response, abort, json, redirect, request, send_from_directory
-
 import neetbox
 from neetbox._protocol import *
-from neetbox.server._bridge import Bridge
-
+from ._bridge import Bridge
 from .db import QueryCondition
 
 werkzeug_log = logging.getLogger("werkzeug")
