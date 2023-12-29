@@ -7,16 +7,13 @@
 import json
 import os
 from abc import ABC, abstractmethod
-from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Optional
-
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-
-from neetbox.logging.formatting import LogStyle, colored_text, styled_text
+from neetbox.logging.formatting import LogStyle
 from neetbox.utils import formatting
 from neetbox.utils.framing import TracebackIdentity
 
@@ -89,43 +86,39 @@ class RawLog:
 # ================== CONSOLE LOG WRITER =====================
 
 
-class DefaultDictThatReturnsKeyOnMissing(defaultdict):
-    def __missing__(self, key):
-        return key
-
-
-_console_prefix_2_colored_text = DefaultDictThatReturnsKeyOnMissing(
-    str,
-    {
-        "ok": colored_text("[ok]", "green"),
-        "debug": colored_text("[debug]", "cyan"),
-        "info": colored_text("[info]", "white"),
-        "warning": colored_text("[warning]", "yellow"),
-        "mention": colored_text("[mention]", "yellow"),
-        "error": colored_text("[error]", "red"),
-    },
-)
+def prefix2RichText(prefix: str):
+    return {
+        "ok": Text("[ok]", style="green"),
+        "debug": Text("[debug]", style="cyan"),
+        "info": Text("[info]", style="white"),
+        "warning": Text("[warning]", style="yellow"),
+        "mention": Text("[mention]", style="yellow"),
+        "error": Text("[error]", style="red"),
+    }.get(prefix, Text(prefix))
 
 
 class __ConsoleLogWriter(LogWriter):
     _console = Console()
 
     def write(self, raw_log: RawLog):
-        _msg_dict = raw_log.json
-        _style = raw_log.style
-        _prefix = _msg_dict["series"]
-        _prefix = _console_prefix_2_colored_text[_prefix] + " " if _prefix else _prefix
+        msg_dict = raw_log.json
+        log_style = raw_log.style
+        style = " ".join(
+            [x for x in [log_style.console_color, log_style.text_style] if x is not None]
+        )
+        prefix = msg_dict["series"]
+        prefix = prefix2RichText(prefix) if prefix else None
         table = Table(show_header=False, box=None, expand=True)
         table.add_column(justify="left")
         table.add_column(justify="right")
-        rich_msg = str(
-            _prefix
-            + styled_text(_msg_dict["whom"], style=_style)
-            + _style.split_char_cmd * min(len(_msg_dict["whom"]), 1)
-            + _msg_dict["message"]
+        whom_text = Text(msg_dict["whom"], style)
+        split_text = (
+            Text(log_style.split_char_cmd, style="dim " + style) if len(msg_dict["whom"]) else ""
         )
-        time_text = Text(_msg_dict["timestamp"], style="dim")
-        table.add_row(rich_msg, time_text)
+        message_text = Text(msg_dict["message"], style="default")
+        time_text = Text(msg_dict["timestamp"], style="default dim")
+        prefix_and_time = prefix + " " + time_text if prefix else time_text
+        table.add_row(whom_text + split_text + message_text, prefix_and_time)
         self.__class__._console.print(table)
 
 
