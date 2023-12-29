@@ -11,7 +11,7 @@ from websocket_server import WebsocketServer
 from neetbox._protocol import *
 from neetbox.logging import LogStyle, logger
 
-from .db import history
+from .db import project as project_db
 
 logger = logger("NEETBOX", LogStyle(skip_writers=["ws"]))
 
@@ -41,7 +41,7 @@ class Bridge:
     status: dict
     cli_ws_dict: dict  # { run_id : client}
     web_ws_list: list  # since web do not have run id, use list instead of dict
-    historyDB: history.DBConnection
+    historyDB: project_db.DBConnection
 
     def __new__(cls, project_id: str, **kwargs) -> None:
         """Create Bridge of project id, return the old one if already exist
@@ -58,7 +58,7 @@ class Bridge:
                 []
             )  # frontend ws sids. client data should be able to be shown on multiple frontend
             flag_auto_load_db = kwargs["auto_load_db"] if "auto_load_db" in kwargs else True
-            new_bridge.historyDB = history.get_db_of_id(project_id) if flag_auto_load_db else None
+            new_bridge.historyDB = project_db.get_db_of_id(project_id) if flag_auto_load_db else None
             cls._id2bridge[project_id] = new_bridge
             logger.info(f"created new Bridge for project id '{project_id}'")
         return cls._id2bridge[project_id]
@@ -90,7 +90,7 @@ class Bridge:
         return bridge
 
     @classmethod
-    def from_db(cls, db: history.DBConnection) -> "Bridge":
+    def from_db(cls, db: project_db.DBConnection) -> "Bridge":
         project_id = db.fetch_db_project_id()
         target_bridge = Bridge(project_id, auto_load_db=False)
         if target_bridge.historyDB is not None:
@@ -100,7 +100,7 @@ class Bridge:
 
     @classmethod
     def load_histories(cls):
-        db_list = history.get_db_list()
+        db_list = project_db.get_db_list()
         logger.log(f"found {len(db_list)} history db.")
         for _, history_db in db_list:
             cls.from_db(history_db)
