@@ -10,18 +10,18 @@ import os
 import sqlite3
 from datetime import datetime
 from typing import Union
-
 from neetbox._protocol import *
 from neetbox.logging import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.utils import ResourceLoader
-
-from ._condition import *
+from .condition import *
 
 logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
+DB_PROJECT_FILE_ROOT = ".neethistory"
+DB_PROJECT_FILE_TYPE_NAME = "neetory"
 
 
-class DBConnection:
+class ProjectDB:
     # static things
     _path2dbc = {}
     _id2dbc = {}
@@ -32,11 +32,11 @@ class DBConnection:
     connection: sqlite3.Connection  # the db connection
     _inited_tables: collections.defaultdict
 
-    def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "DBConnection":
+    def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "ProjectDB":
         if path is None and project_id is None:
             raise RuntimeError(f"please provide at least project id or path when creating db")
         if path is None:  # make path from project id
-            path = f"{HISTORY_FILE_ROOT}/{project_id}.{HISTORY_FILE_TYPE_NAME}"
+            path = f"{DB_PROJECT_FILE_ROOT}/{project_id}.{DB_PROJECT_FILE_TYPE_NAME}"
         if path in cls._path2dbc:
             return cls._path2dbc[path]
         if project_id in cls._id2dbc:
@@ -67,12 +67,12 @@ class DBConnection:
         return new_dbc
 
     def finialize(self):
-        if self.project_id not in DBConnection._id2dbc:
+        if self.project_id not in ProjectDB._id2dbc:
             logger.err(
                 RuntimeError(f"could not find db to delete with project id {self.project_id}")
             )
-        del DBConnection._id2dbc[self.project_id]
-        del DBConnection._path2dbc[self.file_path]
+        del ProjectDB._id2dbc[self.project_id]
+        del ProjectDB._path2dbc[self.file_path]
         logger.info(f"deleting history DB for project id {self.project_id}...")
         if self.connection:
             try:
@@ -106,7 +106,7 @@ class DBConnection:
     def of_project_id(cls, project_id):
         if project_id in cls._id2dbc:
             return cls._id2dbc[project_id]
-        return DBConnection(project_id)
+        return ProjectDB(project_id)
 
     def _execute(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
         cur = self.connection.cursor()
@@ -298,19 +298,15 @@ class DBConnection:
         cond_str, cond_vars = condition.dumpt() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {cond_str}"
         result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
-        try:
-            result = [
-                {
-                    ID_COLUMN_NAME: w,
-                    TIMESTAMP_COLUMN_NAME: x,
-                    SERIES_COLUMN_NAME: y,
-                    JSON_COLUMN_NAME: json.loads(z),
-                }
-                for w, x, y, z in result
-            ]
-        except:
-            print(result)
-            raise
+        result = [
+            {
+                ID_COLUMN_NAME: w,
+                TIMESTAMP_COLUMN_NAME: x,
+                SERIES_COLUMN_NAME: y,
+                JSON_COLUMN_NAME: json.loads(z),
+            }
+            for w, x, y, z in result
+        ]
         return result
 
     def set_status(self, run_id: str, series: str, json_data):
@@ -390,36 +386,36 @@ class DBConnection:
         result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
         return result
 
+    @classmethod
+    def load_db_of_path(cls, path):
+        if not os.path.isfile(path):
+            raise RuntimeError(f"{path} is not a file")
+        conn = ProjectDB(path=path)
+        return conn
 
-# === DEFAULT EXPORT FUNCs ===
+    @classmethod
+    def get_db_list(cls):
+        history_file_loader = ResourceLoader(
+            folder=DB_PROJECT_FILE_ROOT, file_types=[DB_PROJECT_FILE_TYPE_NAME], force_rescan=True
+        )
+        history_file_list = history_file_loader.get_file_list()
+        for path in history_file_list:
+            cls.load_db_of_path(path=path)
+        return ProjectDB._id2dbc.items()
 
-if not os.path.exists(HISTORY_FILE_ROOT):
+    @classmethod
+    def get_db_of_id(cls, project_id, rescan: bool = True):
+        if rescan:
+            cls.get_db_list()  # scan for possible file changes
+        conn = ProjectDB.of_project_id(project_id=project_id)
+        return conn
+
+
+# === SCAN FOR DB FILES ===
+
+if not os.path.exists(DB_PROJECT_FILE_ROOT):
     # create history root dir
-    os.mkdir(HISTORY_FILE_ROOT)
+    os.mkdir(DB_PROJECT_FILE_ROOT)
 # check if is dir
-if not os.path.isdir(HISTORY_FILE_ROOT):
-    raise RuntimeError(f"{HISTORY_FILE_ROOT} is not a directory.")
-
-
-def load_db_of_path(path):
-    if not os.path.isfile(path):
-        raise RuntimeError(f"{path} is not a file")
-    conn = DBConnection(path=path)
-    return conn
-
-
-def get_db_list():
-    history_file_loader = ResourceLoader(
-        folder=HISTORY_FILE_ROOT, file_types=[HISTORY_FILE_TYPE_NAME], force_rescan=True
-    )
-    history_file_list = history_file_loader.get_file_list()
-    for path in history_file_list:
-        load_db_of_path(path=path)
-    return DBConnection._id2dbc.items()
-
-
-def get_db_of_id(project_id, rescan: bool = True):
-    if rescan:
-        get_db_list()  # scan for possible file changes
-    conn = DBConnection.of_project_id(project_id=project_id)
-    return conn
+if not os.path.isdir(DB_PROJECT_FILE_ROOT):
+    raise RuntimeError(f"{DB_PROJECT_FILE_ROOT} is not a directory.")
