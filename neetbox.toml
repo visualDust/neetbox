@@ -1,5 +1,5 @@
 name = "neetbox"
-version = "0.4.2"
+version = "0.4.3"
 projectId = "3edbc5ed-8e16-44fe-8c25-949a8cb833e6"
 
 [logging]

@@ -1,5 +1,5 @@
 pkgname=python-neetbox
-pkgver=0.4.2
+pkgver=0.4.3
 pkgrel=1
 pkgdesc="Logging/Debugging/Tracing/Managing/Facilitating long running python projects, especially a replacement of tensorboard for deep learning projects"
 arch=('any')
