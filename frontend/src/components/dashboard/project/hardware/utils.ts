@@ -12,6 +12,6 @@ export function getTimeAxisOptions(mapper: TimeDataMapper) {
   };
 }
 
-export function green2redHue(value) {
-  return ((1 - value) * 120).toString(10);
+export function percent2hue(value) {
+  return ((100 - value) * 1.2).toString(10);
 }

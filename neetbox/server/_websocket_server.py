@@ -21,7 +21,7 @@ def get_web_socket_server(config, debug=False):
     from neetbox.server._bridge import Bridge
 
     console = Console()
-    logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
+    logger = Logger("WS SERVER", LogStyle(skip_writers=["ws"]))
     if debug:
         logger.set_log_level(LogLevel.DEBUG)
 

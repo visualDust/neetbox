@@ -5,15 +5,12 @@
 # Date:   20231204
 
 from typing import Dict
-
 from websocket_server import WebsocketServer
-
 from neetbox._protocol import *
 from neetbox.logging import LogStyle, logger
+from .db.project import ProjectDB
 
-from .db import history
-
-logger = logger("NEETBOX", LogStyle(skip_writers=["ws"]))
+logger = logger("Bridge", LogStyle(skip_writers=["ws"]))
 
 
 class Bridge:
@@ -41,7 +38,7 @@ class Bridge:
     status: dict
     cli_ws_dict: dict  # { run_id : client}
     web_ws_list: list  # since web do not have run id, use list instead of dict
-    historyDB: history.DBConnection
+    historyDB: ProjectDB
 
     def __new__(cls, project_id: str, **kwargs) -> None:
         """Create Bridge of project id, return the old one if already exist
@@ -58,7 +55,7 @@ class Bridge:
                 []
             )  # frontend ws sids. client data should be able to be shown on multiple frontend
             flag_auto_load_db = kwargs["auto_load_db"] if "auto_load_db" in kwargs else True
-            new_bridge.historyDB = history.get_db_of_id(project_id) if flag_auto_load_db else None
+            new_bridge.historyDB = ProjectDB.get_db_of_id(project_id) if flag_auto_load_db else None
             cls._id2bridge[project_id] = new_bridge
             logger.info(f"created new Bridge for project id '{project_id}'")
         return cls._id2bridge[project_id]
@@ -66,7 +63,7 @@ class Bridge:
     def __del__(self):  # on delete
         logger.info(f"bridge project id {self.project_id} handling on delete...")
         if 0 == len(self.get_run_ids()):  # if there is no active run id
-            self.historyDB.finialize()
+            self.historyDB.delete_files()
             del self.historyDB  # delete history db
         logger.info(f"bridge of project id {self.project_id} deleted.")
 
@@ -90,7 +87,7 @@ class Bridge:
         return bridge
 
     @classmethod
-    def from_db(cls, db: history.DBConnection) -> "Bridge":
+    def from_db(cls, db: ProjectDB) -> "Bridge":
         project_id = db.fetch_db_project_id()
         target_bridge = Bridge(project_id, auto_load_db=False)
         if target_bridge.historyDB is not None:
@@ -100,7 +97,7 @@ class Bridge:
 
     @classmethod
     def load_histories(cls):
-        db_list = history.get_db_list()
+        db_list = ProjectDB.get_db_list()
         logger.log(f"found {len(db_list)} history db.")
         for _, history_db in db_list:
             cls.from_db(history_db)

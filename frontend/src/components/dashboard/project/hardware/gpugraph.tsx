@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { ECharts } from "../../../echarts";
 import { GpuInfo } from "../../../../services/types";
 import { TimeDataMapper } from "../../../../utils/timeDataMapper";
-import { getTimeAxisOptions, green2redHue } from "./utils";
+import { getTimeAxisOptions, percent2hue } from "./utils";
 import { GraphWrapper } from "./graphWrapper";
 import "./gpugraph.css";
 
@@ -84,7 +84,7 @@ export const GPUGraph = ({ data }: { data: TimeDataMapper<GpuInfo> }) => {
         className="gpu-temperature"
         style={{
           backgroundColor:
-            "hsl(" + green2redHue(lastValue.temperature) + ", 90%, var(--temperature-bg-brightness))",
+            "hsl(" + percent2hue(lastValue.temperature) + ", 90%, var(--temperature-bg-brightness))",
         }}
       >
         {lastValue.temperature}℃

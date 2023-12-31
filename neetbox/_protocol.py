@@ -151,5 +151,4 @@ LOG_TABLE_NAME = "log"
 IMAGE_TABLE_NAME = "image"
 
 NEETBOX_VERSION = version("neetbox")
-HISTORY_FILE_ROOT = ".neethistory"
-HISTORY_FILE_TYPE_NAME = "neetory"
+NEET_FILE_FOLDER = "neetfiles"

@@ -9,14 +9,11 @@ import os
 import time
 from threading import Thread
 from typing import Union
-
 import werkzeug
 from flask import Response, abort, json, redirect, request, send_from_directory
-
 import neetbox
 from neetbox._protocol import *
-from neetbox.server._bridge import Bridge
-
+from ._bridge import Bridge
 from .db import QueryCondition
 
 werkzeug_log = logging.getLogger("werkzeug")
@@ -28,7 +25,7 @@ def get_flask_server(debug=False):
     from neetbox.logging import LogStyle
     from neetbox.logging.logger import Logger, LogLevel
 
-    logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
+    logger = Logger("FLASK", LogStyle(skip_writers=["ws"]))
 
     if debug:
         logger.set_log_level(LogLevel.DEBUG)

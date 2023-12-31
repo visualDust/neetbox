@@ -4,24 +4,25 @@
 # Github: github.com/visualDust
 # Date:   20231201
 
-import collections
-import json
 import os
+import json
+import atexit
 import sqlite3
-from datetime import datetime
+import collections
 from typing import Union
-
+from datetime import datetime
 from neetbox._protocol import *
 from neetbox.logging import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.utils import ResourceLoader
+from .condition import *
 
-from ._condition import *
+logger = Logger("PROJECT DB", LogStyle(skip_writers=["ws"]))
+DB_PROJECT_FILE_ROOT = f"{NEET_FILE_FOLDER}/history"
+DB_PROJECT_FILE_TYPE_NAME = "projectdb"
 
-logger = Logger("NEETBOX", LogStyle(skip_writers=["ws"]))
 
-
-class DBConnection:
+class ProjectDB:
     # static things
     _path2dbc = {}
     _id2dbc = {}
@@ -32,11 +33,11 @@ class DBConnection:
     connection: sqlite3.Connection  # the db connection
     _inited_tables: collections.defaultdict
 
-    def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "DBConnection":
+    def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "ProjectDB":
         if path is None and project_id is None:
             raise RuntimeError(f"please provide at least project id or path when creating db")
         if path is None:  # make path from project id
-            path = f"{HISTORY_FILE_ROOT}/{project_id}.{HISTORY_FILE_TYPE_NAME}"
+            path = f"{DB_PROJECT_FILE_ROOT}/{project_id}.{DB_PROJECT_FILE_TYPE_NAME}"
         if path in cls._path2dbc:
             return cls._path2dbc[path]
         if project_id in cls._id2dbc:
@@ -66,13 +67,14 @@ class DBConnection:
         logger.ok(f"History file(version={_db_file_version}) for project id '{project_id}' loaded.")
         return new_dbc
 
-    def finialize(self):
-        if self.project_id not in DBConnection._id2dbc:
+    def delete_files(self):
+        """delete related files of db"""
+        if self.project_id not in ProjectDB._id2dbc:
             logger.err(
                 RuntimeError(f"could not find db to delete with project id {self.project_id}")
             )
-        del DBConnection._id2dbc[self.project_id]
-        del DBConnection._path2dbc[self.file_path]
+        del ProjectDB._id2dbc[self.project_id]
+        del ProjectDB._path2dbc[self.file_path]
         logger.info(f"deleting history DB for project id {self.project_id}...")
         if self.connection:
             try:
@@ -106,7 +108,7 @@ class DBConnection:
     def of_project_id(cls, project_id):
         if project_id in cls._id2dbc:
             return cls._id2dbc[project_id]
-        return DBConnection(project_id)
+        return ProjectDB(project_id)
 
     def _execute(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
         cur = self.connection.cursor()
@@ -295,22 +297,18 @@ class DBConnection:
             return []
         if condition and isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
-        condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {condition}"
-        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
-        try:
-            result = [
-                {
-                    ID_COLUMN_NAME: w,
-                    TIMESTAMP_COLUMN_NAME: x,
-                    SERIES_COLUMN_NAME: y,
-                    JSON_COLUMN_NAME: json.loads(z),
-                }
-                for w, x, y, z in result
-            ]
-        except:
-            print(result)
-            raise
+        cond_str, cond_vars = condition.dumpt() if condition else ""
+        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {cond_str}"
+        result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
+        result = [
+            {
+                ID_COLUMN_NAME: w,
+                TIMESTAMP_COLUMN_NAME: x,
+                SERIES_COLUMN_NAME: y,
+                JSON_COLUMN_NAME: json.loads(z),
+            }
+            for w, x, y, z in result
+        ]
         return result
 
     def set_status(self, run_id: str, series: str, json_data):
@@ -336,9 +334,9 @@ class DBConnection:
         condition = QueryCondition(run_id=run_id, series=series)
         if isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(run_id)
-        condition = condition.dumps()
-        sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {condition}"
-        query_result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        cond_str, cond_vars = condition.dumpt()
+        sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {cond_str}"
+        query_result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
         result = {}
         for id_of_runid, series_name, value in query_result:
             run_id = self.get_run_id_of_id(id_of_runid)
@@ -385,41 +383,56 @@ class DBConnection:
             return []
         if condition and isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
-        condition = condition.dumps() if condition else ""
-        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {condition}"
-        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        cond_str, cond_vars = condition.dumpt() if condition else ""
+        sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {cond_str}"
+        result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
         return result
 
+    @classmethod
+    def load_db_of_path(cls, path):
+        if not os.path.isfile(path):
+            raise RuntimeError(f"{path} is not a file")
+        conn = ProjectDB(path=path)
+        return conn
 
-# === DEFAULT EXPORT FUNCs ===
+    @classmethod
+    def get_db_list(cls):
+        history_file_loader = ResourceLoader(
+            folder=DB_PROJECT_FILE_ROOT, file_types=[DB_PROJECT_FILE_TYPE_NAME], force_rescan=True
+        )
+        history_file_list = history_file_loader.get_file_list()
+        for path in history_file_list:
+            cls.load_db_of_path(path=path)
+        return ProjectDB._id2dbc.items()
 
-if not os.path.exists(HISTORY_FILE_ROOT):
+    @classmethod
+    def get_db_of_id(cls, project_id, rescan: bool = True):
+        if rescan:
+            cls.get_db_list()  # scan for possible file changes
+        conn = ProjectDB.of_project_id(project_id=project_id)
+        return conn
+
+
+# === SCAN FOR DB FILES ===
+
+if not os.path.exists(DB_PROJECT_FILE_ROOT):
     # create history root dir
-    os.mkdir(HISTORY_FILE_ROOT)
+    os.makedirs(DB_PROJECT_FILE_ROOT)
 # check if is dir
-if not os.path.isdir(HISTORY_FILE_ROOT):
-    raise RuntimeError(f"{HISTORY_FILE_ROOT} is not a directory.")
+if not os.path.isdir(DB_PROJECT_FILE_ROOT):
+    raise RuntimeError(f"{DB_PROJECT_FILE_ROOT} is not a directory.")
 
 
-def load_db_of_path(path):
-    if not os.path.isfile(path):
-        raise RuntimeError(f"{path} is not a file")
-    conn = DBConnection(path=path)
-    return conn
+def clear_dbc_on_exit():
+    for project_id, dbc in ProjectDB._id2dbc.items():
+        logger.info(f"process exiting, cleaning up...")
+        logger.info(f"trying to close db connection for project id {project_id}")
+        try:
+            dbc.connection.close()
+        except Exception as e:
+            logger.err(RuntimeError(f"failed to close db connection for project id {project_id}, {e}"))
+        else:
+            logger.ok(f"db connection for project id {project_id} closed")
 
 
-def get_db_list():
-    history_file_loader = ResourceLoader(
-        folder=HISTORY_FILE_ROOT, file_types=[HISTORY_FILE_TYPE_NAME], force_rescan=True
-    )
-    history_file_list = history_file_loader.get_file_list()
-    for path in history_file_list:
-        load_db_of_path(path=path)
-    return DBConnection._id2dbc.items()
-
-
-def get_db_of_id(project_id, rescan: bool = True):
-    if rescan:
-        get_db_list()  # scan for possible file changes
-    conn = DBConnection.of_project_id(project_id=project_id)
-    return conn
+atexit.register(clear_dbc_on_exit)
