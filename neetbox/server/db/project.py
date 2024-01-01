@@ -4,17 +4,20 @@
 # Github: github.com/visualDust
 # Date:   20231201
 
-import os
-import json
 import atexit
-import sqlite3
 import collections
-from typing import Union
+import json
+import os
+import sqlite3
 from datetime import datetime
+from threading import Lock
+from typing import Union
+
 from neetbox._protocol import *
 from neetbox.logging import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.utils import ResourceLoader
+
 from .condition import *
 
 logger = Logger("PROJECT DB", LogStyle(skip_writers=["ws"]))
@@ -112,8 +115,12 @@ class ProjectDB:
 
     def _execute(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
         cur = self.connection.cursor()
-        # logger.info(f"executing sql='{query}', params={args}")
-        result = cur.execute(query, args)
+        try:
+            result = cur.execute(query, args)
+        except Exception as e:
+            logger.err(f"failed to execute query cause '{e}'")
+            logger.info(f"{query}, {args}")
+            logger.err(e, reraise=True)
         if fetch:
             if fetch == DbQueryFetchType.ALL:
                 result = result.fetchall()
@@ -178,17 +185,20 @@ class ProjectDB:
         except:
             return None
 
+    _run_id_fetch_lock = Lock()
+
     def fetch_id_of_run_id(self, run_id: str, timestamp: str = None):
         if not self._inited_tables[RUN_IDS_TABLE_NAME]:  # create if there is no version table
             sql_query = f"CREATE TABLE IF NOT EXISTS {RUN_IDS_TABLE_NAME} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {RUN_ID_COLUMN_NAME} TEXT NON NULL, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {METADATA_COLUMN_NAME} TEXT, CONSTRAINT run_id_unique UNIQUE ({RUN_ID_COLUMN_NAME}));"
             self._execute(sql_query)
             self._inited_tables[RUN_IDS_TABLE_NAME] = True
-        id_of_run_id = self.get_id_of_run_id(run_id)
-        if id_of_run_id is None:
-            timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
-            sql_query = f"INSERT INTO {RUN_IDS_TABLE_NAME}({RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME}) VALUES (?, ?)"
-            _, lastrowid = self._execute(sql_query, run_id, timestamp)
-            return lastrowid
+        with self._run_id_fetch_lock:
+            id_of_run_id = self.get_id_of_run_id(run_id)
+            if id_of_run_id is None:
+                timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
+                sql_query = f"INSERT INTO {RUN_IDS_TABLE_NAME}({RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME})   VALUES (?, ?)"
+                _, lastrowid = self._execute(sql_query, run_id, timestamp)
+                return lastrowid
         return id_of_run_id
 
     def fetch_metadata_of_run_id(self, run_id: str, metadata: Union[dict, str] = None):
@@ -430,7 +440,9 @@ def clear_dbc_on_exit():
         try:
             dbc.connection.close()
         except Exception as e:
-            logger.err(RuntimeError(f"failed to close db connection for project id {project_id}, {e}"))
+            logger.err(
+                RuntimeError(f"failed to close db connection for project id {project_id}, {e}")
+            )
         else:
             logger.ok(f"db connection for project id {project_id} closed")
 
