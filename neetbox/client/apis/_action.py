@@ -64,6 +64,7 @@ class Action(Callable):
 
 class ActionManager(metaclass=Singleton):
     ACTION_POOL: Registry = Registry("__NEET_ACTIONS")
+    _is_initialized = False
 
     def get_action_dict(self):
         return {name: self.ACTION_POOL[name].get_props_dict() for name in self.ACTION_POOL.keys()}
@@ -96,6 +97,26 @@ class ActionManager(metaclass=Singleton):
             run_and_callback()
             return
 
+    def _initialize(self):
+        if not self._is_initialized:
+
+            @connection.ws_subscribe(event_type_name=EVENT_TYPE_NAME_ACTION)
+            def _listen_to_actions(message: EventMsg):
+                actionManager.eval_call(
+                    name=message.payload[NAME_KEY],
+                    params=message.payload[ARGS_KEY],
+                    callback=lambda x: connection.ws_send(
+                        event_type=EVENT_TYPE_NAME_ACTION,
+                        payload={
+                            NAME_KEY: message.payload[NAME_KEY],
+                            (ERROR_KEY if isinstance(x, Exception) else RESULT_KEY): x,
+                        },
+                        event_id=message.event_id,
+                    ),
+                )
+
+            self._initialize = True
+
     def register(self, name: Optional[str] = None, description: str = None, blocking: bool = False):
         """register function as action visiable on frontend page
 
@@ -107,6 +128,8 @@ class ActionManager(metaclass=Singleton):
         Returns:
             Callable: the function itself.
         """
+        if not self._is_initialized:
+            self._initialize()
         return functools.partial(
             self._register, name=name, description=description, blocking=blocking
         )
@@ -143,19 +166,3 @@ class ActionManager(metaclass=Singleton):
 
 
 actionManager = ActionManager()
-
-
-@connection.ws_subscribe(event_type_name=EVENT_TYPE_NAME_ACTION)
-def _listen_to_actions(message: EventMsg):
-    actionManager.eval_call(
-        name=message.payload[NAME_KEY],
-        params=message.payload[ARGS_KEY],
-        callback=lambda x: connection.ws_send(
-            event_type=EVENT_TYPE_NAME_ACTION,
-            payload={
-                NAME_KEY: message.payload[NAME_KEY],
-                (ERROR_KEY if isinstance(x, Exception) else RESULT_KEY): x,
-            },
-            event_id=message.event_id,
-        ),
-    )

@@ -156,7 +156,7 @@ def add_image(name: str, image, dataformats: str = None):
             series=name,
             event_type=EVENT_TYPE_NAME_IMAGE,
         )
-        connection.post(
+        connection.post_check_online(
             api=f"/image/{project_id}",
             data={"json": message.dumps()},
             files={"image": image_bytes},
@@ -168,11 +168,7 @@ def add_image(name: str, image, dataformats: str = None):
 # ===================== MATPLOTLIB things ===================== #
 
 
-def add_figure(
-    name,
-    figure,
-    close: Optional[bool] = True,
-):
+def add_figure(name: str, figure, close: Optional[bool] = True):
     """Render matplotlib figure into an image and add it to summary.
     Note that this requires the ``matplotlib`` package.
 
