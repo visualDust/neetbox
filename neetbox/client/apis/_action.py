@@ -115,7 +115,7 @@ class ActionManager(metaclass=Singleton):
                     ),
                 )
 
-            self._initialize = True
+            self._is_initialized = True
 
     def register(self, name: Optional[str] = None, description: str = None, blocking: bool = False):
         """register function as action visiable on frontend page
