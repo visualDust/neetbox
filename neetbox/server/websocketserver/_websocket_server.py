@@ -159,57 +159,9 @@ def get_web_socket_server(config, debug=False):
             console.print(table)
         return
 
-    def on_event_type_json(
-        message: EventMsg,
-        forward_to: IdentityType = IdentityType.OTHERS,
-        save_history=True,
-    ):
-        if not Bridge.has(message.project_id):
-            # project id must exist
-            # drop anyway if not exist
-            logger.warn(f"handle {message.event_type}. {message.project_id} not found.")
-            return
-        bridge = Bridge.of_id(message.project_id)
-        if save_history:
-            message.id = bridge.save_json_to_history(
-                table_name=message.event_type,
-                json_data=message.payload,
-                series=message.series,
-                run_id=message.run_id,
-                timestamp=message.timestamp,
-                num_row_limit=message.history_len,
-            )
-        if forward_to:
-            if forward_to == IdentityType.SELF:
-                forward_to = message.who
-            if forward_to == IdentityType.OTHERS:
-                forward_to = (
-                    IdentityType.WEB if message.who == IdentityType.CLI else IdentityType.CLI
-                )
-            if forward_to in [IdentityType.WEB, IdentityType.BOTH]:
-                bridge.ws_send_to_frontends(message)  # forward to frontends
-            elif forward_to in [IdentityType.CLI, IdentityType.BOTH]:
-                bridge.ws_send_to_client(message, run_id=message.run_id)  # forward to frontends
+    from ._event_type_handlers import EVENT_TYPE_HANDLERS, on_event_type_default_json
 
-        return  # return after handling log forwarding
-
-    def on_event_type_status(message: EventMsg):
-        bridge = Bridge.of_id(message.project_id)
-        bridge.set_status(run_id=message.run_id, series=message.series, value=message.payload)
-
-    def on_event_type_hyperparams(message: EventMsg):
-        bridge = Bridge.of_id(message.project_id)
-        current_hyperparams = bridge.get_status(
-            run_id=message.run_id, series=EVENT_TYPE_NAME_HPARAMS
-        )  # get hyper params from status
-        if message.series:  # if series of hyperparams specified
-            current_hyperparams[message.series] = message.payload
-        else:
-            for k, v in message.payload.items():
-                current_hyperparams[k] = v
-        bridge.set_status(
-            run_id=message.run_id, series=EVENT_TYPE_NAME_HPARAMS, value=current_hyperparams
-        )
+    logger.debug(f"event handlers: {list(EVENT_TYPE_HANDLERS.keys())}")
 
     def handle_ws_message(client, server: WebsocketServer, message):
         try:
@@ -219,7 +171,8 @@ def get_web_socket_server(config, debug=False):
                 f"Illegal message format from client {client}: {message}, failed to parse cause {e}, dropping..."
             )
             return
-        # handle event-type
+
+        # handle special event types
         if message.event_type == EVENT_TYPE_NAME_HANDSHAKE:  # handle handshake
             on_event_type_handshake(client=client, server=server, message=message)
             return  # return after handling handshake
@@ -227,27 +180,23 @@ def get_web_socket_server(config, debug=False):
             _, _, identity_type = who_is(client)
         except:
             logger.debug(f"ws sending message without handshake, dropping...")
-            return  # !!! not handling messages from cli/web without handshake. handshake is aspecial   case and should be handled anyway before this check.
+            return
         if not message.who:
             message.who = identity_type
         if message.who != identity_type:
             logger.warn(f"Illegal IdentityType: expect {identity_type} but got {message.who}")
-            return  # !!! security check, who should match who
-        else:  # handle regular event types
-            if message.event_type == EVENT_TYPE_NAME_HPARAMS:
-                on_event_type_hyperparams(message)
-            elif message.event_type == EVENT_TYPE_NAME_STATUS:
-                on_event_type_status(message)
-            elif message.event_type == EVENT_TYPE_NAME_ACTION:
-                on_event_type_json(
-                    message=message, forward_to=IdentityType.OTHERS, save_history=False
-                )
-            else:
-                on_event_type_json(
-                    message=message,
-                    forward_to=IdentityType.OTHERS,
-                    save_history=True,
-                )
+            return  # security check, who should match who
+
+        # handle regular event types
+        if message.event_type in EVENT_TYPE_HANDLERS:
+            for handler in EVENT_TYPE_HANDLERS[message.event_type]:
+                handler(message)
+        else:
+            on_event_type_default_json(
+                message=message,
+                forward_to=IdentityType.OTHERS,
+                save_history=True,
+            )
 
     ws_server.set_fn_new_client(handle_ws_connect)
     ws_server.set_fn_client_left(handle_ws_disconnect)

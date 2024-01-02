@@ -9,8 +9,8 @@ import setproctitle
 from neetbox._protocol import *
 
 from ._bridge import Bridge
-from ._flask_server import get_flask_server
-from ._websocket_server import get_web_socket_server
+from .flaskserver import get_flask_server
+from .websocketserver import get_web_socket_server
 
 
 def server_process(cfg, debug=False):

@@ -438,15 +438,12 @@ logger.info(f"using history file folder: {DB_PROJECT_FILE_FOLDER}")
 def clear_dbc_on_exit():
     for project_id, dbc in ProjectDB._id2dbc.items():
         logger.info(f"process exiting, cleaning up...")
-        logger.info(f"trying to close db connection for project id {project_id}")
+        logger.info(f"closing db connection for project id {project_id}")
         try:
             dbc.connection.close()
         except Exception as e:
             logger.err(
                 RuntimeError(f"failed to close db connection for project id {project_id}, {e}")
             )
-        else:
-            logger.ok(f"db connection for project id {project_id} closed")
-
 
 atexit.register(clear_dbc_on_exit)

@@ -16,8 +16,8 @@ from flask import Response, abort, json, redirect, request, send_from_directory
 import neetbox
 from neetbox._protocol import *
 
-from ._bridge import Bridge
-from .db import QueryCondition
+from .._bridge import Bridge
+from ..db import QueryCondition
 
 werkzeug_log = logging.getLogger("werkzeug")
 werkzeug_log.setLevel(logging.ERROR)  # disable flask http call logs

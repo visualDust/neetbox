@@ -125,8 +125,7 @@ def serve(port, debug):
 
         server_process(cfg=_daemon_config, debug=debug)
     except Exception as e:
-        logger.err(f"Failed to launch a neetbox server: {e}")
-        os._exit(-1)
+        logger.err(f"Failed to launch a neetbox server: {e}", reraise=True)
 
 
 @main.command(name="shutdown")

@@ -40,3 +40,13 @@ def get_app_data_directory() -> pathlib.Path:
         return home / ".local/share"
     elif sys.platform == "darwin":
         return home / "Library/Application Support"
+
+def get_folder_size_in_bytes(folder_path):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(folder_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # Skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+    return total_size
