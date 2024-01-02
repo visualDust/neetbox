@@ -1,6 +1,6 @@
 name = "client"
 version = "0.4.4"
-projectId = "0aedddf6-c3b1-4e07-8dff-10ba964e4960"
+projectId = "c26175dd-d067-4293-a967-e9b97549388b"
 
 [logging]
 level = "INFO"
@@ -22,5 +22,5 @@ uploadInterval = 1
 enable = true
 daemon = true
 
-[extension.environment.hardware]
+[extension.machine.hardware]
 interval = 2
