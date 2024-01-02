@@ -17,11 +17,12 @@ from neetbox._protocol import *
 from neetbox.logging import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.utils import ResourceLoader
+from neetbox.utils.localstorage import get_app_data_directory
 
 from .condition import *
 
 logger = Logger("PROJECT DB", LogStyle(skip_writers=["ws"]))
-DB_PROJECT_FILE_ROOT = f"{NEET_FILE_FOLDER}/history"
+DB_PROJECT_FILE_FOLDER = f"{get_app_data_directory()}/neetbox/server/history"
 DB_PROJECT_FILE_TYPE_NAME = "projectdb"
 
 
@@ -40,7 +41,7 @@ class ProjectDB:
         if path is None and project_id is None:
             raise RuntimeError(f"please provide at least project id or path when creating db")
         if path is None:  # make path from project id
-            path = f"{DB_PROJECT_FILE_ROOT}/{project_id}.{DB_PROJECT_FILE_TYPE_NAME}"
+            path = f"{DB_PROJECT_FILE_FOLDER}/{project_id}.{DB_PROJECT_FILE_TYPE_NAME}"
         if path in cls._path2dbc:
             return cls._path2dbc[path]
         if project_id in cls._id2dbc:
@@ -408,7 +409,7 @@ class ProjectDB:
     @classmethod
     def get_db_list(cls):
         history_file_loader = ResourceLoader(
-            folder=DB_PROJECT_FILE_ROOT, file_types=[DB_PROJECT_FILE_TYPE_NAME], force_rescan=True
+            folder=DB_PROJECT_FILE_FOLDER, file_types=[DB_PROJECT_FILE_TYPE_NAME], force_rescan=True
         )
         history_file_list = history_file_loader.get_file_list()
         for path in history_file_list:
@@ -425,12 +426,13 @@ class ProjectDB:
 
 # === SCAN FOR DB FILES ===
 
-if not os.path.exists(DB_PROJECT_FILE_ROOT):
+if not os.path.exists(DB_PROJECT_FILE_FOLDER):
     # create history root dir
-    os.makedirs(DB_PROJECT_FILE_ROOT)
+    os.makedirs(DB_PROJECT_FILE_FOLDER)
 # check if is dir
-if not os.path.isdir(DB_PROJECT_FILE_ROOT):
-    raise RuntimeError(f"{DB_PROJECT_FILE_ROOT} is not a directory.")
+if not os.path.isdir(DB_PROJECT_FILE_FOLDER):
+    raise RuntimeError(f"{DB_PROJECT_FILE_FOLDER} is not a directory.")
+logger.info(f"using history file folder: {DB_PROJECT_FILE_FOLDER}")
 
 
 def clear_dbc_on_exit():

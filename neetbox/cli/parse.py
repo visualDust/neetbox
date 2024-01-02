@@ -21,12 +21,11 @@ from neetbox.config._workspace import (
 )
 from neetbox.logging.formatting import LogStyle
 from neetbox.logging.logger import Logger
-from neetbox.server._server import server_process
 from neetbox.utils.massive import check_read_toml
 
 console = Console()
 
-logger = Logger("NEETBOX", style=LogStyle(with_datetime=False, skip_writers=["ws", "file"]))
+logger = Logger("NEETBOX CLI", style=LogStyle(with_datetime=False, skip_writers=["ws", "file"]))
 
 
 def get_connection_config():
@@ -122,6 +121,8 @@ def serve(port, debug):
         logger.log(f"Launching server using config: {_daemon_config}")
         if port:
             _daemon_config["port"] = port
+        from neetbox.server._server import server_process
+
         server_process(cfg=_daemon_config, debug=debug)
     except Exception as e:
         logger.err(f"Failed to launch a neetbox server: {e}")

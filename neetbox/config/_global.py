@@ -14,11 +14,8 @@ NEETBOX_VERSION = version("neetbox")
 from uuid import uuid4
 
 from neetbox._protocol import MACHINE_ID_KEY
-from neetbox.utils.massive import (
-    check_read_toml,
-    get_user_config_directory,
-    update_dict_recursively,
-)
+from neetbox.utils.localstorage import get_user_config_directory
+from neetbox.utils.massive import check_read_toml
 
 _GLOBAL_CONFIG = {
     "version": NEETBOX_VERSION,

@@ -7,6 +7,7 @@
 import setproctitle
 
 from neetbox._protocol import *
+
 from ._bridge import Bridge
 from ._flask_server import get_flask_server
 from ._websocket_server import get_web_socket_server
@@ -17,7 +18,7 @@ def server_process(cfg, debug=False):
     from neetbox.logging import LogStyle
     from neetbox.logging.logger import Logger
 
-    logger = Logger("SERVER", LogStyle(skip_writers=["ws"]))
+    logger = Logger("SERVER LAUNCHER", LogStyle(skip_writers=["ws"]))
     # load bridges
     Bridge.load_histories()  # load history files
 

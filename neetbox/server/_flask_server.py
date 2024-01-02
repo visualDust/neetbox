@@ -9,10 +9,13 @@ import os
 import time
 from threading import Thread
 from typing import Union
+
 import werkzeug
 from flask import Response, abort, json, redirect, request, send_from_directory
+
 import neetbox
 from neetbox._protocol import *
+
 from ._bridge import Bridge
 from .db import QueryCondition
 
@@ -29,12 +32,12 @@ def get_flask_server(debug=False):
 
     if debug:
         logger.set_log_level(LogLevel.DEBUG)
-        logger.log(f"Running with debug, using APIFlask")
+        logger.log(f"in debug mode, using APIFlask")
         from apiflask import APIFlask
 
         app = APIFlask(__PROC_NAME, static_folder=None)
     else:
-        logger.log(f"Running in production mode, using Flask")
+        logger.log(f"in production mode, using Flask")
         from flask import Flask
 
         app = Flask(__PROC_NAME, static_folder=None)
