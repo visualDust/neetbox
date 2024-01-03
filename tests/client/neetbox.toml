@@ -1,5 +1,5 @@
 name = "client"
-version = "0.4.4"
+version = "0.4.5"
 projectId = "c26175dd-d067-4293-a967-e9b97549388b"
 
 [logging]
