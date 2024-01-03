@@ -14,15 +14,15 @@ from threading import Lock
 from typing import Union
 
 from neetbox._protocol import *
+from neetbox.config._global import get as get_global_config
 from neetbox.logging import LogStyle
 from neetbox.logging.logger import Logger
 from neetbox.utils import ResourceLoader
-from neetbox.utils.localstorage import get_app_data_directory
 
 from .condition import *
 
 logger = Logger("PROJECT DB", LogStyle(skip_writers=["ws"]))
-DB_PROJECT_FILE_FOLDER = f"{get_app_data_directory()}/neetbox/server/history"
+DB_PROJECT_FILE_FOLDER = f"{get_global_config('dataFolder')}/neetbox/server/history"
 DB_PROJECT_FILE_TYPE_NAME = "projectdb"
 
 
@@ -445,5 +445,6 @@ def clear_dbc_on_exit():
             logger.err(
                 RuntimeError(f"failed to close db connection for project id {project_id}, {e}")
             )
+
 
 atexit.register(clear_dbc_on_exit)
