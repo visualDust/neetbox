@@ -50,6 +50,19 @@ export default function Home(): JSX.Element {
             Facilitating long running python projects, especially a replacement
             of tensorboard for deep learning projects.
           </h3>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <div style={{ display: "flex", gap: "5px" }}>
+              <img src="https://img.shields.io/badge/linux-x86%20or%20arm-blue?logo=linux" />
+              <img src="https://img.shields.io/badge/windows-x86%20or%20arm-blue?logo=windows" />
+              <img src="https://img.shields.io/badge/mac-intel%20or%20apple%20silicon-blue?logo=apple" />
+            </div>
+          </div>
           <div style={{ paddingTop: "30px", textAlign: "center" }}>
             <a href="/docs/howto" className="button button--secondary">
               Get started
