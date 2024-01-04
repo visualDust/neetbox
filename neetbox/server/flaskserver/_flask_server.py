@@ -43,6 +43,7 @@ def get_flask_server(debug=False):
         app = Flask(__PROC_NAME, static_folder=None)
 
     front_end_dist_path = os.path.join(os.path.dirname(neetbox.__file__), "frontend_dist")
+    logger.info(f"using frontend dist path {front_end_dist_path}")
 
     @app.route("/")
     def static_serve_root():
