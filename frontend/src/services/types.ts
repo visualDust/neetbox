@@ -1,7 +1,7 @@
 export interface CpuInfo {
   id: number;
-  percent: number;
-  freq: [current: number, min: number, max: number];
+  percentage: number;
+  frequency: [current: number, min: number, max: number];
 }
 
 export interface GpuInfo {

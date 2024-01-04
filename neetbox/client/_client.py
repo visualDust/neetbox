@@ -4,12 +4,13 @@
 # Github: github.com/visualDust
 # Date:   20231022
 
+import functools
 import json
 import logging
 import subprocess
 import time
 from collections import defaultdict
-from threading import Thread
+from threading import Lock, Thread
 from typing import Callable
 
 import httpx
@@ -34,11 +35,34 @@ def addr_of_api(api, http_root=None):
         http_root = f"http://{daemon_server_address}"
     if not api.startswith("/"):
         api = f"/{api}"
-    return f"{http_root}{api}"
+    result = f"{http_root}{api}"
+    return result
+
+
+def online_only(func):
+    """function decorator which checks client online status on each function call
+
+    Args:
+        func (Callable): the function
+
+    Returns:
+        Callable: the decorated function
+    """
+
+    @functools.wraps(func)
+    def __online_only_func(*args, **kwargs):
+        if not NeetboxClient()._is_initialized:
+            with NeetboxClient()._thread_safe_lock:
+                NeetboxClient()._connect_blocking()
+
+        if NeetboxClient()._is_initialized and NeetboxClient().online_mode == False:
+            return None
+        return func(*args, **kwargs)
+
+    return __online_only_func
 
 
 class NeetboxClient(metaclass=Singleton):  # singleton
-    # statics
     online_mode: bool = None
     httpxClient: httpx.Client = httpx.Client(  # httpx client
         proxies={
@@ -47,24 +71,37 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         }
     )  # type: ignore
     wsApp: websocket.WebSocketApp = None  # websocket client app
-    __initialized: bool = False
+    _is_initialized: bool = False
+    _thread_safe_lock = Lock()
     is_ws_connected: bool = False
     ws_message_query = []  # websocket message query
     ws_subscribers = defaultdict(list)  # default to no subscribers
+
+    @online_only
+    def post_check_online(self, api: str, root: str = None, *args, **kwargs):
+        url = addr_of_api(api, http_root=root)
+        return self.httpxClient.post(url, *args, **kwargs)
 
     def post(self, api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api, http_root=root)
         return self.httpxClient.post(url, *args, **kwargs)
 
+    @online_only
+    def get_check_online(self, api: str, root: str = None, *args, **kwargs):
+        url = addr_of_api(api, http_root=root)
+        return self.httpxClient.get(url, *args, **kwargs)
+
     def get(self, api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api, http_root=root)
         return self.httpxClient.get(url, *args, **kwargs)
 
-    def put(self, api: str, root: str = None, *args, **kwargs):
+    @online_only
+    def put_check_online(self, api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api, http_root=root)
         return self.httpxClient.put(url, *args, **kwargs)
 
-    def delete(self, api: str, root: str = None, *args, **kwargs):
+    @online_only
+    def delete_check_online(self, api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api, http_root=root)
         return self.httpxClient.delete(url, *args, **kwargs)
 
@@ -87,7 +124,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
 
     def check_server_connectivity(self, config=None):
         config = config or get_module_level_config()
-        logger.log(f"Connecting to daemon at {config['host']}:{config   ['port']} ...")
+        logger.debug(f"Connecting to daemon at {config['host']}:{config   ['port']} ...")
         daemon_server_address = f"{config['host']}:{config['port']}"
         http_root = f"http://{daemon_server_address}"
 
@@ -110,14 +147,14 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             logger.err(e)
             return False
 
-    def _connect(self, config=None):
-        if self.__initialized:
+    def _connect_blocking(self, config=None):
+        if self._is_initialized:
             return  # if already initialized, do nothing
 
         config = config or get_module_level_config()
         if not config["enable"]:  # check if enable
             self.online_mode = False
-            self.__initialized = True
+            self._is_initialized = True
             return
 
         if not config["allowIpython"]:  # check if allow ipython
@@ -131,7 +168,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
                     "ipython, try to set 'allowIpython' to True."
                 )
                 self.online_mode = False
-                self.__initialized = True
+                self._is_initialized = True
                 return  # ignore if debugging in ipython
 
         server_host = config["host"]
@@ -162,7 +199,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             time.sleep(1)
             _retry_timeout = 10
             _time_begin = time.perf_counter()
-            logger.log("Created daemon process, trying to connect to daemon...")
+            logger.debug("Created daemon process, trying to connect to daemon...")
             online_flag = False
             while time.perf_counter() - _time_begin < 10:  # try connect daemon
                 if not self.check_server_connectivity():
@@ -187,7 +224,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         self.online_mode = True  # enable online mode
         self.ws_server_url = f"ws://{server_host}:{server_port + 1}"  # ws server url
 
-        logger.log(f"creating websocket connection to {self.ws_server_url}")
+        logger.debug(f"creating websocket connection to {self.ws_server_url}")
         self.wsApp = websocket.WebSocketApp(  # create websocket client
             url=self.ws_server_url,
             on_open=self.on_ws_open,
@@ -200,7 +237,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             target=self.wsApp.run_forever, kwargs={"reconnect": 1}, daemon=True
         ).start()  # initialize and start ws thread
 
-        self.__initialized = True
+        self._is_initialized = True
 
     def on_ws_open(self, ws: websocket.WebSocketApp):
         project_id = get_project_id()
@@ -228,7 +265,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         message = EventMsg.loads(message)  # message should be json
         if message.event_type == EVENT_TYPE_NAME_HANDSHAKE:
             assert message.payload["result"] == 200
-            logger.ok(f"handshake succeed.")
+            logger.ok(f"neetbox handshake succeed.")
             ws.send(  # send immediately without querying
                 EventMsg(
                     project_id=get_project_id(),
@@ -254,6 +291,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
                     f"Subscriber {subscriber.__name__} crashed on message event {message.event_type}, ignoring."
                 )
 
+    @online_only
     def ws_send(
         self,
         event_type: str,
@@ -263,12 +301,6 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         event_id=-1,
         _history_len=-1,
     ):
-        if not self.__initialized:
-            self._connect()
-        if self.__initialized and self.online_mode == False:  # if online mode is false
-            while len(self.ws_message_query):
-                self.ws_message_query.pop()
-            return
         message = EventMsg(
             project_id=get_project_id(),
             run_id=get_run_id(),

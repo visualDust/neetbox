@@ -48,7 +48,7 @@ export const RunSelect = memo((props: any) => {
             <>
               {isOnlineRun ? (
                 <Tag color="green">Online</Tag>
-              ) : runId != items[0].runId ? (
+              ) : runId != items?.[0].runId ? (
                 <Tag color="orange">History</Tag>
               ) : (
                 <Tag color="red">Offline</Tag>

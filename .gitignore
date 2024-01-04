@@ -19,10 +19,8 @@ build_and_reinstall_wheel.cmd
 # log files
 logs/
 log/
-for_debug.txt
-.neethistory/
-.neetory
 .log
 
-# others
-other/
+# neetbox files
+neetfiles
+neetbox.toml

@@ -33,10 +33,6 @@ class LogStyle:
     def get_supported_text_style(cls):
         return ["bold", "italic", "blink"]
 
-    def parse(self, pattern: str):
-        # todo
-        pass
-
     def set_color(self, color: str):
         self.fore = color
         return self
@@ -63,29 +59,3 @@ class LogStyle:
         # self.fore = colors[(split_index - index_offset) % len(colors)]
         self.console_color = colors[int(random() * len(colors))]
         return self
-
-
-DEFAULT_STYLE = LogStyle()
-
-
-def styled_text(text, style: LogStyle):
-    attributes = []
-    if style.console_color:
-        attributes.append(style.console_color)
-    if style.text_style:
-        attributes.append(style.text_style)
-    render_stack = []
-    _prefix = ""
-    _postfix = ""
-    while len(attributes):
-        attr = attributes.pop(-1)
-        _prefix += f"[{attr}]"
-        render_stack.append(attr)
-    while len(render_stack):
-        _postfix += f"[/{render_stack.pop(-1)}]"
-    return f"{_prefix}{text}{_postfix}"
-
-
-def colored_text(text: str, color):
-    text = text.replace("[", r"\[")
-    return f"[{color}]{text}[/{color}]"

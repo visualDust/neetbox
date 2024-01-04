@@ -36,7 +36,7 @@ class Progress:
         else:
             self.total = len(input)
             self.iterator = iter(input)
-        self.caller_identity = get_caller_identity_traceback(traceback=2)
+        self.caller_identity = get_caller_identity_traceback(stack_offset=2)
 
         self.done = 0
         self.start_time = time()  # Track the start time
@@ -63,7 +63,7 @@ class Progress:
 
         connection.ws_send(
             event_type=EVENT_TYPE_NAME_PROGRESS,
-            series=self.caller_identity.strid,
+            series=self.caller_identity.strid + (self.name or ""),
             payload={
                 NAME_KEY: self.name or self.caller_identity.last_describable,
                 "step": self.done,

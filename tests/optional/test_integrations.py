@@ -4,7 +4,7 @@ pytest.skip(allow_module_level=True)
 
 
 def test_device_info():
-    from neetbox.extension.environment import hardware
+    from neetbox.extension.machine import hardware
 
     for cpu in hardware.hardware["cpus"]:
         print(cpu)
@@ -13,7 +13,7 @@ def test_device_info():
 def test_resource_loader():
     import os
 
-    from neetbox.extension.resource import ResourceLoader
+    from neetbox.utils import ResourceLoader
 
     file_type = "py"
     ldr = ResourceLoader("./", file_types=[file_type])
@@ -25,13 +25,13 @@ def test_resource_loader():
 
     file_type = "md"
     ldr = ResourceLoader("./", file_types=[file_type])
-    from neetbox.extension.resource import _loader_pool
+    from neetbox.utils import _loader_pool
 
     print(_loader_pool.keys())
 
 
 def test_download():
-    from neetbox.extension.resource import download
+    from neetbox.utils import download
 
     urls = {
         "somereadme.md": "https://raw.githubusercontent.com/akasaki-is-a-rubbish/drivingaux/master/readme.md",

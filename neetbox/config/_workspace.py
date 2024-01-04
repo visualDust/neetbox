@@ -225,9 +225,9 @@ def _get_module_level_config(module: Union[str, types.ModuleType] = None, **kwar
         dict: the config you want.
     """
     try:
-        traceback = 2 if "traceback" not in kwargs else kwargs["traceback"]
+        stack_offset = 2 if "stack_offset" not in kwargs else kwargs["stack_offset"]
         module = (
-            module or get_frame_module_traceback(traceback=traceback).__name__  # type: ignore
+            module or get_frame_module_traceback(stack_offset=stack_offset).__name__  # type: ignore
         )  # try to trace if module not given
         if type(module) is not str:  # try to trace the belonging module of the given object
             module = inspect.getmodule(module).__name__  # type: ignore

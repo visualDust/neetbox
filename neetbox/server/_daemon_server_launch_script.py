@@ -2,11 +2,6 @@ import argparse
 import json
 import sys
 
-from neetbox.server._server import server_process
-
-print("========= Server Daemon  =========")
-
-
 def run(argv):
     if len(argv) <= 1:
         print("_daemon_: Warning: empty daemon_config")
@@ -19,6 +14,7 @@ def run(argv):
         print(args.config)
         daemon_config = json.loads(args.config)
         print("Daemon started with config:", daemon_config)
+    from ._server import server_process
     server_process(daemon_config)
 
 

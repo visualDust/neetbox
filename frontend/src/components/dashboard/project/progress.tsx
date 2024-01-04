@@ -1,11 +1,11 @@
 import { memo } from "react";
-import { Button, Card, Progress, Space, Typography } from "@douyinfe/semi-ui";
+import { Card, Progress, Space, Typography } from "@douyinfe/semi-ui";
 import { useCurrentProject, useProjectData, useProjectSeries } from "../../../hooks/useProject";
 import Loading from "../../loading";
 
 export const Progresses = memo(() => {
   return (
-    <Space style={{ marginBottom: "20px" }}>
+    <Space wrap style={{ marginBottom: "20px" }}>
       <AllProgressViewers />
     </Space>
   );
