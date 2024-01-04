@@ -81,7 +81,7 @@ const config = {
         ],
       },
       footer: {
-        copyright: `Copyright © ${new Date().getFullYear()} NEETBox`,
+        copyright: `Open socurce license MIT, ${new Date().getFullYear()}, NEETBOX all right reserved`,
       },
       prism: {
         theme: lightCodeTheme,
