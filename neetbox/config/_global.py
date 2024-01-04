@@ -15,7 +15,7 @@ from neetbox.utils.localstorage import get_app_data_directory, get_user_config_d
 from neetbox.utils.massive import check_read_toml
 
 _GLOBAL_CONFIG = {
-    MACHINE_ID_KEY: uuid4(),
+    MACHINE_ID_KEY: str(uuid4()),
     "dataFolder": get_app_data_directory(),
 }
 
