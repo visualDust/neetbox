@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neetbox"
-version = "0.4.5"
+version = "0.4.6"
 description = "Logging/Debugging/Tracing/Managing/Facilitating long running python projects, especially a replacement of tensorboard for deep learning projects"
 license = "MIT"
 authors = ["VisualDust <gavin@gong.host>", "Lideming <me@yuuza.net>"]

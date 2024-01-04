@@ -35,11 +35,14 @@ def get_app_data_directory() -> pathlib.Path:
     home = pathlib.Path.home()
 
     if sys.platform == "win32":
-        return home / "AppData/Roaming"
+        app_data_path = home / "AppData/Roaming"
     elif sys.platform == "linux":
-        return home / ".local/share"
+        app_data_path = home / ".local/share"
     elif sys.platform == "darwin":
-        return home / "Library/Application Support"
+        app_data_path = home / "Library/Application Support"
+
+    return str(app_data_path)
+
 
 def get_folder_size_in_bytes(folder_path):
     total_size = 0
