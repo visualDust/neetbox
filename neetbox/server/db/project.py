@@ -316,7 +316,7 @@ class ProjectDB:
                 ID_COLUMN_NAME: w,
                 TIMESTAMP_COLUMN_NAME: x,
                 SERIES_COLUMN_NAME: y,
-                JSON_COLUMN_NAME: json.loads(z),
+                JSON_COLUMN_NAME: json.loads(z) if z else None,
             }
             for w, x, y, z in result
         ]
