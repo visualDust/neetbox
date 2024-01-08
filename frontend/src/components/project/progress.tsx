@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Card, Progress, Space, Typography } from "@douyinfe/semi-ui";
-import { useCurrentProject, useProjectData, useProjectSeries } from "../../../hooks/useProject";
-import Loading from "../../loading";
+import { useCurrentProject, useProjectData, useProjectSeries } from "../../hooks/useProject";
+import Loading from "../common/loading";
 
 export const Progresses = memo(() => {
   return (

@@ -9,7 +9,7 @@ import { consoleRoutes } from "./pages/console";
 import { ThemeContextProvider } from "./components/themeSwitcher";
 import { ServiceProvider } from "./services/serviceProvider";
 import App from "./App";
-import { RouteError } from "./components/errorBoundary";
+import { RouteError } from "./components/common/errorBoundary";
 
 const router = createBrowserRouter(
   [

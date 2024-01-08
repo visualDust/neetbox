@@ -3,9 +3,9 @@ import { Space, Select, Tag, Button, Modal, Form, Toast } from "@douyinfe/semi-u
 import { IconDelete, IconEdit } from "@douyinfe/semi-icons";
 import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
 import { useNavigate } from "react-router-dom";
-import Loading from "../../loading";
-import { useCurrentProject } from "../../../hooks/useProject";
-import { fetcher } from "../../../services/api";
+import Loading from "../common/loading";
+import { useCurrentProject } from "../../hooks/useProject";
+import { fetcher } from "../../services/api";
 import { HyperParams } from "./hyperParams";
 
 export const RunSelect = memo((props: any) => {

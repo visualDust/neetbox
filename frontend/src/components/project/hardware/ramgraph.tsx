@@ -1,7 +1,7 @@
 import { useCallback } from "react";
-import { ECharts } from "../../../echarts";
-import { RamInfo } from "../../../../services/types";
-import { TimeDataMapper } from "../../../../utils/timeDataMapper";
+import { ECharts } from "../../common/echarts";
+import { RamInfo } from "../../../services/types";
+import { TimeDataMapper } from "../../../utils/timeDataMapper";
 import { getTimeAxisOptions } from "./utils";
 import { GraphWrapper } from "./graphWrapper";
 

@@ -1,4 +1,4 @@
-import { TimeDataMapper } from "../../../../utils/timeDataMapper";
+import { TimeDataMapper } from "../../../utils/timeDataMapper";
 
 const viewRangeSeconds = 300;
 const dataInterval = 2;

@@ -6,6 +6,11 @@ const server = new URL("http://127.0.0.1:10101");
 
 export default defineConfig({
   plugins: [pluginReact()],
+  source: {
+    alias: {
+      "@": "./src",
+    },
+  },
   tools: {
     rspack: (config) => {
       config.plugins!.push(

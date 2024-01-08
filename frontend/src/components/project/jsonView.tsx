@@ -3,9 +3,9 @@ import JsonView from "@uiw/react-json-view";
 import { githubDarkTheme } from "@uiw/react-json-view/githubDark";
 import { CSSProperties, memo } from "react";
 import { Popover, Space, Typography } from "@douyinfe/semi-ui";
-import { IconCode, IconCodeStroked } from "@douyinfe/semi-icons";
+import { IconCodeStroked } from "@douyinfe/semi-icons";
 import { Position } from "@douyinfe/semi-ui/lib/es/tooltip";
-import { useTheme } from "../../../hooks/useTheme";
+import { useTheme } from "../../hooks/useTheme";
 import "./jsonView.css";
 
 export const JsonViewThemed = memo((props: any) => {

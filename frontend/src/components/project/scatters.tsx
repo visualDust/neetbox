@@ -1,9 +1,9 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Button, Card, Space, Typography } from "@douyinfe/semi-ui";
 import { IconClose, IconMaximize } from "@douyinfe/semi-icons";
-import { useCurrentProject, useProjectData, useProjectSeries } from "../../../hooks/useProject";
-import { ECharts } from "../../echarts";
-import Loading from "../../loading";
+import { useCurrentProject, useProjectData, useProjectSeries } from "../../hooks/useProject";
+import { ECharts } from "../common/echarts";
+import Loading from "../common/loading";
 
 export const Scatters = memo(() => {
   return (

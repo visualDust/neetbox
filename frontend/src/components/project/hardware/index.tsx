@@ -1,8 +1,8 @@
 import { Typography } from "@douyinfe/semi-ui";
-import { HardwareInfo } from "../../../../services/types";
-import { useCurrentProject, useProjectData } from "../../../../hooks/useProject";
-import Loading from "../../../loading";
-import { TimeDataMapper } from "../../../../utils/timeDataMapper";
+import { HardwareInfo } from "../../../services/types";
+import { useCurrentProject, useProjectData } from "../../../hooks/useProject";
+import Loading from "../../common/loading";
+import { TimeDataMapper } from "../../../utils/timeDataMapper";
 import { CPUGraph } from "./cpugraph";
 import { GPUGraph } from "./gpugraph";
 import { RAMGraph } from "./ramgraph";

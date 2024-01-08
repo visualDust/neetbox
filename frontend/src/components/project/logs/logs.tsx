@@ -1,10 +1,10 @@
 import React, { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@douyinfe/semi-ui";
 import { IconAlignBottom } from "@douyinfe/semi-icons";
-import { LogData } from "../../../../services/types";
+import { LogData } from "../../../services/types";
 import "./logs.css";
-import { useCurrentProject, useProjectData } from "../../../../hooks/useProject";
-import Loading from "../../../loading";
+import { useCurrentProject, useProjectData } from "../../../hooks/useProject";
+import Loading from "../../common/loading";
 
 function AutoScrolling({ style, children }: React.PropsWithChildren<{ style: React.CSSProperties }>) {
   const containerRef = useRef<HTMLDivElement>(null!);

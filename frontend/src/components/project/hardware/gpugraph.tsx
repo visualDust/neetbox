@@ -1,7 +1,7 @@
 import { useCallback } from "react";
-import { ECharts } from "../../../echarts";
-import { GpuInfo } from "../../../../services/types";
-import { TimeDataMapper } from "../../../../utils/timeDataMapper";
+import { ECharts } from "../../common/echarts";
+import { GpuInfo } from "../../../services/types";
+import { TimeDataMapper } from "../../../utils/timeDataMapper";
 import { getTimeAxisOptions, percent2hue } from "./utils";
 import { GraphWrapper } from "./graphWrapper";
 import "./gpugraph.css";

@@ -2,7 +2,7 @@ import { Nav, Space, Tag, Typography } from "@douyinfe/semi-ui";
 import { IconHome, IconListView } from "@douyinfe/semi-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAPI } from "../../services/api";
-import Loading from "../../components/loading";
+import Loading from "../../components/common/loading";
 import "./sidebarStyleFix.css";
 
 export default function ConsoleNavBar() {

@@ -1,8 +1,8 @@
 import { memo } from "react";
 import { Popover, Space, Typography } from "@douyinfe/semi-ui";
 import { IconInfoCircle } from "@douyinfe/semi-icons";
-import { useProjectRunStatus } from "../../../hooks/useProject";
-import Loading from "../../loading";
+import { useProjectRunStatus } from "../../hooks/useProject";
+import Loading from "../common/loading";
 import { JsonViewThemed } from "./jsonView";
 
 export const HyperParams = memo(({ projectId, runId, trigger = "click", position }: any) => {

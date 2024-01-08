@@ -1,7 +1,7 @@
 import { useRef, useEffect, HTMLAttributes, useState } from "react";
 import * as echarts from "echarts";
-import { useTheme } from "../hooks/useTheme";
-import { IdleTimer } from "../utils/timer";
+import { useTheme } from "@/hooks/useTheme";
+import { IdleTimer } from "../../utils/timer";
 import Loading from "./loading";
 
 export interface EChartsProps {

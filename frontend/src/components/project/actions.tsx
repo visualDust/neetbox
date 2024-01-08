@@ -1,11 +1,11 @@
 import { Button, Checkbox, Col, Input, Popover, Row, Space, Typography } from "@douyinfe/semi-ui";
 import { memo, useState } from "react";
 import { IconChevronDown, IconPlay } from "@douyinfe/semi-icons";
-import { getProject } from "../../../services/projects";
-import { useMemoJSON } from "../../../hooks/useMemoJSON";
-import { ActionInfo } from "../../../services/types";
-import { useCurrentProject, useProjectRunStatus } from "../../../hooks/useProject";
-import Loading from "../../loading";
+import { getProject } from "../../services/projects";
+import { useMemoJSON } from "../../hooks/useMemoJSON";
+import { ActionInfo } from "../../services/types";
+import { useCurrentProject, useProjectRunStatus } from "../../hooks/useProject";
+import Loading from "../common/loading";
 
 export function Actions() {
   const { projectId, runId } = useCurrentProject();
