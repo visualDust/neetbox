@@ -221,7 +221,7 @@ def get_flask_server(debug=False):
             project_id=project_id, table_name="progress", condition=request.args.get("condition")
         )
 
-    @app.route(f"/shutdown", methods=["POST"])
+    @app.post(f"/shutdown")
     def shutdown():
         def __sleep_and_shutdown(secs=1):
             time.sleep(secs)

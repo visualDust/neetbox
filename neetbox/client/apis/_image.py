@@ -158,7 +158,7 @@ def add_image(name: str, image, dataformats: str = None):
         )
         connection.post_check_online(
             api=f"/image/{project_id}",
-            data={"json": message.dumps()},
+            data={METADATA_KEY: message.dumps()},
             files={"image": image_bytes},
         )
     except Exception as e:

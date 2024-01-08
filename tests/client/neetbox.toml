@@ -1,6 +1,6 @@
 name = "client"
-version = "0.4.6"
-projectId = "53fff65e-e7d3-4851-bff3-5fea07283756"
+version = "0.4.7"
+projectId = "b3219f58-2cb0-482c-b064-85153b4cf86e"
 
 [logging]
 level = "INFO"
@@ -12,7 +12,7 @@ autoload = true
 [client]
 enable = true
 host = "127.0.0.1"
-port = 10101
+port = 5000
 allowIpython = false
 mute = true
 mode = "detached"

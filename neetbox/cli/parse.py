@@ -75,9 +75,9 @@ def serve(port, debug):
     _try_load_workspace_if_applicable()
     _daemon_config = get_client_config()
     try:
-        logger.log(f"Launching server using config: {_daemon_config}")
         if port:
             _daemon_config["port"] = port
+        logger.log(f"Launching server using config: {_daemon_config}")
         from neetbox.server._server import server_process
 
         server_process(cfg=_daemon_config, debug=debug)

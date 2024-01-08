@@ -5,11 +5,12 @@
 # Date:   20230414
 
 import setproctitle
+import uvicorn
 
 from neetbox._protocol import *
 
 from ._bridge import Bridge
-from .flaskserver import get_flask_server
+from .fastapiserver import get_fastapi_server
 from .websocketserver import get_web_socket_server
 
 
@@ -27,7 +28,7 @@ def server_process(cfg, debug=False):
     Bridge._ws_server = ws_server  # add websocket server to bridge
 
     # http server
-    flask_server = get_flask_server(debug=debug)
+    fastapi_server = get_fastapi_server(debug=debug)
 
     # launch
     logger.log(f"launching websocket server...")
@@ -35,7 +36,7 @@ def server_process(cfg, debug=False):
 
     port = cfg["port"]
     logger.log(f"launching flask server on port {port}")
-    flask_server.run(host="0.0.0.0", port=port)
+    uvicorn.run(fastapi_server, host="0.0.0.0", port=port, log_level="critical")
 
 
 if __name__ == "__main__":
