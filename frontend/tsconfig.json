@@ -17,10 +17,7 @@
     /* Linting */
     "strict": true,
     "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
