@@ -420,7 +420,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-icons@npm:2.48.0, @douyinfe/semi-icons@npm:^2.47.1":
+"@douyinfe/semi-icons@npm:2.48.0":
   version: 2.48.0
   resolution: "@douyinfe/semi-icons@npm:2.48.0"
   dependencies:
@@ -428,6 +428,17 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
   checksum: c5801d1688d2f744aee90e8ed7adde0daefa7cb8db23defee2bd4d2e548615955f8486638f7c7c862909c316469ba3f3f4b5ef48bd0713de5f47b9ea2d5f81ba
+  languageName: node
+  linkType: hard
+
+"@douyinfe/semi-icons@npm:^2.50.1":
+  version: 2.50.1
+  resolution: "@douyinfe/semi-icons@npm:2.50.1"
+  dependencies:
+    classnames: "npm:^2.2.6"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: c6fadf086bf6126b9a56edd4702f9687930d03088fa9ba592f3257ed15f8abcf23446e3bc16295d77590a23e1d3fb8c751839eeed47f8e664a5941728fd1dce7
   languageName: node
   linkType: hard
 
@@ -4300,7 +4311,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "neetcenter@workspace:."
   dependencies:
-    "@douyinfe/semi-icons": "npm:^2.47.1"
+    "@douyinfe/semi-icons": "npm:^2.50.1"
     "@douyinfe/semi-rspack-plugin": "npm:^2.48.0"
     "@douyinfe/semi-ui": "npm:^2.47.1"
     "@rsbuild/core": "npm:^0.1.8"
