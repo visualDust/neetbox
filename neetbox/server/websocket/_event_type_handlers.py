@@ -1,7 +1,15 @@
-from .._bridge import Bridge
-from neetbox._protocol import *
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# Github: github.com/visualDust
+# Date:   20231218
+
 from collections import defaultdict
 from typing import Callable
+
+from neetbox._protocol import *
+
+from .._bridge import Bridge
 
 EVENT_TYPE_HANDLERS = defaultdict(list)
 

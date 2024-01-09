@@ -86,7 +86,7 @@ def get_web_socket_server(config, debug=False):
             )
             return  # client cannot handshake again
         # assign this client to a Bridge
-        console.log(f"handling handshake for {message.who} with project id '{message.project_id}'")
+        logger.info(f"handling handshake for {message.who} with project id '{message.project_id}'")
 
         if message.who == IdentityType.WEB:
             if not Bridge.has(message.project_id):  # there is no such bridge

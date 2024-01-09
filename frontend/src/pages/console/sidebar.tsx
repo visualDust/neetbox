@@ -8,7 +8,7 @@ import "./sidebarStyleFix.css";
 export default function ConsoleNavBar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { data } = useAPI("/list", { refreshInterval: 5000 });
+  const { data } = useAPI("/project/list", { refreshInterval: 5000 });
   return (
     <Nav
       renderWrapper={(args) => {
