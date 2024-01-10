@@ -48,8 +48,7 @@ export default defineConfig({
         target: server.href,
       },
       "/ws/": {
-        target: `ws://${server.host}:${+server.port + 1}`,
-        pathRewrite: { "/ws/": "" },
+        target: `ws://${server.host}`,
       },
     },
   },

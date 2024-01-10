@@ -14,16 +14,16 @@ from starlette.responses import FileResponse, RedirectResponse
 
 import neetbox
 from neetbox._protocol import *
-
-from .routers import project as project_router
-
-serverapp = FastAPI()
 from neetbox.logging import LogStyle
 from neetbox.logging.logger import Logger, LogLevel
+
+from .routers import project as project_router
+from .routers import websocket as websocket_router
 
 logger = Logger("FASTAPI", LogStyle(skip_writers=["ws"]))
 logger.set_log_level(LogLevel.DEBUG)
 
+serverapp = FastAPI()
 
 front_end_dist_path = os.path.join(os.path.dirname(neetbox.__file__), "frontend_dist")
 logger.info(f"using frontend dist path {front_end_dist_path}")
@@ -32,6 +32,12 @@ serverapp.include_router(
     project_router.router,
     prefix=f"{FRONTEND_API_ROOT}/project",
     tags=["project"],
+)
+
+serverapp.include_router(
+    websocket_router.router,
+    prefix=f"/ws",
+    tags=["websocket"],
 )
 
 # mount web static files root

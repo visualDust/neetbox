@@ -143,7 +143,7 @@ async def upload_image(project_id: str, image: UploadFile = File(...), metadata:
         num_row_limit=message.history_len,
     )
     message.payload = message.payload or {}
-    Bridge.of_id(project_id).ws_send_to_frontends(message)
+    await Bridge.of_id(project_id).ws_send_to_frontends(message)
     return {RESULT_KEY: "ok", ID_KEY: message.id}
 
 

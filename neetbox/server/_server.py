@@ -17,20 +17,12 @@ def server_process(cfg, debug=False):
 
     from ._bridge import Bridge
     from .fastapi import serverapp
-    from .websocket import get_web_socket_server
 
     logger = Logger("SERVER LAUNCHER", LogStyle(skip_writers=["ws"]))
     # load bridges
     Bridge.load_histories()  # load history files
 
-    # websocket server
-    ws_server = get_web_socket_server(config=cfg, debug=debug)
-    Bridge._ws_server = ws_server  # add websocket server to bridge
-
-    # launch
-    logger.log(f"launching websocket server...")
-    ws_server.run_forever(threaded=True)
-
     port = cfg["port"]
-    logger.log(f"launching flask server on port {port}")
-    uvicorn.run(serverapp, host="0.0.0.0", port=port, log_level="critical")
+    logger.log(f"launching fastapi server on port {port}")
+    uvicorn_log_level = "info" if debug else "critical"
+    uvicorn.run(serverapp, host="0.0.0.0", port=port, log_level=uvicorn_log_level)

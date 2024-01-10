@@ -4,10 +4,11 @@
 # Github: github.com/visualDust
 # Date:   20231204
 
-from typing import Dict
-from websocket_server import WebsocketServer
+from typing import Dict, List
+
 from neetbox._protocol import *
 from neetbox.logging import LogStyle, logger
+
 from .db.project import ProjectDB
 
 logger = logger("Bridge", LogStyle(skip_writers=["ws"]))
@@ -31,13 +32,12 @@ class Bridge:
 
     # static
     _id2bridge: Dict[str, "Bridge"] = {}  # manage connections using project id
-    _ws_server: WebsocketServer = None
 
     # instance vars
     project_id: str
     status: dict
-    cli_ws_dict: dict  # { run_id : client}
-    web_ws_list: list  # since web do not have run id, use list instead of dict
+    cli_ws_dict: dict  # { run_id : ws_client}
+    web_ws_list: dict  # since web do not have run id, use list instead of dict
     historyDB: ProjectDB
 
     def __new__(cls, project_id: str, **kwargs) -> None:
@@ -89,11 +89,11 @@ class Bridge:
     @classmethod
     def from_db(cls, db: ProjectDB) -> "Bridge":
         project_id = db.fetch_db_project_id()
-        target_bridge = Bridge(project_id, auto_load_db=False)
-        if target_bridge.historyDB is not None:
+        bridge = Bridge(project_id, auto_load_db=False)
+        if bridge.historyDB is not None:
             logger.warn(f"overwriting db of '{project_id}'")
-        target_bridge.historyDB = db
-        return target_bridge
+        bridge.historyDB = db
+        return bridge
 
     @classmethod
     def load_histories(cls):
@@ -102,23 +102,19 @@ class Bridge:
         for _, history_db in db_list:
             cls.from_db(history_db)
 
-    def ws_send_to_frontends(self, message: EventMsg):
-        for web_ws in self.web_ws_list:
+    async def ws_send_to_frontends(self, message: EventMsg):
+        for ws_client in self.web_ws_list:
             try:
-                Bridge._ws_server.send_message(
-                    client=web_ws, msg=message.dumps()
-                )  # forward original message to frontend
+                await ws_client.ws.send_json(data=message.json)
             except Exception as e:
                 logger.err(e)
         return
 
-    def ws_send_to_client(self, message: EventMsg, run_id: str = None):
-        target_run_id = run_id or message.run_id
-        _client = self.cli_ws_dict[target_run_id]
+    async def ws_send_to_client(self, message: EventMsg, run_id: str = None):
+        run_id = run_id or message.run_id
+        ws_client = self.cli_ws_dict[run_id]
         try:
-            Bridge._ws_server.send_message(
-                client=_client, msg=message.dumps()
-            )  # forward original message to client
+            await ws_client.ws.send_json(message.json)
         except Exception as e:
             logger.err(e)
         return

@@ -2,14 +2,14 @@
 #
 # Author: GavinGong aka VisualDust
 # Github: github.com/visualDust
-# Date:   20231218
+# Date:   20240110
 
 from collections import defaultdict
 from typing import Callable
 
 from neetbox._protocol import *
 
-from .._bridge import Bridge
+from ...._bridge import Bridge
 
 EVENT_TYPE_HANDLERS = defaultdict(list)
 
@@ -22,7 +22,7 @@ def on_event(type_name: str, *args):
     return _on_event
 
 
-def on_event_type_default_json(
+async def on_event_type_default_json(
     message: EventMsg,
     forward_to: IdentityType = IdentityType.OTHERS,
     save_history=True,
@@ -43,21 +43,21 @@ def on_event_type_default_json(
         if forward_to == IdentityType.OTHERS:
             forward_to = IdentityType.WEB if message.who == IdentityType.CLI else IdentityType.CLI
         if forward_to in [IdentityType.WEB, IdentityType.BOTH]:
-            bridge.ws_send_to_frontends(message)  # forward to frontends
+            await bridge.ws_send_to_frontends(message)  # forward to frontends
         elif forward_to in [IdentityType.CLI, IdentityType.BOTH]:
-            bridge.ws_send_to_client(message, run_id=message.run_id)  # forward to frontends
+            await bridge.ws_send_to_client(message, run_id=message.run_id)  # forward to frontends
 
     return  # return after handling log forwardin
 
 
 @on_event(EVENT_TYPE_NAME_STATUS)
-def on_event_type_status(message: EventMsg):
+async def on_event_type_status(message: EventMsg):
     bridge = Bridge.of_id(message.project_id)
     bridge.set_status(run_id=message.run_id, series=message.series, value=message.payload)
 
 
 @on_event(EVENT_TYPE_NAME_HPARAMS)
-def on_event_type_hyperparams(message: EventMsg):
+async def on_event_type_hyperparams(message: EventMsg):
     bridge = Bridge.of_id(message.project_id)
     current_hyperparams = bridge.get_status(
         run_id=message.run_id, series=EVENT_TYPE_NAME_HPARAMS
@@ -73,5 +73,7 @@ def on_event_type_hyperparams(message: EventMsg):
 
 
 @on_event(EVENT_TYPE_NAME_ACTION)
-def on_event_type_action(message: EventMsg):
-    on_event_type_default_json(message=message, forward_to=IdentityType.OTHERS, save_history=False)
+async def on_event_type_action(message: EventMsg):
+    await on_event_type_default_json(
+        message=message, forward_to=IdentityType.OTHERS, save_history=False
+    )

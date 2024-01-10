@@ -1,10 +1,7 @@
 import useSWR from "swr";
 
 export const API_BASEURL = "/api";
-export const WEBSOCKET_URL =
-  process.env.NODE_ENV === "development"
-    ? `ws://${location.host}/ws/`
-    : `ws://${location.hostname}:${Number(location.port) + 1}`;
+export const WEBSOCKET_URL = `ws://${location.host}/ws/`;
 
 export async function fetcher(url: string, fetchInit?: RequestInit) {
   const res = await fetch(API_BASEURL + url, fetchInit);
