@@ -9,7 +9,7 @@ export default defineConfig({
   video: true,
   videoCompression: 28,
   e2e: {
-    baseUrl: isCI ? "http://localhost:5000" : "http://localhost:5173",
+    baseUrl: isCI ? "http://localhost:10101" : "http://localhost:5173",
     testIsolation: false,
   },
   setupNodeEvents(on, _config) {
