@@ -4,7 +4,7 @@
 # Github: github.com/visualDust
 # Date:   20231201
 
-from .condition import DbQueryFetchType, DbQuerySortType, QueryCondition
+from ._condition import DbQueryFetchType, DbQuerySortType, QueryCondition
 
 __all__ = [
     "DbQueryFetchType",

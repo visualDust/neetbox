@@ -7,13 +7,12 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from neetbox._protocol import *
-from neetbox.logging import LogStyle
-from neetbox.logging.logger import Logger
+from neetbox.logging import Logger
 
 from ._manager import manager
 
 router = APIRouter()
-logger = Logger("WS SERVER", LogStyle(skip_writers=["ws"]))
+logger = Logger("WS SERVER", skip_writers_names=["ws"])
 
 
 @router.websocket("/")

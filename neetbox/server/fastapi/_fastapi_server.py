@@ -14,14 +14,13 @@ from starlette.responses import FileResponse, RedirectResponse
 
 import neetbox
 from neetbox._protocol import *
-from neetbox.logging import LogStyle
-from neetbox.logging.logger import Logger, LogLevel
+from neetbox.logging import Logger, LogLevel
 
 from .routers import project as project_router
 from .routers import websocket as websocket_router
 
-logger = Logger("FASTAPI", LogStyle(skip_writers=["ws"]))
-logger.set_log_level(LogLevel.DEBUG)
+logger = Logger("FASTAPI", skip_writers_names=["ws"])
+logger.log_level = LogLevel.DEBUG
 
 serverapp = FastAPI()
 

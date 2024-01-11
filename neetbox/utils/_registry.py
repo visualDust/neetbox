@@ -5,13 +5,9 @@
 # Date:   20230413
 
 import functools
-import inspect
 import json
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 from uuid import uuid4
-
-from neetbox.logging import logger
-from neetbox.utils.formatting import *
 
 
 class _RegEndpoint:
@@ -50,17 +46,13 @@ class Registry(dict):
     _registry_pool: Dict[str, "Registry"] = dict()  # all registeres are stored here
 
     def __new__(cls, name: str) -> "Registry":
-        assert is_pure_ansi(name), "Registry name should not contain non-ansi char."
-        name = name.replace(" ", "-")
         if name in cls._registry_pool:
             return cls._registry_pool[name]
-        # logger.log(f"Creating Registry for '{name}'")
         instance = dict.__new__(cls)
         cls._registry_pool[name] = instance
         return instance
 
-    # not compatible with python below 3.8
-    def __init__(self, name, *args, **kwargs) -> None:
+    def __init__(self, name) -> None:
         if "initialized" not in self:
             self["initialized"] = True
             self.name = name
@@ -81,7 +73,6 @@ class Registry(dict):
         if name in self.keys():
             if isinstance(overwrite, Callable):
                 name = overwrite(name)
-                logger.warn(f"Overwritting existing '{name}' in Registry '{self.name}'.")
             elif overwrite == True:
                 pass
             else:
@@ -155,10 +146,6 @@ class Registry(dict):
                 raise RuntimeError(f"key {key} not found")
 
     def __setitem__(self, k, v) -> None:
-        if not is_pure_ansi(k):
-            logger.warn(
-                f"None ANSI chars are used for names: {k}. Ignoring anyway"
-            )  # todo (visualdust)
         self.__dict__[k] = v
 
     def clear(self):

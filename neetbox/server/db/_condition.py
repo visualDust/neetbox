@@ -1,7 +1,14 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# Github: github.com/visualDust
+# Date:   20231120
+
 import json
 from enum import Enum
-from neetbox._protocol import *
 from typing import Dict, Tuple, Union
+
+from neetbox._protocol import *
 
 
 class DbQueryFetchType(str, Enum):

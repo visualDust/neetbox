@@ -18,14 +18,13 @@ import websocket
 
 from neetbox._protocol import *
 from neetbox.config import get_module_level_config, get_project_id, get_run_id
-from neetbox.logging.formatting import LogStyle
-from neetbox.logging.logger import Logger
-from neetbox.utils import DaemonableProcess
+from neetbox.logging import Logger, RawLog
+from neetbox.utils import DaemonableProcess, Registry
 from neetbox.utils.massive import is_loopback
 from neetbox.utils.mvc import Singleton
 
 logging.getLogger("httpx").setLevel(logging.ERROR)
-logger = Logger(whom=None, style=LogStyle(skip_writers=["ws"]))
+logger = Logger(name_alias="CLIENT", skip_writers_names=["ws"])
 
 
 def addr_of_api(api, http_root=None):
@@ -254,10 +253,9 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         logger.err(f"client websocket encountered {msg}")
 
     def on_ws_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg):
-        logger.warn(f"client websocket closed")
-        if close_status_code or close_msg:
-            logger.warn(f"ws close status code: {close_status_code}")
-            logger.warn("ws close message: {close_msg}")
+        logger.warn(
+            f"client websocket closed: status code: {close_status_code}, message: {close_msg}"
+        )
         self.is_ws_connected = False
 
     def on_ws_message(self, ws: websocket.WebSocketApp, message):
@@ -319,16 +317,27 @@ class NeetboxClient(metaclass=Singleton):  # singleton
                     self.ws_message_query.pop(0)
                 return
             except Exception as e:
-                pass  # todo what to do
+                pass
 
 
 # singleton
 connection = NeetboxClient()
 
-# assign this connection to websocket log writer
-from neetbox.logging._writer import _assign_connection_to_WebSocketLogWriter
 
-_assign_connection_to_WebSocketLogWriter(connection)
+# assign this connection to websocket log writer
+LogWriters = Registry("LOG_WRITERS")
+
+
+@LogWriters.register(name="ws")
+def log_writer_ws(log: RawLog):
+    whom = log.caller_identity_alias or log.caller_identity.format(r"%m > %c > %f")
+    payload = {CALLER_ID_KEY: whom, MESSAGE_KEY: log.message}
+    connection.ws_send(
+        event_type=EVENT_TYPE_NAME_LOG,
+        series=log.series,
+        payload=payload,
+        timestamp=log.timestamp.strftime(r"%Y-%m-%dT%H:%M:%S.%f"),
+    )
 
 
 def _clean_websocket_on_exit():

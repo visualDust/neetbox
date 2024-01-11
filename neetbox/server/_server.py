@@ -12,13 +12,12 @@ from neetbox._protocol import *
 
 def server_process(cfg, debug=False):
     setproctitle.setproctitle("NEETBOX SERVER")
-    from neetbox.logging import LogStyle
-    from neetbox.logging.logger import Logger
+    from neetbox.logging import Logger
 
     from ._bridge import Bridge
     from .fastapi import serverapp
 
-    logger = Logger("SERVER LAUNCHER", LogStyle(skip_writers=["ws"]))
+    logger = Logger("SERVER LAUNCHER", skip_writers_names=["ws"])
     # load bridges
     Bridge.load_histories()  # load history files
 

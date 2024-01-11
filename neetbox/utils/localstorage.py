@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# Github: github.com/visualDust
+# Date:   20231224
+
 import os
 import pathlib
 import sys
@@ -44,12 +50,12 @@ def get_app_data_directory() -> pathlib.Path:
     return str(app_data_path)
 
 
-def get_folder_size_in_bytes(folder_path):
+def get_folder_size_in_bytes(folder_path, skip_symbolic_link=True):
     total_size = 0
     for dirpath, dirnames, filenames in os.walk(folder_path):
         for f in filenames:
             fp = os.path.join(dirpath, f)
-            # Skip if it is symbolic link
-            if not os.path.islink(fp):
-                total_size += os.path.getsize(fp)
+            if os.path.islink(fp) and skip_symbolic_link:
+                continue  # Skip if it is symbolic link
+            total_size += os.path.getsize(fp)
     return total_size

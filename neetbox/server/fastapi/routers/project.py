@@ -9,14 +9,13 @@ from typing import Optional, Union
 from fastapi import APIRouter, Body, File, Form, HTTPException, Response, UploadFile
 
 from neetbox._protocol import *
-from neetbox.logging import LogStyle
-from neetbox.logging.logger import Logger, LogLevel
+from neetbox.logging import Logger, LogLevel
 
 from ..._bridge import Bridge
 from ...db import QueryCondition
 
-logger = Logger("FASTAPI", LogStyle(skip_writers=["ws"]))
-logger.set_log_level(LogLevel.DEBUG)
+logger = Logger("FASTAPI", skip_writers_names=["ws"])
+logger.log_level = LogLevel.DEBUG
 
 router = APIRouter()
 
@@ -60,7 +59,7 @@ def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, 
             condition = QueryCondition.from_json(condition)
     except Exception as e:  # if failed to parse
         error_message = f"failed to parse condition from {type(condition)}{condition} :{e}"
-        logger.debug(error_message, prefix="400")
+        logger.debug(error_message, series="400")
         raise HTTPException(status_code=400, detail={ERROR_KEY: error_message})
     return Bridge.of_id(project_id).read_json_from_history(
         table_name=table_name, condition=condition

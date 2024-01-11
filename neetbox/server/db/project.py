@@ -15,13 +15,12 @@ from typing import Union
 
 from neetbox._protocol import *
 from neetbox.config._global import get as get_global_config
-from neetbox.logging import LogStyle
-from neetbox.logging.logger import Logger
+from neetbox.logging import Logger
 from neetbox.utils import ResourceLoader
 
-from .condition import *
+from ._condition import *
 
-logger = Logger("PROJECT DB", LogStyle(skip_writers=["ws"]))
+logger = Logger("PROJECT DB", skip_writers_names=["ws"])
 DB_PROJECT_FILE_FOLDER = f"{get_global_config('dataFolder')}/neetbox/server/history"
 DB_PROJECT_FILE_TYPE_NAME = "projectdb"
 

@@ -6,6 +6,7 @@
 
 from ._daemonable_process import DaemonableProcess
 from ._package import pipPackageHealper as pkg
+from ._registry import Registry
 from ._resource import ResourceLoader, download
 
-__all__ = ["pkg", "ResourceLoader", "download", "DaemonableProcess"]
+__all__ = ["pkg", "ResourceLoader", "download", "DaemonableProcess", "Registry"]

@@ -2,7 +2,6 @@ import math
 import os
 import time
 from random import random
-from time import sleep
 
 import numpy as np
 from PIL import Image

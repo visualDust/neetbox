@@ -28,7 +28,6 @@ _DEFAULT_WORKSPACE_CONFIG = {
     NAME_KEY: os.path.basename(os.path.normpath(os.getcwd())),
     "version": NEETBOX_VERSION,
     PROJECT_ID_KEY: str(uuid4()),  # later will be overwrite by workspace config file
-    "logging": {"level": "INFO", "logdir": "logs"},
     "extension": {
         "autoload": True,
     },

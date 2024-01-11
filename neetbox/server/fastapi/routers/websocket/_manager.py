@@ -13,13 +13,12 @@ from rich.console import Console
 from rich.table import Table
 
 from neetbox._protocol import *
-from neetbox.logging import LogStyle
-from neetbox.logging.logger import Logger
+from neetbox.logging import Logger
 from neetbox.server._bridge import Bridge
 from neetbox.utils.mvc import Singleton
 
 console = Console()
-logger = Logger("WS MANAGER", LogStyle(skip_writers=["ws"]))
+logger = Logger("WS MANAGER", skip_writers_names=["ws"])
 
 
 @dataclass

@@ -7,11 +7,11 @@
 from typing import Dict, List
 
 from neetbox._protocol import *
-from neetbox.logging import LogStyle, logger
+from neetbox.logging import Logger
 
 from .db.project import ProjectDB
 
-logger = logger("Bridge", LogStyle(skip_writers=["ws"]))
+logger = Logger("Bridge", skip_writers_names=["ws"])
 
 
 class Bridge:
