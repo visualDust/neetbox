@@ -34,8 +34,8 @@ class FileLogWriter:
         line = " ".join(
             [
                 log.timestamp.strftime(r"%Y-%m-%dT%H:%M:%S.%f"),
-                f"[{log.series}]" if log.series else "",
-                log.caller_identity.format(r"%m/%c/%f/%l"),
+                f"[{log.series}]" if log.series else "[log]",
+                log.caller_identity.format(r"%m.%c.%f:%l"),
                 str(log.message),
             ]
         )

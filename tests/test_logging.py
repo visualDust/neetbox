@@ -18,7 +18,7 @@ def test_logger_with_specific_identity():
     from neetbox.logging import Logger, logger
 
     logger = Logger("someone")
-    logger.set_log_dir("./log")
+    logger.set_log_dir("./logs")
     logger.log("someone said 1")
 
     def b():
@@ -42,7 +42,7 @@ def test_logger_with_specific_identity():
 def test_logger_mention():
     from neetbox.logging import logger
 
-    @logger.mention(skip_writers=["ws"])
+    @logger.mention(skip_writers_names=["ws"])
     def print_some_str(text):
         print(text)
 
