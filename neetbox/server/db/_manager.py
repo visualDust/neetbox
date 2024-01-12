@@ -19,7 +19,7 @@ class DBCPool(metaclass=Singleton):
 
     @property
     def current(self):
-        identity = get_caller_identity_traceback()
+        identity = get_caller_identity_traceback(stack_offset=2)
         return self._POOL[identity.module_name]
 
 

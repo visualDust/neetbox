@@ -16,6 +16,7 @@ from neetbox._protocol import *
 from neetbox.config._global import get as get_global_config
 from neetbox.logging import Logger
 from neetbox.utils import ResourceLoader
+from neetbox.utils.localstorage import get_file_size_in_bytes
 
 from ._condition import *
 from ._manager import manager
@@ -68,6 +69,14 @@ class ProjectDB:
         new_dbc.project_id = project_id
         logger.ok(f"History file(version={_db_file_version}) for project id '{project_id}' loaded.")
         return new_dbc
+
+    @property
+    def local_storage_size_in_bytes(self):
+        try:
+            result = get_file_size_in_bytes(self.file_path)
+        except Exception as e:
+            result = f"failed to get file size cause {e}"
+        return result
 
     def delete_files(self):
         """delete related files of db"""

@@ -60,6 +60,10 @@ def get_create_neetbox_data_directory():
     return path
 
 
+def get_file_size_in_bytes(file_path):
+    return os.path.getsize(file_path)
+
+
 def get_folder_size_in_bytes(folder_path, skip_symbolic_link=True):
     total_size = 0
     for dirpath, dirnames, filenames in os.walk(folder_path):

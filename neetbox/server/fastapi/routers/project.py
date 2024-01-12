@@ -43,6 +43,7 @@ def _project_status_from_bridge(bridge: Bridge):
             break
     return {
         PROJECT_ID_KEY: bridge.project_id,
+        "storage": bridge.historyDB.local_storage_size_in_bytes,
         "online": bridge.is_online(),
         NAME_KEY: name_of_project,
         "runids": run_id_info_list,
