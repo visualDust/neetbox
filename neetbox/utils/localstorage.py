@@ -28,7 +28,7 @@ def get_user_config_directory():
     return os.path.join(os.path.expanduser("~"), ".config")
 
 
-def get_app_data_directory() -> pathlib.Path:
+def get_user_app_data_directory():
     """
     Returns a parent directory path
     where persistent application data can be stored.
@@ -48,6 +48,16 @@ def get_app_data_directory() -> pathlib.Path:
         app_data_path = home / "Library/Application Support"
 
     return str(app_data_path)
+
+
+def get_create_neetbox_data_directory():
+    path = os.path.join(get_user_app_data_directory(), "neetbox")
+    if not os.path.exists(path):
+        os.makedirs(path)
+    assert os.path.isdir(
+        path
+    ), f"Fialed to create neetbox data directory {path}, please check your permission or create it manually."
+    return path
 
 
 def get_folder_size_in_bytes(folder_path, skip_symbolic_link=True):
