@@ -4,7 +4,7 @@
 # Github: github.com/visualDust
 # Date:   20230318
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
@@ -25,7 +25,7 @@ class RawLog:
     caller_identity_alias: Optional[str] = None
     timestamp: datetime = datetime.now()
     series: Optional[str] = None
-    style: LogStyle = LogStyle()
+    style: LogStyle = field(default_factory=LogStyle)  # fix python 3.11 dataclass issue
 
     @property
     def timestamp_formatted(self):
