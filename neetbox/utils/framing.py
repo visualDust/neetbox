@@ -87,11 +87,20 @@ class TracebackIdentity:
     def json(self):
         return {
             "file": f"{self.filepath}",
-            "lineno": f"{self.lineno}",
             "modlue": f"{self.module_name}",
             "class": f"{self.class_name}",
             "function": f"{self.func_name}",
         }
+
+    def format(self, fmt: str):
+        result = (
+            fmt.replace(r"%F", self.filepath or "_")
+            .replace(r"%m", self.module_name or "_")
+            .replace(r"%c", self.class_name or "_")
+            .replace(r"%f", self.func_name or "_")
+            .replace(r"%l", str(self.lineno))
+        )
+        return result
 
     def as_str_sequence(self, lineno=False):
         return [
@@ -111,8 +120,7 @@ class TracebackIdentity:
             __value, TracebackIdentity
         ), f"cannot compare {__value} as a {TracebackIdentity}"
         return (
-            self.lineno == __value.lineno
-            and self.filepath == __value.filepath
+            self.filepath == __value.filepath
             and self.module_name == __value.module_name
             and self.class_name == __value.class_name
             and self.func_name == __value.func_name

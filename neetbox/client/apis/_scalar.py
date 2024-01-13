@@ -12,17 +12,6 @@ from .._client import connection
 # ===================== PLOTTING things ===================== #
 
 
-# @dataclass
-# class PlotType(str, Enum):
-#     LineChart = "linechart"
-#     AreaChart = "areachart"
-#     Histogram = 'histogram'
-
-# @dataclass
-# class PlottingPayload:
-#     pass
-
-
 def add_scalar(name: str, x: Union[int, float], y: Union[int, float]):
     """send a scalar to frontend display
 

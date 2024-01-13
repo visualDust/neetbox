@@ -4,11 +4,13 @@
 # Github: github.com/visualDust
 # Date:   20231013
 
-import json
 import os
+from random import randint
+from typing import Optional
 
 import click
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
 
 import neetbox.config._global as global_config
@@ -19,13 +21,12 @@ from neetbox.config._workspace import (
     _init_workspace,
     _load_workspace_config,
 )
-from neetbox.logging.formatting import LogStyle
-from neetbox.logging.logger import Logger
+from neetbox.logging import Logger
 from neetbox.utils.massive import check_read_toml
 
 console = Console()
 
-logger = Logger("NEETBOX CLI", style=LogStyle(with_datetime=False, skip_writers=["ws", "file"]))
+logger = Logger("NEETBOX CLI", skip_writers_names=["ws", "file"])
 
 
 def get_client_config():
@@ -75,9 +76,9 @@ def serve(port, debug):
     _try_load_workspace_if_applicable()
     _daemon_config = get_client_config()
     try:
-        logger.log(f"Launching server using config: {_daemon_config}")
         if port:
             _daemon_config["port"] = port
+        logger.log(f"Launching server using config: {_daemon_config}")
         from neetbox.server._server import server_process
 
         server_process(cfg=_daemon_config, debug=debug)
@@ -109,6 +110,39 @@ def shutdown_server(port):
         )
 
 
+def console_banner(text, font: Optional[str] = None):
+    from pyfiglet import Figlet, FigletFont
+
+    builtin_font_list = [
+        "ansiregular",
+        "ansishadow",
+        "isometrixc2",
+        "nscripts",
+        "nvscript",
+    ]
+    if not font:
+        font = builtin_font_list[randint(0, len(builtin_font_list)) - 1]
+
+    if font not in FigletFont.getFonts():
+        if font in builtin_font_list:  # builtin but not installed
+            module_path = os.path.dirname(__file__)
+            FigletFont.installFonts(f"{module_path}/flfs/{font}.flf")
+        else:  # path?
+            assert os.path.isfile(font), "The provided font is not a fontname or a font file path."
+            file_name = os.path.basename(font)
+            file = os.path.splitext(file_name)
+            if file[0] not in FigletFont.getFonts():  # no installed file match the file name
+                try:
+                    FigletFont.installFonts(f"res/flfs/{font}.flf")
+                except Exception:
+                    font = None
+            else:
+                font = file[0]
+    f = Figlet(font)
+    rendered_text = f.renderText(text)
+    console.print(Panel.fit(f"{rendered_text}", border_style="green"))
+
+
 @main.command()
 @click.option("--name", "-n", help="set project name", metavar="name", required=False)
 def init(name: str):
@@ -116,7 +150,7 @@ def init(name: str):
     try:
         init_succeed = _init_workspace(name=name)
         if init_succeed:
-            logger.console_banner("neetbox", font="ansishadow")
+            console_banner("neetbox", font="ansishadow")
             logger.log("Welcome to NEETBOX")
     except Exception as e:
         logger.err(f"Failed to init here: {e}")

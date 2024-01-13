@@ -1,6 +1,5 @@
 import { Empty } from "@douyinfe/semi-ui";
-import { IllustrationNotFound } from "@douyinfe/semi-illustrations";
-import { IllustrationNotFoundDark } from "@douyinfe/semi-illustrations";
+import { IllustrationNotFound, IllustrationNotFoundDark } from "@douyinfe/semi-illustrations";
 
 () => {
   const emptyStyle = {

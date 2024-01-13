@@ -4,7 +4,6 @@
 # Github: github.com/visualDust
 # Date:   20231201
 
-import atexit
 import collections
 import json
 import os
@@ -15,21 +14,21 @@ from typing import Union
 
 from neetbox._protocol import *
 from neetbox.config._global import get as get_global_config
-from neetbox.logging import LogStyle
-from neetbox.logging.logger import Logger
+from neetbox.logging import Logger
 from neetbox.utils import ResourceLoader
+from neetbox.utils.localstorage import get_file_size_in_bytes
 
-from .condition import *
+from ._condition import *
+from ._manager import manager
 
-logger = Logger("PROJECT DB", LogStyle(skip_writers=["ws"]))
-DB_PROJECT_FILE_FOLDER = f"{get_global_config('dataFolder')}/neetbox/server/history"
+logger = Logger("PROJECT DB", skip_writers_names=["ws"])
+DB_PROJECT_FILE_FOLDER = f"{get_global_config('vault')}/server/history"
 DB_PROJECT_FILE_TYPE_NAME = "projectdb"
 
 
 class ProjectDB:
     # static things
     _path2dbc = {}
-    _id2dbc = {}
 
     # not static. instance level vars
     project_id: str  # of which project id
@@ -44,8 +43,8 @@ class ProjectDB:
             path = f"{DB_PROJECT_FILE_FOLDER}/{project_id}.{DB_PROJECT_FILE_TYPE_NAME}"
         if path in cls._path2dbc:
             return cls._path2dbc[path]
-        if project_id in cls._id2dbc:
-            return cls._id2dbc[project_id]
+        if project_id in manager.current:
+            return manager.current[project_id]
         new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
         new_dbc.file_path = path
@@ -66,18 +65,26 @@ class ProjectDB:
                 f"History file version not match: reading from version {_db_file_version} with neetbox version {NEETBOX_VERSION}"
             )
         cls._path2dbc[path] = new_dbc
-        cls._id2dbc[project_id] = new_dbc
+        manager.current[project_id] = new_dbc
         new_dbc.project_id = project_id
         logger.ok(f"History file(version={_db_file_version}) for project id '{project_id}' loaded.")
         return new_dbc
 
+    @property
+    def local_storage_size_in_bytes(self):
+        try:
+            result = get_file_size_in_bytes(self.file_path)
+        except Exception as e:
+            result = f"failed to get file size cause {e}"
+        return result
+
     def delete_files(self):
         """delete related files of db"""
-        if self.project_id not in ProjectDB._id2dbc:
+        if self.project_id not in manager.current:
             logger.err(
                 RuntimeError(f"could not find db to delete with project id {self.project_id}")
             )
-        del ProjectDB._id2dbc[self.project_id]
+        del manager.current[self.project_id]
         del ProjectDB._path2dbc[self.file_path]
         logger.info(f"deleting history DB for project id {self.project_id}...")
         if self.connection:
@@ -106,12 +113,12 @@ class ProjectDB:
 
     @classmethod
     def items(cls):
-        return cls._id2dbc.items()
+        return manager.current.items()
 
     @classmethod
     def of_project_id(cls, project_id):
-        if project_id in cls._id2dbc:
-            return cls._id2dbc[project_id]
+        if project_id in manager.current:
+            return manager.current[project_id]
         return ProjectDB(project_id)
 
     def _execute(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
@@ -414,7 +421,7 @@ class ProjectDB:
         history_file_list = history_file_loader.get_file_list()
         for path in history_file_list:
             cls.load_db_of_path(path=path)
-        return ProjectDB._id2dbc.items()
+        return manager.current.items()
 
     @classmethod
     def get_db_of_id(cls, project_id, rescan: bool = True):
@@ -430,21 +437,5 @@ if not os.path.exists(DB_PROJECT_FILE_FOLDER):
     # create history root dir
     os.makedirs(DB_PROJECT_FILE_FOLDER)
 # check if is dir
-if not os.path.isdir(DB_PROJECT_FILE_FOLDER):
-    raise RuntimeError(f"{DB_PROJECT_FILE_FOLDER} is not a directory.")
+assert os.path.isdir(DB_PROJECT_FILE_FOLDER), f"{DB_PROJECT_FILE_FOLDER} is not a directory."
 logger.info(f"using history file folder: {DB_PROJECT_FILE_FOLDER}")
-
-
-def clear_dbc_on_exit():
-    for project_id, dbc in ProjectDB._id2dbc.items():
-        logger.info(f"process exiting, cleaning up...")
-        logger.info(f"closing db connection for project id {project_id}")
-        try:
-            dbc.connection.close()
-        except Exception as e:
-            logger.err(
-                RuntimeError(f"failed to close db connection for project id {project_id}, {e}")
-            )
-
-
-atexit.register(clear_dbc_on_exit)

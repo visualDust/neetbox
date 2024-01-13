@@ -6,6 +6,11 @@ const server = new URL("http://127.0.0.1:10101");
 
 export default defineConfig({
   plugins: [pluginReact()],
+  source: {
+    alias: {
+      "@": "./src",
+    },
+  },
   tools: {
     rspack: (config) => {
       config.plugins!.push(
@@ -43,8 +48,7 @@ export default defineConfig({
         target: server.href,
       },
       "/ws/": {
-        target: `ws://${server.host}:${+server.port + 1}`,
-        pathRewrite: { "/ws/": "" },
+        target: `ws://${server.host}`,
       },
     },
   },

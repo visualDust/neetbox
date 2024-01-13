@@ -5,42 +5,33 @@
 # Date:   20231203
 
 import os
-from importlib.metadata import version
 from uuid import uuid4
 
 import toml
 
 from neetbox._protocol import MACHINE_ID_KEY
-from neetbox.utils.localstorage import get_app_data_directory, get_user_config_directory
+from neetbox.utils.localstorage import get_create_neetbox_data_directory
 from neetbox.utils.massive import check_read_toml
 
 _GLOBAL_CONFIG = {
     MACHINE_ID_KEY: str(uuid4()),
-    "dataFolder": get_app_data_directory(),
+    "vault": get_create_neetbox_data_directory(),
 }
 
 _GLOBAL_CONFIG_FILE_NAME = f"neetbox.global.toml"
 
 
 def overwrite_create_local(config: dict):
-    user_config_dir = get_user_config_directory()
-    assert user_config_dir is not None
-    neetbox_config_dir = os.path.join(user_config_dir, "neetbox")
-    config_file_path = os.path.join(neetbox_config_dir, _GLOBAL_CONFIG_FILE_NAME)
-    if not os.path.exists(config_file_path):  # config not exist, try to create
-        if not os.path.exists(neetbox_config_dir):  # config folder not exist
-            os.mkdir(neetbox_config_dir)
-        assert os.path.isdir(neetbox_config_dir)
+    neetbox_data_dir = get_create_neetbox_data_directory()
+    config_file_path = os.path.join(neetbox_data_dir, _GLOBAL_CONFIG_FILE_NAME)
     with open(config_file_path, "w+") as config_file:
         toml.dump(config, config_file)
 
 
 def read_create_local():
     global _GLOBAL_CONFIG
-    user_config_dir = get_user_config_directory()
-    assert user_config_dir is not None
-    neetbox_config_dir = os.path.join(user_config_dir, "neetbox")
-    config_file_path = os.path.join(neetbox_config_dir, _GLOBAL_CONFIG_FILE_NAME)
+    neetbox_data_dir = get_create_neetbox_data_directory()
+    config_file_path = os.path.join(neetbox_data_dir, _GLOBAL_CONFIG_FILE_NAME)
     if not os.path.exists(config_file_path):  # config not exist, try to create
         overwrite_create_local(_GLOBAL_CONFIG)
     # read local file

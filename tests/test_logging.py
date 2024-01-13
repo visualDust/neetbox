@@ -9,16 +9,16 @@ def test_default_logger():
 
     @logger.mention()
     def a():
-        logger.log("Hello from the default logger", prefix="[???]")
+        logger.log("Hello from the default logger", series="[???]")
 
     a()
 
 
 def test_logger_with_specific_identity():
-    from neetbox.logging import logger
+    from neetbox.logging import Logger, logger
 
-    logger = logger("someone")
-    logger.set_log_dir("./log")
+    logger = Logger("someone")
+    logger.set_log_dir("./logs")
     logger.log("someone said 1")
 
     def b():
@@ -33,7 +33,7 @@ def test_logger_with_specific_identity():
 
     class B:
         def b(self):
-            self.logger = logger(self)
+            self.logger = Logger(self.__class__.__name__)
             self.logger.log("from class B")
 
     B().b()
@@ -42,7 +42,7 @@ def test_logger_with_specific_identity():
 def test_logger_mention():
     from neetbox.logging import logger
 
-    @logger.mention(skip_writers=["ws"])
+    @logger.mention(skip_writers_names=["ws"])
     def print_some_str(text):
         print(text)
 

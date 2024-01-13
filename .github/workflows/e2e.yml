@@ -60,8 +60,8 @@ jobs:
           rm neetbox.toml
           neet version
           neet init
-          sed -i 's/20202/5000/g' neetbox.toml
-          neet serve -d &> $LOGS_DIR/server.log &
+          sed -i 's/20202/10101/g' neetbox.toml
+          neet serve &> $LOGS_DIR/server.log &
           sleep 3
           python test.py &> $LOGS_DIR/client.log &
 

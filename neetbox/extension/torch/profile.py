@@ -54,7 +54,6 @@ def profile(
         logger.log(f"That is {_fps_aver} frames per second")
 
         if next(model.parameters()).is_cuda:
-            logger.log("====================================================")
             time_counter = torch.zeros((speedtest + 2, 1))
             time0, time1 = torch.cuda.Event(enable_timing=True), torch.cuda.Event(
                 enable_timing=True
@@ -86,7 +85,7 @@ def profile(
                     f"min inference time: {_min / 1000.}s, max inference time: {_max / 1000.}s"
                 )
                 logger.log(f"That is {1. / _aver} frames per second")
-                if _fps_aver - 1.0 / _aver > 10.0:
+                if _fps_aver - 1.0 / _aver > _fps_aver * 0.05:
                     logger.warn(
                         f"Seems your model has an imbalanced performance peek between CUDA side synchronous test and none-sync one. Consider raising speedtest loop times (currently {speedtest} +2) to have a stable result."
                     )
@@ -94,8 +93,6 @@ def profile(
                     "Note that the CUDA side synchronous speedtest is more reliable since you are using a GPU."
                 )
     if profiling:
-        if speedtest:
-            logger.log("====================================================")
         logger.log("model profiling...")
         input_tensor = specific_input
         if not input_tensor:

@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# Author: GavinGong aka VisualDust
+# Github: github.com/visualDust
+# Date:   20231224
+
 import os
 import pathlib
 import sys
@@ -22,7 +28,7 @@ def get_user_config_directory():
     return os.path.join(os.path.expanduser("~"), ".config")
 
 
-def get_app_data_directory() -> pathlib.Path:
+def get_user_app_data_directory():
     """
     Returns a parent directory path
     where persistent application data can be stored.
@@ -44,12 +50,26 @@ def get_app_data_directory() -> pathlib.Path:
     return str(app_data_path)
 
 
-def get_folder_size_in_bytes(folder_path):
+def get_create_neetbox_data_directory():
+    path = os.path.join(get_user_app_data_directory(), "neetbox")
+    if not os.path.exists(path):
+        os.makedirs(path)
+    assert os.path.isdir(
+        path
+    ), f"Fialed to create neetbox data directory {path}, please check your permission or create it manually."
+    return path
+
+
+def get_file_size_in_bytes(file_path):
+    return os.path.getsize(file_path)
+
+
+def get_folder_size_in_bytes(folder_path, skip_symbolic_link=True):
     total_size = 0
     for dirpath, dirnames, filenames in os.walk(folder_path):
         for f in filenames:
             fp = os.path.join(dirpath, f)
-            # Skip if it is symbolic link
-            if not os.path.islink(fp):
-                total_size += os.path.getsize(fp)
+            if os.path.islink(fp) and skip_symbolic_link:
+                continue  # Skip if it is symbolic link
+            total_size += os.path.getsize(fp)
     return total_size

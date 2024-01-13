@@ -2,18 +2,18 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import { Divider, Progress, Space } from "@douyinfe/semi-ui";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
-import { Logs } from "../../components/dashboard/project/logs/logs";
-import { Actions } from "../../components/dashboard/project/actions";
-import { Hardware } from "../../components/dashboard/project/hardware";
-import { SectionTitle } from "../../components/sectionTitle";
+import { Logs } from "../../components/project/logs/logs";
+import { Actions } from "../../components/project/actions";
+import { Hardware } from "../../components/project/hardware";
+import { SectionTitle } from "../../components/common/sectionTitle";
 import { AppTitle } from "../../components/appTitle";
-import { ImagesAndScatters } from "../../components/dashboard/project/imagesAndScatters";
+import { ImagesAndScatters } from "../../components/project/imagesAndScatters";
 import { getProject } from "../../services/projects";
-import { RunSelect } from "../../components/dashboard/project/runSelect";
-import PlatformProps, { PlatformTitleJson } from "../../components/dashboard/project/platformProps";
-import Loading from "../../components/loading";
+import { RunSelect } from "../../components/project/runSelect";
+import PlatformProps, { PlatformTitleJson } from "../../components/project/platformProps";
+import Loading from "../../components/common/loading";
 import { addNotice } from "../../utils/notification";
-import { Progresses } from "../../components/dashboard/project/progress";
+import { Progresses } from "../../components/project/progress";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();

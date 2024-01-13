@@ -11,8 +11,8 @@ from threading import Thread
 from typing import Callable, Optional
 
 from neetbox._protocol import *
-from neetbox.core import Registry
 from neetbox.logging import logger
+from neetbox.utils import Registry
 from neetbox.utils.mvc import Singleton
 
 from .._client import connection

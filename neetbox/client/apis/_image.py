@@ -156,11 +156,15 @@ def add_image(name: str, image, dataformats: str = None):
             series=name,
             event_type=EVENT_TYPE_NAME_IMAGE,
         )
-        connection.post_check_online(
-            api=f"/image/{project_id}",
-            data={"json": message.dumps()},
+        result = connection.post_check_online(
+            api=f"{FRONTEND_API_ROOT}/project/{project_id}/image",
+            data={METADATA_KEY: message.dumps()},
             files={"image": image_bytes},
         )
+        response_dict = result.json()
+        assert (
+            RESULT_KEY in response_dict and response_dict[RESULT_KEY] == "ok"
+        ), "server response not ok"
     except Exception as e:
         logger.warn(f"unable to upload image: {e}")
 

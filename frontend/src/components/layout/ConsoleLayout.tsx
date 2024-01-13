@@ -1,7 +1,7 @@
 import { Layout } from "@douyinfe/semi-ui";
 import { Outlet } from "react-router-dom";
 import ConsoleNavBar from "../../pages/console/sidebar";
-import { ErrorBoundary } from "../errorBoundary";
+import { ErrorBoundary } from "../common/errorBoundary";
 import AppFooter from "./AppFooter";
 
 export default function ConsoleLayout() {

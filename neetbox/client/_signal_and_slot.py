@@ -15,8 +15,8 @@ from typing import Any, Callable, Optional, Union
 from uuid import uuid4
 
 from neetbox.config import get_module_level_config
-from neetbox.core import Registry
 from neetbox.logging import logger
+from neetbox.utils import Registry
 
 __TIME_CTR_MAX_CYCLE = Decimal("99999.0")
 __TIME_UNIT_SEC = Decimal("0.1")
