@@ -35,7 +35,7 @@
     "@douyinfe/semi-rspack-plugin": "^2.48.0",
     "@rsbuild/core": "^0.1.8",
     "@rsbuild/plugin-react": "^0.1.8",
-    "@types/react": "^18.2.37",
+    "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.15",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
