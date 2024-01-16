@@ -63,7 +63,7 @@ class Bridge:
     def __del__(self):  # on delete
         logger.info(f"bridge project id {self.project_id} handling on delete...")
         if 0 == len(self.get_run_ids()):  # if there is no active run id
-            self.historyDB.delete_files()
+            self.historyDB.delete()
             del self.historyDB  # delete history db
         logger.info(f"bridge of project id {self.project_id} deleted.")
 

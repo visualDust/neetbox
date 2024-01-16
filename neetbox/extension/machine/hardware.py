@@ -4,9 +4,10 @@
 # Github: github.com/visualDust
 # Date:   20230413
 
+import functools
 import time
 from threading import Thread
-from typing import List
+from typing import Callable, List
 
 import GPUtil
 import psutil
@@ -167,32 +168,35 @@ class Hardware(metaclass=Singleton):
             "gpus": [gpu.json for gpu in self._gpus],
         }
 
-    def set_update_intervel(self, intervel=1.0) -> None:
+    _on_update_call_backs = []
+
+    def add_on_update_call_back(self, func: Callable):
+        self._on_update_call_backs.append(func)
+
+    def set_start_update_intervel(self, intervel=1.0) -> None:
         if intervel < 0:
             self._do_watch = False
             return
         self._do_watch = True
         self._update_interval = intervel
         if not self.watch_thread or not self.watch_thread.is_alive():
-            from neetbox._protocol import EVENT_TYPE_NAME_HARDWARE
-            from neetbox.client import connection
 
-            def watch_hardware(env_instance: Hardware, do_update_gpus: bool):
-                while env_instance._do_watch:
+            def watch_hardware(do_update_gpus: bool):
+                while self._do_watch:
                     # update cpu usage
                     cpu_percent = psutil.cpu_percent(percpu=True)
                     cpu_freq = psutil.cpu_freq(percpu=True)
                     if len(cpu_freq) == 1:
                         cpu_freq = cpu_freq * len(cpu_percent)
                     for index in range(len(cpu_percent)):
-                        env_instance._cpus[index] = CpuStatus(
+                        self._cpus[index] = CpuStatus(
                             id=index,
                             percentage=cpu_percent[index],
                             frequency=cpu_freq[index],
                         )
                     # update memory usage
                     virtual_memory = psutil.virtual_memory()
-                    env_instance._memory = MemoryStatus(
+                    self._memory = MemoryStatus(
                         total=virtual_memory[0] / 1e6,
                         available=virtual_memory[1] / 1e6,
                         used=virtual_memory[3] / 1e6,
@@ -200,18 +204,13 @@ class Hardware(metaclass=Singleton):
                     )
                     # update gpu usage
                     if do_update_gpus:
-                        env_instance._gpus = [NvGpuStatus.parse(gpu) for gpu in GPUtil.getGPUs()]
-                    env_instance._cpu_statistics = CpuStatistics(*psutil.cpu_stats())
-                    time.sleep(env_instance._update_interval)
-                    connection.ws_send(
-                        event_type=EVENT_TYPE_NAME_HARDWARE,
-                        payload=env_instance.json,
-                        _history_len=1000,
-                    )
+                        self._gpus = [NvGpuStatus.parse(gpu) for gpu in GPUtil.getGPUs()]
+                    self._cpu_statistics = CpuStatistics(*psutil.cpu_stats())
+                    for callback in self._on_update_call_backs:
+                        callback(self.json)
+                    time.sleep(self._update_interval)
 
-            self.watch_thread = Thread(
-                target=watch_hardware, args=(self, self._with_gpu), daemon=True
-            )
+            self.watch_thread = Thread(target=watch_hardware, args=(self._with_gpu,), daemon=True)
             self.watch_thread.start()
 
 
@@ -231,4 +230,15 @@ def return_default_config() -> dict:
 def load_monit_hardware():
     cfg = get_module_level_config()
     if cfg["interval"] > 0:  # if do monit hardware
-        hardware.set_update_intervel(cfg["interval"])
+        from neetbox._protocol import EVENT_TYPE_NAME_HARDWARE
+        from neetbox.client import connection
+
+        def ws_send_on_update(stat_json):
+            connection.ws_send(
+                event_type=EVENT_TYPE_NAME_HARDWARE,
+                payload=stat_json,
+                _history_len=1000,
+            )
+
+        hardware.add_on_update_call_back(ws_send_on_update)
+        hardware.set_start_update_intervel(cfg["interval"])
