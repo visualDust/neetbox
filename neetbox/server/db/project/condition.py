@@ -9,7 +9,7 @@ from typing import Dict, Tuple, Union
 
 from neetbox._protocol import *
 
-from .._abc import SortType
+from ..abc import SortType
 
 
 class ProjectDbQueryCondition:

@@ -12,7 +12,7 @@ from neetbox.logging import Logger
 from neetbox.utils.framing import get_caller_identity_traceback
 from neetbox.utils.mvc import Singleton
 
-from ._abc import ManageableDB
+from .abc import ManageableDB
 
 logger = Logger("DB Manager", skip_writers_names=["ws"])
 

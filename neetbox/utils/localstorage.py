@@ -28,6 +28,16 @@ def get_user_config_directory():
     return os.path.join(os.path.expanduser("~"), ".config")
 
 
+def get_create_neetbox_config_directory():
+    path = os.path.join(get_user_config_directory(), "neetbox")
+    if not os.path.exists(path):
+        os.makedirs(path)
+    assert os.path.isdir(
+        path
+    ), f"Fialed to create neetbox config directory {path}, please check your permission or create it manually."
+    return path
+
+
 def get_user_app_data_directory():
     """
     Returns a parent directory path

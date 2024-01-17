@@ -9,8 +9,8 @@ from typing import Union
 
 from neetbox._protocol import MACHINE_ID_KEY, PROJECT_ID_KEY, RUN_ID_KEY
 
-from ._global import get as get_user_config
-from ._workspace import _get_module_level_config, export_default_config
+from .project import _get_module_level_config, export_default_config
+from .user import get as get_user_config
 
 __IS_WORKSPACE_LOADED = False
 
@@ -19,7 +19,7 @@ def get_module_level_config(module: Union[str, types.ModuleType] = None):
     global __IS_WORKSPACE_LOADED
     if not __IS_WORKSPACE_LOADED:
         __IS_WORKSPACE_LOADED = True
-        from ._workspace import _create_load_workspace
+        from .project import _create_load_workspace
 
         _create_load_workspace()
 

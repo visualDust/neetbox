@@ -13,13 +13,13 @@ from threading import Lock
 from typing import Union
 
 from neetbox._protocol import *
-from neetbox.config._global import get as get_global_config
+from neetbox.config.user import get as get_global_config
 from neetbox.logging import Logger
 from neetbox.utils import ResourceLoader
 from neetbox.utils.localstorage import get_file_size_in_bytes
 
-from .._abc import FetchType, ManageableDB, SortType
 from .._manager import manager
+from ..abc import FetchType, ManageableDB, SortType
 from .condition import ProjectDbQueryCondition
 
 logger = Logger("PROJECT DB", skip_writers_names=["ws"])
@@ -450,6 +450,7 @@ class ProjectDB(ManageableDB):
 
 if not os.path.exists(DB_PROJECT_FILE_FOLDER):
     # create history root dir
+    logger.info(f"history file directory not exist, trying to create at {DB_PROJECT_FILE_FOLDER}")
     os.makedirs(DB_PROJECT_FILE_FOLDER)
 # check if is dir
 assert os.path.isdir(DB_PROJECT_FILE_FOLDER), f"{DB_PROJECT_FILE_FOLDER} is not a directory."

@@ -13,15 +13,17 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-import neetbox.config._global as global_config
 from neetbox._protocol import VERSION
 from neetbox.client._client_web_apis import *
-from neetbox.config._workspace import (
+from neetbox.config.project import (
     _get_module_level_config,
     _init_workspace,
     _load_workspace_config,
 )
+from neetbox.config.user import get as get_global_config
+from neetbox.config.user import set as set_global_config
 from neetbox.logging import Logger
+from neetbox.utils.localstorage import get_create_neetbox_config_directory
 from neetbox.utils.massive import check_read_toml
 
 console = Console()
@@ -143,7 +145,7 @@ def console_banner(text, font: Optional[str] = None):
     console.print(Panel.fit(f"{rendered_text}", border_style="green"))
 
 
-@main.command()
+@main.command(name="init")
 @click.option("--name", "-n", help="set project name", metavar="name", required=False)
 def init(name: str):
     """initialize current folder as workspace and generate the config file from defaults"""
@@ -154,6 +156,38 @@ def init(name: str):
             logger.log("Welcome to NEETBOX")
     except Exception as e:
         logger.err(f"Failed to init here: {e}")
+
+
+@main.command(name="config")
+@click.option(
+    "--set",
+    "kvs",
+    type=(str, str),
+    multiple=True,
+    help="specify which config name to modify as well as target value",
+    metavar="name value",
+    required=False,
+    default=None,
+)
+@click.option("--force", "-f", is_flag=True, help="force set", default=False)
+def configs(kvs, force):
+    """list or set global config"""
+    if kvs:
+        current_configs = get_global_config()
+        for k, v in kvs:
+            if k not in current_configs and not force:
+                logger.warn(
+                    f"config key {k} not exist in current config file and will not be writen into config. if you want to write anyway, try --force."
+                )
+            else:
+                set_global_config(k, v)
+    table = Table(title="current global configs")
+    table.add_column("name", style="green", no_wrap=True)
+    table.add_column("current value")
+    for k, v in get_global_config().items():
+        table.add_row(str(k), str(v))
+    console.print(table)
+    logger.info(f"from config file folder: {get_create_neetbox_config_directory()}")
 
 
 if __name__ == "__main__":
