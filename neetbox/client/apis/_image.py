@@ -152,7 +152,7 @@ def add_image(name: str, image, dataformats: str = None):
         message = EventMsg(
             project_id=project_id,
             run_id=run_id,
-            who=IdentityType.CLI,
+            identity_type=IdentityType.CLI,
             series=name,
             event_type=EVENT_TYPE_NAME_IMAGE,
         )

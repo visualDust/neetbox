@@ -244,7 +244,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             project_id=project_id,
             run_id=get_run_id(),
             event_type=EVENT_TYPE_NAME_HANDSHAKE,
-            who=IdentityType.CLI,
+            identity_type=IdentityType.CLI,
             event_id=0,
         ).dumps()
         ws.send(handshake_msg)
@@ -296,6 +296,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         series=None,
         timestamp: str = None,
         event_id=-1,
+        identity_type=IdentityType.CLI,
         _history_len=-1,
     ):
         message = EventMsg(
@@ -303,7 +304,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             run_id=get_run_id(),
             event_type=event_type,
             event_id=event_id,
-            who=IdentityType.CLI,
+            identity_type=identity_type,
             series=series,
             payload=payload,
             timestamp=timestamp or get_timestamp(),

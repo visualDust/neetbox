@@ -72,15 +72,3 @@ async def shutdown():
     Thread(target=__sleep_and_shutdown).start()  # shutdown after 3 seconds
     logger.log(f"BYE.")
     return {RESULT_KEY: f"shutdown in 1 seconds."}
-
-
-from rich.console import Console
-from rich.table import Table
-
-console = Console()
-table = Table(title="Server Routes")
-table.add_column("name", style="green", no_wrap=True)
-table.add_column("path")
-for name, path in [(route.name, route.path) for route in serverapp.routes]:
-    table.add_row(name, path)
-console.print(table)

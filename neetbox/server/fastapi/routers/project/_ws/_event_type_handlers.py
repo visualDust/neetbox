@@ -39,9 +39,11 @@ async def on_event_type_default_json(
         )
     if forward_to:
         if forward_to == IdentityType.SELF:
-            forward_to = message.who
+            forward_to = message.identity_type
         if forward_to == IdentityType.OTHERS:
-            forward_to = IdentityType.WEB if message.who == IdentityType.CLI else IdentityType.CLI
+            forward_to = (
+                IdentityType.WEB if message.identity_type == IdentityType.CLI else IdentityType.CLI
+            )
         if forward_to in [IdentityType.WEB, IdentityType.BOTH]:
             await bridge.ws_send_to_frontends(message)  # forward to frontends
         elif forward_to in [IdentityType.CLI, IdentityType.BOTH]:

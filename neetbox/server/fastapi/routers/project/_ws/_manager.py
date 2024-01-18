@@ -59,15 +59,17 @@ class WSConnectionManager(metaclass=Singleton):
         ), f"handshake expected but got {message.event_type}"
         assert message.project_id is not None, f"cannot handshake without project id"
         # assign this client to a Bridge
-        logger.info(f"handling handshake for {message.who}, project id '{message.project_id}'")
-        ws_client = WSClient(
-            id=id, ws=websocket, project_id=message.project_id, identity_type=message.who
+        logger.info(
+            f"handling handshake for {message.identity_type}, project id '{message.project_id}'"
         )
-        if message.who == IdentityType.WEB:
+        ws_client = WSClient(
+            id=id, ws=websocket, project_id=message.project_id, identity_type=message.identity_type
+        )
+        if message.identity_type == IdentityType.WEB:
             if not Bridge.has(message.project_id):  # there is no such bridge
                 merge_msg = {
                     PAYLOAD_KEY: {ERROR_KEY: 404, REASON_KEY: "project id not found"},
-                    WHO_KEY: IdentityType.SERVER,
+                    IDENTITY_TYPE_KEY: IdentityType.SERVER,
                 }  # no such bridge, dropping...
 
             else:  # new connection from frontend
@@ -77,9 +79,9 @@ class WSConnectionManager(metaclass=Singleton):
                 self.ws2client[websocket] = ws_client
                 merge_msg = {
                     PAYLOAD_KEY: {RESULT_KEY: 200, REASON_KEY: "join success"},
-                    WHO_KEY: IdentityType.SERVER,
+                    IDENTITY_TYPE_KEY: IdentityType.SERVER,
                 }
-        elif message.who == IdentityType.CLI:
+        elif message.identity_type == IdentityType.CLI:
             # new connection from cli
             bridge = Bridge(project_id=message.project_id)
             run_id = message.run_id
@@ -90,7 +92,7 @@ class WSConnectionManager(metaclass=Singleton):
                 self.ws2client[websocket] = ws_client
                 merge_msg = {
                     PAYLOAD_KEY: {RESULT_KEY: 200, REASON_KEY: "join success"},
-                    WHO_KEY: IdentityType.SERVER,
+                    IDENTITY_TYPE_KEY: IdentityType.SERVER,
                 }  # handshake 200
             else:  # run id already exist
                 merge_msg = {
@@ -98,17 +100,17 @@ class WSConnectionManager(metaclass=Singleton):
                         ERROR_KEY: 400,
                         REASON_KEY: "client with run id already connected",
                     },
-                    WHO_KEY: IdentityType.SERVER,
+                    IDENTITY_TYPE_KEY: IdentityType.SERVER,
                 }
         else:
-            logger.warn(f"unknown type({message.who}) of websocket trying to handshake")
+            logger.warn(f"unknown type({message.identity_type}) of websocket trying to handshake")
             return  # unknown connection type, dropping...
 
         await websocket.send_json(data=EventMsg.merge(message, merge_msg).json)
         logger.ok(f"client(id={id}) handshake succeed.")
         table = Table(title="Connected Websockets", box=box.MINIMAL_DOUBLE_HEAD, show_lines=True)
         table.add_column(PROJECT_ID_KEY, justify="center", style="magenta", no_wrap=True)
-        table.add_column(WHO_KEY, justify="center", style="cyan")
+        table.add_column(IDENTITY_TYPE_KEY, justify="center", style="cyan")
         table.add_column(f"web:ws/cli:{RUN_ID_KEY}", justify="center", style="green")
         for _, _bridge in Bridge.items():
             table.add_row(_bridge.project_id, "", "")
@@ -145,13 +147,13 @@ class WSConnectionManager(metaclass=Singleton):
 
     async def handle_event_msg(self, websocket: WebSocket, message: EventMsg):
         ws_client = self.ws2client[websocket]
-        if not message.who:
-            message.who = ws_client.identity_type
-        if message.who != ws_client.identity_type:
+        if not message.identity_type:
+            message.identity_type = ws_client.identity_type
+        if message.identity_type != ws_client.identity_type:
             logger.warn(
-                f"Illegal IdentityType: expect {ws_client.identity_type} but got {message.who}"
+                f"Illegal IdentityType: expect {ws_client.identity_type} but got {message.identity_type}"
             )
-            return  # security check, who should match who
+            return  # security check, identityType should match identityType
 
         # handle regular event types
         if message.event_type in self.event_handlers:
