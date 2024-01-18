@@ -11,10 +11,10 @@ from fastapi import APIRouter, Body, File, Form, HTTPException, Response, Upload
 from neetbox._protocol import *
 from neetbox.logging import Logger, LogLevel
 
-from ..._bridge import Bridge
-from ...db.project.condition import ProjectDbQueryCondition
+from ....db.project.condition import ProjectDbQueryCondition
+from ._bridge import Bridge
 
-logger = Logger("FASTAPI", skip_writers_names=["ws"])
+logger = Logger("Project APIs", skip_writers_names=["ws"])
 logger.log_level = LogLevel.DEBUG
 
 router = APIRouter()

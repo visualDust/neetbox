@@ -9,9 +9,9 @@ from typing import Dict, List
 from neetbox._protocol import *
 from neetbox.logging import Logger
 
-from .db.project import ProjectDB
+from ....db.project import ProjectDB
 
-logger = Logger("Bridge", skip_writers_names=["ws"])
+logger = Logger("Project Bridge", skip_writers_names=["ws"])
 
 
 class Bridge:

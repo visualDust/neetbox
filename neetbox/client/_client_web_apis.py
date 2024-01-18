@@ -22,7 +22,7 @@ def _post(api, root=None, data=None):
 
 
 def get_list(root=None):
-    api = f"{FRONTEND_API_ROOT}/list"
+    api = f"{API_ROOT}/list"
     return _get(api, root=root)
 
 
@@ -32,7 +32,7 @@ def get_status_of(project_id, root=None):
     if project_id not in name2id:
         return None
     _id = name2id[project_id]
-    api = f"{FRONTEND_API_ROOT}/status/{_id}"
+    api = f"{API_ROOT}/status/{_id}"
     return _get(api)
 
 

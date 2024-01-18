@@ -14,12 +14,9 @@ def server_process(cfg, debug=False):
     setproctitle.setproctitle("NEETBOX SERVER")
     from neetbox.logging import Logger
 
-    from ._bridge import Bridge
     from .fastapi import serverapp
 
     logger = Logger("SERVER LAUNCHER", skip_writers_names=["ws"])
-    # load bridges
-    Bridge.load_histories()  # load history files
 
     port = cfg["port"]
     logger.log(f"launching fastapi server on port {port}")

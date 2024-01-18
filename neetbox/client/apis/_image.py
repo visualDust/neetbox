@@ -157,7 +157,7 @@ def add_image(name: str, image, dataformats: str = None):
             event_type=EVENT_TYPE_NAME_IMAGE,
         )
         result = connection.post_check_online(
-            api=f"{FRONTEND_API_ROOT}/project/{project_id}/image",
+            api=f"{API_ROOT}/project/{project_id}/image",
             data={METADATA_KEY: message.dumps()},
             files={"image": image_bytes},
         )

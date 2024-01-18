@@ -1,7 +1,7 @@
 import useSWR from "swr";
 
 export const API_BASEURL = "/api";
-export const WEBSOCKET_URL = `ws://${location.host}/ws/`;
+export const WEBSOCKET_URL = `ws://${location.host}/ws/project/`;
 
 export async function fetcher(url: string, fetchInit?: RequestInit) {
   const res = await fetch(API_BASEURL + url, fetchInit);

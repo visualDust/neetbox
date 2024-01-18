@@ -19,7 +19,8 @@ ID_KEY = "id"
 NAME_KEY = "name"
 ARGS_KEY = "args"
 MACHINE_ID_KEY = "machineId"
-PROJECT_ID_KEY = WORKSPACE_ID_KEY = "projectId"
+PROJECT_KEY = "project"
+PROJECT_ID_KEY = "projectId"
 RUN_ID_KEY = "runId"
 SERIES_KEY = "series"
 EVENT_TYPE_KEY = "eventType"
@@ -131,8 +132,8 @@ EVENT_TYPE_NAME_PROGRESS = "progress"
 
 # ===================== HTTP things =====================
 
-FRONTEND_API_ROOT = "/api"
-CLIENT_API_ROOT = "/cli"
+API_ROOT = "/api"
+WS_ROOT = "/ws"
 
 # ===================== DB things =====================
 

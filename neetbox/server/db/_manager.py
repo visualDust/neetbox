@@ -14,7 +14,7 @@ from neetbox.utils.mvc import Singleton
 
 from .abc import ManageableDB
 
-logger = Logger("DB Manager", skip_writers_names=["ws"])
+logger = Logger("DB Conn Manager", skip_writers_names=["ws"])
 
 ModuleNameType = str
 DbIdType = str

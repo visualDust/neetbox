@@ -221,8 +221,8 @@ class NeetboxClient(metaclass=Singleton):  # singleton
                 )
 
         self.online_mode = True  # enable online mode
-        self.ws_server_url = f"ws://{server_host}:{server_port}/ws/"  # ws server url
-        logger.info(f"creating websocket connection to {self.ws_server_url}")
+        self.ws_server_url = f"ws://{server_host}:{server_port}{WS_ROOT}/project/"  # ws server url
+        logger.info(f"websocket connecting to {self.ws_server_url}")
         self.wsApp = websocket.WebSocketApp(  # create websocket client
             url=self.ws_server_url,
             on_open=self.on_ws_open,

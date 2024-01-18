@@ -81,7 +81,7 @@ def serve(port, debug):
         if port:
             _daemon_config["port"] = port
         logger.log(f"Launching server using config: {_daemon_config}")
-        from neetbox.server._server import server_process
+        from neetbox.server.server_process import server_process
 
         server_process(cfg=_daemon_config, debug=debug)
     except Exception as e:

@@ -14,11 +14,11 @@ from rich.table import Table
 
 from neetbox._protocol import *
 from neetbox.logging import Logger
-from neetbox.server._bridge import Bridge
+from neetbox.server.fastapi.routers.project._bridge import Bridge
 from neetbox.utils.mvc import Singleton
 
 console = Console()
-logger = Logger("WS MANAGER", skip_writers_names=["ws"])
+logger = Logger("Project Websocket Server", skip_writers_names=["ws"])
 
 
 @dataclass

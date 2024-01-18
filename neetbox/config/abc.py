@@ -10,4 +10,13 @@ class ConfigInterface(ABC, metaclass=Singleton):
 
     @abstractmethod
     def __getattr__(self, key):
-        pass
+        ...
+
+    @abstractmethod
+    def update(self, another):
+        ...
+
+    @property
+    @abstractmethod
+    def here(self):
+        ...

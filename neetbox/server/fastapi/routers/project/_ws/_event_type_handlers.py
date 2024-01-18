@@ -9,7 +9,7 @@ from typing import Callable
 
 from neetbox._protocol import *
 
-from ...._bridge import Bridge
+from .._bridge import Bridge
 
 EVENT_TYPE_HANDLERS = defaultdict(list)
 
