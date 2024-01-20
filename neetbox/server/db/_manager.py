@@ -9,7 +9,7 @@ from collections import defaultdict
 from typing import Dict
 
 from neetbox.logging import Logger
-from neetbox.utils.framing import get_caller_identity_traceback
+from neetbox.utils.framing import get_caller_info_traceback
 from neetbox.utils.mvc import Singleton
 
 from .abc import ManageableDB
@@ -25,7 +25,7 @@ class DBConnectionManager(metaclass=Singleton):
 
     @property
     def current(self):
-        identity = get_caller_identity_traceback(stack_offset=2)
+        identity = get_caller_info_traceback(stack_offset=2)
         return self._POOL[identity.module_name]
 
 

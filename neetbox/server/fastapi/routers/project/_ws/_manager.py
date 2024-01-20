@@ -18,7 +18,7 @@ from neetbox.server.fastapi.routers.project._bridge import Bridge
 from neetbox.utils.mvc import Singleton
 
 console = Console()
-logger = Logger("Project Websocket Server", skip_writers_names=["ws"])
+logger = Logger("Websocket.Project", skip_writers_names=["ws"])
 
 
 @dataclass
@@ -53,7 +53,12 @@ class WSConnectionManager(metaclass=Singleton):
         id = str(uuid4())
         logger.info(f"websocket {id} connected, waiting for handshake...")
         message = await websocket.receive_text()  # the first message should be handshake message
-        message = EventMsg.loads(message)
+        try:
+            message = EventMsg.loads(message)
+        except Exception as e:
+            logger.err(f"error encountered '{e}' while handling handshake message: {message}")
+            websocket.close(code=1003, reason="invalid handshake")
+            return None
         assert (
             message.event_type == EVENT_TYPE_NAME_HANDSHAKE
         ), f"handshake expected but got {message.event_type}"
@@ -107,7 +112,7 @@ class WSConnectionManager(metaclass=Singleton):
             return  # unknown connection type, dropping...
 
         await websocket.send_json(data=EventMsg.merge(message, merge_msg).json)
-        logger.ok(f"client(id={id}) handshake succeed.")
+        logger.ok(f"wsclient(id={id}) handshake succeed.")
         table = Table(title="Connected Websockets", box=box.MINIMAL_DOUBLE_HEAD, show_lines=True)
         table.add_column(PROJECT_ID_KEY, justify="center", style="magenta", no_wrap=True)
         table.add_column(IDENTITY_TYPE_KEY, justify="center", style="cyan")

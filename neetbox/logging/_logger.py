@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Callable, Optional, Union
 
 from neetbox.utils import Registry
-from neetbox.utils.framing import get_caller_identity_traceback
+from neetbox.utils.framing import get_caller_info_traceback
 
 from ._formatting import LogStyle, RawLog
 from .writers import FileLogWriter
@@ -131,8 +131,8 @@ class Logger:
 
         log = RawLog(
             message=message,
-            caller_identity=get_caller_identity_traceback(stack_offset=stack_offset),
-            caller_identity_alias=self.name_alias,
+            caller_info=get_caller_info_traceback(stack_offset=stack_offset),
+            caller_name_alias=self.name_alias,
             series=series,
             style=self._default_style,
         )

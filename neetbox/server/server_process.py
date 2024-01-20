@@ -25,11 +25,11 @@ def server_process(cfg, debug=False):
     port = cfg["port"]
     logger.log(f"launching fastapi server on http://0.0.0.0:{port}")
     uvicorn_log_level = "info" if debug else "critical"
-    if debug:
-        table = Table(title="Server Routes")
-        table.add_column("name", style="green", no_wrap=True)
-        table.add_column("path")
-        for name, path in [(route.name, route.path) for route in serverapp.routes]:
-            table.add_row(name, path)
-        console.print(table)
+
+    table = Table(title="Server Routes")
+    table.add_column("name", style="green", no_wrap=True)
+    table.add_column("path")
+    for name, path in [(route.name, route.path) for route in serverapp.routes]:
+        table.add_row(name, path)
+    console.print(table)
     uvicorn.run(serverapp, host="0.0.0.0", port=port, log_level=uvicorn_log_level)

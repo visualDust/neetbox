@@ -131,7 +131,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         def fetch_hello(root):
             response = None
             try:
-                response = self.get(api="hello", root=root)
+                response = self.get(api=f"{API_ROOT}{SERIES_KEY}/hello", root=root)
                 assert response.json()["hello"] == "hello"
             except:
                 raise IOError(
@@ -331,7 +331,7 @@ LogWriters = Registry("LOG_WRITERS")
 
 @LogWriters.register(name="ws")
 def log_writer_ws(log: RawLog):
-    whom = log.caller_identity_alias or log.caller_identity.format(r"%m > %c > %f")
+    whom = log.caller_name_alias or log.caller_info.format(r"%m > %c > %f")
     payload = {CALLER_ID_KEY: whom, MESSAGE_KEY: log.message}
     connection.ws_send(
         event_type=EVENT_TYPE_NAME_LOG,

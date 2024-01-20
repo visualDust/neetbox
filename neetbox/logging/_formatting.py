@@ -9,20 +9,20 @@ from datetime import datetime
 from typing import Optional
 
 from neetbox._protocol import *
-from neetbox.utils.framing import TracebackIdentity
+from neetbox.utils.framing import TracebackInfo
 
 
 @dataclass
 class LogStyle:
     datetime_format: Optional[str] = r"%Y-%m-%dT%H:%M:%S.%f"
-    caller_identity_format: Optional[str] = r"%m/%c/%f"
+    caller_info_format: Optional[str] = r"%m/%c/%f"
 
 
 @dataclass
 class RawLog:
     message: str
-    caller_identity: TracebackIdentity
-    caller_identity_alias: Optional[str] = None
+    caller_info: TracebackInfo
+    caller_name_alias: Optional[str] = None
     timestamp: datetime = datetime.now()
     series: Optional[str] = None
     style: LogStyle = field(default_factory=LogStyle)  # fix python 3.11 dataclass issue
@@ -36,12 +36,12 @@ class RawLog:
         )
 
     @property
-    def caller_identity_formatted(self):
-        if self.caller_identity_alias:
-            return str(self.caller_identity_alias)
+    def caller_info_formatted(self):
+        if self.caller_name_alias:
+            return str(self.caller_name_alias)
         return (
-            self.caller_identity.format(self.style.caller_identity_format)
-            if self.style.caller_identity_format
+            self.caller_info.format(self.style.caller_info_format)
+            if self.style.caller_info_format
             else ""
         )
 
@@ -51,7 +51,7 @@ class RawLog:
             SERIES_KEY: self.series,
             MESSAGE_KEY: self.message,
             TIMESTAMP_KEY: self.timestamp_formatted,
-            CALLER_ID_KEY: self.caller_identity_formatted,
+            CALLER_ID_KEY: self.caller_info_formatted,
         }
 
     def __repr__(self) -> str:

@@ -42,7 +42,7 @@ def log_write_stdout(log: RawLog):
     table = Table(show_header=False, box=None, expand=True)
     table.add_column(justify="left")
     table.add_column(justify="right")
-    whom = log.caller_identity_alias or log.caller_identity_formatted
+    whom = log.caller_name_alias or log.caller_info_formatted
     if whom not in whom2color:
         whom2color[whom] = supported_colors[int(random() * len(supported_colors))]
     color = whom2color[whom]

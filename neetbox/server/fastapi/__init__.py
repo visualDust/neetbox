@@ -17,6 +17,7 @@ from neetbox._protocol import *
 from neetbox.logging import Logger, LogLevel
 
 from .routers import project as project_router
+from .routers import server as server_router
 
 logger = Logger("FASTAPI", skip_writers_names=["ws"])
 logger.log_level = LogLevel.DEBUG
@@ -38,6 +39,18 @@ serverapp.include_router(
     tags=["websocket"],
 )
 
+serverapp.include_router(
+    server_router.crud_router,
+    prefix=f"{API_ROOT}/{SERVER_KEY}",
+    tags=["server"],
+)
+
+serverapp.include_router(
+    server_router.ws_router,
+    prefix=f"{WS_ROOT}/{SERVER_KEY}",
+    tags=["websocket"],
+)
+
 # mount web static files root
 serverapp.mount("/static", StaticFiles(directory=front_end_dist_path), name="static")
 
@@ -56,19 +69,3 @@ async def serve_static_root(path: str):
         return FileResponse(static_file_path)
     else:
         return FileResponse(f"{front_end_dist_path}/index.html")
-
-
-@serverapp.get("/hello")
-async def just_send_hello():
-    return {"hello": "hello"}
-
-
-@serverapp.post(f"/shutdown")
-async def shutdown():
-    def __sleep_and_shutdown(secs=1):
-        time.sleep(secs)
-        os._exit(0)
-
-    Thread(target=__sleep_and_shutdown).start()  # shutdown after 3 seconds
-    logger.log(f"BYE.")
-    return {RESULT_KEY: f"shutdown in 1 seconds."}

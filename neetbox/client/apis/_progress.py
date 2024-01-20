@@ -8,7 +8,7 @@ from time import time
 from uuid import uuid4
 
 from neetbox._protocol import *
-from neetbox.utils.framing import get_caller_identity_traceback
+from neetbox.utils.framing import get_caller_info_traceback
 from neetbox.utils.massive import describe_object
 
 from .._client import connection
@@ -36,7 +36,7 @@ class Progress:
         else:
             self.total = len(input)
             self.iterator = iter(input)
-        self.caller_identity = get_caller_identity_traceback(stack_offset=2)
+        self.caller_identity = get_caller_info_traceback(stack_offset=2)
 
         self.done = 0
         self.start_time = time()  # Track the start time
