@@ -131,7 +131,8 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         def fetch_hello(root):
             response = None
             try:
-                response = self.get(api=f"{API_ROOT}{SERIES_KEY}/hello", root=root)
+                response = self.get(api=f"{API_ROOT}/{SERVER_KEY}/hello", root=root)
+                print(f"{API_ROOT}{SERIES_KEY}/hello")
                 assert response.json()["hello"] == "hello"
             except:
                 raise IOError(
