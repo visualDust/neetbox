@@ -22,5 +22,5 @@ def _post(api, root=None, data=None):
 
 
 def shutdown(root=None):
-    api = f"{API_ROOT}{SERVER_KEY}/shutdown"
+    api = f"{API_ROOT}/{SERVER_KEY}/shutdown"
     return _post(api, root=root)

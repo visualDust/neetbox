@@ -15,7 +15,7 @@ def run(argv):
         print(args.config)
         daemon_config = json.loads(args.config)
         print("Daemon started with config:", daemon_config)
-    from server_process import server_process
+    from .server_process import server_process
 
     server_process(daemon_config)
 
