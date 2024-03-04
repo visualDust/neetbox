@@ -1220,7 +1220,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^18.2.37":
+"@types/react@npm:*":
   version: 18.2.42
   resolution: "@types/react@npm:18.2.42"
   dependencies:
@@ -1228,6 +1228,17 @@ __metadata:
     "@types/scheduler": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 2946d78c1f9a220a4dfedd7995b8bcba47235b19756bf3dd845c604bb24fff8d0ff5be81c0c98ac7f4488791e8c7e6cbcc4898c40c0209d74a1223b8fbfb994f
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18.2.61":
+  version: 18.2.61
+  resolution: "@types/react@npm:18.2.61"
+  dependencies:
+    "@types/prop-types": "npm:*"
+    "@types/scheduler": "npm:*"
+    csstype: "npm:^3.0.2"
+  checksum: a03fbb6ca8108bbccf12ac616e77e1457ae9324040c4a5d1293caaa62c187300b4eb38ec78c4724fb43d40d4c6fb909803db057c8b69ae441e2aab7b2acdc29a
   languageName: node
   linkType: hard
 
@@ -4333,7 +4344,7 @@ __metadata:
     "@rsbuild/core": "npm:^0.1.8"
     "@rsbuild/plugin-react": "npm:^0.1.8"
     "@semi-bot/semi-theme-nyx-c": "npm:^1.0.8"
-    "@types/react": "npm:^18.2.37"
+    "@types/react": "npm:^18.2.61"
     "@types/react-dom": "npm:^18.2.15"
     "@typescript-eslint/eslint-plugin": "npm:^6.10.0"
     "@typescript-eslint/parser": "npm:^6.10.0"
