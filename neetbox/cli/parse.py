@@ -72,8 +72,8 @@ def version_command():
 @click.option(
     "--port", "-p", help="specify which port to launch", metavar="port", required=False, default=0
 )
-@click.option("--debug", "-d", is_flag=True, help="Run with debug mode", default=False)
-def serve(port, debug):
+@click.option("--detach", "-d", is_flag=True, help="Run in detached mode", default=False)
+def serve(port, detach):
     """serve neetbox server in attached mode"""
     _try_load_workspace_if_applicable()
     _daemon_config = get_client_config()
@@ -81,9 +81,12 @@ def serve(port, debug):
         if port:
             _daemon_config["port"] = port
         logger.log(f"Launching server using config: {_daemon_config}")
-        from neetbox.server.server_process import server_process
+        import neetbox.server._daemon_server_launch_script as server_launcher
 
-        server_process(cfg=_daemon_config, debug=debug)
+        if detach:
+            server_launcher.start(_daemon_config)
+        else:
+            server_launcher.run(_daemon_config)
     except Exception as e:
         logger.err(f"Failed to launch a neetbox server: {e}", reraise=True)
 

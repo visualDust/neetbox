@@ -189,14 +189,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             )
             import neetbox.server._daemon_server_launch_script as server_launcher
 
-            popen = DaemonableProcess(  # server daemon
-                target=server_launcher,
-                args=["--config", json.dumps(config)],
-                mode=config["mode"],
-                redirect_stdout=subprocess.DEVNULL if config["mute"] else None,
-                env_append={"NEETBOX_DAEMON_PROCESS": "1"},
-            ).start()
-            time.sleep(1)
+            popen = server_launcher.start(config)
             _retry_timeout = 10
             _time_begin = time.perf_counter()
             logger.debug("Created daemon process, trying to connect to daemon...")
