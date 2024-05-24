@@ -129,7 +129,10 @@ class Hardware(metaclass=Singleton):
     def __init__(self) -> None:
         self._cpus = [CpuStatus() for _ in range(psutil.cpu_count(logical=True))]
         self._cpu_statistics = CpuStatistics(*psutil.cpu_stats())
-        self._gpus = [NvGpuStatus.parse(gpu) for gpu in GPUtil.getGPUs()]
+        try:
+            self._gpus = [NvGpuStatus.parse(gpu) for gpu in GPUtil.getGPUs()]
+        except Exception as e:
+            self._gpus = []
         self._with_gpu = False if len(self._gpus) == 0 else True
         virtual_memory = psutil.virtual_memory()
         self._memory = MemoryStatus(
@@ -204,7 +207,10 @@ class Hardware(metaclass=Singleton):
                     )
                     # update gpu usage
                     if do_update_gpus:
-                        self._gpus = [NvGpuStatus.parse(gpu) for gpu in GPUtil.getGPUs()]
+                        try:
+                            self._gpus = [NvGpuStatus.parse(gpu) for gpu in GPUtil.getGPUs()]
+                        except Exception as e:
+                            self._gpus = []
                     self._cpu_statistics = CpuStatistics(*psutil.cpu_stats())
                     for callback in self._on_update_call_backs:
                         callback(self.json)
