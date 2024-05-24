@@ -23,7 +23,7 @@ from ..abc import FetchType, ManageableDB, SortType
 from .condition import ProjectDbQueryCondition
 
 logger = Logger("PROJECT DB", skip_writers_names=["ws"])
-DB_PROJECT_FILE_FOLDER = f"{get_global_config('vault')}/server/history"
+DB_PROJECT_FILE_FOLDER = f"{get_global_config('vault')}/server/db/project"
 DB_PROJECT_FILE_TYPE_NAME = "projectdb"
 
 
