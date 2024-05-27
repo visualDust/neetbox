@@ -4,24 +4,20 @@
 # Github: github.com/visualDust
 # Date:   20231022
 
-import functools
-import json
 import logging
-import subprocess
 import time
 from collections import defaultdict
-from threading import Lock, Thread
+from threading import Lock
 from typing import Callable
 
-import httpx
-import websocket
 
 from neetbox._protocol import *
 from neetbox.config import get_module_level_config, get_project_id, get_run_id
 from neetbox.logging import Logger, RawLog
-from neetbox.utils import DaemonableProcess, Registry
+from neetbox.utils import Registry
 from neetbox.utils.massive import is_loopback
 from neetbox.utils.mvc import Singleton
+from neetbox.utils.connection import WebsocketClient, httpxClient
 
 logging.getLogger("httpx").setLevel(logging.ERROR)
 logger = Logger(name_alias="CLIENT", skip_writers_names=["ws"])
@@ -38,71 +34,65 @@ def addr_of_api(api, http_root=None):
     return result
 
 
-def online_only(func):
-    """function decorator which checks client online status on each function call
-
-    Args:
-        func (Callable): the function
-
-    Returns:
-        Callable: the decorated function
-    """
-
-    @functools.wraps(func)
-    def __online_only_func(*args, **kwargs):
-        if not NeetboxClient()._is_initialized:
-            with NeetboxClient()._thread_safe_lock:
-                NeetboxClient()._connect_blocking()
-
-        if NeetboxClient()._is_initialized and NeetboxClient().online_mode == False:
-            return None
-        return func(*args, **kwargs)
-
-    return __online_only_func
-
-
 class NeetboxClient(metaclass=Singleton):  # singleton
-    online_mode: bool = None
-    httpxClient: httpx.Client = httpx.Client(  # httpx client
-        proxies={
-            "http://": None,
-            "https://": None,
-        }
-    )  # type: ignore
-    wsApp: websocket.WebSocketApp = None  # websocket client app
-    _is_initialized: bool = False
-    _thread_safe_lock = Lock()
-    is_ws_connected: bool = False
-    ws_message_query = []  # websocket message query
-    ws_subscribers = defaultdict(list)  # default to no subscribers
 
-    @online_only
+    def __init__(self) -> None:
+        self.websocket: WebsocketClient = None
+        self.online_mode: bool = None
+        self._is_initialized: bool = False
+        self._thread_safe_lock = Lock()
+        self.subscribers = defaultdict(list)  # default to no subscribers
+
+    @property
+    def wait_should_online(self):
+        with self._thread_safe_lock:
+            if not self._is_initialized:
+                self.initialize_connection()
+
+        return self._is_initialized and self.online_mode is not False
+
     def post_check_online(self, api: str, root: str = None, *args, **kwargs):
-        url = addr_of_api(api, http_root=root)
-        return self.httpxClient.post(url, *args, **kwargs)
+        return (
+            httpxClient.post(addr_of_api(api, http_root=root), *args, **kwargs)
+            if self.wait_should_online
+            else None
+        )
 
     def post(self, api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api, http_root=root)
-        return self.httpxClient.post(url, *args, **kwargs)
+        return httpxClient.post(url, *args, **kwargs)
 
-    @online_only
     def get_check_online(self, api: str, root: str = None, *args, **kwargs):
-        url = addr_of_api(api, http_root=root)
-        return self.httpxClient.get(url, *args, **kwargs)
+        return (
+            httpxClient.get(addr_of_api(api, http_root=root), *args, **kwargs)
+            if self.wait_should_online
+            else None
+        )
 
     def get(self, api: str, root: str = None, *args, **kwargs):
         url = addr_of_api(api, http_root=root)
-        return self.httpxClient.get(url, *args, **kwargs)
+        return httpxClient.get(url, *args, **kwargs)
 
-    @online_only
     def put_check_online(self, api: str, root: str = None, *args, **kwargs):
-        url = addr_of_api(api, http_root=root)
-        return self.httpxClient.put(url, *args, **kwargs)
+        return (
+            httpxClient.put(addr_of_api(api, http_root=root), *args, **kwargs)
+            if self.wait_should_online
+            else None
+        )
 
-    @online_only
     def delete_check_online(self, api: str, root: str = None, *args, **kwargs):
-        url = addr_of_api(api, http_root=root)
-        return self.httpxClient.delete(url, *args, **kwargs)
+        return (
+            httpxClient.delete(addr_of_api(api, http_root=root), *args, **kwargs)
+            if self.wait_should_online
+            else None
+        )
+
+    def subscribe(self, event_type_name: str, callback):
+        self.subscribers[event_type_name].append(callback)  # add subscriber to list
+
+    def unsubscribe(self, event_type_name: str, callback):
+        if callback in self.subscribers[event_type_name]:
+            self.subscribers[event_type_name].remove(callback)
 
     def ws_subscribe(self, event_type_name: str):
         """let a function subscribe to ws messages with event type name.
@@ -115,7 +105,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         """
 
         def _ws_subscribe(function: Callable):
-            self.ws_subscribers[event_type_name].append(function)
+            self.subscribe(event_type_name, function)
             # logger.info(f"ws: {name} subscribed to '{event_type_name}'")
             return function
 
@@ -147,7 +137,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             logger.err(e)
             return False
 
-    def _connect_blocking(self, config=None):
+    def initialize_connection(self, config=None):
         if self._is_initialized:
             return  # if already initialized, do nothing
 
@@ -217,21 +207,18 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         self.online_mode = True  # enable online mode
         self.ws_server_url = f"ws://{server_host}:{server_port}{WS_ROOT}/project/"  # ws server url
         logger.info(f"websocket connecting to {self.ws_server_url}")
-        self.wsApp = websocket.WebSocketApp(  # create websocket client
+        self.websocket = WebsocketClient(
             url=self.ws_server_url,
             on_open=self.on_ws_open,
             on_message=self.on_ws_message,
             on_error=self.on_ws_err,
             on_close=self.on_ws_close,
+            offline_message_buffer_size=100,
         )
-
-        Thread(
-            target=self.wsApp.run_forever, kwargs={"reconnect": 1}, daemon=True
-        ).start()  # initialize and start ws thread
-
+        self.websocket.connect()
         self._is_initialized = True
 
-    def on_ws_open(self, ws: websocket.WebSocketApp):
+    def on_ws_open(self, ws: WebsocketClient):
         project_id = get_project_id()
         logger.ok(f"client websocket connected. sending handshake as '{project_id}'...")
         handshake_msg = EventMsg(  # handshake request message
@@ -243,16 +230,15 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         ).dumps()
         ws.send(handshake_msg)
 
-    def on_ws_err(self, ws: websocket.WebSocketApp, msg):
+    def on_ws_err(self, ws: WebsocketClient, msg):
         logger.err(f"client websocket encountered {msg}")
 
-    def on_ws_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg):
+    def on_ws_close(self, ws: WebsocketClient, close_status_code, close_msg):
         logger.warn(
             f"client websocket closed: status code: {close_status_code}, message: {close_msg}"
         )
-        self.is_ws_connected = False
 
-    def on_ws_message(self, ws: websocket.WebSocketApp, message):
+    def on_ws_message(self, ws: WebsocketClient, message):
         message = EventMsg.loads(message)  # message should be json
         if message.event_type == EVENT_TYPE_NAME_HANDSHAKE:
             assert message.payload["result"] == 200
@@ -267,13 +253,12 @@ class NeetboxClient(metaclass=Singleton):  # singleton
                     payload=get_module_level_config("@"),
                 ).dumps()
             )
-            self.is_ws_connected = True
             # return # DO NOT return!
-        if message.event_type not in self.ws_subscribers:
+        if message.event_type not in self.subscribers:
             logger.warn(
                 f"Client received a(n) {message.event_type} event but nobody subscribes it. Ignoring anyway."
             )
-        for subscriber in self.ws_subscribers[message.event_type]:
+        for subscriber in self.subscribers[message.event_type]:
             try:
                 subscriber(message)  # pass payload message into subscriber
             except Exception as e:
@@ -282,7 +267,6 @@ class NeetboxClient(metaclass=Singleton):  # singleton
                     f"Subscriber {subscriber.__name__} crashed on message event {message.event_type}, ignoring."
                 )
 
-    @online_only
     def ws_send(
         self,
         event_type: str,
@@ -293,26 +277,20 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         identity_type=IdentityType.CLI,
         _history_len=-1,
     ):
-        message = EventMsg(
-            project_id=get_project_id(),
-            run_id=get_run_id(),
-            event_type=event_type,
-            event_id=event_id,
-            identity_type=identity_type,
-            series=series,
-            payload=payload,
-            timestamp=timestamp or get_timestamp(),
-            history_len=_history_len,
-        )
-        self.ws_message_query.append(message)
-        if self.is_ws_connected:  # if ws client exist
-            try:
-                while len(self.ws_message_query):
-                    self.wsApp.send(self.ws_message_query[0].dumps())
-                    self.ws_message_query.pop(0)
-                return
-            except Exception as e:
-                pass
+        if self.wait_should_online:
+            message = EventMsg(
+                project_id=get_project_id(),
+                run_id=get_run_id(),
+                event_type=event_type,
+                event_id=event_id,
+                identity_type=identity_type,
+                series=series,
+                payload=payload,
+                timestamp=timestamp or get_timestamp(),
+                history_len=_history_len,
+            )
+
+            self.websocket.send(message)
 
 
 # singleton
@@ -333,14 +311,3 @@ def log_writer_ws(log: RawLog):
         payload=payload,
         timestamp=log.timestamp.strftime(r"%Y-%m-%dT%H:%M:%S.%f"),
     )
-
-
-def _clean_websocket_on_exit():
-    # clean websocket connection
-    if connection.wsApp is not None:
-        connection.wsApp.close()
-
-
-import atexit
-
-atexit.register(_clean_websocket_on_exit)
