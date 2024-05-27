@@ -172,8 +172,8 @@ def _init_workspace(path=None, **kwargs) -> bool:
 
 def _load_workspace_config(folder=".", load_only=False):
     global _IS_WORKSPACE_LOADED
-    config_from_file = os.path.join(folder, CONFIG_FILE_NAME)
-    config_from_file = check_read_toml(config_from_file)  # check if config file is valid
+    config_file_path = os.path.join(folder, CONFIG_FILE_NAME)
+    config_from_file = check_read_toml(config_file_path)  # check if config file is valid
     if not config_from_file:  # failed to load workspace config, exiting
         raise RuntimeError(f"Config file not exists in '{folder}'")
     if not load_only:
@@ -186,7 +186,7 @@ def _load_workspace_config(folder=".", load_only=False):
     if "version" not in config_from_file or config_from_file["version"] != NEETBOX_VERSION:
         print(
             RuntimeError(
-                f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config file version {config_from_file['version']}. Please delete neetbox.toml and recreate by 'neet init'"
+                f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config file version {config_from_file['version']} in {os.path.abspath(config_file_path)}. Here are two possible solutions:\n - Try to install specific neetbox version to {NEETBOX_VERSION} by 'pip install -U neetbox=={NEETBOX_VERSION}' \n - Delete neetbox.toml and recreate by 'neet init' \n - Modify config file manually to match neetbox version {NEETBOX_VERSION} \n"
             )
         )
         os._exit(-1)
