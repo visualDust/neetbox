@@ -101,9 +101,25 @@ class Logger:
                 "ERROR": LogLevel.ERROR,
             }[level]
         if type(level) is int:
-            assert level >= 0 and level <= 3
+            assert level >= 0 and level <= 3, "log level must be in [0, 3]"
             level = LogLevel(level)
         self._log_level = level
+        
+    @classmethod
+    def set_global_log_level(cls, level: Union[LogLevel, str]):
+        if type(level) is str:
+            level = {
+                "ALL": LogLevel.ALL,
+                "DEBUG": LogLevel.DEBUG,
+                "INFO": LogLevel.INFO,
+                "WARNING": LogLevel.WARNING,
+                "ERROR": LogLevel.ERROR,
+            }[level]
+        if type(level) is int:
+            assert level >= 0 and level <= 3, "log level must be in [0, 3]"
+            level = LogLevel(level)
+        for logger in cls._IDENTITY2LOGGER.values():
+            logger.log_level = level
 
     def writer(self, name: str):
         def _add_private_writer(name, writer_func: Callable):
