@@ -107,12 +107,15 @@ async def get_status_of(project_id, run_id):
 async def set_get_metadata_of_run_id(project_id: str, run_id: str, metadata: dict = Body(...)):
     bridge = Bridge.of_id(project_id)
     try:
-        old_metadata = bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id)  # get old metadata
-        old_metadata.update(metadata)
+        metadata_in_db = bridge.historyDB.fetch_metadata_of_run_id(
+            run_id=run_id
+        )  # get old metadata
+        metadata_in_db.update(metadata)
         # Assuming the method to update metadata in your database might look like this
-        bridge.historyDB.update_metadata_of_run_id(run_id=run_id, metadata=old_metadata)
-        return bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id)
+        # bridge.historyDB.update_metadata_of_run_id(run_id=run_id, metadata=old_metadata)
+        return bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id, metadata=metadata_in_db)
     except Exception as e:  # Replace with your specific database exception
+        logger.debug(f"failed to update metadata of run_id {run_id}: {e}")
         raise HTTPException(status_code=404, detail={ERROR_KEY: str(e)})
 
 
