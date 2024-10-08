@@ -9,7 +9,7 @@ export interface WsMsgBase<Type extends string = string, Payload = undefined> {
   name: string;
   payload: Payload;
   eventId: number;
-  who: "web" | "cli";
+  identityType: "web" | "cli";
   projectId: string;
   runId: string;
   timestamp: string;
@@ -18,7 +18,7 @@ export interface WsMsgBase<Type extends string = string, Payload = undefined> {
 
 export type WsMsg =
   | WsMsgBase
-  | (WsMsgBase<"handshake"> & { who: "web" | "cli" })
+  | (WsMsgBase<"handshake"> & { identityType: "web" | "cli" })
   | WsMsgBase<"action", { name: string; args: Record<string, string> }>
   | (WsMsgBase<"image"> & ImageMetadata)
   | WsMsgBase<"scalar", { series: string; x: number; y: number }>
@@ -50,7 +50,7 @@ export class WsClient {
       this.send(
         {
           eventType: "handshake",
-          who: "web",
+          identityType: "web",
         },
         (msg) => {
           console.info("ws joined", msg);

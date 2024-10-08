@@ -19,12 +19,14 @@ ID_KEY = "id"
 NAME_KEY = "name"
 ARGS_KEY = "args"
 MACHINE_ID_KEY = "machineId"
-PROJECT_ID_KEY = WORKSPACE_ID_KEY = "projectId"
+PROJECT_KEY = "project"
+SERVER_KEY = "server"
+PROJECT_ID_KEY = "projectId"
 RUN_ID_KEY = "runId"
 SERIES_KEY = "series"
 EVENT_TYPE_KEY = "eventType"
 EVENT_ID_KEY = "eventId"
-WHO_KEY = "who"
+IDENTITY_TYPE_KEY = "identityType"
 CALLER_ID_KEY = "whom"
 PAYLOAD_KEY = "payload"
 METADATA_KEY = "metadata"
@@ -64,7 +66,7 @@ class EventMsg:
     series: str = None
     payload: Any = None
     event_id: int = -1
-    who: str = None
+    identity_type: str = None
     timestamp: str = get_timestamp()
     history_len: int = -1
     id: int = None  # id in database
@@ -76,7 +78,7 @@ class EventMsg:
             RUN_ID_KEY: self.run_id,
             EVENT_TYPE_KEY: self.event_type,
             EVENT_ID_KEY: self.event_id,
-            WHO_KEY: self.who,
+            IDENTITY_TYPE_KEY: self.identity_type,
             SERIES_KEY: self.series,
             PAYLOAD_KEY: self.payload,
             TIMESTAMP_KEY: self.timestamp,
@@ -95,7 +97,7 @@ class EventMsg:
             project_id=src.get(PROJECT_ID_KEY),
             run_id=src.get(RUN_ID_KEY),
             event_type=src.get(EVENT_TYPE_KEY),
-            who=src.get(WHO_KEY),
+            identity_type=src.get(IDENTITY_TYPE_KEY),
             series=src.get(SERIES_KEY),
             payload=src.get(PAYLOAD_KEY),
             event_id=src.get(EVENT_ID_KEY, -1),
@@ -131,8 +133,8 @@ EVENT_TYPE_NAME_PROGRESS = "progress"
 
 # ===================== HTTP things =====================
 
-FRONTEND_API_ROOT = "/api"
-CLIENT_API_ROOT = "/cli"
+API_ROOT = "/api"
+WS_ROOT = "/ws"
 
 # ===================== DB things =====================
 

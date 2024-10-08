@@ -3,7 +3,7 @@ from typing import Union
 
 import pip
 
-from neetbox.utils.framing import get_caller_identity_traceback
+from neetbox.utils.framing import get_caller_info_traceback
 from neetbox.utils.mvc import Singleton
 
 
@@ -12,7 +12,7 @@ class PipPackageHealper(metaclass=Singleton):
         self.installed_packages = None
 
     def install(self, package, terminate=False):
-        caller = get_caller_identity_traceback(3)
+        caller = get_caller_info_traceback(3)
         caller_name = caller.module_name if caller.module else caller.filename
         retry = 4
         _installed = False
@@ -30,7 +30,9 @@ class PipPackageHealper(metaclass=Singleton):
                 break
             if choice in ["n", "no"]:  # user choose not to install
                 if terminate:  # the package must be installed
-                    error_str = f"{caller_name} requires '{package}' but it is not going to be installed."
+                    error_str = (
+                        f"{caller_name} requires '{package}' but it is not going to be installed."
+                    )
                     raise RuntimeError(error_str)
                 else:
                     print(f"{package} is not going to be installed")
@@ -44,7 +46,7 @@ class PipPackageHealper(metaclass=Singleton):
         return _installed
 
     def is_installed(self, package: str, try_install_if_not: Union[str, bool] = True):
-        caller = get_caller_identity_traceback(3)
+        caller = get_caller_info_traceback(3)
         caller_name = caller.module_name if caller.module else caller.filename
         if not self.installed_packages:
             self.installed_packages = []
@@ -59,9 +61,7 @@ class PipPackageHealper(metaclass=Singleton):
             package_name_install = (
                 package if type(try_install_if_not) is bool else try_install_if_not
             )
-            print(
-                f"{caller_name} requires '{package_name_install}' which is not installed."
-            )
+            print(f"{caller_name} requires '{package_name_install}' which is not installed.")
             if try_install_if_not:
                 return self.install(package=package_name_install, terminate=True)
             return False

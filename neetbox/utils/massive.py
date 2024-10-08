@@ -10,6 +10,7 @@ import os
 import socket
 import struct
 from concurrent.futures import ThreadPoolExecutor
+from typing import Union
 
 _ThreadPoolExecutor = ThreadPoolExecutor()
 
@@ -52,7 +53,7 @@ def update_dict_recursively(self: dict, the_other: dict):
             self[_k] = the_other[_k]
 
 
-def check_read_toml(path) -> bool:
+def check_read_toml(path) -> Union[dict, bool]:
     import toml
 
     if not os.path.isfile(path):  # but config file not exist

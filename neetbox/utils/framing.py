@@ -43,7 +43,7 @@ def get_frame_filepath_traceback(stack_offset=1):
 
 
 @dataclass
-class TracebackIdentity:
+class TracebackInfo:
     frame = None
     lineno: int = None
     func_name: str = None
@@ -56,8 +56,8 @@ class TracebackIdentity:
     filename: str = None
 
     @classmethod
-    def parse(cls, frame) -> "TracebackIdentity":
-        stacktrace = TracebackIdentity()
+    def parse(cls, frame) -> "TracebackInfo":
+        stacktrace = TracebackInfo()
         stacktrace.frame = frame
         stacktrace.lineno = frame.lineno
         stacktrace.func_name = frame.function if frame.function != "<module>" else None
@@ -116,9 +116,7 @@ class TracebackIdentity:
         ]
 
     def __eq__(self, __value: object) -> bool:
-        assert isinstance(
-            __value, TracebackIdentity
-        ), f"cannot compare {__value} as a {TracebackIdentity}"
+        assert isinstance(__value, TracebackInfo), f"cannot compare {__value} as a {TracebackInfo}"
         return (
             self.filepath == __value.filepath
             and self.module_name == __value.module_name
@@ -130,6 +128,6 @@ class TracebackIdentity:
         return "\n".join([f"{k}:\t{v}" for k, v in self.json.items()])
 
 
-def get_caller_identity_traceback(stack_offset=1):
+def get_caller_info_traceback(stack_offset=1):
     frame = get_frame_traceback(stack_offset + 1)
-    return TracebackIdentity.parse(frame)
+    return TracebackInfo.parse(frame)

@@ -47,7 +47,7 @@ export default defineConfig({
       "/api/": {
         target: server.href,
       },
-      "/ws/": {
+      "/ws/project/": {
         target: `ws://${server.host}`,
       },
     },

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neetbox"
-version = "0.4.7"
+version = "0.4.12"
 description = "Logging/Debugging/Tracing/Managing/Facilitating long running python projects, especially a replacement of tensorboard for deep learning projects"
 license = "MIT"
 authors = ["VisualDust <gavin@gong.host>", "Lideming <me@yuuza.net>"]
@@ -41,6 +41,7 @@ fastapi = "^0.108.0"
 python-multipart = "^0.0.6"
 uvicorn = "^0.25.0"
 websockets = "^12.0"
+pyjwt = "^2.8.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

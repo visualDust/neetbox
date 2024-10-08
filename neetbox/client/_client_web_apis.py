@@ -21,21 +21,6 @@ def _post(api, root=None, data=None):
     return r
 
 
-def get_list(root=None):
-    api = f"{FRONTEND_API_ROOT}/list"
-    return _get(api, root=root)
-
-
-def get_status_of(project_id, root=None):
-    id2name = get_list(root=root)
-    name2id = {v: k for k, v in id2name}  # todo resolve dup name
-    if project_id not in name2id:
-        return None
-    _id = name2id[project_id]
-    api = f"{FRONTEND_API_ROOT}/status/{_id}"
-    return _get(api)
-
-
 def shutdown(root=None):
-    api = "/shutdown"
+    api = f"{API_ROOT}/{SERVER_KEY}/shutdown"
     return _post(api, root=root)

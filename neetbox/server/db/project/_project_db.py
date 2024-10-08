@@ -13,20 +13,21 @@ from threading import Lock
 from typing import Union
 
 from neetbox._protocol import *
-from neetbox.config._global import get as get_global_config
+from neetbox.config.user import get as get_global_config
 from neetbox.logging import Logger
 from neetbox.utils import ResourceLoader
 from neetbox.utils.localstorage import get_file_size_in_bytes
 
-from ._condition import *
-from ._manager import manager
+from .._manager import manager
+from ..abc import FetchType, ManageableDB, SortType
+from .condition import ProjectDbQueryCondition
 
 logger = Logger("PROJECT DB", skip_writers_names=["ws"])
-DB_PROJECT_FILE_FOLDER = f"{get_global_config('vault')}/server/history"
+DB_PROJECT_FILE_FOLDER = f"{get_global_config('vault')}/server/db/project"
 DB_PROJECT_FILE_TYPE_NAME = "projectdb"
 
 
-class ProjectDB:
+class ProjectDB(ManageableDB):
     # static things
     _path2dbc = {}
 
@@ -71,14 +72,26 @@ class ProjectDB:
         return new_dbc
 
     @property
-    def local_storage_size_in_bytes(self):
+    def size(self):
+        """return local storage usage by this project db in bytes
+
+        Returns:
+            int: size in bytes
+        """
         try:
             result = get_file_size_in_bytes(self.file_path)
         except Exception as e:
             result = f"failed to get file size cause {e}"
         return result
 
-    def delete_files(self):
+    def close(self):
+        try:
+            self.connection.commit()
+        except:
+            pass
+        self.connection.close()
+
+    def delete(self):
         """delete related files of db"""
         if self.project_id not in manager.current:
             logger.err(
@@ -121,7 +134,7 @@ class ProjectDB:
             return manager.current[project_id]
         return ProjectDB(project_id)
 
-    def _execute(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
+    def _execute(self, query, *args, fetch: FetchType = FetchType.ALL, **kwargs):
         cur = self.connection.cursor()
         try:
             result = cur.execute(query, args)
@@ -130,25 +143,25 @@ class ProjectDB:
             logger.info(f"{query}, {args}")
             logger.err(e, reraise=True)
         if fetch:
-            if fetch == DbQueryFetchType.ALL:
+            if fetch == FetchType.ALL:
                 result = result.fetchall()
-            elif fetch == DbQueryFetchType.ONE:
+            elif fetch == FetchType.ONE:
                 result = result.fetchone()
-            elif fetch == DbQueryFetchType.MANY:
+            elif fetch == FetchType.MANY:
                 result = result.fetchmany(kwargs["many"])
         return result, cur.lastrowid
 
-    def _query(self, query, *args, fetch: DbQueryFetchType = DbQueryFetchType.ALL, **kwargs):
+    def _query(self, query, *args, fetch: FetchType = FetchType.ALL, **kwargs):
         return self._execute(query, *args, fetch=fetch, **kwargs)
 
     def table_exist(self, table_name):
         sql_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
-        result, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        result, _ = self._query(sql_query, fetch=FetchType.ALL)
         return result != []
 
     def get_table_names(self):
         sql_query = "SELECT name FROM sqlite_master;"
-        table_names, _ = self._query(sql_query, fetch=DbQueryFetchType.ALL)
+        table_names, _ = self._query(sql_query, fetch=FetchType.ALL)
         return table_names
 
     def fetch_db_version(self, default=None):
@@ -157,7 +170,7 @@ class ProjectDB:
             self._execute(sql_query)
             self._inited_tables[VERSION_TABLE_NAME] = True
         sql_query = f"SELECT {VERSION_TABLE_NAME} FROM {VERSION_TABLE_NAME}"
-        _version, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+        _version, _ = self._query(sql_query, fetch=FetchType.ONE)
         if _version is None:
             if default is None:
                 raise RuntimeError(
@@ -174,7 +187,7 @@ class ProjectDB:
             self._execute(sql_query)
             self._inited_tables[PROJECT_ID_TABLE_NAME] = True
         sql_query = f"SELECT {PROJECT_ID_TABLE_NAME} FROM {PROJECT_ID_TABLE_NAME}"
-        _projectid, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+        _projectid, _ = self._query(sql_query, fetch=FetchType.ONE)
         if _projectid is None:
             if default is None:
                 raise RuntimeError(
@@ -188,7 +201,7 @@ class ProjectDB:
     def get_id_of_run_id(self, run_id: str):
         try:
             sql_query = f"SELECT {ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {RUN_ID_COLUMN_NAME} == '{run_id}'"
-            _id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+            _id, _ = self._query(sql_query, fetch=FetchType.ONE)
             return _id[0]
         except:
             return None
@@ -219,7 +232,7 @@ class ProjectDB:
             _, _ = self._execute(sql_query, metadata, id_of_run_id)
         # get name
         sql_query = f"SELECT {METADATA_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
-        (metadata,), _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+        (metadata,), _ = self._query(sql_query, fetch=FetchType.ONE)
         metadata = (
             json.loads(metadata) if metadata else {}
         )  # if does not have metadata, return an empty one
@@ -228,7 +241,7 @@ class ProjectDB:
     def get_run_id_of_id(self, id_of_run_id):
         try:
             sql_query = f"SELECT {RUN_ID_COLUMN_NAME} FROM {RUN_IDS_TABLE_NAME} WHERE {ID_COLUMN_NAME} == {id_of_run_id}"
-            run_id, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+            run_id, _ = self._query(sql_query, fetch=FetchType.ONE)
             return run_id[0]
         except:
             return None
@@ -261,7 +274,7 @@ class ProjectDB:
         else:
             sql_query = f"SELECT DISTINCT series FROM {table_name}"
             args = ()
-        result, _ = self._query(sql_query, *args, fetch=DbQueryFetchType.ALL)
+        result, _ = self._query(sql_query, *args, fetch=FetchType.ALL)
         return [result for (result,) in result]
 
     def do_limit_num_row_for(
@@ -272,10 +285,10 @@ class ProjectDB:
         sql_query = f"SELECT count(*) from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id}"  # count rows for run id in specific table
         if series is not None:
             sql_query += f" AND {SERIES_COLUMN_NAME} = '{series}'"
-        num_rows, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+        num_rows, _ = self._query(sql_query, fetch=FetchType.ONE)
         if num_rows[0] > num_row_limit:  # num rows exceeded limit
             sql_query = f"SELECT {ID_COLUMN_NAME} from {table_name} WHERE {RUN_ID_COLUMN_NAME} = {run_id} ORDER BY {ID_COLUMN_NAME} DESC LIMIT 1 OFFSET {num_row_limit - 1}"  # get max id to delete of row for specific run id
-            max_id_to_del, _ = self._query(sql_query, fetch=DbQueryFetchType.ONE)
+            max_id_to_del, _ = self._query(sql_query, fetch=FetchType.ONE)
             sql_query = f"DELETE FROM {table_name} WHERE {ID_COLUMN_NAME} < {max_id_to_del[0]} AND {RUN_ID_COLUMN_NAME} = {run_id}"
             if series is not None:
                 sql_query += f" AND {SERIES_COLUMN_NAME} = '{series}'"
@@ -310,14 +323,14 @@ class ProjectDB:
         )
         return lastrowid
 
-    def read_json(self, table_name: str, condition: QueryCondition = None):
+    def read_json(self, table_name: str, condition: ProjectDbQueryCondition = None):
         if not self.table_exist(table_name):
             return []
         if condition and isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
         cond_str, cond_vars = condition.dumpt() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {cond_str}"
-        result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
+        result, _ = self._query(sql_query, *cond_vars, fetch=FetchType.ALL)
         result = [
             {
                 ID_COLUMN_NAME: w,
@@ -349,12 +362,12 @@ class ProjectDB:
     def get_status(self, run_id: str = None, series: str = None):
         if not self.table_exist(STATUS_TABLE_NAME):
             return {}
-        condition = QueryCondition(run_id=run_id, series=series)
+        condition = ProjectDbQueryCondition(run_id=run_id, series=series)
         if isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(run_id)
         cond_str, cond_vars = condition.dumpt()
         sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {cond_str}"
-        query_result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
+        query_result, _ = self._query(sql_query, *cond_vars, fetch=FetchType.ALL)
         result = {}
         for id_of_runid, series_name, value in query_result:
             run_id = self.get_run_id_of_id(id_of_runid)
@@ -396,14 +409,16 @@ class ProjectDB:
         )
         return lastrowid
 
-    def read_blob(self, table_name: str, condition: QueryCondition = None, meta_only=False):
+    def read_blob(
+        self, table_name: str, condition: ProjectDbQueryCondition = None, meta_only=False
+    ):
         if not self.table_exist(table_name):
             return []
         if condition and isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
         cond_str, cond_vars = condition.dumpt() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {cond_str}"
-        result, _ = self._query(sql_query, *cond_vars, fetch=DbQueryFetchType.ALL)
+        result, _ = self._query(sql_query, *cond_vars, fetch=FetchType.ALL)
         return result
 
     @classmethod
@@ -435,6 +450,7 @@ class ProjectDB:
 
 if not os.path.exists(DB_PROJECT_FILE_FOLDER):
     # create history root dir
+    logger.info(f"history file directory not exist, trying to create at {DB_PROJECT_FILE_FOLDER}")
     os.makedirs(DB_PROJECT_FILE_FOLDER)
 # check if is dir
 assert os.path.isdir(DB_PROJECT_FILE_FOLDER), f"{DB_PROJECT_FILE_FOLDER} is not a directory."

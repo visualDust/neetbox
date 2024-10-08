@@ -12,12 +12,14 @@ from neetbox.logging import Logger
 from ._manager import manager
 
 router = APIRouter()
-logger = Logger("WS SERVER", skip_writers_names=["ws"])
+logger = Logger("Websocket.Project", skip_writers_names=["ws"])
 
 
 @router.websocket("/")
-async def websocket_endpoint(websocket: WebSocket):
+async def project_ws_endpoint(websocket: WebSocket):
     ws_client = await manager.handshake(websocket)
+    if not ws_client:
+        return
     try:
         while True:
             message = await websocket.receive_text()

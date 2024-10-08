@@ -2,27 +2,17 @@
 #
 # Author: GavinGong aka VisualDust
 # Github: github.com/visualDust
-# Date:   20231120
+# Date:   20240116
 
 import json
-from enum import Enum
 from typing import Dict, Tuple, Union
 
 from neetbox._protocol import *
 
-
-class DbQueryFetchType(str, Enum):
-    ALL = "all"
-    ONE = "one"
-    MANY = "many"
+from ..abc import SortType
 
 
-class DbQuerySortType(str, Enum):
-    ASC = "ASC"
-    DESC = "DESC"
-
-
-class QueryCondition:
+class ProjectDbQueryCondition:
     def __init__(
         self,
         id: Union[Tuple[int, int], int] = None,
@@ -30,7 +20,7 @@ class QueryCondition:
         series: str = None,
         run_id: Union[str, int] = None,
         limit: int = None,
-        order: Dict[str, DbQuerySortType] = {},
+        order: Dict[str, SortType] = {},
     ) -> None:
         self.id_range = id if isinstance(id, tuple) else (id, None)
         self.timestamp_range = timestamp if isinstance(timestamp, tuple) else (timestamp, None)
@@ -40,7 +30,7 @@ class QueryCondition:
         self.order = {order[0], order[1]} if isinstance(order, tuple) else order
 
     @classmethod
-    def from_json(cls, json_data):
+    def loads(cls, json_data):
         if isinstance(json_data, str):
             json_data = json.loads(json_data)
         """
@@ -97,7 +87,7 @@ class QueryCondition:
         if "order" in json_data:
             order = json_data["order"]
             assert isinstance(order, dict)
-        return QueryCondition(
+        return ProjectDbQueryCondition(
             id=id_range,
             timestamp=timestamp_range,
             series=series,
@@ -145,7 +135,7 @@ class QueryCondition:
         if self.order:
             for _col_name, _sort in self.order.items():
                 _order_cond += (
-                    f"{_col_name} {_sort.value if isinstance(_sort,DbQuerySortType) else _sort}, "
+                    f"{_col_name} {_sort.value if isinstance(_sort,SortType) else _sort}, "
                 )
             _order_cond = _order_cond[:-2]  # remove last ','
         # === LIMIT ===

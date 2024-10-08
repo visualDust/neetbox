@@ -11,10 +11,10 @@ from fastapi import APIRouter, Body, File, Form, HTTPException, Response, Upload
 from neetbox._protocol import *
 from neetbox.logging import Logger, LogLevel
 
-from ..._bridge import Bridge
-from ...db import QueryCondition
+from ....db.project.condition import ProjectDbQueryCondition
+from ._bridge import Bridge
 
-logger = Logger("FASTAPI", skip_writers_names=["ws"])
+logger = Logger("Project APIs", skip_writers_names=["ws"])
 logger.log_level = LogLevel.DEBUG
 
 router = APIRouter()
@@ -43,7 +43,7 @@ def _project_status_from_bridge(bridge: Bridge):
             break
     return {
         PROJECT_ID_KEY: bridge.project_id,
-        "storage": bridge.historyDB.local_storage_size_in_bytes,
+        "storage": bridge.historyDB.size,
         "online": bridge.is_online(),
         NAME_KEY: name_of_project,
         "runids": run_id_info_list,
@@ -57,7 +57,7 @@ def get_history_json_of(project_id: str, table_name: str, condition=Union[dict, 
         if isinstance(condition, str):
             condition = json.loads(condition)
         if isinstance(condition, dict):
-            condition = QueryCondition.from_json(condition)
+            condition = ProjectDbQueryCondition.loads(condition)
     except Exception as e:  # if failed to parse
         error_message = f"failed to parse condition from {type(condition)}{condition} :{e}"
         logger.debug(error_message, series="400")
@@ -107,12 +107,15 @@ async def get_status_of(project_id, run_id):
 async def set_get_metadata_of_run_id(project_id: str, run_id: str, metadata: dict = Body(...)):
     bridge = Bridge.of_id(project_id)
     try:
-        old_metadata = bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id)  # get old metadata
-        old_metadata.update(metadata)
+        metadata_in_db = bridge.historyDB.fetch_metadata_of_run_id(
+            run_id=run_id
+        )  # get old metadata
+        metadata_in_db.update(metadata)
         # Assuming the method to update metadata in your database might look like this
-        bridge.historyDB.update_metadata_of_run_id(run_id=run_id, metadata=old_metadata)
-        return bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id)
+        # bridge.historyDB.update_metadata_of_run_id(run_id=run_id, metadata=old_metadata)
+        return bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id, metadata=metadata_in_db)
     except Exception as e:  # Replace with your specific database exception
+        logger.debug(f"failed to update metadata of run_id {run_id}: {e}")
         raise HTTPException(status_code=404, detail={ERROR_KEY: str(e)})
 
 
@@ -153,7 +156,7 @@ async def get_image_of(project_id: str, image_id: int, meta: Optional[bool] = No
         raise HTTPException(status_code=404, detail={ERROR_KEY: "project id not found"})
     # Database logic here
     [(_, _, meta_data, image)] = Bridge.of_id(project_id).read_blob_from_history(
-        table_name="image", condition=QueryCondition(id=image_id), meta_only=meta
+        table_name="image", condition=ProjectDbQueryCondition(id=image_id), meta_only=meta
     )
     if meta:
         return Response(meta_data, media_type="application/json")
@@ -167,7 +170,7 @@ async def get_history_image_metadata_of(project_id: str, condition: Optional[str
         raise HTTPException(status_code=404, detail={ERROR_KEY: "project id not found"})
     try:
         condition_json = json.loads(condition) if condition else {}
-        condition = QueryCondition.from_json(condition_json)
+        condition = ProjectDbQueryCondition.loads(condition_json)
     except Exception as e:
         raise HTTPException(status_code=400, detail={ERROR_KEY: str(e)})
     query_results = Bridge.of_id(project_id).read_blob_from_history(
@@ -181,7 +184,7 @@ async def get_history_image_metadata_of(project_id: str, condition: Optional[str
 async def get_history_scalar_of(project_id: str, condition: str = None):
     try:
         condition_json = json.loads(condition) if condition else "{}"
-        condition = QueryCondition.from_json(condition_json)
+        condition = ProjectDbQueryCondition.loads(condition_json)
     except Exception as e:
         raise HTTPException(status_code=400, detail={ERROR_KEY: str(e)})
     return get_history_json_of(project_id=project_id, table_name="scalar", condition=condition)
@@ -191,7 +194,7 @@ async def get_history_scalar_of(project_id: str, condition: str = None):
 async def get_history_progress_of(project_id: str, condition: str = None):
     try:
         condition_json = json.loads(condition) if condition else "{}"
-        condition = QueryCondition.from_json(condition_json)
+        condition = ProjectDbQueryCondition.loads(condition_json)
     except Exception as e:
         raise HTTPException(status_code=400, detail={ERROR_KEY: str(e)})
     return get_history_json_of(project_id=project_id, table_name="progress", condition=condition)
