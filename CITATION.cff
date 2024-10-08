@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "You can cite NEETBOX as below."
+authors:
+- family-names: "Gong"
+  given-names: "Zhaoting(Gavin)"
+- family-names: "Li"
+  given-names: "Deming"
+title: "neetbox"
+version: 0.4.0
+date-released: 2023-12-23
+url: "https://github.com/visualDust/neetbox"
