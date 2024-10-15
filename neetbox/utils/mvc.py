@@ -27,13 +27,14 @@ def patch(func):
     """Patch a function into a class type
 
     Args:
-        func (Function): A funtion that takes at least one argument with a specific class type 'self:YourClass'
+        func (Function): A function that takes at least one argument with a specific class type 'self:YourClass'
 
     Returns:
-        funtion: patched function
+        function: patched function
     """
     cls = next(iter(func.__annotations__.values()))
-    name = func.__defaults__[0]
+    defaults = func.__defaults__ or ()
+    name = defaults[0] if defaults else None
     func.__qualname__ = f"{cls.__name__}.{func.__name__}"
     func.__module__ = cls.__module__
     if name is None:
