@@ -12,11 +12,11 @@ from uuid import uuid4
 
 class _RegEndpoint:
     def __init__(self, what, tags=None):
-        """Generate a massive type which contains both the regietered object and it's tags
+        """Generate a massive type which contains both the registered object and its tags
 
         Args:
-            what (_type_): The object being registered
-            tags (_type_, optional): The tags. Defaults to None.
+            what (Any): The object being registered
+            tags (Optional[Union[str, Sequence[str]]], optional): The tags. Defaults to None.
         """
         self.what = what
         self.tags = tags
@@ -26,8 +26,8 @@ class _RegEndpoint:
 
 
 def _tags_match(search_tags, in_tags) -> bool:
-    # check if all tags in f_tags are listed in s_tags
-    if type(search_tags) is not list:
+    """Check if all tags in search_tags are listed in in_tags."""
+    if not isinstance(search_tags, list):
         search_tags = [search_tags]
     for _t in search_tags:
         if _t not in in_tags:
@@ -36,14 +36,13 @@ def _tags_match(search_tags, in_tags) -> bool:
 
 
 class Registry(dict):
-
     """Register Helper Class
-    A Register is a 'dict[str:any]'
-    Registers are stored in a pool of type dict[str:Register]
+    A Registry is a 'dict[str:any]'
+    Registries are stored in a pool of type dict[str:Registry]
     """
 
-    # class level
-    _registry_pool: Dict[str, "Registry"] = dict()  # all registeres are stored here
+    # Class-level registry pool
+    _registry_pool: Dict[str, "Registry"] = dict()
 
     def __new__(cls, name: str) -> "Registry":
         if name in cls._registry_pool:
@@ -61,23 +60,20 @@ class Registry(dict):
         self,
         what: Any,
         name: Optional[str] = None,
-        overwrite: Union[bool, Callable] = lambda x: x + f"_{uuid4()}",
+        overwrite: Union[bool, Callable[[str], str]] = lambda x: x + f"_{uuid4()}",
         tags: Optional[Union[str, Sequence[str]]] = None,
     ):
-        # if not (inspect.isfunction(what) or inspect.isclass(what)):
-        #     logger.warn(f"Registering {type(what)}, which is not a class or a callable.")
         name = name or what.__name__
-        if type(tags) is str:
+        if isinstance(tags, str):
             tags = [tags]
         _endp = _RegEndpoint(what, tags)
         if name in self.keys():
-            if isinstance(overwrite, Callable):
+            if callable(overwrite):
                 name = overwrite(name)
-            elif overwrite == True:
+            elif overwrite is True:
                 pass
             else:
-                raise RuntimeError(f"Unknown overwrite type.")
-
+                raise RuntimeError("Unknown overwrite type.")
             self[name] = _endp
         else:
             self[name] = _endp
@@ -87,10 +83,13 @@ class Registry(dict):
         self,
         *,
         name: Optional[str] = None,
-        overwrite: Union[bool, Callable] = lambda x: x + f"_{uuid4()}",
+        overwrite: Union[bool, Callable[[str], str]] = lambda x: x + f"_{uuid4()}",
         tags: Optional[Union[str, Sequence[str]]] = None,
     ):
-        return functools.partial(self._register, name=name, overwrite=overwrite, tags=tags)
+        def decorator(what):
+            self._register(what, name=name, overwrite=overwrite, tags=tags)
+            return what
+        return decorator
 
     @classmethod
     def find(
@@ -99,13 +98,9 @@ class Registry(dict):
         tags: Optional[Union[str, List[str]]] = None,
     ):
         if not name and not tags:
-            # logger.err(
-            #     ValueError("Please provide at least the name or the tags you want to find."),
-            #     reraise=True,
-            # )
-            pass
+            raise ValueError("Please provide at least the name or the tags you want to find.")
         results = []
-        # filter name
+        # Filter by name
         for reg_name, reg in cls._registry_pool.items():
             private_sign = "__"
             if not reg_name.startswith(private_sign):
@@ -113,37 +108,41 @@ class Registry(dict):
                     results += [(_n, _o) for _n, _o in reg.items(_real_type=False)]
                 elif name in reg:
                     results.append((name, reg[name]))
-
-        # filter tags
-        if type(tags) is not list:
+        # Filter by tags
+        if not isinstance(tags, list):
             tags = [tags]
-
-        results = {_name: _endp.what for _name, _endp in results if _tags_match(tags, _endp.tags)}
+        results = {
+            _name: _endp.what
+            for _name, _endp in results
+            if _tags_match(tags, _endp.tags)
+        }
         return results
 
     def filter(self, tags: Optional[Union[str, Sequence[str]]] = None):
         results = {
-            _name: _endp.what for _name, _endp in self._items() if _tags_match(tags, _endp.tags)
+            _name: _endp.what
+            for _name, _endp in self._items()
+            if _tags_match(tags, _endp.tags)
         }
         return results
 
     def __getitem__(self, __key: str) -> Any:
         _v = self.__dict__[__key]
-        if type(_v) is _RegEndpoint:
+        if isinstance(_v, _RegEndpoint):
             _v = _v.what
         return _v
 
     def get(self, key: str, **kwargs):
         if key in self.__dict__:
             _v = self.__dict__[key]
-            if type(_v) is _RegEndpoint:
+            if isinstance(_v, _RegEndpoint):
                 _v = _v.what
             return _v
         else:
             if "default" in kwargs:
                 return kwargs["default"]
             else:
-                raise RuntimeError(f"key {key} not found")
+                raise RuntimeError(f"Key '{key}' not found")
 
     def __setitem__(self, k, v) -> None:
         self.__dict__[k] = v
@@ -161,28 +160,49 @@ class Registry(dict):
         return self.__dict__.update(*args, **kwargs)
 
     def keys(self):
-        return [_item[0] for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
+        return [
+            _item[0]
+            for _item in self.__dict__.items()
+            if isinstance(_item[1], _RegEndpoint)
+        ]
 
     def values(self):
-        return [_item[1].what for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
+        return [
+            _item[1].what
+            for _item in self.__dict__.items()
+            if isinstance(_item[1], _RegEndpoint)
+        ]
 
     def items(self, _real_type=True):
-        _legal_items = [_item for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
+        _legal_items = [
+            _item
+            for _item in self.__dict__.items()
+            if isinstance(_item[1], _RegEndpoint)
+        ]
         if _real_type:
-            _legal_items = [(_k, _v.what) for _k, _v in _legal_items if type(_v) is _RegEndpoint]
+            _legal_items = [
+                (_k, _v.what)
+                for _k, _v in _legal_items
+                if isinstance(_v, _RegEndpoint)
+            ]
         return _legal_items
 
     def _items(self, _real_type=True):
-        _legal_items = [_item for _item in self.__dict__.items() if type(_item[1]) is _RegEndpoint]
+        _legal_items = [
+            _item
+            for _item in self.__dict__.items()
+            if isinstance(_item[1], _RegEndpoint)
+        ]
         if _real_type:
-            _legal_items = [(_k, _v) for _k, _v in _legal_items if type(_v) is _RegEndpoint]
+            _legal_items = [
+                (_k, _v)
+                for _k, _v in _legal_items
+                if isinstance(_v, _RegEndpoint)
+            ]
         return _legal_items
 
     def pop(self, *args):
         return self.__dict__.pop(*args)
-
-    def __cmp__(self, dict_):
-        return self.__cmp__(self.__dict__, dict_)
 
     def __contains__(self, item):
         return item in self.__dict__
