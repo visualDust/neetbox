@@ -12,8 +12,6 @@ from datetime import datetime
 from threading import Lock
 from typing import Union
 
-from arrow import get
-
 from neetbox._protocol import *
 from neetbox.config.user import get as get_global_config
 from neetbox.logging import Logger
