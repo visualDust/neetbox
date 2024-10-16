@@ -62,9 +62,14 @@ class ProjectDB(ManageableDB):
             )
         _db_file_version = new_dbc.fetch_db_version(NEETBOX_VERSION)
         if NEETBOX_VERSION != _db_file_version:
-            logger.warn(
-                f"History file version not match: reading from version {_db_file_version} with neetbox version {NEETBOX_VERSION}"
-            )
+            if get_global_config("bypass-db-version-check"):
+                logger.warn(
+                    f"History file version not match: reading from version {_db_file_version} with neetbox version {NEETBOX_VERSION}"
+                )
+            else:
+                raise RuntimeError(
+                    f"History file version not match: reading from version {_db_file_version} with neetbox version {NEETBOX_VERSION}. If you want to bypass this check, set 'bypass-db-version-check' to True in global config. This may cause unexpected behavior."
+                )
         cls._path2dbc[path] = new_dbc
         manager.current[project_id] = new_dbc
         new_dbc.project_id = project_id
@@ -425,7 +430,11 @@ class ProjectDB(ManageableDB):
     def load_db_of_path(cls, path):
         if not os.path.isfile(path):
             raise RuntimeError(f"{path} is not a file")
-        conn = ProjectDB(path=path)
+        try:
+            conn = ProjectDB(path=path)
+        except Exception as e:
+            logger.err(f"failed to load db from {path} cause {e}")
+            return None
         return conn
 
     @classmethod

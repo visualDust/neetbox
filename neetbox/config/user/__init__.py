@@ -19,9 +19,29 @@ from neetbox.utils.massive import check_read_toml
 _GLOBAL_CONFIG = {
     MACHINE_ID_KEY: str(uuid4()),
     "vault": get_create_neetbox_data_directory(),
+    "bypass-db-version-check": False,
 }
 
 _GLOBAL_CONFIG_FILE_NAME = f"neetbox.global.toml"
+
+
+def update_dict_recursively_on_missing_keys(A, B):
+    """
+    Update dictionary B with keys from dictionary A. Add missing keys from A to B,
+    but do not overwrite existing keys in B. Handles nested dictionaries recursively.
+    """
+    missed_keys = []
+    for key, value in A.items():
+        if key not in B:
+            missed_keys.append(key)
+            B[key] = value
+        else:
+            if isinstance(value, dict) and isinstance(B[key], dict):
+                missed_keys += update_dict_recursively_on_missing_keys(value, B[key])
+            else:
+                # Do not modify B[key] if it already exists
+                pass
+    return missed_keys
 
 
 def overwrite_create_local(config: dict):
@@ -40,7 +60,9 @@ def read_create_local():
     # read local file
     user_cfg = check_read_toml(config_file_path)
     assert user_cfg
+    update_dict_recursively_on_missing_keys(_GLOBAL_CONFIG, user_cfg)
     _GLOBAL_CONFIG.update(user_cfg)
+    overwrite_create_local(_GLOBAL_CONFIG)
 
 
 def set(key, value):
