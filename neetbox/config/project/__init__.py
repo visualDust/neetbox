@@ -12,6 +12,7 @@ import types
 import uuid
 from importlib.metadata import version
 from threading import Thread
+from time import sleep
 from typing import Union
 from uuid import uuid4
 
@@ -184,12 +185,9 @@ def _load_workspace_config(folder=".", load_only=False):
         _obtain_new_run_id()  # obtain new run id
 
     if "version" not in config_from_file or config_from_file["version"] != NEETBOX_VERSION:
-        print(
-            RuntimeError(
-                f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config file version {config_from_file['version']} in {os.path.abspath(config_file_path)}. Here are two possible solutions:\n - Try to install specific neetbox version to {NEETBOX_VERSION} by 'pip install -U neetbox=={NEETBOX_VERSION}' \n - Delete neetbox.toml and recreate by 'neet init' \n - Modify config file manually to match neetbox version {NEETBOX_VERSION} \n"
-            )
+        raise RuntimeError(
+            f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config file version {config_from_file['version']} in {os.path.abspath(config_file_path)}. Here are two possible solutions:\n - Try to install specific neetbox version to {NEETBOX_VERSION} by 'pip install -U neetbox=={NEETBOX_VERSION}' \n - Delete neetbox.toml and recreate by 'neet init' \n - Modify config file manually to match neetbox version {NEETBOX_VERSION} \n"
         )
-        os._exit(-1)
     _update_default_workspace_config_with(config_from_file)  # load config file in
 
     if load_only:
