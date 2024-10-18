@@ -1335,9 +1335,9 @@ __metadata:
   linkType: hard
 
 "@semi-bot/semi-theme-nyx-c@npm:^1.0.8":
-  version: 1.0.8
-  resolution: "@semi-bot/semi-theme-nyx-c@npm:1.0.8"
-  checksum: 6302a443f846485cc68cba929bb6ac82ce1597c6c2cfe7eddc045cb1ca4fbd4dc085cd8b8a09dafe1edac5f7f55f7b5af30771019fd2ec1f59b4a5af078a3315
+  version: 1.0.9
+  resolution: "@semi-bot/semi-theme-nyx-c@npm:1.0.9"
+  checksum: f10c91b6204fa1e0c4adc83df2109a26002cf1c72e9461aa0f07b99d6cd40f70963a30b412072e77c61dc7a7bae720143a1a0cb6deff4d623e40afe0879ac6a3
   languageName: node
   linkType: hard
 
