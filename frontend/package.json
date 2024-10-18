@@ -29,7 +29,7 @@
     "react-router-dom": "^6.19.0",
     "styled-components": "^6.1.1",
     "swr": "^2.2.4",
-    "vite-plugin-semi-theme": "^0.5.0"
+    "vite-plugin-semi-theme": "^0.6.0"
   },
   "devDependencies": {
     "@douyinfe/semi-rspack-plugin": "^2.48.0",

@@ -4687,7 +4687,7 @@ __metadata:
     swr: "npm:^2.2.4"
     typescript: "npm:^5.2.2"
     vite: "npm:^5.4.9"
-    vite-plugin-semi-theme: "npm:^0.5.0"
+    vite-plugin-semi-theme: "npm:^0.6.0"
   languageName: unknown
   linkType: soft
 
@@ -6260,12 +6260,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-semi-theme@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "vite-plugin-semi-theme@npm:0.5.0"
+"vite-plugin-semi-theme@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "vite-plugin-semi-theme@npm:0.6.0"
   dependencies:
     sass: "npm:^1.49.8"
-  checksum: 10c0/8537b8b6a26715223d8605bdd4dfe4a481ccf4c8eec29a58b6b1e0d1953270a2be31e05899869d225e6f74bf03544eef572c2087e3c842c13b4853fa97b03384
+  checksum: 10c0/29b26f4697bcba9866742e515c15fb2980e416a413f79f2d0fb1557bdaa1c093a489232361a17325adcb41716a24bc0c33088cd752d34ed33989be9853c3ea53
   languageName: node
   linkType: hard
 
