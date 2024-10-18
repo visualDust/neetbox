@@ -2630,12 +2630,12 @@ __metadata:
   linkType: hard
 
 "echarts@npm:^5.4.3":
-  version: 5.4.3
-  resolution: "echarts@npm:5.4.3"
+  version: 5.5.1
+  resolution: "echarts@npm:5.5.1"
   dependencies:
     tslib: "npm:2.3.0"
-    zrender: "npm:5.4.4"
-  checksum: 10c0/d2040d3fabbe5f0a2c230cceedf9f12361131a221f81cc30bcb75e98e1ee99a0764b1d7372a23fab9a020f36f5549cf0835f14dfa580907f56ccf0146a99a7bd
+    zrender: "npm:5.6.0"
+  checksum: 10c0/2f7e3037f17fda99d977092767943f4d9b0c8f886f86701ec88591707713b5e5fd683e56086b6ba5245b322f088184bdb06eac488234c20a1869b08cb6b4e523
   languageName: node
   linkType: hard
 
@@ -6464,11 +6464,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zrender@npm:5.4.4":
-  version: 5.4.4
-  resolution: "zrender@npm:5.4.4"
+"zrender@npm:5.6.0":
+  version: 5.6.0
+  resolution: "zrender@npm:5.6.0"
   dependencies:
     tslib: "npm:2.3.0"
-  checksum: 10c0/7c298595c506556b9182edbf94894b9311ebf9cf698934863521232a37dbdcd1c530f895ae2d29c2c170a765fdb390583ba331743f8c92cb6a077f746f6f52d8
+  checksum: 10c0/f7c5a1739dfec60b9bead0d0657c47868391b1009cc82a603f9dbf247fa625df28dcdb3e7b2e18404657e2c987f95e0e1bb5613519c2d823854f3dda44e2ee96
   languageName: node
   linkType: hard
