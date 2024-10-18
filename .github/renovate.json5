@@ -1,4 +1,19 @@
-// https://docs.renovatebot.com/configuration-options/
 {
-  extends: ["github>SigureMo/renovate-config"],
+  "extends": ["config:base", "schedule:weekly"],
+  "labels": ["dependencies"],
+  "pin": false,
+  "commitMessagePrefix": "⬆️ deps: ",
+  "dependencyDashboardTitle": "📈 Dependency Dashboard",
+  "packageRules": [
+    {
+      "matchCategories": ["python"],
+      "addLabels": ["py"],
+      "assignees": ["me@puqing.work", "gavin@gong.host"]
+    },
+    {
+      "matchPackageNames": ["node"],
+      "addLabels": ["js"],
+      "assignees": ["me@yuuza.net"]
+    }
+  ]
 }
