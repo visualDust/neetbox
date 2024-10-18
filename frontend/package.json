@@ -29,12 +29,12 @@
     "react-router-dom": "^6.19.0",
     "styled-components": "^6.1.1",
     "swr": "^2.2.4",
-    "vite-plugin-semi-theme": "^0.5.0"
+    "vite-plugin-semi-theme": "^0.6.0"
   },
   "devDependencies": {
     "@douyinfe/semi-rspack-plugin": "^2.48.0",
-    "@rsbuild/core": "^0.5.3",
-    "@rsbuild/plugin-react": "^0.1.8",
+    "@rsbuild/core": "^0.7.0",
+    "@rsbuild/plugin-react": "^0.7.0",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
@@ -54,5 +54,5 @@
     "trailingComma": "all",
     "printWidth": 110
   },
-  "packageManager": "yarn@4.0.2"
+  "packageManager": "yarn@4.5.0"
 }
