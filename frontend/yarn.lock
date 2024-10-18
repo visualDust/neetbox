@@ -1643,13 +1643,13 @@ __metadata:
   linkType: hard
 
 "@uiw/react-json-view@npm:^2.0.0-alpha.10":
-  version: 2.0.0-alpha.10
-  resolution: "@uiw/react-json-view@npm:2.0.0-alpha.10"
+  version: 2.0.0-alpha.29
+  resolution: "@uiw/react-json-view@npm:2.0.0-alpha.29"
   peerDependencies:
     "@babel/runtime": ">=7.10.0"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
-  checksum: d1278e92320251b1b61ecacd5c701989bd732ce4155b14a00b674d151c5b0da1b4a043b8696d23675006bf345559e56492960e33a9c0f40bc3c18eed031a136d
+  checksum: 0ba50ecfb5e755c9297fe77e201e5daa58d6761ad7ce944caebb92b1db75de1c7e5d3b9515019eb8425d39b8c0f553d82f687df824a4042a780e72ffabeb1db6
   languageName: node
   linkType: hard
 
