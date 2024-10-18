@@ -14,12 +14,12 @@
     {
       "matchCategories": ["python"],
       "addLabels": ["python"],
-      "assignees": ["AndPuQing", "visualDust"]
+      "assignees": ["@AndPuQing", "@visualDust"]
     },
     {
       "matchCategories": ["node"],
       "addLabels": ["javascript"],
-      "assignees": ["lideming"]
+      "assignees": ["@lideming"]
     },
     {
       "matchPackageNames": "@douyinfe**",
