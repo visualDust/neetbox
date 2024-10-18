@@ -39,7 +39,7 @@ gputil = "^1.4.0"
 psutil = "^6.0.0"
 fastapi = "^0.108.0"
 python-multipart = "^0.0.12"
-uvicorn = "^0.25.0"
+uvicorn = "^0.32.0"
 websockets = "^12.0"
 pyjwt = "^2.8.0"
 
