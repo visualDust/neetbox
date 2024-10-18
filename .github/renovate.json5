@@ -1,19 +1,29 @@
 {
-  "extends": ["config:base", "schedule:weekly"],
+  "extends": ["config:base", "schedule:weekly", "group:allNonMajor"],
   "labels": ["dependencies"],
   "pin": false,
   "commitMessagePrefix": "⬆️ deps: ",
   "dependencyDashboardTitle": "📈 Dependency Dashboard",
   "packageRules": [
     {
-      "matchCategories": ["python"],
-      "addLabels": ["py"],
-      "assignees": ["me@puqing.work", "gavin@gong.host"]
+      "groupName": "dependencies (non-major)",
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true,
+      "automergeStrategy": "squash"
     },
     {
-      "matchPackageNames": ["node"],
-      "addLabels": ["js"],
-      "assignees": ["me@yuuza.net"]
+      "matchCategories": ["python"],
+      "addLabels": ["python"],
+      "assignees": ["AndPuQing", "visualDust"]
+    },
+    {
+      "matchCategories": ["node"],
+      "addLabels": ["javascript"],
+      "assignees": ["lideming"]
+    },
+    {
+      "matchPackageNames": "@douyinfe**",
+      "groupName": ["douyinfe"],
     }
   ]
 }
