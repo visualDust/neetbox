@@ -27,7 +27,7 @@ classifiers = [
 include = ["neetbox/frontend_dist/**/*"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.13,<3.14"
 toml = ">0.10"
 setproctitle = ">=1.0"
 rich = ">=13"
