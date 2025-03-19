@@ -12,11 +12,11 @@ from datetime import datetime
 from threading import Lock
 from typing import Union
 
+from vdtoys.localstorage import ResourceLoader, get_file_size_in_bytes
+
 from neetbox._protocol import *
 from neetbox.config.user import get as get_global_config
 from neetbox.logging import Logger
-from neetbox.utils import ResourceLoader
-from neetbox.utils.localstorage import get_file_size_in_bytes
 
 from .._manager import manager
 from ..abc import FetchType, ManageableDB, SortType

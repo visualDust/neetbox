@@ -11,11 +11,11 @@ from fastapi import WebSocket
 from rich import box
 from rich.console import Console
 from rich.table import Table
+from vdtoys.mvc import Singleton
 
 from neetbox._protocol import *
 from neetbox.logging import Logger
 from neetbox.server.fastapi.routers.project._bridge import Bridge
-from neetbox.utils.mvc import Singleton
 
 console = Console()
 logger = Logger("Websocket.Project", skip_writers_names=["ws"])

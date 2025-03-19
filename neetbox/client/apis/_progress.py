@@ -7,8 +7,9 @@
 from time import time
 from uuid import uuid4
 
+from vdtoys.framing import get_caller_info_traceback
+
 from neetbox._protocol import *
-from neetbox.utils.framing import get_caller_info_traceback
 from neetbox.utils.massive import describe_object
 
 from .._client import connection
@@ -53,6 +54,31 @@ class Progress:
     def __iter__(self):
         return self
 
+    @classmethod
+    def _update(
+        cls,
+        *,
+        name: str,
+        what_is_current: any,
+        done: int,
+        total: int,
+        rate: float,
+        timestamp=None,
+    ):
+        connection.ws_send(
+            event_type=EVENT_TYPE_NAME_PROGRESS,
+            series=name,
+            payload={
+                NAME_KEY: name,
+                "step": done,
+                "current": what_is_current,
+                "total": total,
+                "rate": rate,
+            },
+            timestamp=timestamp or get_timestamp(),
+            _history_len=1,
+        )
+
     def __next__(self):
         if self.total and self.done > self.total:
             raise StopIteration
@@ -61,18 +87,13 @@ class Progress:
         rate = self.done / elapsed_time if elapsed_time > 0 else 0  # Calculate the iteration rate
         iter_next = next(self.iterator)
 
-        connection.ws_send(
-            event_type=EVENT_TYPE_NAME_PROGRESS,
-            series=self.caller_identity.strid + (self.name or ""),
-            payload={
-                NAME_KEY: self.name or self.caller_identity.last_describable,
-                "step": self.done,
-                "current": describe_object(iter_next, length_limit=16),
-                "total": self.total,
-                "rate": rate if self.done > 1 else -1.0,
-            },
+        self.__class__._update(
+            name=self.caller_identity.strid + (self.name or ""),
+            done=self.done,
+            what_is_current=describe_object(iter_next, length_limit=16),
+            total=self.total,
+            rate=rate if self.done > 1 else -1.0,
             timestamp=self.timestamp,
-            _history_len=1,
         )
         return iter_next
 

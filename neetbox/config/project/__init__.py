@@ -17,9 +17,9 @@ from typing import Union
 from uuid import uuid4
 
 import toml
+from vdtoys.framing import get_frame_module_traceback
 
 from neetbox._protocol import NAME_KEY, PROJECT_ID_KEY, RUN_ID_KEY
-from neetbox.utils.framing import get_frame_module_traceback
 from neetbox.utils.massive import check_read_toml, update_dict_recursively
 
 CONFIG_FILE_NAME = f"neetbox.toml"

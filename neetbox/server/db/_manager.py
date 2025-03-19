@@ -8,9 +8,10 @@ import atexit
 from collections import defaultdict
 from typing import Dict
 
+from vdtoys.framing import get_caller_info_traceback
+from vdtoys.mvc import Singleton
+
 from neetbox.logging import Logger
-from neetbox.utils.framing import get_caller_info_traceback
-from neetbox.utils.mvc import Singleton
 
 from .abc import ManageableDB
 

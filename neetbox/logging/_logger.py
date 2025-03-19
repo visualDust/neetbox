@@ -10,8 +10,8 @@ from datetime import date
 from enum import Enum
 from typing import Callable, Optional, Union
 
-from neetbox.utils import Registry
-from neetbox.utils.framing import get_caller_info_traceback
+from vdtoys.framing import get_caller_info_traceback
+from vdtoys.registry import Registry
 
 from ._formatting import LogStyle, RawLog
 from .writers import FileLogWriter
@@ -104,7 +104,7 @@ class Logger:
             assert level >= 0 and level <= 3, "log level must be in [0, 3]"
             level = LogLevel(level)
         self._log_level = level
-        
+
     @classmethod
     def set_global_log_level(cls, level: Union[LogLevel, str]):
         if type(level) is str:

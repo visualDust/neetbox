@@ -10,26 +10,6 @@ def test_device_info():
         print(cpu)
 
 
-def test_resource_loader():
-    import os
-
-    from neetbox.utils import ResourceLoader
-
-    file_type = "py"
-    ldr = ResourceLoader("./", file_types=[file_type])
-    print(f"found {len(ldr.get_file_list())} {file_type} files")
-    file_os_walk = [y for x in os.walk("./") for y in x[2] if y.endswith(".py")]
-    assert len(ldr.get_file_list()) == len(
-        file_os_walk
-    ), f"list length {len(ldr.get_file_list())} does not match {len(file_os_walk)}"
-
-    file_type = "md"
-    ldr = ResourceLoader("./", file_types=[file_type])
-    from neetbox.utils import _loader_pool
-
-    print(_loader_pool.keys())
-
-
 def test_download():
     from neetbox.utils import download
 

@@ -10,14 +10,14 @@ from collections import defaultdict
 from threading import Lock
 from typing import Callable
 
+from vdtoys.mvc import Singleton
+from vdtoys.registry import Registry
 
 from neetbox._protocol import *
 from neetbox.config import get_module_level_config, get_project_id, get_run_id
 from neetbox.logging import Logger, RawLog
-from neetbox.utils import Registry
-from neetbox.utils.massive import is_loopback
-from neetbox.utils.mvc import Singleton
 from neetbox.utils.connection import WebsocketClient, httpxClient
+from neetbox.utils.massive import is_loopback
 
 logging.getLogger("httpx").setLevel(logging.ERROR)
 logger = Logger(name_alias="CLIENT", skip_writers_names=["ws"])
@@ -35,7 +35,6 @@ def addr_of_api(api, http_root=None):
 
 
 class NeetboxClient(metaclass=Singleton):  # singleton
-
     def __init__(self) -> None:
         self.websocket: WebsocketClient = None
         self.online_mode: bool = None
@@ -235,8 +234,9 @@ class NeetboxClient(metaclass=Singleton):  # singleton
 
     def on_ws_close(self, ws: WebsocketClient, close_status_code, close_msg):
         logger.warn(
-            f"client websocket closed: status code: {close_status_code}, message: {close_msg}"
+            f"client websocket closed, status code: {close_status_code}, message: {close_msg}"
         )
+        self._is_initialized = False
 
     def on_ws_message(self, ws: WebsocketClient, message):
         message = EventMsg.loads(message)  # message should be json

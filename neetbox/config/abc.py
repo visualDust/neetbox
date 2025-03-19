@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from neetbox.utils.mvc import Singleton
+from vdtoys.mvc import Singleton
 
 
 class ConfigInterface(ABC, metaclass=Singleton):

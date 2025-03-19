@@ -2,9 +2,8 @@ import importlib
 from typing import Union
 
 import pip
-
-from neetbox.utils.framing import get_caller_info_traceback
-from neetbox.utils.mvc import Singleton
+from vdtoys.framing import get_caller_info_traceback
+from vdtoys.mvc import Singleton
 
 
 class PipPackageHealper(metaclass=Singleton):

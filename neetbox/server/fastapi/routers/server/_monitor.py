@@ -9,11 +9,11 @@ from threading import Thread
 from typing import Callable, List
 
 import psutil
+from vdtoys.localstorage import get_folder_size_in_bytes
+from vdtoys.mvc import Singleton
 
 from neetbox._protocol import *
 from neetbox.config.user import get as get_global_config
-from neetbox.utils.localstorage import get_folder_size_in_bytes
-from neetbox.utils.mvc import Singleton
 
 
 class CpuStatus:

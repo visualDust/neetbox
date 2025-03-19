@@ -13,10 +13,10 @@ import GPUtil
 import psutil
 from GPUtil import GPU
 from GPUtil import getAvailable as _getAvailableNvGPU
+from vdtoys.mvc import Singleton
 
 from neetbox.config import export_default_config, get_module_level_config
 from neetbox.extension import on_workspace_loaded
-from neetbox.utils.mvc import Singleton
 
 
 class CpuStatus:
