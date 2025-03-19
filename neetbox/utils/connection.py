@@ -1,9 +1,11 @@
+import atexit
 from threading import Thread
+
 import httpx
 import websocket
+from vdtoys.framing import get_caller_info_traceback
+
 from neetbox._protocol import *
-from neetbox.utils.framing import get_caller_info_traceback
-import atexit
 
 httpxClient: httpx.Client = httpx.Client(  # httpx client
     proxies={
@@ -38,7 +40,11 @@ class WebsocketClient:
 
     @property
     def is_connected(self) -> bool:
-        return self.wsApp.sock.connected if hasattr(self.wsApp, "sock") else False
+        return (
+            self.wsApp.sock.connected
+            if hasattr(self.wsApp, "sock") and self.wsApp.sock is not None
+            else False
+        )
 
     def send(self, message: EventMsg):
         self.message_query.append(message)

@@ -6,9 +6,8 @@ from dataclasses import dataclass
 from typing import Callable, Dict
 
 from rich.console import Console
-
-from .framing import TracebackInfo, get_caller_info_traceback
-from .mvc import Singleton
+from vdtoys.framing import TracebackInfo, get_caller_info_traceback
+from vdtoys.mvc import Singleton
 
 console = Console()
 MessageType = str

@@ -3,9 +3,10 @@ import os
 import subprocess
 from threading import Thread
 
+from vdtoys.mvc import Singleton
+
 from neetbox.config.project import _get_module_level_config
 from neetbox.utils import DaemonableProcess
-from neetbox.utils.mvc import Singleton
 
 
 class ShellAgent(metaclass=Singleton):

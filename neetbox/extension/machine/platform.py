@@ -7,8 +7,9 @@
 import getpass
 import platform as _platform
 
+from vdtoys.mvc import Singleton
+
 from neetbox.extension import on_workspace_loaded
-from neetbox.utils.mvc import Singleton
 
 
 class PlatformInfo(metaclass=Singleton):

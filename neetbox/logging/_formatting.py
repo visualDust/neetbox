@@ -8,8 +8,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
+from vdtoys.framing import TracebackInfo
+
 from neetbox._protocol import *
-from neetbox.utils.framing import TracebackInfo
 
 
 @dataclass

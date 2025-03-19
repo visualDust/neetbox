@@ -9,9 +9,8 @@ from random import random
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-
-from neetbox.utils import Registry
-from neetbox.utils.mvc import Singleton
+from vdtoys.mvc import Singleton
+from vdtoys.registry import Registry
 
 from .._formatting import RawLog
 

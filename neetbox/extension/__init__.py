@@ -7,10 +7,11 @@
 import importlib
 import pkgutil
 
+from vdtoys.framing import get_frame_module_traceback
+from vdtoys.registry import Registry
+
 from neetbox.config.project import _get_module_level_config as get_module_level_config
 from neetbox.config.project import on_config_loaded
-from neetbox.utils import Registry
-from neetbox.utils.framing import get_frame_module_traceback
 
 __QUERY_AFTER_LOAD_WORKSPACE = Registry("__QUERY_AFTER_LOAD_WORKSPACE")
 on_workspace_loaded = __QUERY_AFTER_LOAD_WORKSPACE.register

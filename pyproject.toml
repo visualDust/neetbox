@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neetbox"
-version = "0.4.13"
+version = "0.4.14"
 description = "Logging/Debugging/Tracing/Managing/Facilitating long running python projects, especially a replacement of tensorboard for deep learning projects"
 license = "MIT"
 authors = ["VisualDust <gavin@gong.host>", "Lideming <me@yuuza.net>"]
@@ -27,7 +27,7 @@ classifiers = [
 include = ["neetbox/frontend_dist/**/*"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.10, <4.0"
 toml = ">0.10"
 setproctitle = ">=1.0"
 rich = ">=13"
@@ -42,6 +42,7 @@ python-multipart = "^0.0.12"
 uvicorn = "^0.32.0"
 websockets = "^12.0"
 pyjwt = "^2.8.0"
+vdtoys = "^0.1.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

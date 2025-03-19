@@ -10,10 +10,11 @@ from ast import literal_eval
 from threading import Thread
 from typing import Callable, Optional
 
+from vdtoys.mvc import Singleton
+from vdtoys.registry import Registry
+
 from neetbox._protocol import *
 from neetbox.logging import logger
-from neetbox.utils import Registry
-from neetbox.utils.mvc import Singleton
 
 from .._client import connection
 
