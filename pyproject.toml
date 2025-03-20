@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "neetbox"
-version = "0.4.14"
+version = "0.4.15"
 description = "Logging/Debugging/Tracing/Managing/Facilitating long running python projects, especially a replacement of tensorboard for deep learning projects"
 license = "MIT"
 authors = ["VisualDust <gavin@gong.host>", "Lideming <me@yuuza.net>"]
@@ -43,20 +43,15 @@ uvicorn = "^0.32.0"
 websockets = "^12.0"
 pyjwt = "^2.8.0"
 vdtoys = "^0.1.2"
+numpy = "^2.2.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
 black = "^24.0.0"
 isort = "^5.11.5"
 pre-commit = ">=3.4.0"
-opencv-python = "^4.8.1.78"
 pillow = "^11.0.0"
 pytest-cov = "^6.0.0"
-
-[tool.poetry.extras]
-torch = ["torch", "torchvision", "torchaudio"]
-
-transformer = ["transformers"]
 
 [build-system]
 requires = ["poetry>=0.12"]

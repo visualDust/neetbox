@@ -1,15 +1,15 @@
 ---
-title: Set hyperparameter
+title: Show hyperparameters
 sidebar_position: 9
 ---
 
 :::tip
-`neetbox.add_image` allows you to send a image and see it in browser.
+`neetbox.add_hyperparams` allows you to show hyperparameters for each run.
 :::
 
 ## How it looks like
 
-![image-20231220185559247](./imgs/set-hyperparams/image-20231220185559247.png)
+![image-20231220185559247](./imgs/add-hyperparams/image-20231220185559247.png)
 
 ## Basic Usage
 
@@ -35,11 +35,11 @@ neetbox.add_hyperparams(configs)
 time.sleep(1)
 ```
 
-![image-20240101164602610](./imgs/set-hyperparams/image-20240101164602610.png)
+![image-20240101164602610](./imgs/add-hyperparams/image-20240101164602610.png)
 
 ## API description
 
-`neetbox.add_hyperparams` add/set hyperparams to current run, the added hyperparams will show in frontend.
+`neetbox.add_hyperparams` add hyperparams to current run, the added hyperparams will show in frontend.
 
 ```python
 def add_hyperparams(hparam: dict, name: str = None)

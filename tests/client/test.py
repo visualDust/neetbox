@@ -4,7 +4,6 @@ import time
 from random import random
 
 import numpy as np
-from PIL import Image
 
 import neetbox
 from neetbox import logger
@@ -89,6 +88,8 @@ def send_image(width=400, height=300, num_channels=3):
         width (int): width of output image.
         height (int): height of output image.
     """
+    from PIL import Image
+
     img = (np.random.rand(height, width, num_channels) * 255).astype(np.uint8)
     if num_channels == 3:
         img = Image.fromarray(img, mode="RGB")

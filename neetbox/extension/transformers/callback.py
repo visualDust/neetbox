@@ -1,6 +1,5 @@
 from time import time
 
-from cv2 import add
 from transformers import (
     TrainerCallback,
     TrainerControl,
@@ -8,11 +7,27 @@ from transformers import (
     TrainingArguments,
 )
 
-from neetbox import add_hyperparams, add_scalar, logger, progress
+from neetbox import action, add_hyperparams, add_scalar, logger, progress
 from neetbox._protocol import get_timestamp
 
 
 class NeetboxTrainerCallback(TrainerCallback):
+    _SCALAR_NAME_IGNORED = [  # ignore scalars that are not useful metrics
+        "epoch",
+        "step",
+        "total_flos",
+        "total_mem",
+        "total_mem_cpu",
+        "total_mem_gpu",
+        "eval_runtime",
+        "eval_samples_per_second",
+        "eval_steps_per_second",
+        "train_runtime",
+        "train_samples_per_second",
+        "train_steps_per_second",
+        "train_loss",
+    ]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._status = {
@@ -23,6 +38,14 @@ class NeetboxTrainerCallback(TrainerCallback):
         }
         self._scalars = {}
         self._launched_time_stamp = get_timestamp()
+
+    def _extract_scalar(self, log):
+        scalars = {}
+        # Check if anything in last log is scalar
+        for key, value in log.items():
+            if key not in self._SCALAR_NAME_IGNORED and isinstance(value, (int, float)):
+                scalars[key] = value
+        return scalars
 
     def on_train_begin(
         self,
@@ -36,6 +59,30 @@ class NeetboxTrainerCallback(TrainerCallback):
         """
         logger.info("Training started.")
         add_hyperparams(args.to_dict())
+
+        @action(name="Trigger stop training")
+        def trigger_should_training_stop():
+            """Trigger TrainerControl.should_training_stop"""
+            control.should_training_stop = not control.should_training_stop
+            message = f"should_training_stop was set to: {control.should_training_stop}"
+            logger.send_mention(message)
+            return message
+
+        @action(name="Trigger save model")
+        def tirgger_should_save():
+            """Trigger TrainerControl.should_save"""
+            control.should_save = not control.should_save
+            message = f"should_save was set to: {control.should_save}"
+            logger.send_mention(message)
+            return message
+
+        @action(name="Trigger evaluate model")
+        def trigger_should_evaluate():
+            """Trigger TrainerControl.should_evaluate"""
+            control.should_evaluate = not control.should_evaluate
+            message = f"should_evaluate was set to: {control.should_evaluate}"
+            logger.send_mention(message)
+            return message
 
     def on_train_end(
         self,
@@ -59,7 +106,12 @@ class NeetboxTrainerCallback(TrainerCallback):
         """
         Event called after a checkpoint save.
         """
-        logger.info(f"Checkpoint saved.")
+        log_history = state.log_history[-1] if len(state.log_history) else None
+        if log_history is None:
+            return  # Skip logging
+        log = dict(log_history)
+        scalars = self._extract_scalar(log)
+        logger.info(f"Checkpoint saved on {scalars}")
 
     def on_step_end(
         self,
@@ -127,24 +179,13 @@ class NeetboxTrainerCallback(TrainerCallback):
         if log_history is None:
             return  # Skip logging
         log = dict(log_history)
-        # Check if anything in last log is scalar and update
-        name_ignored = [
-            "epoch",
-            "step",
-            "total_flos",
-            "total_mem",
-            "total_mem_cpu",
-            "total_mem_gpu",
-            "eval_runtime",
-            "eval_samples_per_second",
-            "eval_steps_per_second",
-        ]
-        for key, value in log.items():
-            if key not in name_ignored and isinstance(value, (int, float)):
-                if key not in self._scalars or self._scalars[key] != value:
-                    add_scalar(
-                        name=key,
-                        x=state.global_step,
-                        y=value,
-                    )
+        scalars = self._extract_scalar(log)
+
+        for key, value in scalars.items():
+            if key not in self._scalars or self._scalars[key] != value:
+                add_scalar(
+                    name=key,
+                    x=state.global_step,
+                    y=value,
+                )
                 self._scalars[key] = value

@@ -7,9 +7,7 @@
 import io
 from typing import Optional
 
-import cv2
 import numpy as np
-from PIL import Image
 
 from neetbox._protocol import *
 from neetbox.config import get_project_id, get_run_id
@@ -129,6 +127,8 @@ def add_image(name: str, image, dataformats: str = None):
         dataformats (str): if you are passing a tensor as image, please indicate how to understand the tensor. For example, dataformats="NCWH" means the first axis of the tensor is Number of batches, the second axis is Channel, and the third axis is Width, and the fourth axis is Height.
 
     """
+    from PIL import Image
+
     if isinstance(image, Image.Image):  # is PIL Image
         with io.BytesIO() as image_bytes_stream:
             # convert PIL Image to bytes
@@ -142,6 +142,8 @@ def add_image(name: str, image, dataformats: str = None):
             image = (image * 255.0).astype(np.uint8)
 
         if isinstance(image, np.ndarray):  # convert ndarray to bytes
+            import cv2
+
             _, im_buf_arr = cv2.imencode(".png", image)
             image_bytes = im_buf_arr.tobytes()
 
