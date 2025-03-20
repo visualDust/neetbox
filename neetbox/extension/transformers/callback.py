@@ -1,6 +1,5 @@
 from time import time
 
-from cv2 import add
 from transformers import (
     TrainerCallback,
     TrainerControl,
