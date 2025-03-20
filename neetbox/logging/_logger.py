@@ -154,11 +154,17 @@ class Logger:
         )
 
         writers = []
-        for writer_name, writer_func in LogWriters.items():  # collect global writers
+        for (
+            writer_name,
+            writer_func,
+        ) in LogWriters.items():  # collect global writers
             if writer_name not in self.skipped_writers_names + skip_writers_names:
                 writers.append((writer_name, writer_func))
 
-        for writer_name, writer_func in self.private_writers.items():  # collect private writers
+        for (
+            writer_name,
+            writer_func,
+        ) in self.private_writers.items():  # collect private writers
             if writer_name not in self.skipped_writers_names + skip_writers_names:
                 writers.append((writer_name, writer_func))
 
@@ -261,9 +267,11 @@ class Logger:
             @functools.wraps(func)
             def _with_logging(*args, **kwargs):
                 self.log(
-                    f"Entering: {func.__name__}" + f", args={args}, kwargs={kwargs}"
-                    if mention_args
-                    else "",
+                    (
+                        f"Entering: {func.__name__}" + f", args={args}, kwargs={kwargs}"
+                        if mention_args
+                        else ""
+                    ),
                     series=f"mention",
                     skip_writers_names=skip_writers_names,
                     stack_offset=4,
@@ -273,9 +281,11 @@ class Logger:
                 except Exception as e:
                     raise e
                 self.log(
-                    f"Leaving: {func.__name__}" + f", with returned value {result}"
-                    if mention_result
-                    else "",
+                    (
+                        f"Leaving: {func.__name__}" + f", with returned value {result}"
+                        if mention_result
+                        else ""
+                    ),
                     series=f"mention",
                     skip_writers_names=skip_writers_names,
                     stack_offset=4,
@@ -285,6 +295,20 @@ class Logger:
             return _with_logging
 
         return with_logging
+
+    def send_mention(
+        self,
+        message: str,
+        skip_writers_names: list[str] = [],
+        stack_offset=2,
+    ):
+        self.log(
+            message,
+            series=f"mention",
+            skip_writers_names=skip_writers_names,
+            stack_offset=stack_offset + 1,
+        )
+        return self
 
     def set_log_dir(self, path, dedicated_file=False):
         if os.path.isfile(path):
