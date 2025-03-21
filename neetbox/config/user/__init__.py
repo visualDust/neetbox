@@ -19,7 +19,7 @@ from neetbox.utils.massive import check_read_toml
 _GLOBAL_CONFIG = {
     MACHINE_ID_KEY: str(uuid4()),
     "vault": get_create_neetbox_data_directory(),
-    "bypass-db-version-check": False,
+    "bypass-db-version-check": True,
 }
 
 _GLOBAL_CONFIG_FILE_NAME = f"neetbox.global.toml"
