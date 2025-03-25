@@ -29,7 +29,7 @@
     "nanoid": "^5.1.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.0",
+    "react-router-dom": "^7.0.0",
     "styled-components": "^6.1.16",
     "swr": "^2.3.3",
     "vite-plugin-semi-theme": "^0.6.0"
