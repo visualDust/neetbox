@@ -1,4 +1,5 @@
 from time import time
+from typing import Union
 
 from transformers import (
     TrainerCallback,
@@ -39,13 +40,27 @@ class NeetboxTrainerCallback(TrainerCallback):
         self._scalars = {}
         self._launched_time_stamp = get_timestamp()
 
-    def _extract_scalar(self, log):
-        scalars = {}
-        # Check if anything in last log is scalar
-        for key, value in log.items():
-            if key not in self._SCALAR_NAME_IGNORED and isinstance(value, (int, float)):
-                scalars[key] = value
-        return scalars
+    def _extract_scalar(self, log, ignore_keys=[]):
+        assert isinstance(log, dict), "log should be a dictionary."
+        result = {}
+
+        def recurse(curr, prefix=""):
+            if isinstance(curr, dict):
+                for key, value in curr.items():
+                    if key in ignore_keys:
+                        continue
+                    new_prefix = f"{prefix}-{key}" if prefix else key
+                    recurse(value, new_prefix)
+            elif isinstance(curr, (int, float)):
+                result[prefix] = curr
+            elif isinstance(curr, tuple):
+                for i, item in enumerate(curr):
+                    if isinstance(item, (int, float)):
+                        result[f"{prefix}-{i}"] = item
+            # Ignore other types
+
+        recurse(log)
+        return result
 
     def on_train_begin(
         self,
@@ -94,7 +109,12 @@ class NeetboxTrainerCallback(TrainerCallback):
         """
         Event called at the end of training.
         """
-        logger.info("Training finished.")
+        log_history = state.log_history[-1] if len(state.log_history) else None
+        if log_history is None:
+            return  # Skip logging
+        log = dict(log_history)
+        scalars = self._extract_scalar(log)
+        logger.info(f"Training finished. Metrics: {scalars}")
 
     def on_save(
         self,
@@ -110,7 +130,7 @@ class NeetboxTrainerCallback(TrainerCallback):
         if log_history is None:
             return  # Skip logging
         log = dict(log_history)
-        scalars = self._extract_scalar(log)
+        scalars = self._extract_scalar(log, ignore_keys=self._SCALAR_NAME_IGNORED)
         logger.info(f"Checkpoint saved on {scalars}")
 
     def on_step_end(
@@ -179,7 +199,7 @@ class NeetboxTrainerCallback(TrainerCallback):
         if log_history is None:
             return  # Skip logging
         log = dict(log_history)
-        scalars = self._extract_scalar(log)
+        scalars = self._extract_scalar(log, ignore_keys=self._SCALAR_NAME_IGNORED)
 
         for key, value in scalars.items():
             if key not in self._scalars or self._scalars[key] != value:

@@ -4,12 +4,12 @@
 # Github: github.com/visualDust
 # Date:   20230413
 
-
 import inspect
 import os
 import sys
 import types
 import uuid
+import warnings
 from importlib.metadata import version
 from threading import Thread
 from time import sleep
@@ -185,9 +185,14 @@ def _load_workspace_config(folder=".", load_only=False):
         _obtain_new_run_id()  # obtain new run id
 
     if "version" not in config_from_file or config_from_file["version"] != NEETBOX_VERSION:
-        raise RuntimeError(
-            f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config file version {config_from_file['version']} in {os.path.abspath(config_file_path)}. Here are two possible solutions:\n - Try to install specific neetbox version to {NEETBOX_VERSION} by 'pip install -U neetbox=={NEETBOX_VERSION}' \n - Delete neetbox.toml and recreate by 'neet init' \n - Modify config file manually to match neetbox version {NEETBOX_VERSION} \n"
+        warning_message = (
+            f"config file version not match: using neetbox version {NEETBOX_VERSION} but got config file version {config_from_file['version']} in {os.path.abspath(config_file_path)}.\n"
+            + f"Possible solutions:\n"
+            + f"- In {os.path.abspath(config_file_path)}, Change version = \"{config_from_file['version']}\" to version = \"{NEETBOX_VERSION}\" \n"
+            + f"- Install specific neetbox version to match config file version {config_from_file['version']} by 'pip install neetbox=={config_from_file['version']}' \n"
+            + f"- Delete neetbox.toml and reinitialize that folder by 'neet init' \n"
         )
+        warnings.warn(warning_message)
     _update_default_workspace_config_with(config_from_file)  # load config file in
 
     if load_only:

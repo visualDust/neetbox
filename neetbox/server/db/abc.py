@@ -5,7 +5,7 @@
 # Date:   20240116
 
 import json
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Dict, Tuple, Union
 
@@ -22,16 +22,16 @@ class SortType(str, Enum):
 
 
 class ManageableDB(ABC):
-    @abstractproperty
+    @abstractmethod
     def size(self):
         """get local storage usage in bytes"""
-        ...
+        raise NotImplementedError()
 
     @abstractmethod
     def close(self):
-        ...
+        raise NotImplementedError()
 
     @abstractmethod
     def delete(self):
         """handle delete, a typical behavior is to close connection and remove files"""
-        ...
+        raise NotImplementedError()

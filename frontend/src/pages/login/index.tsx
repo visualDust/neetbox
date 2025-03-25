@@ -8,7 +8,7 @@ const LoginPage = () => {
       <div className={styles.main}>
         <div className={styles.login}>
           <Logo className={styles.logo} />
-          <p className={styles.title}>NEET Center</p>
+          <p className={styles.title}>NEETBOX</p>
           <div className={styles.form}>
             <Form className={styles.inputs}>
               <Form.Input

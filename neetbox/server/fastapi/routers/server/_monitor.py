@@ -166,10 +166,10 @@ class Disks(metaclass=Singleton):
             neetbox_storage_in_bytes = get_folder_size_in_bytes(neetbox_data_dir)
             drive = psutil.disk_usage(neetbox_data_dir)
             return {
-                "total": drive.total / 1e6,
-                "used": drive.used / 1e6,
-                "neetbox": neetbox_storage_in_bytes / 1e6,
-                "free": drive.free / 1e6,
+                "total": int(drive.total / 1e6),
+                "used": int(drive.used / 1e6),
+                "neetbox": int(neetbox_storage_in_bytes / 1e6),
+                "free": int(drive.free / 1e6),
             }
         except Exception as e:
             return {ERROR_KEY: f"failed to get disk usage cause {e}"}

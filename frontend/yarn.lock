@@ -1569,10 +1569,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@semi-bot/semi-theme-doucreator@npm:^1.0.22":
+  version: 1.0.22
+  resolution: "@semi-bot/semi-theme-doucreator@npm:1.0.22"
+  checksum: 10c0/434a94324c5b8f71ea8eb9c5c0e84de89662496d3c1a1a0b7916022bedc16f0ab7176d4151ea4f9f30877f52f5309f6f26f11fee90a9d2b90cf5cb2d8e749880
+  languageName: node
+  linkType: hard
+
 "@semi-bot/semi-theme-nyx-c@npm:^1.0.8":
   version: 1.0.9
   resolution: "@semi-bot/semi-theme-nyx-c@npm:1.0.9"
   checksum: 10c0/f10c91b6204fa1e0c4adc83df2109a26002cf1c72e9461aa0f07b99d6cd40f70963a30b412072e77c61dc7a7bae720143a1a0cb6deff4d623e40afe0879ac6a3
+  languageName: node
+  linkType: hard
+
+"@semi-bot/semi-theme-strapi@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@semi-bot/semi-theme-strapi@npm:0.1.4"
+  checksum: 10c0/ae84f1e343e1a572a85f9228ee0411b9a635689180202ae06c8c1cdf906d6421327b66a3490741ec72d4a9eb34c1f8947b2822c2f0ae7972adadaa49abc22ec8
   languageName: node
   linkType: hard
 
@@ -5310,7 +5324,9 @@ __metadata:
     "@douyinfe/semi-ui": "npm:^2.47.1"
     "@rsbuild/core": "npm:^0.5.3"
     "@rsbuild/plugin-react": "npm:^0.1.8"
+    "@semi-bot/semi-theme-doucreator": "npm:^1.0.22"
     "@semi-bot/semi-theme-nyx-c": "npm:^1.0.8"
+    "@semi-bot/semi-theme-strapi": "npm:0.1.4"
     "@types/react": "npm:^18.3.11"
     "@types/react-dom": "npm:^18.3.1"
     "@typescript-eslint/eslint-plugin": "npm:^6.10.0"

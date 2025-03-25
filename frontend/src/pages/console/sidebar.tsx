@@ -1,5 +1,5 @@
 import { Nav, Space, Tag, Typography } from "@douyinfe/semi-ui";
-import { IconHome, IconListView } from "@douyinfe/semi-icons";
+import { IconHome, IconListView, IconGlobeStroke } from "@douyinfe/semi-icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAPI } from "../../services/api";
 import Loading from "../../components/common/loading";
@@ -40,6 +40,7 @@ export default function ConsoleNavBar() {
                     )}
                   </Space>
                 ),
+                icon: online ? <IconGlobeStroke /> : null,
                 itemKey: "/project/" + id,
               }))
             : [{ text: "", itemKey: "loading" }],

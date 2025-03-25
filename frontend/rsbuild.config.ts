@@ -10,12 +10,13 @@ export default defineConfig({
     alias: {
       "@": "./src",
     },
+    entry: { index: "./src/main.tsx" },
   },
   tools: {
     rspack: (config) => {
       config.plugins!.push(
         new SemiRspackPlugin({
-          // theme: "@semi-bot/semi-theme-nyx-c",
+          theme: "@semi-bot/semi-theme-strapi",
         }),
       );
       // config.optimization = { ...config.optimization, minimize: false };
@@ -30,9 +31,6 @@ export default defineConfig({
         ],
       };
     },
-  },
-  source: {
-    entry: { index: "./src/main.tsx" },
   },
   html: {
     title: "Neetbox",

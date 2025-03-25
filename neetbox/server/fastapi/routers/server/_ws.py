@@ -11,7 +11,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from neetbox._protocol import *
 from neetbox.logging import Logger
 
-from ._monitor import disks, hardware
+from ._monitor import hardware
 
 router = APIRouter()
 
@@ -52,9 +52,8 @@ async def handshake(websocket: WebSocket):
 async def server_monitor_ws_endpoint(websocket: WebSocket):
     if not await handshake(websocket):
         return
-    try:
-        sec_counter = 0
-        while True:
+    while True:
+        try:
             await websocket.send_json(
                 EventMsg(
                     project_id=None,
@@ -66,22 +65,9 @@ async def server_monitor_ws_endpoint(websocket: WebSocket):
                 ).json
             )
             time.sleep(1)
-            sec_counter += 1
-            if sec_counter >= 9:
-                await websocket.send_json(
-                    EventMsg(
-                        project_id=None,
-                        run_id=None,
-                        event_type=EVENT_TYPE_NAME_HARDWARE,
-                        identity_type=IdentityType.SERVER,
-                        payload=disks.json,
-                        timestamp=get_timestamp(),
-                    ).json
-                )
-                sec_counter = 0
 
-    except WebSocketDisconnect:
-        try:
-            WS_CLIENTS.remove(websocket)
-        except:
-            pass
+        except WebSocketDisconnect:
+            try:
+                WS_CLIENTS.remove(websocket)
+            except:
+                pass  # todo

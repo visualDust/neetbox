@@ -64,6 +64,10 @@ jobs:
       - name: Run tests with pytest
         run: |
           source $VENV
+          cd tests/client
+          neet version
+          neet init
+          cd ../..
           pytest --cov=./ --cov-report=xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

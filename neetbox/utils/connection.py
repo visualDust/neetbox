@@ -8,7 +8,7 @@ from vdtoys.framing import get_caller_info_traceback
 from neetbox._protocol import *
 
 httpxClient: httpx.Client = httpx.Client(  # httpx client
-    proxies={
+    proxy={
         "http://": None,
         "https://": None,
     }
@@ -18,7 +18,15 @@ httpxClient: httpx.Client = httpx.Client(  # httpx client
 class WebsocketClient:
     instances = {}
 
-    def __init__(self, url, on_open, on_message, on_error, on_close, offline_message_buffer_size=0):
+    def __init__(
+        self,
+        url,
+        on_open,
+        on_message,
+        on_error,
+        on_close,
+        offline_message_buffer_size=0,
+    ):
         self.wsApp = websocket.WebSocketApp(  # create websocket client
             url=url,
             on_open=on_open,
@@ -35,7 +43,9 @@ class WebsocketClient:
         if not self.wsApp:
             raise RuntimeError("You should setup WebsocketClient before connect.")
         Thread(
-            target=self.wsApp.run_forever, kwargs={"reconnect": reconnect}, daemon=True
+            target=self.wsApp.run_forever,
+            kwargs={"reconnect": reconnect},
+            daemon=True,
         ).start()  # initialize and start ws thread
 
     @property
