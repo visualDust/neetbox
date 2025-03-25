@@ -9,7 +9,7 @@ import Loading from "../common/loading";
 
 export function Actions() {
   const { projectId, runId } = useCurrentProject();
-  const status = useProjectRunStatus(projectId, runId);
+  const [status] = useProjectRunStatus(projectId, runId);
   const actions = status?.action as ActionInfo;
   const actionListMemo = Object.entries(useMemoJSON(actions ?? {}));
   const [blocking, setBlocking] = useState(false);

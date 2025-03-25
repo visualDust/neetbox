@@ -28,12 +28,12 @@ export function useProjectData<T = any>(options: {
   const url =
     options.disable || !wsReady
       ? null
-      : customUrl ??
+      : (customUrl ??
         `/project/${projectId}/${type}?${createCondition({
           runId,
           ...(!limit ? null : { limit, order: { id: "DESC" } }),
           ...options.conditions,
-        })}`;
+        })}`);
 
   const [renderData, setRenderData] = useState<T[] | null>(null);
 

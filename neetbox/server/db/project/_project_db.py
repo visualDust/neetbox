@@ -381,7 +381,7 @@ class ProjectDB(ManageableDB):
         if isinstance(condition.run_id, str):
             condition.run_id = self.get_id_of_run_id(run_id)
         cond_str, cond_vars = condition.dumpt()
-        sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {cond_str}"
+        sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, METADATA_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {cond_str}"
         query_result, _ = self._query(sql_query, *cond_vars, fetch=FetchType.ALL)
         result = {}
         for id_of_runid, series_name, value in query_result:

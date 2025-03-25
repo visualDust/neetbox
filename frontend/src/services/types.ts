@@ -65,4 +65,5 @@ export interface RunStatus {
   action: ActionInfo;
   platform: PlatformInfo;
   hyperparameters: any;
+  metadata: any;
 }

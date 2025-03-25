@@ -5,6 +5,7 @@ import { WsMsg } from "../services/projectWebsocket";
 import { useAPI } from "../services/api";
 import { RunStatus } from "../services/types";
 import { useProjectData } from "./useProjectData";
+import { KeyedMutator } from "swr";
 
 export { useProjectData };
 
@@ -28,9 +29,12 @@ export function useProjectRunIds(id: string) {
   return { data: data?.runids, mutate };
 }
 
-export function useProjectRunStatus(id: string, runId?: string): RunStatus | undefined {
-  const { data } = useAPI(`/project/${id}/run/${runId}`, { refreshInterval: 5000 });
-  return !runId ? undefined : data;
+export function useProjectRunStatus(
+  id: string,
+  runId?: string,
+): [data: RunStatus | undefined, mutate: KeyedMutator<any>] {
+  const { data, mutate } = useAPI(`/project/${id}/run/${runId}`, { refreshInterval: 5000 });
+  return [!runId ? undefined : data, mutate];
 }
 
 export function useProjectWebSocketReady(id: string) {

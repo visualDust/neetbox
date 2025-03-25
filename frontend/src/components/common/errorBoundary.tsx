@@ -18,14 +18,15 @@ export class ErrorBoundary extends React.Component<
   }
   render(): React.ReactNode {
     return this.state.error
-      ? this.props.renderError?.(this.state.error, this.state.errorInfo!) ?? this.renderDefaultErrorPage()
+      ? (this.props.renderError?.(this.state.error, this.state.errorInfo!) ?? this.renderDefaultErrorPage())
       : this.props.children;
   }
 
   renderDefaultErrorPage() {
     console.info(this.state);
-    const text = `${this.state.error}\n\n${(this.state.error as Error)?.stack}\n\n${this.state.errorInfo
-      ?.componentStack}`;
+    const text = `${this.state.error}\n\n${(this.state.error as Error)?.stack}\n\n${
+      this.state.errorInfo?.componentStack
+    }`;
     return <pre style={{ whiteSpace: "pre-wrap", margin: 10 }}>{text}</pre>;
   }
 }
