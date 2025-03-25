@@ -8,23 +8,34 @@ import { fetcher } from "../../services/api";
 
 export const RunNote = memo(
   ({ projectId, runId, trigger = "click", position, allowEdit = true, children = <IconArticle /> }: any) => {
+    const runStatus = useProjectRunStatus(projectId, runId);
+    const value = runStatus?.metadata.notes;
+    const [editing, setEditing] = useState(false);
     return (
-      <Popover
-        showArrow
-        trigger={trigger}
-        position={position}
-        content={<RunNoteContent projectId={projectId} runId={runId} allowEdit={allowEdit} />}
-      >
-        {children}
-      </Popover>
+      <>
+        <Popover
+          showArrow
+          trigger={trigger}
+          position={position}
+          content={<RunNoteContent {...{ runStatus, value, setEditing, allowEdit }} />}
+        >
+          {children}
+        </Popover>
+        <RunNoteEditor
+          data={editing ? { runId, notes: value } : null}
+          onResult={(edited) => {
+            setEditing(false);
+            if (edited) {
+              // todo trigger a refresh
+            }
+          }}
+        />
+      </>
     );
   },
 );
 
-const RunNoteContent = memo(({ projectId, runId, allowEdit }: any) => {
-  const runStatus = useProjectRunStatus(projectId, runId);
-  const value = runStatus?.metadata.notes;
-  const [editing, setEditing] = useState(false);
+const RunNoteContent = memo(({ runStatus, value, setEditing, allowEdit }: any) => {
   return (
     <Space vertical>
       {!runStatus ? (
@@ -35,7 +46,6 @@ const RunNoteContent = memo(({ projectId, runId, allowEdit }: any) => {
             icon={<IconArticle />}
             type="tertiary"
             onClick={(e) => {
-              e.stopPropagation();
               setEditing(true);
             }}
           >
@@ -52,7 +62,6 @@ const RunNoteContent = memo(({ projectId, runId, allowEdit }: any) => {
               icon={<IconArticle />}
               type="tertiary"
               onClick={(e) => {
-                e.stopPropagation();
                 setEditing(true);
               }}
             >
@@ -61,15 +70,6 @@ const RunNoteContent = memo(({ projectId, runId, allowEdit }: any) => {
           )}
         </>
       )}
-      <RunNoteEditor
-        data={editing ? { runId, notes: value } : null}
-        onResult={(edited) => {
-          setEditing(false);
-          if (edited) {
-            // todo trigger a refresh
-          }
-        }}
-      />
     </Space>
   );
 });
