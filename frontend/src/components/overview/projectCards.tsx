@@ -18,7 +18,7 @@ export const ProjectCard = memo(({ project }: { project: ProjectProps }) => {
     <Card
       shadows="hover"
       title={project.name}
-      headerLine={true}
+      headerLine={false}
       headerStyle={{ padding: "10px" }}
       bodyStyle={{
         padding: "10px",
@@ -49,6 +49,17 @@ export const ProjectCard = memo(({ project }: { project: ProjectProps }) => {
           }}
         ></Button>
       }
+      actions={[
+        <Button
+          icon={project.online ? <IconGlobeStroke /> : <IconCloud />}
+          style={{ marginRight: 10 }}
+          onClick={() => {
+            navigate(`/project/${project.projectId}`); // Assuming you have a navigate function to handle routing
+          }}
+        >
+          {project.online ? "Open Dashboard" : `View ${project.runids.length} Runs`}
+        </Button>,
+      ]}
     >
       <Descriptions
         data={[
@@ -70,16 +81,6 @@ export const ProjectCard = memo(({ project }: { project: ProjectProps }) => {
           },
         ]}
       />
-
-      <Button
-        icon={project.online ? <IconGlobeStroke /> : <IconCloud />}
-        style={{ marginRight: 10 }}
-        onClick={() => {
-          navigate(`/project/${project.projectId}`); // Assuming you have a navigate function to handle routing
-        }}
-      >
-        {project.online ? "Open Dashboard" : `View ${project.runids.length} Runs`}
-      </Button>
     </Card>
   );
 });

@@ -1,12 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Space, Select, Tag, Button, Modal, Form, Toast } from "@douyinfe/semi-ui";
-import { IconDelete, IconEdit } from "@douyinfe/semi-icons";
+import { IconArticle, IconCopy, IconDelete, IconEdit, IconInfoCircle } from "@douyinfe/semi-icons";
 import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
 import { useNavigate } from "react-router-dom";
 import Loading from "../common/loading";
 import { useCurrentProject } from "../../hooks/useProject";
 import { fetcher } from "../../services/api";
 import { HyperParams } from "./hyperParams";
+import { RunNote } from "./runNotes";
 
 export const RunSelect = memo((props: any) => {
   const { setRunId, runIds, mutateRunIds, projectId, runId, isOnlineRun } = props;
@@ -36,8 +37,7 @@ export const RunSelect = memo((props: any) => {
   const [editing, setEditing] = useState<any>(null);
 
   return (
-    <Space style={{ width: "320px" }}>
-      Run:
+    <Space style={{ width: "500px" }}>
       {runIds ? (
         <Select
           ref={selectRef}
@@ -113,7 +113,16 @@ export const RunSelect = memo((props: any) => {
                   />
                 )}
                 {item.online ? <Tag color="green">Online</Tag> : <Tag color="red">Offline</Tag>}
-                <HyperParams projectId={projectId} runId={item.runId} trigger="hover" position="leftTop" />
+                <HyperParams projectId={projectId} runId={item.runId} trigger="hover" position="leftTop">
+                  <Button type="tertiary" icon={<IconInfoCircle />} size="small" />
+                </HyperParams>
+                <RunNote
+                  projectId={projectId}
+                  runId={item.runId}
+                  trigger="hover"
+                  position="rightTop"
+                  allowEdit={false}
+                />
               </Select.Option>
             );
           })}
@@ -121,7 +130,14 @@ export const RunSelect = memo((props: any) => {
       ) : (
         <Loading height="30px" />
       )}
-      <HyperParams projectId={projectId} runId={runId} />
+      <HyperParams projectId={projectId} runId={runId}>
+        <Button type="tertiary" icon={<IconInfoCircle />}>
+          Params
+        </Button>
+      </HyperParams>
+      <RunNote projectId={projectId} runId={runId}>
+        <Button icon={<IconArticle />}>Note</Button>
+      </RunNote>
       {changing && <Loading height="30px" />}
       <RunEditor
         data={editing}
@@ -170,7 +186,17 @@ const RunEditor = memo((props: { data: any; onResult: (edited: boolean) => void 
       centered
     >
       <Form initValues={data} ref={formRef as any}>
-        <Form.Input field="runId" label="ID" disabled></Form.Input>
+        <Form.Input
+          field="runId"
+          label="ID"
+          extraText={
+            <Button icon={<IconCopy />} onClick={() => navigator.clipboard.writeText(data.runId)}>
+              Copy ID
+            </Button>
+          }
+          readOnly={true}
+          disabled
+        ></Form.Input>
         <Form.Input field="metadata.name" label="Name"></Form.Input>
       </Form>
     </Modal>

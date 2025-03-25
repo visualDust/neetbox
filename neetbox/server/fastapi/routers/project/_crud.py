@@ -99,7 +99,9 @@ async def get_series_list_of(
 async def get_status_of(project_id, run_id):
     if not Bridge.has(project_id):
         raise HTTPException(status_code=404, detail={ERROR_KEY: "Project ID not found"})
+    bridge = Bridge.of_id(project_id)
     result = Bridge.of_id(project_id).get_status(run_id=run_id)
+    result[METADATA_KEY] = bridge.historyDB.fetch_metadata_of_run_id(run_id=run_id)
     return result
 
 
@@ -123,7 +125,10 @@ async def set_get_metadata_of_run_id(project_id: str, run_id: str, metadata: dic
 async def delete_run_id(project_id: str, run_id: str):
     bridge = Bridge.of_id(project_id)
     if bridge.is_online(run_id):  # cannot delete running projects
-        raise HTTPException(status_code=400, detail={ERROR_KEY: "can only delete history run id."})
+        raise HTTPException(
+            status_code=400,
+            detail={ERROR_KEY: "can only delete history run id."},
+        )
     bridge.historyDB.delete_run_id(run_id)
     if 0 == len(bridge.get_run_ids()):  # check if all the run ids are deleted
         del Bridge._id2bridge[project_id]  # delete the empty bridge
@@ -156,7 +161,9 @@ async def get_image_of(project_id: str, image_id: int, meta: Optional[bool] = No
         raise HTTPException(status_code=404, detail={ERROR_KEY: "project id not found"})
     # Database logic here
     [(_, _, meta_data, image)] = Bridge.of_id(project_id).read_blob_from_history(
-        table_name="image", condition=ProjectDbQueryCondition(id=image_id), meta_only=meta
+        table_name="image",
+        condition=ProjectDbQueryCondition(id=image_id),
+        meta_only=meta,
     )
     if meta:
         return Response(meta_data, media_type="application/json")
