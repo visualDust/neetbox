@@ -10,7 +10,15 @@ export const RunNote = memo(
   ({ projectId, runId, trigger = "click", position, allowEdit = true, children = <IconArticle /> }: any) => {
     const [runStatus, mutateRunStatus] = useProjectRunStatus(projectId, runId);
     const value = runStatus?.metadata.notes;
-    const [editing, setEditing] = useState(false);
+    const [editing, realSetEditing] = useState(false);
+    const [popoverVisible, setPopoverVisible] = useState(false);
+    const setEditing = (value) => {
+      realSetEditing(value);
+      if (value) {
+        setPopoverVisible(false);
+      }
+    };
+
     return (
       <>
         <Popover
@@ -18,6 +26,8 @@ export const RunNote = memo(
           trigger={trigger}
           position={position}
           content={<RunNoteContent {...{ runStatus, value, setEditing, allowEdit }} />}
+          visible={popoverVisible}
+          onVisibleChange={setPopoverVisible}
         >
           {children}
         </Popover>

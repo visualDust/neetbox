@@ -2,7 +2,7 @@ import { defineConfig } from "@rsbuild/core";
 import { pluginReact } from "@rsbuild/plugin-react";
 import { SemiRspackPlugin } from "@douyinfe/semi-rspack-plugin";
 
-const server = new URL("http://127.0.0.1:10101");
+const server = new URL("http://127.0.0.1:20202");
 
 export default defineConfig({
   plugins: [pluginReact()],
