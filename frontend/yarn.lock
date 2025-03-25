@@ -368,16 +368,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.21.0":
-  version: 7.27.0
-  resolution: "@babel/runtime@npm:7.27.0"
-  dependencies:
-    regenerator-runtime: "npm:^0.14.0"
-  checksum: 10c0/ca679cc91bb7e424bc2db87bb58cc3b06ade916b9adb21fbbdc43e54cdaacb3eea201ceba2a0464b11d2eb65b9fe6a6ffcf4d7521fa52994f19be96f1af14788
-  languageName: node
-  linkType: hard
-
-"@babel/runtime@npm:^7.14.6, @babel/runtime@npm:^7.17.2":
+"@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.14.6, @babel/runtime@npm:^7.17.2, @babel/runtime@npm:^7.21.0":
   version: 7.27.0
   resolution: "@babel/runtime@npm:7.27.0"
   dependencies:
@@ -469,7 +460,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cypress/request@npm:^3.0.6":
+"@cypress/request@npm:^3.0.7":
   version: 3.0.8
   resolution: "@cypress/request@npm:3.0.8"
   dependencies:
@@ -2901,7 +2892,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ci-info@npm:^4.0.0":
+"ci-info@npm:^4.1.0":
   version: 4.2.0
   resolution: "ci-info@npm:4.2.0"
   checksum: 10c0/37a2f4b6a213a5cf835890eb0241f0d5b022f6cfefde58a69e9af8e3a0e71e06d6ad7754b0d4efb9cd2613e58a7a33996d71b56b0d04242722e86666f3f3d058
@@ -2931,16 +2922,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cli-table3@npm:~0.6.1":
-  version: 0.6.3
-  resolution: "cli-table3@npm:0.6.3"
+"cli-table3@npm:~0.6.5":
+  version: 0.6.5
+  resolution: "cli-table3@npm:0.6.5"
   dependencies:
     "@colors/colors": "npm:1.5.0"
     string-width: "npm:^4.2.0"
   dependenciesMeta:
     "@colors/colors":
       optional: true
-  checksum: 10c0/39e580cb346c2eaf1bd8f4ff055ae644e902b8303c164a1b8894c0dc95941f92e001db51f49649011be987e708d9fa3183ccc2289a4d376a057769664048cc0c
+  checksum: 10c0/d7cc9ed12212ae68241cc7a3133c52b844113b17856e11f4f81308acc3febcea7cc9fd298e70933e294dd642866b29fd5d113c2c098948701d0c35f09455de78
   languageName: node
   linkType: hard
 
@@ -3167,11 +3158,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cypress@npm:^13.17.0":
-  version: 13.17.0
-  resolution: "cypress@npm:13.17.0"
+"cypress@npm:^14.0.0":
+  version: 14.2.0
+  resolution: "cypress@npm:14.2.0"
   dependencies:
-    "@cypress/request": "npm:^3.0.6"
+    "@cypress/request": "npm:^3.0.7"
     "@cypress/xvfb": "npm:^1.2.4"
     "@types/sinonjs__fake-timers": "npm:8.1.1"
     "@types/sizzle": "npm:^2.3.2"
@@ -3182,9 +3173,9 @@ __metadata:
     cachedir: "npm:^2.3.0"
     chalk: "npm:^4.1.0"
     check-more-types: "npm:^2.24.0"
-    ci-info: "npm:^4.0.0"
+    ci-info: "npm:^4.1.0"
     cli-cursor: "npm:^3.1.0"
-    cli-table3: "npm:~0.6.1"
+    cli-table3: "npm:~0.6.5"
     commander: "npm:^6.2.1"
     common-tags: "npm:^1.8.0"
     dayjs: "npm:^1.10.4"
@@ -3216,7 +3207,7 @@ __metadata:
     yauzl: "npm:^2.10.0"
   bin:
     cypress: bin/cypress
-  checksum: 10c0/159ce620e32d2785082aaa1f4f30f203dcec466df4a8e80dfa299035358772fd513c35820070ba8db52e2bf58078a372ff7009068e26967f993656e7da62e221
+  checksum: 10c0/70d9ca4bf5154f542a51665e19484828cbb52c2e618fb41aff5b6d37eaf1530d71aca794edd4d58c5823c3b83d03efb207d41e78d843103688fb47fe2eeaee93
   languageName: node
   linkType: hard
 
@@ -6944,7 +6935,7 @@ __metadata:
     "@uiw/react-json-view": "npm:^2.0.0-alpha.30"
     "@uiw/react-md-editor": "npm:^4.0.5"
     "@vitejs/plugin-react": "npm:^4.3.4"
-    cypress: "npm:^13.17.0"
+    cypress: "npm:^14.0.0"
     echarts: "npm:^5.6.0"
     eslint: "npm:^8.57.1"
     eslint-import-resolver-typescript: "npm:^3.9.1"
@@ -9523,7 +9514,6 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/f8a4893bf9d57fe3ded6dc0a2278e8ded707fc9cf38d5a3255fe3caaeea41c52f29bf4deb5e85c9e8dbc8848e9046a7306727ca3fb7b67847d75ee2f2afda5e5
   checksum: 10c0/f8a4893bf9d57fe3ded6dc0a2278e8ded707fc9cf38d5a3255fe3caaeea41c52f29bf4deb5e85c9e8dbc8848e9046a7306727ca3fb7b67847d75ee2f2afda5e5
   languageName: node
   linkType: hard
