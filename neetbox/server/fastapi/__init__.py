@@ -40,7 +40,7 @@ serverapp.include_router(
 )
 
 serverapp.include_router(
-    server_router.crud_router,
+    server_router.prop_router,
     prefix=f"{API_ROOT}/{SERVER_KEY}",
     tags=["server"],
 )

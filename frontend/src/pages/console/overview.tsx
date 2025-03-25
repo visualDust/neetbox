@@ -1,18 +1,18 @@
-import { Typography } from "@douyinfe/semi-ui";
+import { SectionTitle } from "../../components/common/sectionTitle";
+import { ServerIpCard } from "../../components/overview/serverProps";
+import { DiskUsageCard } from "../../components/overview/diskUsage";
+import { ProjectCards } from "../../components/overview/projectCards";
 
 export default function Overview() {
   return (
-    <div
-      style={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Typography.Paragraph>Overview WIP</Typography.Paragraph>
-      <Typography.Paragraph>Please select a project from the sidebar.</Typography.Paragraph>
+    <div style={{ padding: "20px", position: "relative" }}>
+      <SectionTitle title="Projects" />
+      <ProjectCards />
+      <SectionTitle title="Server Information" />
+      <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+        <DiskUsageCard />
+        <ServerIpCard />
+      </div>
     </div>
   );
 }

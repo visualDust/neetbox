@@ -5,8 +5,6 @@
 # Date:   20231224
 
 import os
-import pathlib
-import sys
 
 from vdtoys.localstorage import get_user_app_data_directory, get_user_config_directory
 
@@ -21,7 +19,10 @@ def get_create_neetbox_config_directory():
     return path
 
 
-def get_create_neetbox_data_directory():
+def get_create_initial_neetbox_data_directory():
+    """
+    Get(create) initial neetbox data directory. Only useful for the first time.
+    """
     path = os.path.join(get_user_app_data_directory(), "neetbox")
     if not os.path.exists(path):
         os.makedirs(path)

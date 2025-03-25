@@ -76,6 +76,9 @@ class ProjectDB(ManageableDB):
         logger.ok(f"History file(version={_db_file_version}) for project id '{project_id}' loaded.")
         return new_dbc
 
+    def __repr__(self):
+        return f"<ProjectDB(project_id={self.project_id}, file_path={self.file_path})>"
+
     @property
     def size(self):
         """return local storage usage by this project db in bytes
@@ -283,7 +286,11 @@ class ProjectDB(ManageableDB):
         return [result for (result,) in result]
 
     def do_limit_num_row_for(
-        self, table_name: str, run_id: str, num_row_limit: int, series: str = None
+        self,
+        table_name: str,
+        run_id: str,
+        num_row_limit: int,
+        series: str = None,
     ):
         if num_row_limit <= 0:  # no limit or random not triggered
             return
@@ -324,7 +331,10 @@ class ProjectDB(ManageableDB):
             json_data = json.dumps(json_data)
         _, lastrowid = self._execute(sql_query, timestamp, series, run_id, json_data)
         self.do_limit_num_row_for(
-            table_name=table_name, run_id=run_id, num_row_limit=num_row_limit, series=series
+            table_name=table_name,
+            run_id=run_id,
+            num_row_limit=num_row_limit,
+            series=series,
         )
         return lastrowid
 
@@ -410,12 +420,18 @@ class ProjectDB(ManageableDB):
         sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME}, {METADATA_COLUMN_NAME}, {BLOB_COLUMN_NAME}) VALUES (?, ?, ?, ?, ?)"
         _, lastrowid = self._execute(sql_query, timestamp, series, run_id, meta_data, blob_data)
         self.do_limit_num_row_for(
-            table_name=table_name, run_id=run_id, num_row_limit=num_row_limit, series=series
+            table_name=table_name,
+            run_id=run_id,
+            num_row_limit=num_row_limit,
+            series=series,
         )
         return lastrowid
 
     def read_blob(
-        self, table_name: str, condition: ProjectDbQueryCondition = None, meta_only=False
+        self,
+        table_name: str,
+        condition: ProjectDbQueryCondition = None,
+        meta_only=False,
     ):
         if not self.table_exist(table_name):
             return []
@@ -440,7 +456,9 @@ class ProjectDB(ManageableDB):
     @classmethod
     def get_db_list(cls):
         history_file_loader = ResourceLoader(
-            folder=DB_PROJECT_FILE_FOLDER, file_types=[DB_PROJECT_FILE_TYPE_NAME], force_rescan=True
+            folder=DB_PROJECT_FILE_FOLDER,
+            file_types=[DB_PROJECT_FILE_TYPE_NAME],
+            force_rescan=True,
         )
         history_file_list = history_file_loader.get_file_list()
         for path in history_file_list:

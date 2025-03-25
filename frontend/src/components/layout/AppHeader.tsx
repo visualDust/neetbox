@@ -15,7 +15,7 @@ export default function AppHeader() {
       }}
     >
       <Typography.Title>
-        <Link to="/">NEET Center</Link>
+        <Link to="/">NEETBOX</Link>
       </Typography.Title>
       <Typography.Title heading={2}>{title}</Typography.Title>
       {extra}
