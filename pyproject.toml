@@ -51,7 +51,6 @@ isort = "^5.11.5"
 pre-commit = ">=3.4.0"
 pillow = "^11.0.0"
 pytest-cov = "^6.0.0"
-setuptools = "^78.0.2"
 
 [build-system]
 requires = ["poetry>=0.12"]
