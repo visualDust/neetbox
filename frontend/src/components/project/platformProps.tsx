@@ -61,7 +61,7 @@ const PropCard = memo(({ propName, propValue }: { propName: string; propValue: P
 
 export default function PlatformProps(): React.JSX.Element {
   const { projectId, runId } = useCurrentProject();
-  const runStatus = useProjectRunStatus(projectId, runId);
+  const [runStatus] = useProjectRunStatus(projectId, runId);
   const memoData = useMemoJSON(runStatus?.platform);
   return (
     <div>
@@ -77,6 +77,6 @@ export default function PlatformProps(): React.JSX.Element {
 
 export function PlatformTitleJson() {
   const { projectId, runId } = useCurrentProject();
-  const runStatus = useProjectRunStatus(projectId, runId);
+  const [runStatus] = useProjectRunStatus(projectId, runId);
   return <JsonPopover value={runStatus?.platform} position="right" />;
 }

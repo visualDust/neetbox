@@ -21,7 +21,7 @@ export const HyperParams = memo(
 );
 
 const HyperParamsContent = memo(({ projectId, runId }: any) => {
-  const runStatus = useProjectRunStatus(projectId, runId);
+  const [runStatus] = useProjectRunStatus(projectId, runId);
   const value = runStatus?.hyperparameters;
   return (
     <Space vertical>

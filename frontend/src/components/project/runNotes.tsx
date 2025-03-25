@@ -8,7 +8,7 @@ import { fetcher } from "../../services/api";
 
 export const RunNote = memo(
   ({ projectId, runId, trigger = "click", position, allowEdit = true, children = <IconArticle /> }: any) => {
-    const runStatus = useProjectRunStatus(projectId, runId);
+    const [runStatus, mutateRunStatus] = useProjectRunStatus(projectId, runId);
     const value = runStatus?.metadata.notes;
     const [editing, setEditing] = useState(false);
     return (
@@ -26,7 +26,7 @@ export const RunNote = memo(
           onResult={(edited) => {
             setEditing(false);
             if (edited) {
-              // todo trigger a refresh
+              mutateRunStatus();
             }
           }}
         />
