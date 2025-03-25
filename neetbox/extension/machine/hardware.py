@@ -9,14 +9,14 @@ import time
 from threading import Thread
 from typing import Callable, List
 
-import GPUtil
 import psutil
-from GPUtil import GPU
-from GPUtil import getAvailable as _getAvailableNvGPU
 from vdtoys.mvc import Singleton
 
 from neetbox.config import export_default_config, get_module_level_config
 from neetbox.extension import on_workspace_loaded
+from neetbox.extension.machine._gputil import GPU
+from neetbox.extension.machine._gputil import getAvailable as _getAvailableNvGPU
+from neetbox.extension.machine._gputil import getGPUs
 
 
 class CpuStatus:
@@ -130,7 +130,7 @@ class Hardware(metaclass=Singleton):
         self._cpus = [CpuStatus() for _ in range(psutil.cpu_count(logical=True))]
         self._cpu_statistics = CpuStatistics(*psutil.cpu_stats())
         try:
-            self._gpus = [NvGpuStatus.parse(gpu) for gpu in GPUtil.getGPUs()]
+            self._gpus = [NvGpuStatus.parse(gpu) for gpu in getGPUs()]
         except Exception as e:
             self._gpus = []
         self._with_gpu = False if len(self._gpus) == 0 else True
@@ -208,7 +208,7 @@ class Hardware(metaclass=Singleton):
                     # update gpu usage
                     if do_update_gpus:
                         try:
-                            self._gpus = [NvGpuStatus.parse(gpu) for gpu in GPUtil.getGPUs()]
+                            self._gpus = [NvGpuStatus.parse(gpu) for gpu in getGPUs()]
                         except Exception as e:
                             self._gpus = []
                     self._cpu_statistics = CpuStatistics(*psutil.cpu_stats())
