@@ -37,6 +37,11 @@ async def list_server_ips():
     return {"hostname": local_hostname, "ips": filtered_ips}
 
 
+@router.get("/version")
+async def get_version():
+    return {"version": VERSION}
+
+
 @router.post(f"/shutdown")
 async def shutdown_server():
     def __sleep_and_shutdown(secs=1):

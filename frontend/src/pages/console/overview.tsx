@@ -1,5 +1,5 @@
 import { SectionTitle } from "../../components/common/sectionTitle";
-import { ServerIpCard } from "../../components/overview/serverProps";
+import { ServerPropsCard } from "../../components/overview/serverProps";
 import { DiskUsageCard } from "../../components/overview/diskUsage";
 import { ProjectCards } from "../../components/overview/projectCards";
 
@@ -11,7 +11,7 @@ export default function Overview() {
       <SectionTitle title="Server Information" />
       <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
         <DiskUsageCard />
-        <ServerIpCard />
+        <ServerPropsCard />
       </div>
     </div>
   );
