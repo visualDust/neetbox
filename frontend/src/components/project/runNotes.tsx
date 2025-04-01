@@ -4,6 +4,10 @@ import { IconArticle } from "@douyinfe/semi-icons";
 import { useCurrentProject, useProjectRunStatus } from "../../hooks/useProject";
 import Loading from "../common/loading";
 import MDEditor from "@uiw/react-md-editor";
+import "katex/dist/katex.css";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm";
 import { fetcher } from "../../services/api";
 
 export const RunNote = memo(
@@ -32,7 +36,7 @@ export const RunNote = memo(
           {children}
         </Popover>
         <RunNoteEditor
-          data={editing ? { runId, notes: value } : null}
+          data={editing ? { projectId, runId, notes: value } : null}
           onResult={(edited) => {
             setEditing(false);
             if (edited) {
@@ -66,7 +70,12 @@ const RunNoteContent = memo(({ runStatus, value, setEditing, allowEdit }: any) =
         )
       ) : (
         <>
-          <MarkdownRender raw={value} />
+          <MarkdownRender
+            format="mdx"
+            raw={value}
+            remarkPlugins={[remarkMath, remarkGfm]}
+            rehypePlugins={[rehypeKatex]}
+          />
           {allowEdit && (
             <Button
               icon={<IconArticle />}
@@ -97,7 +106,15 @@ const RunNoteEditor = memo((props: { data: any; onResult: (edited: boolean) => v
 
   return (
     <Modal
-      title={`Run Note`}
+      title={
+        <Space>
+          <IconArticle />
+          Project
+          <Typography.Text type="tertiary">{data.projectId}</Typography.Text>
+          Run
+          <Typography.Text type="tertiary">{data.runId}</Typography.Text>
+        </Space>
+      }
       visible={visible}
       onCancel={() => props.onResult(false)}
       onOk={async () => {
@@ -112,7 +129,7 @@ const RunNoteEditor = memo((props: { data: any; onResult: (edited: boolean) => v
       }}
       okText="Submit"
       maskClosable={false}
-      fullScreen={true}
+      size="large"
       centered
     >
       <MDEditor
@@ -120,7 +137,15 @@ const RunNoteEditor = memo((props: { data: any; onResult: (edited: boolean) => v
         onChange={(v) => {
           setData({ ...data, notes: v });
         }}
-        height="60%"
+        textareaProps={{
+          placeholder: "Please enter Markdown text...",
+        }}
+        height="480px"
+        data-color-mode={document.body.getAttribute("theme-mode") === "dark" ? "dark" : "light"}
+        previewOptions={{
+          rehypePlugins: [rehypeKatex],
+          remarkPlugins: [remarkMath, remarkGfm],
+        }}
       />
     </Modal>
   );

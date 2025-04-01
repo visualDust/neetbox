@@ -3,10 +3,13 @@ import React from "react";
 import { useAPI } from "../../services/api";
 import { PropCard } from "../common/propCard";
 
-export function ServerIpCard(): React.JSX.Element {
-  const { data } = useAPI("/server/listips", { refreshInterval: 5000 });
-  const hostname = data?.hostname;
-  const ips = data?.ips || [];
+export function ServerPropsCard(): React.JSX.Element {
+  const { data: serverIPs } = useAPI("/server/listips", { refreshInterval: 5000 });
+  const hostname = serverIPs?.hostname;
+  const ips = serverIPs?.ips || [];
+
+  const { data: serverVersion } = useAPI("/server/version", { refreshInterval: 5000 });
+  const version = serverVersion?.version;
 
   return (
     <div>
@@ -15,6 +18,7 @@ export function ServerIpCard(): React.JSX.Element {
         {ips.map((ip) => (
           <PropCard key={ip} propName="IP" propValue={ip} />
         ))}
+        <PropCard propName="Server Version" propValue={version} />
       </CardGroup>
     </div>
   );
