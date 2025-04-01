@@ -50,7 +50,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "cypress": "^13.17.0",
     "eslint": "^8.57.1",
-    "eslint-import-resolver-typescript": "^3.9.1",
+    "eslint-import-resolver-typescript": "^4.0.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
