@@ -1,16 +1,16 @@
 import { memo, useEffect, useState } from "react";
 import { Button, Card, Input, Popover, Space, Typography } from "@douyinfe/semi-ui";
-import { IconDownload } from "@douyinfe/semi-icons";
-import { useCurrentProject, useProjectData, useProjectSeries } from "../../hooks/useProject";
-import Loading from "../common/loading";
-import { CenterBox } from "../common/centerBox";
-import { API_BASEURL } from "../../services/api";
 import {
+  IconDownload,
   IconDoubleChevronLeft,
   IconDoubleChevronRight,
   IconChevronLeft,
   IconChevronRight,
 } from "@douyinfe/semi-icons";
+import { useCurrentProject, useProjectData, useProjectSeries } from "../../hooks/useProject";
+import Loading from "../common/loading";
+import { CenterBox } from "../common/centerBox";
+import { API_BASEURL } from "../../services/api";
 
 export const Images = memo(() => {
   return (

@@ -1,6 +1,5 @@
 import React from "react";
-import { Descriptions, Card, Toast } from "@douyinfe/semi-ui";
-import { Typography } from "@douyinfe/semi-ui";
+import { Descriptions, Card, Toast, Typography } from "@douyinfe/semi-ui";
 import { IconCopy } from "@douyinfe/semi-icons";
 import { useAPI } from "../../services/api";
 

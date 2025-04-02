@@ -1,8 +1,8 @@
+import { CardGroup, Divider } from "@douyinfe/semi-ui";
 import { SectionTitle } from "../../components/common/sectionTitle";
 import { ServerPropsCard } from "../../components/overview/serverProps";
 import { DiskUsageCard } from "../../components/overview/diskUsage";
 import { ProjectCards } from "../../components/overview/projectCards";
-import { CardGroup, Divider } from "@douyinfe/semi-ui";
 
 export default function Overview() {
   return (

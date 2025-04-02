@@ -51,8 +51,11 @@ serverapp.include_router(
     tags=["websocket"],
 )
 
-# mount web static files root
-serverapp.mount("/static", StaticFiles(directory=front_end_dist_path), name="static")
+try:
+    # mount web static files root
+    serverapp.mount("/static", StaticFiles(directory=front_end_dist_path), name="static")
+except Exception as e:
+    logger.err(f"failed to mount static files root: {e}, please reinstall neetbox")
 
 
 @serverapp.get("/")

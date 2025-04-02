@@ -68,7 +68,7 @@ def update_disk_info():  # todo
         time.sleep(300)  # update every 5 minutes
 
 
-Thread(target=update_disk_info).start()
+Thread(target=update_disk_info, daemon=True).start()
 
 
 @router.get("/diskusage")

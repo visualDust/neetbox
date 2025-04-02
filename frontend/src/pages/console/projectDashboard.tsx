@@ -1,6 +1,7 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import { Divider, Progress, Space, Breadcrumb } from "@douyinfe/semi-ui";
+import { IconHome } from "@douyinfe/semi-icons";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/project/logs/logs";
 import { Actions } from "../../components/project/actions";
@@ -14,7 +15,6 @@ import PlatformProps, { PlatformTitleJson } from "../../components/project/platf
 import Loading from "../../components/common/loading";
 import { addNotice } from "../../utils/notification";
 import { Progresses } from "../../components/project/progress";
-import { IconHome } from "@douyinfe/semi-icons";
 
 export default function ProjectDashboardButRecreateOnRouteChange() {
   const { projectId } = useParams();
