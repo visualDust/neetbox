@@ -14,6 +14,7 @@ export default function SwitchColorMode(): React.JSX.Element {
       uncheckedText="🌚"
       checked={!darkMode}
       onChange={switchMode}
+      style={{ backgroundColor: "var(--semi-color-default)" }}
     ></Switch>
   );
 }

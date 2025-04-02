@@ -56,6 +56,7 @@ export const RunSelect = memo((props: any) => {
               {items.find((x) => x.runId == p.value)?.timestamp}
             </>
           )}
+          style={{ backgroundColor: "var(--semi-color-nav-bg)" }}
         >
           {items.map((item, i) => {
             return (
@@ -131,12 +132,14 @@ export const RunSelect = memo((props: any) => {
         <Loading height="30px" />
       )}
       <HyperParams projectId={projectId} runId={runId}>
-        <Button type="tertiary" icon={<IconInfoCircle />}>
+        <Button style={{ backgroundColor: "var(--semi-color-nav-bg)" }} icon={<IconInfoCircle />}>
           Params
         </Button>
       </HyperParams>
       <RunNote projectId={projectId} runId={runId}>
-        <Button icon={<IconArticle />}>Note</Button>
+        <Button style={{ backgroundColor: "var(--semi-color-nav-bg)" }} icon={<IconArticle />}>
+          Note
+        </Button>
       </RunNote>
       {changing && <Loading height="30px" />}
       <RunEditor

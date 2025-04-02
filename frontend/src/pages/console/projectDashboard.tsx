@@ -1,7 +1,6 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
-import { Divider, Progress, Space, Breadcrumb } from "@douyinfe/semi-ui";
-import { IconHome } from "@douyinfe/semi-icons";
+import { Button, Divider, Space, Tag, Typography } from "@douyinfe/semi-ui";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/project/logs/logs";
 import { Actions } from "../../components/project/actions";
@@ -22,6 +21,8 @@ export default function ProjectDashboardButRecreateOnRouteChange() {
 }
 
 function ProjectDashboard() {
+  const { Text, Title } = Typography;
+
   const { projectId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   if (!projectId) throw new Error("projectId required");
@@ -72,25 +73,6 @@ function ProjectDashboard() {
     [projectId, projectName, runId, isOnlineRun],
   );
 
-  // Define breadcrumb routes dynamically
-  const breadcrumbRoutes = [
-    {
-      path: "/",
-      href: "/",
-      icon: <IconHome size="small" />,
-    },
-    {
-      path: `/web/project/${projectId}`,
-      href: `/web/project/${projectId}`,
-      name: projectName,
-    },
-    runId && {
-      path: `/web/project/${projectId}?run=${runId}`,
-      href: `/web/project/${projectId}?run=${runId}`,
-      name: runId,
-    },
-  ].filter(Boolean); // Remove any falsy values (e.g., when there's no runId)
-
   return (
     <ProjectContext.Provider value={projectContextData}>
       <div style={{ padding: "20px", position: "relative" }}>
@@ -101,7 +83,9 @@ function ProjectDashboard() {
             </ProjectContext.Provider>
           }
         >
-          <Breadcrumb compact={false} routes={breadcrumbRoutes} />
+          <Title heading={2} style={{ margin: 0, color: "var(--semi-color-default)" }}>
+            {projectName}
+          </Title>
         </AppTitle>
         {runId ? (
           <>
