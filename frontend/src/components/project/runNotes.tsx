@@ -75,6 +75,7 @@ const RunNoteContent = memo(({ runStatus, value, setEditing, allowEdit }: any) =
             raw={value}
             remarkPlugins={[remarkMath, remarkGfm]}
             rehypePlugins={[rehypeKatex]}
+            style={{ maxWidth: "calc(min(960px, 100vw - 50px))", maxHeight: "80vh", overflow: "auto" }}
           />
           {allowEdit && (
             <Button
