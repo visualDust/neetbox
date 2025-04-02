@@ -5,6 +5,12 @@ import { useCurrentProject, useProjectData, useProjectSeries } from "../../hooks
 import Loading from "../common/loading";
 import { CenterBox } from "../common/centerBox";
 import { API_BASEURL } from "../../services/api";
+import {
+  IconDoubleChevronLeft,
+  IconDoubleChevronRight,
+  IconChevronLeft,
+  IconChevronRight,
+} from "@douyinfe/semi-icons";
 
 export const Images = memo(() => {
   return (
@@ -76,10 +82,10 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
         )}
         <Space>
           <Button onClick={() => move(-10)} disabled={!has(-1)}>
-            {"<<"}
+            <IconDoubleChevronLeft />
           </Button>
           <Button onClick={() => move(-1)} disabled={!has(-1)}>
-            {"<"}
+            <IconChevronLeft />
           </Button>
           <InputChangeOnEnter
             type="text"
@@ -94,10 +100,10 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
           />{" "}
           / {data?.length ?? "..."}
           <Button onClick={() => move(+1)} disabled={!has(1)}>
-            {">"}
+            <IconChevronRight />
           </Button>
           <Button onClick={() => move(+10)} disabled={!has(1)}>
-            {">>"}
+            <IconDoubleChevronRight />
           </Button>
         </Space>
       </Space>

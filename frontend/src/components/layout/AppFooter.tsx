@@ -14,7 +14,7 @@ export default function AppFooter(): React.JSX.Element {
         gap: "10px",
       }}
     >
-      <Divider />
+      <Divider margin="10px" />
       <Logo styles={{ width: 50 }} withGlow={true} withLink={true} />
       <Typography.Text type="tertiary" style={{ fontSize: 14 }}>
         © 2023 - {new Date().getFullYear()} Neet Design. All rights reserved.
