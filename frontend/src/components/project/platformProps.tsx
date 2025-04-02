@@ -15,7 +15,6 @@ const PropCard = memo(({ propName, propValue }: { propName: string; propValue: P
     processor: "Processor name",
     os_name: "System/OS name",
     os_release: "Sys release ver",
-    architecture: "Python arch.",
     python_build: "Python build",
     python_version: "Python version",
   };
