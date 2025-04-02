@@ -1,3 +1,4 @@
+import { CardGroup, Divider } from "@douyinfe/semi-ui";
 import { SectionTitle } from "../../components/common/sectionTitle";
 import { ServerPropsCard } from "../../components/overview/serverProps";
 import { DiskUsageCard } from "../../components/overview/diskUsage";
@@ -8,11 +9,12 @@ export default function Overview() {
     <div style={{ padding: "20px", position: "relative" }}>
       <SectionTitle title="Projects" />
       <ProjectCards />
+      <Divider margin="10px" />
       <SectionTitle title="Server Information" />
-      <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+      <CardGroup spacing={10}>
         <DiskUsageCard />
         <ServerPropsCard />
-      </div>
+      </CardGroup>
     </div>
   );
 }

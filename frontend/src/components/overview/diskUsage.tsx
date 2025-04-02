@@ -68,24 +68,22 @@ export function DiskUsageCard(): React.JSX.Element {
   const { data } = useAPI("/server/diskusage", { refreshInterval: 5000 });
 
   return (
-    <div>
-      <Card
-        shadows="hover"
-        title="Disk Usage"
-        headerLine
-        headerStyle={{ padding: "10px" }}
-        bodyStyle={{
-          padding: "10px",
-          minHeight: "50px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          textAlign: "center",
-        }}
-        style={{ width: 500 }}
-      >
-        {data ? <DiskUsageChart data={data} /> : <Loading height="400px" width="100%" />}
-      </Card>
-    </div>
+    <Card
+      shadows="hover"
+      title="Disk Usage"
+      headerLine
+      headerStyle={{ padding: "10px" }}
+      bodyStyle={{
+        padding: "10px",
+        minHeight: "50px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        textAlign: "center",
+      }}
+      style={{ width: "500px" }}
+    >
+      {data ? <DiskUsageChart data={data} /> : <Loading height="400px" width="100%" />}
+    </Card>
   );
 }

@@ -1,6 +1,7 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
-import { Divider, Progress, Space } from "@douyinfe/semi-ui";
+import { Divider, Progress, Space, Breadcrumb } from "@douyinfe/semi-ui";
+import { IconHome } from "@douyinfe/semi-icons";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/project/logs/logs";
 import { Actions } from "../../components/project/actions";
@@ -71,6 +72,25 @@ function ProjectDashboard() {
     [projectId, projectName, runId, isOnlineRun],
   );
 
+  // Define breadcrumb routes dynamically
+  const breadcrumbRoutes = [
+    {
+      path: "/",
+      href: "/",
+      icon: <IconHome size="small" />,
+    },
+    {
+      path: `/web/project/${projectId}`,
+      href: `/web/project/${projectId}`,
+      name: projectName,
+    },
+    runId && {
+      path: `/web/project/${projectId}?run=${runId}`,
+      href: `/web/project/${projectId}?run=${runId}`,
+      name: runId,
+    },
+  ].filter(Boolean); // Remove any falsy values (e.g., when there's no runId)
+
   return (
     <ProjectContext.Provider value={projectContextData}>
       <div style={{ padding: "20px", position: "relative" }}>
@@ -81,25 +101,25 @@ function ProjectDashboard() {
             </ProjectContext.Provider>
           }
         >
-          Project "{projectName ?? projectId}"
+          <Breadcrumb compact={false} routes={breadcrumbRoutes} />
         </AppTitle>
         {runId ? (
           <>
             <SectionTitle title="Logs" />
             <Logs />
-            <Divider />
+            <Divider margin="10px" />
             <SectionTitle title="Progresses" />
             <Progresses />
-            <Divider />
+            <Divider margin="10px" />
             <SectionTitle title="Actions" />
             <Actions />
-            <Divider />
+            <Divider margin="10px" />
             <SectionTitle title="Images & Scalars" />
             <ImagesAndScatters />
-            <Divider />
+            <Divider margin="10px" />
             <SectionTitle title="Hardware" />
             <Hardware />
-            <Divider />
+            <Divider margin="10px" />
             <SectionTitle
               title={
                 <Space>

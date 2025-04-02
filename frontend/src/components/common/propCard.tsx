@@ -28,11 +28,9 @@ export const PropCard = memo(({ propName, propValue }: { propName: string; propV
           onClick={() => {
             navigator.clipboard.writeText(content).then(
               () => {
-                // copy success
                 Toast.info("Copied to clipboard");
               },
               () => {
-                // copy failed
                 Toast.error("Failed to copy");
               },
             );

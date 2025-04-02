@@ -1,6 +1,12 @@
 import { memo, useEffect, useState } from "react";
 import { Button, Card, Input, Popover, Space, Typography } from "@douyinfe/semi-ui";
-import { IconDownload } from "@douyinfe/semi-icons";
+import {
+  IconDownload,
+  IconDoubleChevronLeft,
+  IconDoubleChevronRight,
+  IconChevronLeft,
+  IconChevronRight,
+} from "@douyinfe/semi-icons";
 import { useCurrentProject, useProjectData, useProjectSeries } from "../../hooks/useProject";
 import Loading from "../common/loading";
 import { CenterBox } from "../common/centerBox";
@@ -76,10 +82,10 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
         )}
         <Space>
           <Button onClick={() => move(-10)} disabled={!has(-1)}>
-            {"<<"}
+            <IconDoubleChevronLeft />
           </Button>
           <Button onClick={() => move(-1)} disabled={!has(-1)}>
-            {"<"}
+            <IconChevronLeft />
           </Button>
           <InputChangeOnEnter
             type="text"
@@ -94,10 +100,10 @@ const SeriesViewer = memo(({ series }: { series: string }) => {
           />{" "}
           / {data?.length ?? "..."}
           <Button onClick={() => move(+1)} disabled={!has(1)}>
-            {">"}
+            <IconChevronRight />
           </Button>
           <Button onClick={() => move(+10)} disabled={!has(1)}>
-            {">>"}
+            <IconDoubleChevronRight />
           </Button>
         </Space>
       </Space>

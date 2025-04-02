@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Button, Popover, Space, Typography } from "@douyinfe/semi-ui";
+import { Popover, Space, Typography } from "@douyinfe/semi-ui";
 import { IconInfoCircle } from "@douyinfe/semi-icons";
 import { useProjectRunStatus } from "../../hooks/useProject";
 import Loading from "../common/loading";

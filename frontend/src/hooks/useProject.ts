@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect } from "react";
 import { useAtom } from "jotai";
+import { KeyedMutator } from "swr";
 import { getProject } from "../services/projects";
 import { WsMsg } from "../services/projectWebsocket";
 import { useAPI } from "../services/api";
 import { RunStatus } from "../services/types";
 import { useProjectData } from "./useProjectData";
-import { KeyedMutator } from "swr";
 
 export { useProjectData };
 
