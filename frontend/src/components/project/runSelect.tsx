@@ -1,13 +1,23 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Space, Select, Tag, Button, Modal, Form, Toast } from "@douyinfe/semi-ui";
+import {
+  Space,
+  Select,
+  Tag,
+  Button,
+  Modal,
+  Form,
+  Toast,
+  ButtonGroup,
+  SplitButtonGroup,
+} from "@douyinfe/semi-ui";
 import { IconArticle, IconCopy, IconDelete, IconEdit, IconInfoCircle } from "@douyinfe/semi-icons";
 import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
 import { useNavigate } from "react-router-dom";
 import Loading from "../common/loading";
-import { useCurrentProject } from "../../hooks/useProject";
+import { useCurrentProject, useProjectRunStatus } from "../../hooks/useProject";
 import { fetcher } from "../../services/api";
 import { HyperParams } from "./hyperParams";
-import { RunNote } from "./runNotes";
+import { RunNotePopover, RunNoteEditorModal } from "./runNotes";
 
 export const RunSelect = memo((props: any) => {
   const { setRunId, runIds, mutateRunIds, projectId, runId, isOnlineRun } = props;
@@ -34,7 +44,9 @@ export const RunSelect = memo((props: any) => {
   const selectRef = useRef<any>();
   const closeDropDown = () => selectRef.current.close();
 
-  const [editing, setEditing] = useState<any>(null);
+  const [editingRun, setEditingRun] = useState<any>(null);
+  const [editingNote, setEditingNote] = useState<any>(null);
+  const [runStatus, mutateRunStatus] = useProjectRunStatus(projectId, runId);
 
   return (
     <Space style={{ width: "500px" }}>
@@ -79,7 +91,7 @@ export const RunSelect = memo((props: any) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     closeDropDown();
-                    setEditing(item);
+                    setEditingRun(item);
                   }}
                 />
                 {!item.online && (
@@ -117,7 +129,7 @@ export const RunSelect = memo((props: any) => {
                 <HyperParams projectId={projectId} runId={item.runId} trigger="hover" position="leftTop">
                   <Button type="tertiary" icon={<IconInfoCircle />} size="small" />
                 </HyperParams>
-                <RunNote
+                <RunNotePopover
                   projectId={projectId}
                   runId={item.runId}
                   trigger="hover"
@@ -136,23 +148,43 @@ export const RunSelect = memo((props: any) => {
           Params
         </Button>
       </HyperParams>
-      <RunNote projectId={projectId} runId={runId}>
-        <Button style={{ backgroundColor: "var(--semi-color-nav-bg)" }} icon={<IconArticle />}>
-          Note
-        </Button>
-      </RunNote>
+      <SplitButtonGroup>
+        <RunNotePopover projectId={projectId} runId={runId}>
+          <Button style={{ backgroundColor: "var(--semi-color-nav-bg)" }} icon={<IconArticle />}>
+            Note
+          </Button>
+        </RunNotePopover>
+        <Button
+          style={{ backgroundColor: "var(--semi-color-nav-bg)" }}
+          icon={<IconEdit />}
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingNote(true);
+            closeDropDown();
+          }}
+        />
+      </SplitButtonGroup>
       {changing && <Loading height="30px" />}
       <RunEditor
-        data={editing}
+        data={editingRun}
         onResult={useCallback(
           (edited) => {
-            setEditing(null);
+            setEditingRun(null);
             if (edited) {
               mutateRunIds();
             }
           },
           [mutateRunIds],
         )}
+      />
+      <RunNoteEditorModal
+        data={editingNote ? { projectId, runId, notes: runStatus?.metadata.notes } : null}
+        onResult={(edited) => {
+          setEditingNote(false);
+          if (edited) {
+            mutateRunStatus();
+          }
+        }}
       />
     </Space>
   );
