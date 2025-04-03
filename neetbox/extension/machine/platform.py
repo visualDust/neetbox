@@ -19,7 +19,7 @@ class PlatformInfo(metaclass=Singleton):
         self._processor = "unknown" if len(_platform.processor()) == 0 else _platform.processor()
         self._os_name = _platform.system()
         self._os_release = _platform.version()
-        self._python_version = _platform.python_version() + " " + _platform.architecture()
+        self._python_version = f"{_platform.python_version()} {_platform.architecture()}"
         self._python_build = _platform.python_build()
 
     @property

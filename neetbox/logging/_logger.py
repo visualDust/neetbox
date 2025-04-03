@@ -6,6 +6,7 @@
 
 import functools
 import os
+import warnings
 from datetime import date
 from enum import Enum
 from typing import Callable, Optional, Union
@@ -172,9 +173,7 @@ class Logger:
             try:
                 writer_func(log)
             except Exception as e:
-                print(f"log writer {writer_name} fialed: {e}, original message:")
-                print(log)
-
+                warnings.warn(f"log writer {writer_name} fialed: {e}")
         return self
 
     def ok(
