@@ -16,7 +16,7 @@ export default defineConfig({
     rspack: (config) => {
       config.plugins!.push(
         new SemiRspackPlugin({
-          theme: "@semi-bot/semi-theme-strapi",
+          theme: "@semi-bot/semi-theme-neetbox",
         }),
       );
       // config.optimization = { ...config.optimization, minimize: false };
@@ -33,7 +33,7 @@ export default defineConfig({
     },
   },
   html: {
-    title: "Neetbox",
+    title: "NEETBOX",
     favicon: "./public/logo.svg",
   },
   performance: {

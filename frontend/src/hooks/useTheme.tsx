@@ -2,7 +2,7 @@ import { createContext, useContext } from "react";
 
 export const ThemeContext = createContext<{
   darkMode: boolean;
-  setDarkMode: (val: boolean) => void;
+  setDarkMode: (val: boolean, mouseEvent?: Event) => void;
 }>(null!);
 
 export function useTheme() {

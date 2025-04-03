@@ -1719,24 +1719,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@semi-bot/semi-theme-doucreator@npm:^1.0.22":
-  version: 1.0.22
-  resolution: "@semi-bot/semi-theme-doucreator@npm:1.0.22"
-  checksum: 10c0/434a94324c5b8f71ea8eb9c5c0e84de89662496d3c1a1a0b7916022bedc16f0ab7176d4151ea4f9f30877f52f5309f6f26f11fee90a9d2b90cf5cb2d8e749880
-  languageName: node
-  linkType: hard
-
-"@semi-bot/semi-theme-nyx-c@npm:^1.0.9":
-  version: 1.0.9
-  resolution: "@semi-bot/semi-theme-nyx-c@npm:1.0.9"
-  checksum: 10c0/f10c91b6204fa1e0c4adc83df2109a26002cf1c72e9461aa0f07b99d6cd40f70963a30b412072e77c61dc7a7bae720143a1a0cb6deff4d623e40afe0879ac6a3
-  languageName: node
-  linkType: hard
-
-"@semi-bot/semi-theme-strapi@npm:1.0.1":
+"@semi-bot/semi-theme-neetbox@npm:^1.0.1":
   version: 1.0.1
-  resolution: "@semi-bot/semi-theme-strapi@npm:1.0.1"
-  checksum: 10c0/7137a770e24fa6dc197fa3dff6a1fa088a7eccd2cfe22c6dccba0e49500fa3e7bbb2b70174fed37bcd9a5baa23bd7846440d36e32aac5d5f037bd86a2c14961a
+  resolution: "@semi-bot/semi-theme-neetbox@npm:1.0.1"
+  checksum: 10c0/29fe407f052abab567c1964c27b570432e6631e24bb21c86cf3cb0e7155568414ea6b79eea22e0b09d178205bdd9e3194a7da8e1737b82547d1393e51c13b5dd
   languageName: node
   linkType: hard
 
@@ -8026,9 +8012,7 @@ __metadata:
     "@douyinfe/semi-ui": "npm:^2.77.1"
     "@rsbuild/core": "npm:^0.5.9"
     "@rsbuild/plugin-react": "npm:^0.1.9"
-    "@semi-bot/semi-theme-doucreator": "npm:^1.0.22"
-    "@semi-bot/semi-theme-nyx-c": "npm:^1.0.9"
-    "@semi-bot/semi-theme-strapi": "npm:1.0.1"
+    "@semi-bot/semi-theme-neetbox": "npm:^1.0.1"
     "@types/react": "npm:^18.3.20"
     "@types/react-dom": "npm:^18.3.5"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"

@@ -1,19 +1,17 @@
 body {
-  --logo-glow-color: rgb(215, 76, 76);
-}
-
-body[theme-mode="dark"] {
-  --logo-glow-color: rgb(20, 76, 255);
+  --logo-glow-color: rgb(255, 255, 255);
 }
 
 .neet-logo-glow {
   transition:
     filter 0.3s ease-in-out,
-    opacity 0.3s ease-in-out;
+    opacity 0.3s ease-in-out,
+    transform 0.3s ease-in-out;
   opacity: 0.7;
 }
 
 .neet-logo-glow:hover {
   filter: drop-shadow(0 0 0.55rem var(--logo-glow-color));
   opacity: 1;
+  transform: rotate(360deg);
 }

@@ -19,8 +19,7 @@ class PlatformInfo(metaclass=Singleton):
         self._processor = "unknown" if len(_platform.processor()) == 0 else _platform.processor()
         self._os_name = _platform.system()
         self._os_release = _platform.version()
-        self._architecture = _platform.architecture()
-        self._python_version = _platform.python_version()
+        self._python_version = f"{_platform.python_version()} {_platform.architecture()}"
         self._python_build = _platform.python_build()
 
     @property
@@ -44,10 +43,6 @@ class PlatformInfo(metaclass=Singleton):
         return self._os_release
 
     @property
-    def architecture(self):
-        return self._architecture
-
-    @property
     def python_version(self):
         return self._python_version
 
@@ -63,7 +58,6 @@ class PlatformInfo(metaclass=Singleton):
             "processor": self._processor,
             "os_name": self._os_name,
             "os_release": self._os_release,
-            "architecture": self._architecture,
             "python_version": self._python_version,
             "python_build": self._python_build,
         }
@@ -91,5 +85,7 @@ def load_send_platform_info():
     @connection.ws_subscribe(event_type_name=EVENT_TYPE_NAME_HANDSHAKE)
     def ws_send_platform_info(message: EventMsg):
         connection.ws_send(
-            event_type=EVENT_TYPE_NAME_STATUS, series="platform", payload=platform.json
+            event_type=EVENT_TYPE_NAME_STATUS,
+            series="platform",
+            payload=platform.json,
         )

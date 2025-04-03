@@ -9,8 +9,9 @@ import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import { fetcher } from "../../services/api";
+import { ErrorBoundary } from "../common/errorBoundary";
 
-export const RunNote = memo(
+export const RunNotePopover = memo(
   ({ projectId, runId, trigger = "click", position, allowEdit = true, children = <IconArticle /> }: any) => {
     const [runStatus, mutateRunStatus] = useProjectRunStatus(projectId, runId);
     const value = runStatus?.metadata.notes;
@@ -35,7 +36,7 @@ export const RunNote = memo(
         >
           {children}
         </Popover>
-        <RunNoteEditor
+        <RunNoteEditorModal
           data={editing ? { projectId, runId, notes: value } : null}
           onResult={(edited) => {
             setEditing(false);
@@ -70,13 +71,15 @@ const RunNoteContent = memo(({ runStatus, value, setEditing, allowEdit }: any) =
         )
       ) : (
         <>
-          <MarkdownRender
-            format="mdx"
-            raw={value}
-            remarkPlugins={[remarkMath, remarkGfm]}
-            rehypePlugins={[rehypeKatex]}
-            style={{ maxWidth: "calc(min(960px, 100vw - 50px))", maxHeight: "80vh", overflow: "auto" }}
-          />
+          <ErrorBoundary renderError={(error) => `Markdown Error: ${error.message}`}>
+            <MarkdownRender
+              format="mdx"
+              raw={value}
+              remarkPlugins={[remarkMath, remarkGfm]}
+              rehypePlugins={[rehypeKatex]}
+              style={{ maxWidth: "calc(min(960px, 100vw - 50px))", maxHeight: "80vh", overflow: "auto" }}
+            />
+          </ErrorBoundary>
           {allowEdit && (
             <Button
               icon={<IconArticle />}
@@ -94,7 +97,7 @@ const RunNoteContent = memo(({ runStatus, value, setEditing, allowEdit }: any) =
   );
 });
 
-const RunNoteEditor = memo((props: { data: any; onResult: (edited: boolean) => void }) => {
+export const RunNoteEditorModal = memo((props: { data: any; onResult: (edited: boolean) => void }) => {
   const { projectId } = useCurrentProject();
   const [data, setData] = useState<any>({});
   const [visible, setVisible] = useState(false);
