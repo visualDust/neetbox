@@ -11,7 +11,7 @@ export default function Overview() {
       <ProjectList />
       <Divider margin="10px" />
       <SectionTitle title="Server Information" />
-      <CardGroup spacing={10}>
+      <CardGroup spacing={10} style={{ alignItems: "flex-start" }}>
         <DiskUsageCard />
         <ServerPropsCard />
       </CardGroup>
