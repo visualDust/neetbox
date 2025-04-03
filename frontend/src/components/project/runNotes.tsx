@@ -9,6 +9,7 @@ import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import { fetcher } from "../../services/api";
+import { ErrorBoundary } from "../common/errorBoundary";
 
 export const RunNotePopover = memo(
   ({ projectId, runId, trigger = "click", position, allowEdit = true, children = <IconArticle /> }: any) => {
@@ -70,13 +71,15 @@ const RunNoteContent = memo(({ runStatus, value, setEditing, allowEdit }: any) =
         )
       ) : (
         <>
-          <MarkdownRender
-            format="mdx"
-            raw={value}
-            remarkPlugins={[remarkMath, remarkGfm]}
-            rehypePlugins={[rehypeKatex]}
-            style={{ maxWidth: "calc(min(960px, 100vw - 50px))", maxHeight: "80vh", overflow: "auto" }}
-          />
+          <ErrorBoundary renderError={(error) => `Markdown Error: ${error.message}`}>
+            <MarkdownRender
+              format="mdx"
+              raw={value}
+              remarkPlugins={[remarkMath, remarkGfm]}
+              rehypePlugins={[rehypeKatex]}
+              style={{ maxWidth: "calc(min(960px, 100vw - 50px))", maxHeight: "80vh", overflow: "auto" }}
+            />
+          </ErrorBoundary>
           {allowEdit && (
             <Button
               icon={<IconArticle />}
