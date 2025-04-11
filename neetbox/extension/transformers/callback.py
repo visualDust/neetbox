@@ -40,7 +40,7 @@ class NeetboxTrainerCallback(TrainerCallback):
         }
         self._scalars = {}
         self._launched_time_stamp = get_timestamp()
-        self._logger = Logger(name_alias="NBTrainerCallback")
+        self.logger = Logger(name_alias="NBTrainerCallback")
 
     def _extract_scalar(self, log, ignore_keys=[]):
         assert isinstance(log, dict), "log should be a dictionary."
