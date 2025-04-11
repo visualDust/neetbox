@@ -2,7 +2,6 @@ import { Typography, Space, Button, Layout } from "@douyinfe/semi-ui";
 import { Link } from "react-router-dom";
 import SwitchColorMode from "../themeSwitcher";
 import { useTitle } from "../appTitle";
-import Logo from "../logo";
 
 export default function AppHeader() {
   const { title, extra } = useTitle();
@@ -16,7 +15,10 @@ export default function AppHeader() {
         backgroundColor: "var(--semi-color-primary)",
       }}
     >
-      <Typography.Title style={{ color: "var(--semi-color-default)", margin: 0 }}>NEETBOX</Typography.Title>
+      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+        <img src={process.env.ASSET_PREFIX + "/logo-no-bg.svg"} style={{ width: "40px" }} />
+        <Typography.Title style={{ color: "var(--semi-color-default)", margin: 0 }}>NEETBOX</Typography.Title>
+      </div>
       <Typography.Title heading={2}>{title}</Typography.Title>
       {extra}
       <div>

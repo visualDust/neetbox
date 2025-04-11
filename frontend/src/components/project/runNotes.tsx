@@ -1,20 +1,19 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Button, Popover, Space, Typography, MarkdownRender, Modal } from "@douyinfe/semi-ui";
 import { IconArticle } from "@douyinfe/semi-icons";
-import { useCurrentProject, useProjectRunStatus } from "../../hooks/useProject";
-import Loading from "../common/loading";
-import MDEditor from "@uiw/react-md-editor";
-import "katex/dist/katex.css";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
+import MDEditor from "@uiw/react-md-editor";
+import { useCurrentProject, useProjectRunStatus } from "../../hooks/useProject";
+import Loading from "../common/loading";
 import { fetcher } from "../../services/api";
 import { ErrorBoundary } from "../common/errorBoundary";
 
 export const RunNotePopover = memo(
   ({ projectId, runId, trigger = "click", position, allowEdit = true, children = <IconArticle /> }: any) => {
     const [runStatus, mutateRunStatus] = useProjectRunStatus(projectId, runId);
-    const value = runStatus?.metadata.notes;
+    const value = runStatus?.metadata?.notes;
     const [editing, realSetEditing] = useState(false);
     const [popoverVisible, setPopoverVisible] = useState(false);
     const setEditing = (value) => {

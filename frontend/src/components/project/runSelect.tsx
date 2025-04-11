@@ -1,23 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Space,
-  Select,
-  Tag,
-  Button,
-  Modal,
-  Form,
-  Toast,
-  ButtonGroup,
-  SplitButtonGroup,
-} from "@douyinfe/semi-ui";
-import { IconArticle, IconCopy, IconDelete, IconEdit, IconInfoCircle } from "@douyinfe/semi-icons";
-import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
+import { Space, Select, Tag, Button, Modal, Toast, SplitButtonGroup } from "@douyinfe/semi-ui";
+import { IconArchive, IconArticle, IconDelete, IconEdit, IconInfoCircle } from "@douyinfe/semi-icons";
 import { useNavigate } from "react-router-dom";
 import Loading from "../common/loading";
-import { useCurrentProject, useProjectRunStatus } from "../../hooks/useProject";
+import { useProjectRunStatus } from "../../hooks/useProject";
 import { fetcher } from "../../services/api";
 import { HyperParams } from "./hyperParams";
 import { RunNotePopover, RunNoteEditorModal } from "./runNotes";
+import { SingleRunEditor, MultiRunEditor } from "./runEdit";
 
 export const RunSelect = memo((props: any) => {
   const { setRunId, runIds, mutateRunIds, projectId, runId, isOnlineRun } = props;
@@ -44,12 +34,13 @@ export const RunSelect = memo((props: any) => {
   const selectRef = useRef<any>();
   const closeDropDown = () => selectRef.current.close();
 
-  const [editingRun, setEditingRun] = useState<any>(null);
+  const [editingSingleRun, setEditingSingleRun] = useState<any>(null);
+  const [editingAllRun, setEditingAllRun] = useState<boolean>(false);
   const [editingNote, setEditingNote] = useState<any>(null);
   const [runStatus, mutateRunStatus] = useProjectRunStatus(projectId, runId);
 
   return (
-    <Space style={{ width: "500px" }}>
+    <Space style={{ width: "700px" }}>
       {runIds ? (
         <Select
           ref={selectRef}
@@ -91,7 +82,7 @@ export const RunSelect = memo((props: any) => {
                   onClick={(e) => {
                     e.stopPropagation();
                     closeDropDown();
-                    setEditingRun(item);
+                    setEditingSingleRun(item);
                   }}
                 />
                 {!item.online && (
@@ -143,6 +134,17 @@ export const RunSelect = memo((props: any) => {
       ) : (
         <Loading height="30px" />
       )}
+      <Button
+        style={{ backgroundColor: "var(--semi-color-nav-bg)" }}
+        icon={<IconArchive />}
+        onClick={(e) => {
+          e.stopPropagation();
+          closeDropDown();
+          setEditingAllRun(true);
+        }}
+      >
+        Manage
+      </Button>
       <HyperParams projectId={projectId} runId={runId}>
         <Button style={{ backgroundColor: "var(--semi-color-nav-bg)" }} icon={<IconInfoCircle />}>
           Params
@@ -165,11 +167,24 @@ export const RunSelect = memo((props: any) => {
         />
       </SplitButtonGroup>
       {changing && <Loading height="30px" />}
-      <RunEditor
-        data={editingRun}
+      <SingleRunEditor
+        data={editingSingleRun}
         onResult={useCallback(
           (edited) => {
-            setEditingRun(null);
+            setEditingSingleRun(null);
+            if (edited) {
+              mutateRunIds();
+            }
+          },
+          [mutateRunIds],
+        )}
+      />
+      <MultiRunEditor
+        visible={editingAllRun}
+        data={items}
+        onResult={useCallback(
+          (edited) => {
+            setEditingAllRun(false);
             if (edited) {
               mutateRunIds();
             }
@@ -187,53 +202,5 @@ export const RunSelect = memo((props: any) => {
         }}
       />
     </Space>
-  );
-});
-
-const RunEditor = memo((props: { data: any; onResult: (edited: boolean) => void }) => {
-  const { projectId } = useCurrentProject();
-  const [data, setData] = useState<any>({});
-  const [visible, setVisible] = useState(false);
-  const formRef = useRef<{ formApi: FormApi }>(null!);
-  useEffect(() => {
-    if (props.data) {
-      setData(props.data);
-    }
-    setVisible(Boolean(props.data));
-  }, [props.data]);
-  return (
-    <Modal
-      title={`Run Info`}
-      visible={visible}
-      onCancel={() => props.onResult(false)}
-      onOk={async () => {
-        const values = formRef.current.formApi.getValues();
-        await fetcher(`/project/${projectId}/run/${data.runId}`, {
-          method: "PUT",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            name: values.metadata.name,
-          }),
-        });
-        props.onResult(true);
-      }}
-      okText="Submit"
-      centered
-    >
-      <Form initValues={data} ref={formRef as any}>
-        <Form.Input
-          field="runId"
-          label="ID"
-          extraText={
-            <Button icon={<IconCopy />} onClick={() => navigator.clipboard.writeText(data.runId)}>
-              Copy ID
-            </Button>
-          }
-          readOnly={true}
-          disabled
-        ></Form.Input>
-        <Form.Input field="metadata.name" label="Name"></Form.Input>
-      </Form>
-    </Modal>
   );
 });

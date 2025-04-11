@@ -10,20 +10,24 @@ type LogoProps = {
 };
 
 export default function Logo(props: LogoProps) {
-  const { withLink = false, withTitle = false, withGlow = false } = props;
+  const { withLink = false, withGlow = false } = props;
   const url = withLink ? "https://neetbox.550w.host" : undefined;
   const glowStyleClassName = withGlow ? styles["neet-logo-glow"] : undefined;
   const combinedStyles: CSSProperties = {
     ...{}, // add default style here
     ...props.styles,
   };
-  const imageComponent = <img className={glowStyleClassName} src={process.env.ASSET_PREFIX + "/logo.svg"} />;
-  const titleComponent = withTitle ? <span>NEETBOX</span> : null;
+  const imageComponent = (
+    <img
+      className={glowStyleClassName}
+      src={process.env.ASSET_PREFIX + "/logo-no-bg.svg"}
+      style={combinedStyles}
+    />
+  );
   return (
-    <div className={props.className} style={combinedStyles}>
+    <div className={props.className}>
       <a href={url} target="_blank">
         {imageComponent}
-        {titleComponent}
       </a>
     </div>
   );
