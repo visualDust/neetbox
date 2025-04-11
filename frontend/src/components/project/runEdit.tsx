@@ -10,9 +10,9 @@ import {
     Typography,
     SplitButtonGroup,
 } from "@douyinfe/semi-ui";
-import { IconArticle, IconCopy, IconDelete, IconEdit, IconInfoCircle } from "@douyinfe/semi-icons";
+import { IconArticle, IconCopy, IconDelete, IconInfoCircle } from "@douyinfe/semi-icons";
 import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
-import { useCurrentProject, useProjectRunStatus } from "../../hooks/useProject";
+import { useCurrentProject } from "../../hooks/useProject";
 import { fetcher } from "../../services/api";
 import { HyperParams } from "./hyperParams";
 import { RunNotePopover } from "./runNotes";

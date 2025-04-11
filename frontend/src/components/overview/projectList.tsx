@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Table, Input, Space, Tag, Toast, Button, ButtonGroup } from "@douyinfe/semi-ui";
-import { IconCopy, IconGlobeStroke, IconCloud, IconMore } from "@douyinfe/semi-icons";
-import { useAPI } from "../../services/api";
+import { IconCopy, IconGlobeStroke, IconCloud } from "@douyinfe/semi-icons";
 import { useNavigate } from "react-router-dom";
 import * as dateFns from "date-fns";
+import { useAPI } from "../../services/api";
 
 const copyToClipboard = (value: string) => {
   navigator.clipboard
@@ -73,7 +73,7 @@ export default function ProjectList() {
     {
       title: "Online Status",
       dataIndex: "online",
-      align: "center" as "center",
+      align: "center" as const,
       render: (online: boolean, record: any) => (
         <Space>
           <Tag color={online ? "green" : "red"} prefixIcon={online ? <IconGlobeStroke /> : <IconCloud />}>

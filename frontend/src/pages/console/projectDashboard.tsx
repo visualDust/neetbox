@@ -1,6 +1,6 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useMemo } from "react";
-import { Button, Divider, Space, Tag, Typography } from "@douyinfe/semi-ui";
+import { Divider, Space, Typography } from "@douyinfe/semi-ui";
 import { ProjectContext, useProjectStatus } from "../../hooks/useProject";
 import { Logs } from "../../components/project/logs/logs";
 import { Actions } from "../../components/project/actions";
@@ -21,7 +21,7 @@ export default function ProjectDashboardButRecreateOnRouteChange() {
 }
 
 function ProjectDashboard() {
-  const { Text, Title } = Typography;
+  const { Title } = Typography;
 
   const { projectId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();

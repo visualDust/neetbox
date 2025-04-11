@@ -8,10 +8,10 @@ import {
   Toast,
   SplitButtonGroup,
 } from "@douyinfe/semi-ui";
-import { IconArchive, IconArticle, IconCopy, IconDelete, IconEdit, IconInfoCircle } from "@douyinfe/semi-icons";
+import { IconArchive, IconArticle, IconDelete, IconEdit, IconInfoCircle } from "@douyinfe/semi-icons";
 import { useNavigate } from "react-router-dom";
 import Loading from "../common/loading";
-import { useCurrentProject, useProjectRunStatus } from "../../hooks/useProject";
+import { useProjectRunStatus } from "../../hooks/useProject";
 import { fetcher } from "../../services/api";
 import { HyperParams } from "./hyperParams";
 import { RunNotePopover, RunNoteEditorModal } from "./runNotes";
