@@ -62,19 +62,12 @@ export const SingleRunEditor = memo((props: { data: any; onResult: (edited: bool
     );
 });
 
-export const MultiRunEditor = memo((props: { data: any[]; onResult: (updated: boolean) => void }) => {
+export const MultiRunEditor = memo((props: { visible: boolean; data: any[]; onResult: (updated: boolean) => void }) => {
+    const { visible, onResult } = props;
     const { projectId } = useCurrentProject();
-    const [visible, setVisible] = useState(false);
     const [selectedKeys, setSelectedKeys] = useState<React.Key[]>([]);
     const [loading, setLoading] = useState(false);
-    const [runs, setRuns] = useState<any[]>([]);
-
-    useEffect(() => {
-        if (props.data && props.data.length > 0) {
-            setRuns(props.data);
-            setVisible(true);
-        }
-    }, [props.data]);
+    const runs = props.data ?? [];
 
     const handleDelete = useCallback(() => {
         Modal.confirm({
@@ -89,9 +82,8 @@ export const MultiRunEditor = memo((props: { data: any[]; onResult: (updated: bo
                         });
                     }
                     Toast.success("Selected runs deleted successfully.");
-                    setRuns(prev => prev.filter(item => !selectedKeys.includes(item.runId)));
                     setSelectedKeys([]);
-                    props.onResult(true);
+                    onResult(true);
                 } catch (e) {
                     Toast.error("Failed to delete some runs: " + e);
                 } finally {
@@ -99,7 +91,7 @@ export const MultiRunEditor = memo((props: { data: any[]; onResult: (updated: bo
                 }
             },
         });
-    }, [selectedKeys, projectId, props]);
+    }, [selectedKeys, projectId, onResult]);
 
     const columns = useMemo(() => [
         {
@@ -118,7 +110,7 @@ export const MultiRunEditor = memo((props: { data: any[]; onResult: (updated: bo
         <Modal
             title="Manage Runs"
             visible={visible}
-            onCancel={() => setVisible(false)}
+            onCancel={() => props.onResult(false)}
             footer={null}
             centered
             width={800}

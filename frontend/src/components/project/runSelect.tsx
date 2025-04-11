@@ -142,7 +142,7 @@ export const RunSelect = memo((props: any) => {
       ) : (
         <Loading height="30px" />
       )}
-      {/* <Button
+      <Button
         style={{ backgroundColor: "var(--semi-color-nav-bg)" }}
         icon={<IconArchive />}
         onClick={(e) => {
@@ -150,7 +150,7 @@ export const RunSelect = memo((props: any) => {
           closeDropDown();
           setEditingAllRun(true);
         }}
-      >Manage</Button> */}
+      >Manage</Button>
       <HyperParams projectId={projectId} runId={runId}>
         <Button style={{ backgroundColor: "var(--semi-color-nav-bg)" }} icon={<IconInfoCircle />}>
           Params
@@ -185,7 +185,8 @@ export const RunSelect = memo((props: any) => {
           [mutateRunIds],
         )}
       />
-      {/* <MultiRunEditor
+      <MultiRunEditor
+        visible={editingAllRun}
         data={items}
         onResult={useCallback(
           (edited) => {
@@ -196,7 +197,7 @@ export const RunSelect = memo((props: any) => {
           },
           [mutateRunIds],
         )}
-      /> */}
+      />
       <RunNoteEditorModal
         data={editingNote ? { projectId, runId, notes: runStatus?.metadata.notes } : null}
         onResult={(edited) => {
