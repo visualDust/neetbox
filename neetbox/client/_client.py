@@ -39,21 +39,23 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         self.websocket: WebsocketClient = None
         self.online_mode: bool = None
         self._is_initialized: bool = False
+        self._is_ws_connected: bool = False
         self._thread_safe_lock = Lock()
         self.subscribers = defaultdict(list)  # default to no subscribers
 
-    @property
     def wait_should_online(self):
         with self._thread_safe_lock:
-            if not self._is_initialized:
+            while not self._is_ws_connected:
                 self.initialize_connection()
 
-        return self._is_initialized and self.online_mode is not False
+        return (
+            self._is_initialized and self.online_mode and self._is_ws_connected
+        )
 
     def post_check_online(self, api: str, root: str = None, *args, **kwargs):
         return (
             httpxClient.post(addr_of_api(api, http_root=root), *args, **kwargs)
-            if self.wait_should_online
+            if self.wait_should_online()
             else None
         )
 
@@ -64,7 +66,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
     def get_check_online(self, api: str, root: str = None, *args, **kwargs):
         return (
             httpxClient.get(addr_of_api(api, http_root=root), *args, **kwargs)
-            if self.wait_should_online
+            if self.wait_should_online()
             else None
         )
 
@@ -73,21 +75,34 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         return httpxClient.get(url, *args, **kwargs)
 
     def put_check_online(self, api: str, root: str = None, *args, **kwargs):
+        url = addr_of_api(api, http_root=root)
         return (
-            httpxClient.put(addr_of_api(api, http_root=root), *args, **kwargs)
-            if self.wait_should_online
+            httpxClient.put(url, *args, **kwargs)
+            if self.wait_should_online()
             else None
         )
+
+    def put(self, api: str, root: str = None, *args, **kwargs):
+        url = addr_of_api(api, http_root=root)
+        return httpxClient.put(url, *args, **kwargs)
 
     def delete_check_online(self, api: str, root: str = None, *args, **kwargs):
         return (
-            httpxClient.delete(addr_of_api(api, http_root=root), *args, **kwargs)
-            if self.wait_should_online
+            httpxClient.delete(
+                addr_of_api(api, http_root=root), *args, **kwargs
+            )
+            if self.wait_should_online()
             else None
         )
 
+    def delete(self, api: str, root: str = None, *args, **kwargs):
+        url = addr_of_api(api, http_root=root)
+        return httpxClient.delete(url, *args, **kwargs)
+
     def subscribe(self, event_type_name: str, callback):
-        self.subscribers[event_type_name].append(callback)  # add subscriber to list
+        self.subscribers[event_type_name].append(
+            callback
+        )  # add subscriber to list
 
     def unsubscribe(self, event_type_name: str, callback):
         if callback in self.subscribers[event_type_name]:
@@ -112,7 +127,9 @@ class NeetboxClient(metaclass=Singleton):  # singleton
 
     def check_server_connectivity(self, config=None):
         config = config or get_module_level_config()
-        logger.debug(f"Connecting to daemon at {config['host']}:{config   ['port']} ...")
+        logger.debug(
+            f"Connecting to daemon at {config['host']}:{config   ['port']} ..."
+        )
         daemon_server_address = f"{config['host']}:{config['port']}"
         http_root = f"http://{daemon_server_address}"
 
@@ -120,7 +137,9 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         def fetch_hello(root):
             response = None
             try:
-                response = self.get(api=f"{API_ROOT}/{SERVER_KEY}/hello", root=root)
+                response = self.get(
+                    api=f"{API_ROOT}/{SERVER_KEY}/hello", root=root
+                )
                 print(f"{API_ROOT}{SERIES_KEY}/hello")
                 assert response.json()["hello"] == "hello"
             except:
@@ -181,7 +200,9 @@ class NeetboxClient(metaclass=Singleton):  # singleton
             popen = server_launcher.start(config)
             _retry_timeout = 10
             _time_begin = time.perf_counter()
-            logger.debug("Created daemon process, trying to connect to daemon...")
+            logger.debug(
+                "Created daemon process, trying to connect to daemon..."
+            )
             online_flag = False
             while time.perf_counter() - _time_begin < 10:  # try connect daemon
                 if not self.check_server_connectivity():
@@ -219,7 +240,9 @@ class NeetboxClient(metaclass=Singleton):  # singleton
 
     def on_ws_open(self, ws: WebsocketClient):
         project_id = get_project_id()
-        logger.ok(f"client websocket connected. sending handshake as '{project_id}'...")
+        logger.ok(
+            f"client websocket connected. sending handshake as '{project_id}'..."
+        )
         handshake_msg = EventMsg(  # handshake request message
             project_id=project_id,
             run_id=get_run_id(),
@@ -231,12 +254,14 @@ class NeetboxClient(metaclass=Singleton):  # singleton
 
     def on_ws_err(self, ws: WebsocketClient, msg):
         logger.err(f"client websocket encountered {msg}")
+        self._is_ws_connected = False
 
     def on_ws_close(self, ws: WebsocketClient, close_status_code, close_msg):
         logger.warn(
             f"client websocket closed, status code: {close_status_code}, message: {close_msg}"
         )
         self._is_initialized = False
+        self._is_ws_connected = False
 
     def on_ws_message(self, ws: WebsocketClient, message):
         message = EventMsg.loads(message)  # message should be json
@@ -253,6 +278,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
                     payload=get_module_level_config("@"),
                 ).dumps()
             )
+            self._is_ws_connected = True
             # return # DO NOT return!
         if message.event_type not in self.subscribers:
             logger.warn(
@@ -277,7 +303,7 @@ class NeetboxClient(metaclass=Singleton):  # singleton
         identity_type=IdentityType.CLI,
         _history_len=-1,
     ):
-        if self.wait_should_online:
+        if self.wait_should_online():
             message = EventMsg(
                 project_id=get_project_id(),
                 run_id=get_run_id(),
