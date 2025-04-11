@@ -73,7 +73,7 @@ export default function ProjectList() {
     {
       title: "Online Status",
       dataIndex: "online",
-      align: "center",
+      align: "center" as "center",
       render: (online: boolean, record: any) => (
         <Space>
           <Tag color={online ? "green" : "red"} prefixIcon={online ? <IconGlobeStroke /> : <IconCloud />}>
@@ -95,13 +95,6 @@ export default function ProjectList() {
       render: (value: number) => `${(value / 1e6).toFixed(2)} MB`,
       sorter: (a: any, b: any) => a.storage - b.storage,
     },
-    // {
-    //   title: "",
-    //   dataIndex: "runids",
-    //   render: (runids, record: any) => (
-
-    //   )
-    // },
   ];
 
   // Format data

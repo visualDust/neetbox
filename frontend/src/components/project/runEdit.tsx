@@ -5,14 +5,17 @@ import {
     Form,
     Table,
     Spin,
-    Checkbox,
     Space,
     Toast,
+    Typography,
+    SplitButtonGroup,
 } from "@douyinfe/semi-ui";
 import { IconArticle, IconCopy, IconDelete, IconEdit, IconInfoCircle } from "@douyinfe/semi-icons";
 import { FormApi } from "@douyinfe/semi-ui/lib/es/form";
 import { useCurrentProject, useProjectRunStatus } from "../../hooks/useProject";
 import { fetcher } from "../../services/api";
+import { HyperParams } from "./hyperParams";
+import { RunNotePopover } from "./runNotes";
 
 export const SingleRunEditor = memo((props: { data: any; onResult: (edited: boolean) => void }) => {
     const { projectId } = useCurrentProject();
@@ -95,20 +98,65 @@ export const MultiRunEditor = memo((props: { visible: boolean; data: any[]; onRe
 
     const columns = useMemo(() => [
         {
-            title: "ID",
-            dataIndex: "runId",
-            render: (text: string) => <span style={{ wordBreak: "break-all" }}>{text}</span>,
-        },
-        {
             title: "Name",
             dataIndex: "metadata",
-            render: (metadata: { name: string }) => metadata?.name,
+            render: (metadata: { name: string }, record: any) => (
+                <>
+                    <Typography.Text>{metadata.name ? metadata.name : "Name not set"}</Typography.Text>
+                    <br />
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                        {record.runId}
+                    </Typography.Text>
+                </>
+            ),
         },
+        {
+            title: "Created At",
+            dataIndex: "timestamp",
+            render: (text: string) => {
+                const date = new Date(text);
+                return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+            }
+        },
+        {
+            title: "Misc",
+            dataIndex: "",
+            render: (record: any) => (
+                <>
+                    <SplitButtonGroup>
+                        <HyperParams projectId={projectId} runId={record.runId}>
+                            <Button icon={<IconInfoCircle />}>
+                                Params
+                            </Button>
+                        </HyperParams>
+                        <RunNotePopover projectId={projectId} runId={record.runId}>
+                            <Button icon={<IconArticle />}>
+                                Note
+                            </Button>
+                        </RunNotePopover>
+                    </SplitButtonGroup>
+                </>
+            )
+        }
+
     ], []);
+
+
+    const colorizeRow = (record, index) => {
+        if (index % 2 === 0) {
+            return {
+                style: {
+                    background: "var(--semi-color-fill-0)",
+                },
+            };
+        } else {
+            return {};
+        }
+    };
 
     return (
         <Modal
-            title="Manage Runs"
+            title="Batch Manage Runs"
             visible={visible}
             onCancel={() => props.onResult(false)}
             footer={null}
@@ -117,6 +165,7 @@ export const MultiRunEditor = memo((props: { visible: boolean; data: any[]; onRe
         >
             <Spin spinning={loading}>
                 <Space style={{ marginBottom: 16 }}>
+
                     <Button
                         icon={<IconDelete />}
                         type="danger"
@@ -129,13 +178,23 @@ export const MultiRunEditor = memo((props: { visible: boolean; data: any[]; onRe
                 <Table
                     rowKey="runId"
                     columns={columns}
-                    dataSource={runs}
-                    pagination={false}
+                    dataSource={runs.filter((run) => run.online === false)}
+                    onRow={colorizeRow}
                     rowSelection={{
                         selectedRowKeys: selectedKeys as (string | number)[],
                         onChange: (selectedRowKeys) => setSelectedKeys(selectedRowKeys || []),
                     }}
                 />
+                <div style={{ marginBottom: 20 }}>
+                    <Typography.Text type="secondary">
+                        Note: Only runs that are not currently running can be deleted.
+
+                    </Typography.Text>
+                    <br />
+                    <Typography.Text type="danger" strong={true}>
+                        Please be careful when deleting runs. Deleted runs cannot be recovered.
+                    </Typography.Text>
+                </div>
             </Spin>
         </Modal>
     );
