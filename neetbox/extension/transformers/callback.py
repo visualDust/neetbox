@@ -8,7 +8,7 @@ from transformers import (
     TrainingArguments,
 )
 
-from neetbox import action, add_hyperparams, add_scalar, Logger, progress
+from neetbox import action, add_hyperparams, add_scalar, progress
 from neetbox._protocol import get_timestamp
 from neetbox.logging import Logger
 
