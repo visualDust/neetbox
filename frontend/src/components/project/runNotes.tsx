@@ -14,7 +14,7 @@ import { ErrorBoundary } from "../common/errorBoundary";
 export const RunNotePopover = memo(
   ({ projectId, runId, trigger = "click", position, allowEdit = true, children = <IconArticle /> }: any) => {
     const [runStatus, mutateRunStatus] = useProjectRunStatus(projectId, runId);
-    const value = runStatus?.metadata.notes;
+    const value = runStatus?.metadata?.notes;
     const [editing, realSetEditing] = useState(false);
     const [popoverVisible, setPopoverVisible] = useState(false);
     const setEditing = (value) => {
