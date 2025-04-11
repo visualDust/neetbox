@@ -1,13 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Space,
-  Select,
-  Tag,
-  Button,
-  Modal,
-  Toast,
-  SplitButtonGroup,
-} from "@douyinfe/semi-ui";
+import { Space, Select, Tag, Button, Modal, Toast, SplitButtonGroup } from "@douyinfe/semi-ui";
 import { IconArchive, IconArticle, IconDelete, IconEdit, IconInfoCircle } from "@douyinfe/semi-icons";
 import { useNavigate } from "react-router-dom";
 import Loading from "../common/loading";
@@ -150,7 +142,9 @@ export const RunSelect = memo((props: any) => {
           closeDropDown();
           setEditingAllRun(true);
         }}
-      >Manage</Button>
+      >
+        Manage
+      </Button>
       <HyperParams projectId={projectId} runId={runId}>
         <Button style={{ backgroundColor: "var(--semi-color-nav-bg)" }} icon={<IconInfoCircle />}>
           Params
@@ -210,4 +204,3 @@ export const RunSelect = memo((props: any) => {
     </Space>
   );
 });
-

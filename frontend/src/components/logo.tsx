@@ -17,7 +17,13 @@ export default function Logo(props: LogoProps) {
     ...{}, // add default style here
     ...props.styles,
   };
-  const imageComponent = <img className={glowStyleClassName} src={process.env.ASSET_PREFIX + "/logo-no-bg.svg"} style={combinedStyles} />;
+  const imageComponent = (
+    <img
+      className={glowStyleClassName}
+      src={process.env.ASSET_PREFIX + "/logo-no-bg.svg"}
+      style={combinedStyles}
+    />
+  );
   return (
     <div className={props.className}>
       <a href={url} target="_blank">
