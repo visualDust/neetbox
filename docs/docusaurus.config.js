@@ -9,7 +9,7 @@ const config = {
   title: "NEETBOX",
   tagline:
     "Logging/Debugging/Tracing/Managing/Facilitating long running python projects, especially a replacement of tensorboard for deep learning projects.",
-  favicon: "img/favicon.png",
+  favicon: "img/logo.svg",
 
   // Set the production url of your site here
   url: "https://neetbox.550w.host",
@@ -53,7 +53,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: "img/docusaurus-social-card.jpg",
+      image: "img/docusaurus-social-card.png",
       navbar: {
         title: "NEETBOX",
         logo: {
@@ -64,20 +64,25 @@ const config = {
           {
             to: "/docs/howto",
             activeBasePath: "/docs/howto",
-            label: "HowTo",
+            label: "Docs",
             position: "left",
           },
-          {
-            to: "/docs/guide",
-            activeBasePath: "/docs/guide",
-            label: "Doc",
-            position: "left",
-          },
+          // {
+          //   to: "/docs/guide",
+          //   activeBasePath: "/docs/guide",
+          //   label: "Doc",
+          //   position: "left",
+          // },
           {
             to: "https://github.com/visualDust/neetbox",
             label: "Github",
             position: "right",
           },
+          {
+            to: "https://www.550w.host",
+            label: "About",
+            position: "right",
+          }
         ],
       },
       footer: {
