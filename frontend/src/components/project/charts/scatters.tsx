@@ -1,9 +1,9 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { Button, Card, Space, Typography } from "@douyinfe/semi-ui";
+import { Button, Card, Modal, Space, Typography } from "@douyinfe/semi-ui";
 import { IconClose, IconMaximize } from "@douyinfe/semi-icons";
-import { useCurrentProject, useProjectData, useProjectSeries } from "../../hooks/useProject";
-import { ECharts, getSemiColorDataHexColors } from "../common/echarts";
-import Loading from "../common/loading";
+import { useCurrentProject, useProjectData, useProjectSeries } from "../../../hooks/useProject";
+import { ECharts, getSemiColorDataHexColors } from "../../common/echarts";
+import Loading from "../../common/loading";
 
 export const Scatters = memo(() => {
   return (
@@ -126,60 +126,58 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
   }, [maximized]);
 
   return (
-    <Card style={{ overflow: "visible", position: "relative" }}>
-      <Space vertical>
-        <Typography.Title heading={4}>scalar "{series}"</Typography.Title>
-        <div
-          style={
-            maximized
-              ? {
-                  position: "fixed",
-                  top: 0,
-                  right: 0,
-                  bottom: 0,
-                  left: 0,
-                  background: "var(--semi-color-bg-0)",
-                  zIndex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                }
-              : {
-                  height: "345px",
-                  width: "450px",
-                }
-          }
-          ref={maxBoxRef}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key == "Escape") {
-              setMaximized(false);
-            }
-          }}
-        >
-          {maximized && <Typography.Title heading={4}>scalar "{series}"</Typography.Title>}
-          {points ? (
-            <ECharts
-              initialOption={initialOption}
-              updatingOption={updatingOption}
-              style={{ width: "100%", height: "100%", flex: 1 }}
-            />
-          ) : (
-            <Loading height="100%" width="100%" />
-          )}
-          {maximized && (
-            <Button
-              icon={<IconClose />}
-              style={{ position: "absolute", right: 10, top: 0 }}
-              onClick={() => setMaximized(false)}
-            />
-          )}
+    <>
+      <Card style={{ overflow: "visible", position: "relative" }}>
+        <Space vertical>
+          <Typography.Title heading={4}>scalar "{series}"</Typography.Title>
+          <div style={{ height: "345px", width: "450px" }} tabIndex={0}>
+            {points ? (
+              <ECharts
+                initialOption={initialOption}
+                updatingOption={updatingOption}
+                style={{ width: "100%", height: "100%", flex: 1 }}
+              />
+            ) : (
+              <Loading height="100%" width="100%" />
+            )}
+          </div>
+        </Space>
+        <Button
+          icon={<IconMaximize />}
+          style={{ position: "absolute", right: 20, top: 15 }}
+          onClick={() => setMaximized(true)}
+        />
+      </Card>
+      <Modal
+        fullScreen
+        visible={maximized}
+        className="scatters-fullscreen-modal"
+        onCancel={() => setMaximized(false)}
+        bodyStyle={{ height: "100%" }}
+        footer={
+          <Button icon={<IconClose />} onClick={() => setMaximized(false)}>
+            Close(Esc)
+          </Button>
+        }
+        zIndex={1000}
+      >
+        <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+          <div style={{ display: "flex", justifyContent: "center", padding: "10px" }}>
+            <Typography.Title heading={3}>scalar "{series}"</Typography.Title>
+          </div>
+          <div style={{ flexGrow: 1 }}>
+            {points ? (
+              <ECharts
+                initialOption={initialOption}
+                updatingOption={updatingOption}
+                style={{ width: "100%", height: "100%" }}
+              />
+            ) : (
+              <Loading height="100%" width="100%" />
+            )}
+          </div>
         </div>
-      </Space>
-      <Button
-        icon={<IconMaximize />}
-        style={{ position: "absolute", right: 20, top: 15 }}
-        onClick={() => setMaximized(true)}
-      />
-    </Card>
+      </Modal>
+    </>
   );
 });

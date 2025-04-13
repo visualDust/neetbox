@@ -1,5 +1,5 @@
 body {
-  font-family: 'MapleMono', sans-serif;
+  font-family: "MapleMono", sans-serif;
   color: var(--semi-color-text-0);
   background-color: var(--semi-color-bg-0);
 }
@@ -15,3 +15,8 @@ body {
     line-height: "64px";
     background-color: "var(--semi-color-fill-0)";
 } */
+
+.semi-modal-body-wrapper {
+  /* fix in src/components/project/charts/scatters.tsx, full screen modal component does not have 100% height*/
+  height: 100%;
+}
