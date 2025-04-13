@@ -689,7 +689,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-
 "@douyinfe/semi-rspack-plugin@npm:^2.78.0":
   version: 2.78.0
   resolution: "@douyinfe/semi-rspack-plugin@npm:2.78.0"
@@ -6803,11 +6802,11 @@ __metadata:
     commander: "npm:^8.3.0"
   bin:
     katex: cli.js
-  checksum: 10c0/07b8b1f07ae53171b5f1ea0cf6f18841d2055825c8b11cd81cfe039afcd3af2cfc84ad033531ee3875088329105195b039c267e0dd4b0c237807e3c3b2009913
+  checksum: 10c0/e2e4139ba72a13f2393308fbb2b4c5511611a19a40a6e39d956cf775e553af3517dbfd0a54477faaf401c923e4654e32296347846b8ff15dfa579f88ff8579bb
   languageName: node
   linkType: hard
 
-"katex@npm:^0.16.22":
+"katex@npm:^0.16.21":
   version: 0.16.22
   resolution: "katex@npm:0.16.22"
   dependencies:
@@ -8075,7 +8074,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.19"
     jotai: "npm:^2.12.2"
-    katex: "npm:^0.16.22"
+    katex: "npm:^0.16.21"
     mermaid: "npm:^11.6.0"
     nanoid: "npm:^5.1.5"
     prettier: "npm:^3.5.3"

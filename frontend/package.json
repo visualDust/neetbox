@@ -24,7 +24,7 @@
     "@uiw/react-md-editor": "^4.0.5",
     "echarts": "^5.6.0",
     "jotai": "^2.12.2",
-    "katex": "^0.16.22",
+    "katex": "^0.16.21",
     "mermaid": "^11.6.0",
     "nanoid": "^5.1.5",
     "react": "^18.3.1",
