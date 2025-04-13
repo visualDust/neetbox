@@ -10,8 +10,18 @@ from datetime import datetime as dt
 from enum import Enum
 from importlib.metadata import version
 from typing import Any, Union
+from threading import Timer, Thread
 
 VERSION = version("neetbox")
+
+def _refresh_version_every(sec: int = 60):
+    global VERSION
+    VERSION = version("neetbox")  # You can add error handling if needed
+    Timer(sec, _refresh_version_every, args=(sec,)).start()
+
+# Run in background thread
+Thread(target=_refresh_version_every, args=(60,), daemon=True).start()
+        
 
 # ===================== common things =====================
 
