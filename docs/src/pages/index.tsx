@@ -6,7 +6,7 @@ import { FeatureCard, FeatureList } from "../components/FeatureCards";
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout title={`Hello from ${siteConfig.title}`} description="">
+    <Layout title={`${siteConfig.title}`} description="NEETBOX provides the visualization and tooling needed for machine learning experimentation.">
       <div
         style={{
           display: "flex",
@@ -46,26 +46,35 @@ export default function Home(): JSX.Element {
               textAlign: "center",
             }}
           >
-            A tool box for Logging / Debugging / Tracing / Managing /
-            Facilitating long running python projects, especially a replacement
-            of tensorboard for deep learning projects.
+            NEETBOX provides the visualization and tooling needed for machine learning experimentation.
           </h3>
           <div
             style={{
+              paddingTop: "10px",
+              textAlign: "center",
+              gap: "10px",
               display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <div style={{ display: "flex", gap: "5px" }}>
-              <img src="https://img.shields.io/badge/linux-x86%20or%20arm-blue?logo=linux" />
-              <img src="https://img.shields.io/badge/windows-x86%20or%20arm-blue?logo=windows" />
-              <img src="https://img.shields.io/badge/mac-intel%20or%20apple%20silicon-blue?logo=apple" />
-            </div>
-          </div>
-          <div style={{ paddingTop: "30px", textAlign: "center" }}>
-            <a href="/docs/howto" className="button button--secondary">
+            <a
+              href="/docs/howto"
+              className="button button--primary"
+              style={{ border: "1px solid" }}
+            >
               Get started
+            </a>
+            <a
+              href="https://github.com/visualDust/neetbox"
+              className="button button--secondary"
+              style={{ display: "flex", alignItems: "center", gap: "6px" }}
+            >
+              <img
+                src="/img/github-mark.svg"
+                alt="GitHub"
+                style={{ width: "16px", height: "16px" }}
+              />
+              GitHub
             </a>
           </div>
         </div>

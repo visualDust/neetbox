@@ -17,9 +17,9 @@
     "e2e:ci": "cypress run"
   },
   "dependencies": {
-    "@douyinfe/semi-icons": "^2.77.1",
-    "@douyinfe/semi-ui": "^2.77.1",
-    "@semi-bot/semi-theme-neetbox": "^1.0.1",
+    "@douyinfe/semi-icons": "^2.78.0",
+    "@douyinfe/semi-ui": "^2.78.0",
+    "@semi-bot/semi-theme-neetbox": "^1.0.3",
     "@uiw/react-json-view": "^2.0.0-alpha.30",
     "@uiw/react-md-editor": "^4.0.5",
     "echarts": "^5.6.0",
@@ -38,7 +38,7 @@
     "vite-plugin-semi-theme": "^0.6.0"
   },
   "devDependencies": {
-    "@douyinfe/semi-rspack-plugin": "^2.77.1",
+    "@douyinfe/semi-rspack-plugin": "^2.78.0",
     "@rsbuild/core": "^0.5.9",
     "@rsbuild/plugin-react": "^0.1.9",
     "@types/react": "^18.3.20",

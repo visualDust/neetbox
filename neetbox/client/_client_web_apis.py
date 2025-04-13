@@ -20,6 +20,10 @@ def _post(api, root=None, data=None):
     r = connection.post(api=api, root=root, json=data)
     return r
 
+def _put(api, root=None, data=None):
+    r = connection.put(api=api, root=root, json=data)
+    return r
+
 
 def shutdown(root=None):
     api = f"{API_ROOT}/{SERVER_KEY}/shutdown"

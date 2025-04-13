@@ -95,7 +95,7 @@ const LogItem = React.memo(({ data }: { data: LogData }) => {
     <div className="log-item">
       <span className="log-tag log-datetime">{data.timestamp}</span>{" "}
       <span className={`log-tag log-prefix log-prefix-${prefix}`}>{prefix}</span>{" "}
-      <span className="log-tag log-whom" style={{ backgroundColor: getColorFromWhom(data.whom) }}>
+      <span className="log-tag log-whom" style={{ color: getColorFromWhom(data.whom) }}>
         {data.whom}
       </span>{" "}
       {data.message}

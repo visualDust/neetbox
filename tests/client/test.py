@@ -147,4 +147,5 @@ def simulate_train(config):
 
 if __name__ == "__main__":
     neetbox.add_hyperparams(train_config)
+    neetbox.set_run_name("test run")
     simulate_train(train_config)
