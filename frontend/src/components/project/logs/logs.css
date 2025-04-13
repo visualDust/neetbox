@@ -12,26 +12,47 @@
     padding: 0 3px;
     border-radius: 5px;
   }
+
+  .log-whom {
+    --log-tag-bg-l: 30%;
+    background-color: rgba(var(--semi-grey-1));
+  }
+
   .log-prefix-info {
-    --log-tag-bg-hs: 222, 80%;
+    background-color: var(--semi-color-info);
+    color: var(--semi-color-default);
   }
+
   .log-prefix-mention {
-    --log-tag-bg-hs: 190, 80%;
+    background-color: var(--semi-color-secondary);
+    color: var(--semi-color-default);
   }
+
   .log-prefix-ok {
-    --log-tag-bg-hs: 128, 80%;
+    background-color: var(--semi-color-success);
+    color: var(--semi-color-default);
   }
+
   .log-prefix-warning {
-    --log-tag-bg-hs: 55, 80%;
+    background-color: var(--semi-color-warning);
+    color: var(--semi-color-default);
   }
+
   .log-prefix-debug {
-    --log-tag-bg-hs: 277, 80%;
+    background-color: var(--semi-color-link);
+    color: var(--semi-color-default);
   }
+
   .log-prefix-error {
-    --log-tag-bg-hs: 0, 80%;
+    background-color: var(--semi-color-danger);
+    color: var(--semi-color-default);
   }
 }
 
 [theme-mode="dark"] .log-item .log-tag {
   --log-tag-bg-l: 30%;
+}
+
+[theme-mode="dark"] .log-item .log-whom {
+  --log-tag-bg-l: 80%;
 }
