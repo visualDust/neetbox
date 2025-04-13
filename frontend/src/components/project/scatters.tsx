@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Button, Card, Space, Typography } from "@douyinfe/semi-ui";
 import { IconClose, IconMaximize } from "@douyinfe/semi-icons";
 import { useCurrentProject, useProjectData, useProjectSeries } from "../../hooks/useProject";
-import { ECharts } from "../common/echarts";
+import { ECharts, getSemiColorDataHexColors } from "../common/echarts";
 import Loading from "../common/loading";
 
 export const Scatters = memo(() => {
@@ -42,6 +42,7 @@ export const ScatterViewer = memo(({ series }: { series: string }) => {
 
   const initialOption = () => {
     return {
+      color: getSemiColorDataHexColors(true),
       backgroundColor: "transparent",
       animation: false,
       tooltip: {

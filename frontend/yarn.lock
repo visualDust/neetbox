@@ -611,39 +611,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-animation-react@npm:2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-animation-react@npm:2.77.1"
+"@douyinfe/semi-animation-react@npm:2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-animation-react@npm:2.78.0"
   dependencies:
-    "@douyinfe/semi-animation": "npm:2.77.1"
-    "@douyinfe/semi-animation-styled": "npm:2.77.1"
+    "@douyinfe/semi-animation": "npm:2.78.0"
+    "@douyinfe/semi-animation-styled": "npm:2.78.0"
     classnames: "npm:^2.2.6"
-  checksum: 10c0/b9c32ef35339d253a953e7de20b12a11d30460cb6d4a3be0f77180fbb9363ade2ef6cfcb7039f14e6a033de3b0b5251e93a744ada09fb46614a356b34af0630d
+  checksum: 10c0/b34fa951876bc655d642a5e4b5dcfc6c28e7438635699fe9a17f384fa7b643b645ae5be206fabfa04d52c90c00fe5de9a81828f3a04c98c77897d7d16e9f6861
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-animation-styled@npm:2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-animation-styled@npm:2.77.1"
-  checksum: 10c0/1274ecc17f8bd1fa18e46108efae313ebd66cb05b63576414fcd4bf4d1e18a263c5a7777991082b83e03c15117f9baaddfd04c34489b02dec44832af19706fca
+"@douyinfe/semi-animation-styled@npm:2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-animation-styled@npm:2.78.0"
+  checksum: 10c0/9a91b485cb317caf21451eb902c8013c5291d51ffa75170a637815b61bdd6bdc2ab9bd0a0d9227cfdb4ac974683e046dd2d86ba62adaaad7f7619828d153489f
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-animation@npm:2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-animation@npm:2.77.1"
+"@douyinfe/semi-animation@npm:2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-animation@npm:2.78.0"
   dependencies:
     bezier-easing: "npm:^2.1.0"
-  checksum: 10c0/8431a69041787fa8a5c5e10e4d3035fc14c68522bf9564acb7b1715c9b5a4ae8edefcf18c7c02320e56be47bc1258044756bc711134670996613fea00a585a1b
+  checksum: 10c0/a68e54b2c4cfa14a8e39255a7b2d2015239d0d0222a8ef63cfab02e86b3f6af6c801539b8d23dc354b1e9b216b5820bc7721fee719eda4f6ee5794c72693b943
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-foundation@npm:2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-foundation@npm:2.77.1"
+"@douyinfe/semi-foundation@npm:2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-foundation@npm:2.78.0"
   dependencies:
-    "@douyinfe/semi-animation": "npm:2.77.1"
-    "@douyinfe/semi-json-viewer-core": "npm:2.77.1"
+    "@douyinfe/semi-animation": "npm:2.78.0"
+    "@douyinfe/semi-json-viewer-core": "npm:2.78.0"
     "@mdx-js/mdx": "npm:^3.0.1"
     async-validator: "npm:^3.5.0"
     classnames: "npm:^2.2.6"
@@ -656,42 +656,42 @@ __metadata:
     prismjs: "npm:^1.29.0"
     remark-gfm: "npm:^4.0.0"
     scroll-into-view-if-needed: "npm:^2.2.24"
-  checksum: 10c0/c9c0d5ad48919649c5d55046997b55271496f35a476f71504215c2a4226ce3b735c0d769b093d52f2e972d333447ec4874357c1dcbcfb1904ef7ec328a6695cb
+  checksum: 10c0/dc73595877ff710775f68b9f1c90e6bc102df91462a5e1a032548c892d2b016cfa2c76035da9c9c57af081ebaabf7955d7a2269fba923b0ae1affa29e96c40a7
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-icons@npm:2.77.1, @douyinfe/semi-icons@npm:^2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-icons@npm:2.77.1"
+"@douyinfe/semi-icons@npm:2.78.0, @douyinfe/semi-icons@npm:^2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-icons@npm:2.78.0"
   dependencies:
     classnames: "npm:^2.2.6"
   peerDependencies:
     react: ">=16.0.0"
-  checksum: 10c0/50cf1db8f008945fc477e3a8c9b00825f0f8f57ff95147aae2c9a417fc902bc2f5520955ed4c3f4656a28c2367e6dcf57f952a5b52d785b70e3bec674979255f
+  checksum: 10c0/be1d781e1215e2d98a56a51fe5b2a8986304bc79a1308da14bdd22aed2491f9686ef46edd9d04505a572714214faaa2325518f967816e6b314dd07a68c9df55d
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-illustrations@npm:2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-illustrations@npm:2.77.1"
+"@douyinfe/semi-illustrations@npm:2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-illustrations@npm:2.78.0"
   peerDependencies:
     react: ">=16.0.0"
-  checksum: 10c0/bb5e52a37726796232907718f9772e24bcade6370a6429a66597067b23e8b42d475721f7937268abd3931cfd0fd29c890e8f59423e1795b757e6e1cd0c5575bd
+  checksum: 10c0/d0712f65d1664bc1f71653af439ec7c7a0ab3c9a3e7b360488eadaffe9602eda3f0d94989bc1b2d7e01d893618b0c61b7a1b9e4ee651ad3d00ab25e9c52bead7
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-json-viewer-core@npm:2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-json-viewer-core@npm:2.77.1"
+"@douyinfe/semi-json-viewer-core@npm:2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-json-viewer-core@npm:2.78.0"
   dependencies:
     jsonc-parser: "npm:^3.3.1"
-  checksum: 10c0/d0c670f40f6c87a51b2fad51c97c9f719b2c990bca98e7f91f965017b9bbd816d5b6feab6da7a382d00bc228b58ac579ceb30240692494b8a69e3cbafdeefdfe
+  checksum: 10c0/0014865f1a8c1f9965fe15da8b059e37f0ac5fe73950a6ffc85335ad441c9b7f16e461fbded2d11095b493d5dc8276110afc356b759bb1f061f58234939bb9e9
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-rspack-plugin@npm:^2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-rspack-plugin@npm:2.77.1"
+"@douyinfe/semi-rspack-plugin@npm:^2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-rspack-plugin@npm:2.78.0"
   dependencies:
     "@babel/core": "npm:^7.15.4"
     css-loader: "npm:4.3.0"
@@ -700,30 +700,30 @@ __metadata:
     sass-loader: "npm:^10.1.1"
   peerDependencies:
     webpack: ^5
-  checksum: 10c0/e396d6fc0d4db7d64b719f569e5f89920c80b3bf3dfd283b243bcdfae8ade259307d24d90c44750f851e24936ecdb8c5ab5d4ada141de99a0c5d89d105626b31
+  checksum: 10c0/9e235d5a9a795949a3b6c88c125348102696c96505da80085dc711cf182d2dc0cda30a37dca2fde3eb975bf5f415cd00903e107fa85991f9c9fee5ea3072cbaa
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-theme-default@npm:2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-theme-default@npm:2.77.1"
-  checksum: 10c0/c19a284474efd4f200725ed5c16a39e5fd169018f1048aca1a9bad213887bd267901846419e18efaaca664104ccf44af55fe314b2107150fc7cfa3f10e22d2cd
+"@douyinfe/semi-theme-default@npm:2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-theme-default@npm:2.78.0"
+  checksum: 10c0/354a63f8a4570efa536f702babbe0bd93ce21a06ce9a431306798607c6d41775839576053b54f5bd4ee00319e28b2b60e802d82958823002d8fa751e72ceb7ee
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-ui@npm:^2.77.1":
-  version: 2.77.1
-  resolution: "@douyinfe/semi-ui@npm:2.77.1"
+"@douyinfe/semi-ui@npm:^2.78.0":
+  version: 2.78.0
+  resolution: "@douyinfe/semi-ui@npm:2.78.0"
   dependencies:
     "@dnd-kit/core": "npm:^6.0.8"
     "@dnd-kit/sortable": "npm:^7.0.2"
     "@dnd-kit/utilities": "npm:^3.2.1"
-    "@douyinfe/semi-animation": "npm:2.77.1"
-    "@douyinfe/semi-animation-react": "npm:2.77.1"
-    "@douyinfe/semi-foundation": "npm:2.77.1"
-    "@douyinfe/semi-icons": "npm:2.77.1"
-    "@douyinfe/semi-illustrations": "npm:2.77.1"
-    "@douyinfe/semi-theme-default": "npm:2.77.1"
+    "@douyinfe/semi-animation": "npm:2.78.0"
+    "@douyinfe/semi-animation-react": "npm:2.78.0"
+    "@douyinfe/semi-foundation": "npm:2.78.0"
+    "@douyinfe/semi-icons": "npm:2.78.0"
+    "@douyinfe/semi-illustrations": "npm:2.78.0"
+    "@douyinfe/semi-theme-default": "npm:2.78.0"
     async-validator: "npm:^3.5.0"
     classnames: "npm:^2.2.6"
     copy-text-to-clipboard: "npm:^2.1.1"
@@ -740,7 +740,7 @@ __metadata:
   peerDependencies:
     react: ">=16.0.0"
     react-dom: ">=16.0.0"
-  checksum: 10c0/1c266364e995af9ea79ad25d0e9683e137fcc623531db191b76528c17809fcd8dbd31f600692b24259413c307189f09346afdcb0062f1f37b228bb7e9e79d561
+  checksum: 10c0/66e05ad6a5b7fed24d876618edac90748d77fb0eaa8e4487055c1c0c9cf330f13d3d3b09c3f6f700d7b091053786ba49e02d4b2a075b81b1e575699f78cdc2b1
   languageName: node
   linkType: hard
 
@@ -1719,10 +1719,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@semi-bot/semi-theme-neetbox@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@semi-bot/semi-theme-neetbox@npm:1.0.1"
-  checksum: 10c0/29fe407f052abab567c1964c27b570432e6631e24bb21c86cf3cb0e7155568414ea6b79eea22e0b09d178205bdd9e3194a7da8e1737b82547d1393e51c13b5dd
+"@semi-bot/semi-theme-neetbox@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "@semi-bot/semi-theme-neetbox@npm:1.0.3"
+  checksum: 10c0/2e8011f094c2a63f4b29549a1c5fc1310fe1ab8fefefab77d2575d950b2df061ac1ab0f47e1ab902b7c6d1843a21799468ce6a5d95d3f1ea146f5fdcbaec2297
   languageName: node
   linkType: hard
 
@@ -6760,7 +6760,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"katex@npm:^0.16.0, katex@npm:^0.16.21, katex@npm:^0.16.9":
+"katex@npm:^0.16.0, katex@npm:^0.16.9":
   version: 0.16.21
   resolution: "katex@npm:0.16.21"
   dependencies:
@@ -6768,6 +6768,17 @@ __metadata:
   bin:
     katex: cli.js
   checksum: 10c0/e2e4139ba72a13f2393308fbb2b4c5511611a19a40a6e39d956cf775e553af3517dbfd0a54477faaf401c923e4654e32296347846b8ff15dfa579f88ff8579bb
+  languageName: node
+  linkType: hard
+
+"katex@npm:^0.16.22":
+  version: 0.16.22
+  resolution: "katex@npm:0.16.22"
+  dependencies:
+    commander: "npm:^8.3.0"
+  bin:
+    katex: cli.js
+  checksum: 10c0/07b8b1f07ae53171b5f1ea0cf6f18841d2055825c8b11cd81cfe039afcd3af2cfc84ad033531ee3875088329105195b039c267e0dd4b0c237807e3c3b2009913
   languageName: node
   linkType: hard
 
@@ -8007,12 +8018,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "neetcenter@workspace:."
   dependencies:
-    "@douyinfe/semi-icons": "npm:^2.77.1"
-    "@douyinfe/semi-rspack-plugin": "npm:^2.77.1"
-    "@douyinfe/semi-ui": "npm:^2.77.1"
+    "@douyinfe/semi-icons": "npm:^2.78.0"
+    "@douyinfe/semi-rspack-plugin": "npm:^2.78.0"
+    "@douyinfe/semi-ui": "npm:^2.78.0"
     "@rsbuild/core": "npm:^0.5.9"
     "@rsbuild/plugin-react": "npm:^0.1.9"
-    "@semi-bot/semi-theme-neetbox": "npm:^1.0.1"
+    "@semi-bot/semi-theme-neetbox": "npm:^1.0.3"
     "@types/react": "npm:^18.3.20"
     "@types/react-dom": "npm:^18.3.5"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
@@ -8028,7 +8039,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-react-refresh: "npm:^0.4.19"
     jotai: "npm:^2.12.2"
-    katex: "npm:^0.16.21"
+    katex: "npm:^0.16.22"
     mermaid: "npm:^11.6.0"
     nanoid: "npm:^5.1.5"
     prettier: "npm:^3.5.3"

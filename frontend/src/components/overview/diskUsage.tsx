@@ -1,5 +1,5 @@
 import { Card } from "@douyinfe/semi-ui";
-import { ECharts } from "../common/echarts";
+import { ECharts, getSemiColorDataHexColors } from "../common/echarts";
 import Loading from "../common/loading";
 import { useAPI } from "../../services/api";
 
@@ -21,6 +21,7 @@ export function DiskUsageChart({ data }: { data: DiskUsageData }) {
   ];
 
   const initialOption = (): echarts.EChartsOption => ({
+    color: getSemiColorDataHexColors(false),
     backgroundColor: "transparent",
     animation: true,
     tooltip: {
