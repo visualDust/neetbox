@@ -1761,10 +1761,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@semi-bot/semi-theme-neetbox@npm:^1.0.6":
-  version: 1.0.6
-  resolution: "@semi-bot/semi-theme-neetbox@npm:1.0.6"
-  checksum: 10c0/377f6d6f6433f94166037659d215ef28f323e93afe4638033a528abba79da7230301f402d8289c67d5381e774deba949c0b61b3449fc074057849e0c37126dad
+"@semi-bot/semi-theme-neetbox@npm:^1.0.7":
+  version: 1.0.7
+  resolution: "@semi-bot/semi-theme-neetbox@npm:1.0.7"
+  checksum: 10c0/c6eaf04a932c6e56ddc151273282a61f5cc32c2806aba7deed7e036bad8ac1d41252bb7b649a6b03cd34a5af9623861dc14d07c456a650ed247e5997ac801c68
   languageName: node
   linkType: hard
 
@@ -8129,7 +8129,7 @@ __metadata:
     "@douyinfe/semi-ui": "npm:^2.78.0"
     "@rsbuild/core": "npm:^0.5.9"
     "@rsbuild/plugin-react": "npm:^0.1.9"
-    "@semi-bot/semi-theme-neetbox": "npm:^1.0.6"
+    "@semi-bot/semi-theme-neetbox": "npm:^1.0.7"
     "@types/react": "npm:^18.3.20"
     "@types/react-dom": "npm:^18.3.5"
     "@typescript-eslint/eslint-plugin": "npm:^6.21.0"
