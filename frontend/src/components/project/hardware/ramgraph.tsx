@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ECharts } from "../../common/echarts";
+import { ECharts, getSemiColorDataHexColors } from "../../common/echarts";
 import { RamInfo } from "../../../services/types";
 import { TimeDataMapper } from "../../../utils/timeDataMapper";
 import { getTimeAxisOptions } from "./utils";
@@ -8,6 +8,7 @@ import { GraphWrapper } from "./graphWrapper";
 export const RAMGraph = ({ data }: { data: TimeDataMapper<RamInfo> }) => {
   const initialOption = () => {
     return {
+      color: getSemiColorDataHexColors(false),
       backgroundColor: "transparent",
       animation: false,
       tooltip: {

@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ECharts } from "../../common/echarts";
+import { ECharts, getSemiColorDataHexColors } from "../../common/echarts";
 import { GpuInfo } from "../../../services/types";
 import { TimeDataMapper } from "../../../utils/timeDataMapper";
 import { getTimeAxisOptions, percent2hue } from "./utils";
@@ -10,6 +10,7 @@ export const GPUGraph = ({ data }: { data: TimeDataMapper<GpuInfo> }) => {
   const initialOption = () => {
     const gpu = data.getValue(0);
     return {
+      color: getSemiColorDataHexColors(false),
       backgroundColor: "transparent",
       animation: false,
       tooltip: {
