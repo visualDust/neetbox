@@ -1,29 +1,55 @@
 {
-  "extends": ["config:base", "schedule:weekly", "group:allNonMajor"],
-  "labels": ["dependencies"],
-  "pin": false,
-  "commitMessagePrefix": "⬆️ deps: ",
-  "dependencyDashboardTitle": "📈 Dependency Dashboard",
-  "packageRules": [
+  extends: [
+    'config:recommended',
+    'schedule:weekly',
+    'group:allNonMajor',
+  ],
+  labels: [
+    'dependencies',
+  ],
+  pin: {
+    enabled: false,
+  },
+  commitMessagePrefix: '⬆️ deps: ',
+  dependencyDashboardTitle: '📈 Dependency Dashboard',
+  packageRules: [
     {
-      "groupName": "dependencies (non-major)",
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": true,
-      "automergeStrategy": "squash"
+      groupName: 'dependencies (non-major)',
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+        'pin',
+        'digest',
+      ],
+      automerge: true,
+      automergeStrategy: 'squash',
     },
     {
-      "matchCategories": ["python"],
-      "addLabels": ["python"],
-      "assignees": ["@AndPuQing", "@visualDust"]
+      matchCategories: [
+        'python',
+      ],
+      addLabels: [
+        'python',
+      ],
+      assignees: [
+        '@AndPuQing',
+        '@visualDust',
+      ],
     },
     {
-      "matchCategories": ["node"],
-      "addLabels": ["javascript"],
-      "assignees": ["@lideming"]
+      matchCategories: [
+        'node',
+      ],
+      addLabels: [
+        'javascript',
+      ],
+      assignees: [
+        '@lideming',
+      ],
     },
     {
-      "matchPackageNames": "@douyinfe**",
-      "groupName": ["douyinfe"],
-    }
-  ]
+      matchPackageNames: '@douyinfe**',
+      groupName: 'douyinfe',
+    },
+  ],
 }
