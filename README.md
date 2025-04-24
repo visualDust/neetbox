@@ -11,7 +11,7 @@
 pip install neetbox
 ```
 
-How to guide: [neetbox.550w.host](https://neetbox.550w.host)
+Docs: [neetbox.550w.host](https://neetbox.550w.host/)
 
 ## Screenshots
 

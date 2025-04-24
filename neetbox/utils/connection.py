@@ -8,10 +8,7 @@ from vdtoys.framing import get_caller_info_traceback
 from neetbox._protocol import *
 
 httpxClient: httpx.Client = httpx.Client(  # httpx client
-    proxy={
-        "http://": None,
-        "https://": None,
-    }
+    proxy=None
 )
 
 
