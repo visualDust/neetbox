@@ -19,7 +19,7 @@
   "dependencies": {
     "@douyinfe/semi-icons": "^2.78.0",
     "@douyinfe/semi-ui": "^2.78.0",
-    "@semi-bot/semi-theme-neetbox": "^1.0.5",
+    "@semi-bot/semi-theme-neetbox": "^1.0.6",
     "@uiw/react-json-view": "^2.0.0-alpha.30",
     "@uiw/react-md-editor": "^4.0.5",
     "echarts": "^5.6.0",

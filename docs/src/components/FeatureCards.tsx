@@ -113,7 +113,7 @@ export function FeatureCard({
 export const FeatureList = [
   {
     image: "/img/index/view-everywhere.jpg",
-    subtitle: "View everywhere",
+    subtitle: "Being connected",
     description:
       "Monit your projects everywhere on any devides with a browser. visit neetbox frontend console on PC, tablets, even phones.",
     link: "/docs/howto",
