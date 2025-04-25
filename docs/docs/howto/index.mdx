@@ -1,5 +1,5 @@
 ---
-title: Hello from NEETBOX
+title: NEETBOX
 sidebar_position: 1
 ---
 
@@ -7,11 +7,16 @@ sidebar_position: 1
 
 > The name NEETBOX is derived from the word "NEET"(see [wikipedia](https://en.wikipedia.org/wiki/NEET)). It was named this way because NEETBOX is a naive project, and the people who developed NEETBOX are idiots.
 
-NEETBOX has:
+NEETBOX is an easy-to-use dashboard for visualizing training processes of machine learning models. It is designed to be simple and easy to use, with a focus on providing a clean and intuitive interface for users. NEETBOX has:
 
 - [x] Easy python APIs
-- [x] Ability to monitor multiple project running on multiple machines in a single dashboard
-- [x] Easy self hosting
+- [x] Everywhere connectivity
+- [x] Easy server hosting
+
+|Homepage|Dashboard|
+|:--:|:--:|
+|![Homepage SC](../../static/screenshots/sc1.jpg)|![Dashboard SC](../../static/screenshots/sc2.jpg)|
+
 
 ---
 
@@ -28,22 +33,24 @@ pip install neetbox
 
 ### Quick Example
 
-Please refer to [the example](/docs/howto/example.mdx) for a quick start, and take a look at Python APIs in the side bar.
+- Please refer to [the example](./example.mdx) for a quick start
+- Then take a look at [Python APIs](./python-apis) for usage of neetbox
+- See also [frontend manual](./frontend-manual) for more details about the frontend.
 
-### After quick start
+### Working with multiple machines
 
-- If you're using neetbox on a single computer, congratulations, you have mastered basic neetbox apis.
-- Or, if you want to manage projects running on multiple machines, read [how to host a neetbox server](/docs/howto/ServerHosting) and [manage history files](/docs/howto/ServerHosting/manage-history-files.mdx). Optionally, take a look at [understand how neetbox connects](/docs/howto/ServerHosting/understand-connections.mdx).
+- Basic configuration concepts please read [configureations](./configurations).
+- Server hosting please read [how to host a neetbox server](./server-hosting).
 
 ---
 
 ## Acknowledgments
 
 Maintainers:
-|                                     VisualDust                                     |                                   Lideming                                    |
-| :--------------------------------------------------------------------------------: | :---------------------------------------------------------------------------: |
-|       <img src="https://github.com/visualdust.png" style={{width:"150px"}}/>       |     <img src="https://github.com/lideming.png" style={{width:"150px"}}/>      |
-|                                  Except frontend                                   |                                   Frontend                                    |
+|                                     VisualDust                                     |                                  Lideming                                  |
+| :--------------------------------------------------------------------------------: | :------------------------------------------------------------------------: |
+|       <img src="https://github.com/visualdust.png" style={{width:"150px"}}/>       |    <img src="https://github.com/lideming.png" style={{width:"150px"}}/>    |
+|                                  Except frontend                                   |                                  Frontend                                  |
 | links: [github](https://github.com/visualDust) and [blog](https://gavin.gong.host) | links: [github](https://github.com/lideming) and [blog](https://yuuza.net) |
 
 All contributors:
@@ -51,6 +58,8 @@ All contributors:
 <a href = "https://github.com/visualDust/neetbox/graphs/contributors">
   <img src = "https://contrib.rocks/image?repo=VisualDust/neetbox"/>
 </a>
+
+This project usues [PyDocuSaurus](https://github.com/Asthestarsfalll/PyDocuSaurus) to generate the [API reference](/docs/apidocs/)
 
 ---
 

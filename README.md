@@ -11,7 +11,29 @@
 pip install neetbox
 ```
 
-How to guide: [neetbox.550w.host](https://neetbox.550w.host)
+Docs: [neetbox.550w.host](https://neetbox.550w.host/)
+
+## Dev
+
+To install editable version or build from source, use the following command:
+
+```bash
+# create a virtual environment
+conda create -n neetbox python=3.12
+conda activate neetbox
+
+# clone the repository
+git clone https://github.com/visualDust/neetbox.git
+cd neetbox
+
+# install project
+poetry install
+
+# build frontend
+cd frontend
+yarn install
+yarn build
+```
 
 ## Screenshots
 
@@ -26,6 +48,10 @@ How to guide: [neetbox.550w.host](https://neetbox.550w.host)
 <a href = "https://github.com/visualDust/neetbox/graphs/contributors">
   <img src = "https://contrib.rocks/image?repo=VisualDust/neetbox"/>
 </a>
+
+## Acknowledgements
+
+This project usues [Asthestarsfalll/PyDocuSaurus](https://github.com/Asthestarsfalll/PyDocuSaurus) to generate the API reference.
 
 ## Star History
 

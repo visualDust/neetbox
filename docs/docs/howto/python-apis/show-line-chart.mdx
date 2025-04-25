@@ -1,0 +1,46 @@
+---
+title: Plot scalar line chart
+sidebar_position: 5
+---
+
+:::tip
+`neetbox.add_scalar` sends a scalar to frontend display.
+:::
+
+## How it looks like
+
+![image-20231220190022639](./imgs/show-line-chart/image-20231220190022639.png)
+
+## Basic Usage
+
+```python
+import neetbox
+import math
+import time
+
+for i in range(114514):
+    time.sleep(1)
+    neetbox.add_scalar("sin", i, math.sin(i * 0.1))
+    neetbox.add_scalar("cos", i, math.cos(i * 0.1))
+
+```
+
+![image-20231220225909377](./imgs/show-line-chart/image-20231220225909377.png)
+
+you can also zoom or magnify the chart in frontend:
+
+![image-20231220230220345](./imgs/show-line-chart/image-20231220230220345.png)
+
+## API description
+
+`neetbox.add_scalar` sends a scalar to frontend display.
+
+```python
+def add_scalar(name: str, x: Union[int, float], y: Union[int, float])
+```
+
+Args:
+
+- name (str): name of the image, used in frontend display
+- x (Union[int, float]): x
+- y (Union[int, float]): y

@@ -8,4 +8,4 @@ from ._daemonable_process import DaemonableProcess
 from ._messaging import messaging
 from ._package import pipPackageHealper as pkg
 
-__all__ = ["pkg", "download", "DaemonableProcess", "messaging"]
+__all__ = ["pkg", "DaemonableProcess", "messaging"]

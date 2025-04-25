@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ECharts } from "../../common/echarts";
+import { ECharts, getSemiColorDataHexColors } from "../../common/echarts";
 import { CpuInfo } from "../../../services/types";
 import { TimeDataMapper } from "../../../utils/timeDataMapper";
 import { getTimeAxisOptions } from "./utils";
@@ -9,6 +9,7 @@ export const CPUGraph = ({ data }: { data: TimeDataMapper<CpuInfo[]> }) => {
   const cpus = data.getValue(0);
   const initialOption = () => {
     return {
+      color: getSemiColorDataHexColors(false),
       backgroundColor: "transparent",
       animation: false,
       tooltip: {

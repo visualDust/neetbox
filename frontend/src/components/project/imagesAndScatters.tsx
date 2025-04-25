@@ -1,7 +1,7 @@
 import { Space } from "@douyinfe/semi-ui";
 import { memo } from "react";
 import { AllImageViewers } from "./images";
-import { AllScatterViewers } from "./scatters";
+import { AllScatterViewers } from "./charts/scatters";
 
 export const ImagesAndScatters = memo(() => {
   return (

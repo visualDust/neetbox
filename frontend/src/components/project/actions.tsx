@@ -18,7 +18,7 @@ export function Actions() {
   ) : !status.action ? (
     <Typography.Text>
       No actions (
-      <a target="_blank" href="https://neetbox.550w.host/docs/guide/">
+      <a target="_blank" href="https://neetbox.550w.host/docs/howto/PythonAPIs/create-actions/">
         docs
       </a>
       )

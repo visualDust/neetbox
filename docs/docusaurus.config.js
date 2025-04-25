@@ -62,17 +62,17 @@ const config = {
         },
         items: [
           {
-            to: "/docs/howto",
-            activeBasePath: "/docs/howto",
+            to: "/docs/howto/",
+            activeBasePath: "/docs/howto/",
             label: "Docs",
             position: "left",
           },
-          // {
-          //   to: "/docs/guide",
-          //   activeBasePath: "/docs/guide",
-          //   label: "Doc",
-          //   position: "left",
-          // },
+          {
+            to: "/docs/apidocs/",
+            activeBasePath: "/docs/apidocs/",
+            label: "API Reference",
+            position: "left",
+          },
           {
             to: "https://github.com/visualDust/neetbox",
             label: "Github",

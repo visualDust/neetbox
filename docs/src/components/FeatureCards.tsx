@@ -112,15 +112,8 @@ export function FeatureCard({
 
 export const FeatureList = [
   {
-    image: "/img/index/neetbox-consistof.jpg",
-    subtitle: "All in one",
-    description:
-      "Neetbox provides python side apis, command line cli app, web service, and frontend pages. Get ready by a single pip install, no registers, no extra steps, on extra configs, install and run by once. ",
-    link: "/docs/howto",
-  },
-  {
     image: "/img/index/view-everywhere.jpg",
-    subtitle: "View everywhere",
+    subtitle: "Being connected",
     description:
       "Monit your projects everywhere on any devides with a browser. visit neetbox frontend console on PC, tablets, even phones.",
     link: "/docs/howto",
