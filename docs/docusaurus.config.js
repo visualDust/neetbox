@@ -70,7 +70,7 @@ const config = {
           {
             to: "/docs/apidocs/",
             activeBasePath: "/docs/apidocs/",
-            label: "API Docs",
+            label: "API Reference",
             position: "left",
           },
           {
