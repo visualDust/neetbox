@@ -8,8 +8,8 @@ title: machine
 
 ## Exports
 
-- 🅰 [hardware](./extension/machine#🅰-hardware)
-- 🅲 [CpuStatus](./hardware#🅲-cpustatus)
-- 🅲 [CpuStatistics](./hardware#🅲-cpustatistics)
-- 🅲 [MemoryStatus](./hardware#🅲-memorystatus)
-- 🅰 [platform](./extension/machine#🅰-platform)
+- 🅰 [hardware](hardware#🅰-hardware)
+- 🅲 [CpuStatus](hardware#🅲-cpustatus)
+- 🅲 [CpuStatistics](hardware#🅲-cpustatistics)
+- 🅲 [MemoryStatus](hardware#🅲-memorystatus)
+- 🅰 [platform](platform#🅰-platform)

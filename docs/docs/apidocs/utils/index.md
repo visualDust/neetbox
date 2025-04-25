@@ -8,7 +8,6 @@ title: utils
 
 ## Exports
 
-- 🅰 [pkg](./-package#🅰-pkg)
-- 🅤 download
-- 🅲 [DaemonableProcess](./-daemonable-process#🅲-daemonableprocess)
-- 🅰 [messaging](./-messaging#🅰-messaging)
+- 🅰 [pkg](-package#🅰-pippackagehealper)
+- 🅲 [DaemonableProcess](-daemonable-process#🅲-daemonableprocess)
+- 🅰 [messaging](-messaging#🅰-messaging)

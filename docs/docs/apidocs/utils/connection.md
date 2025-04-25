@@ -6,6 +6,8 @@ title: connection
 
 - **Attributes:**
   - 🅰 [httpxClient](#🅰-httpxclient) - httpx client
+- **Functions:**
+  - 🅵 [\_clean\_websocket\_on\_exit](#🅵-_clean_websocket_on_exit)
 - **Classes:**
   - 🅲 [WebsocketClient](#🅲-websocketclient)
 
@@ -17,6 +19,14 @@ title: connection
 httpxClient: httpx.Client = httpx.Client(proxy=None) #httpx client
 ```
 
+
+## Functions
+
+## 🅵 \_clean\_websocket\_on\_exit
+
+```python
+def _clean_websocket_on_exit():
+```
 
 ## Classes
 

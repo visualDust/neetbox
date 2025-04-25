@@ -27,6 +27,33 @@ DB_PROJECT_FILE_FOLDER = f"{get_global_config('vault')}/server/db/project"
 DB_PROJECT_FILE_TYPE_NAME = "projectdb"
 
 
+def _CHECK_GET_PROJECT_FILE_FOLDER():
+    """check if the db path is valid. if not, create it"""
+    if not os.path.exists(DB_PROJECT_FILE_FOLDER):
+        # create history root dir
+        logger.info(
+            f"history file directory not exist, trying to create at {DB_PROJECT_FILE_FOLDER}"
+        )
+        try:
+            os.makedirs(DB_PROJECT_FILE_FOLDER)
+        except Exception as e:
+            logger.err(
+                RuntimeError(
+                    f"failed to create history file directory {DB_PROJECT_FILE_FOLDER} cause {e}"
+                ),
+                reraise=True,
+            )
+    # check if is dir
+    if not os.path.isdir(DB_PROJECT_FILE_FOLDER):
+        logger.err(
+            RuntimeError(
+                f"history file directory {DB_PROJECT_FILE_FOLDER} is not a directory"
+            ),
+            reraise=True,
+        )
+    return DB_PROJECT_FILE_FOLDER
+
+
 class ProjectDB(ManageableDB):
     # static things
     _path2dbc = {}
@@ -37,11 +64,15 @@ class ProjectDB(ManageableDB):
     connection: sqlite3.Connection  # the db connection
     _inited_tables: collections.defaultdict
 
-    def __new__(cls, project_id: str = None, path: str = None, **kwargs) -> "ProjectDB":
+    def __new__(
+        cls, project_id: str = None, path: str = None, **kwargs
+    ) -> "ProjectDB":
         if path is None and project_id is None:
-            raise RuntimeError(f"please provide at least project id or path when creating db")
+            raise RuntimeError(
+                f"please provide at least project id or path when creating db"
+            )
         if path is None:  # make path from project id
-            path = f"{DB_PROJECT_FILE_FOLDER}/{project_id}.{DB_PROJECT_FILE_TYPE_NAME}"
+            path = f"{_CHECK_GET_PROJECT_FILE_FOLDER()}/{project_id}.{DB_PROJECT_FILE_TYPE_NAME}"
         if path in cls._path2dbc:
             return cls._path2dbc[path]
         if project_id in manager.current:
@@ -49,9 +80,15 @@ class ProjectDB(ManageableDB):
         new_dbc = super().__new__(cls, **kwargs)
         # connect to sqlite
         new_dbc.file_path = path
-        new_dbc.connection = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
-        new_dbc.connection.execute("pragma journal_mode=wal")  # set journal mode WAL
-        new_dbc.connection.execute("PRAGMA foreign_keys = ON")  # enable foreign keys features
+        new_dbc.connection = sqlite3.connect(
+            path, check_same_thread=False, isolation_level=None
+        )
+        new_dbc.connection.execute(
+            "pragma journal_mode=wal"
+        )  # set journal mode WAL
+        new_dbc.connection.execute(
+            "PRAGMA foreign_keys = ON"
+        )  # enable foreign keys features
         new_dbc._inited_tables = collections.defaultdict(lambda: False)
         # check neetbox version
         _db_file_project_id = new_dbc.fetch_db_project_id(project_id)
@@ -73,7 +110,9 @@ class ProjectDB(ManageableDB):
         cls._path2dbc[path] = new_dbc
         manager.current[project_id] = new_dbc
         new_dbc.project_id = project_id
-        logger.ok(f"History file(version={_db_file_version}) for project id '{project_id}' loaded.")
+        logger.ok(
+            f"History file(version={_db_file_version}) for project id '{project_id}' loaded."
+        )
         return new_dbc
 
     def __repr__(self):
@@ -103,7 +142,9 @@ class ProjectDB(ManageableDB):
         """delete related files of db"""
         if self.project_id not in manager.current:
             logger.err(
-                RuntimeError(f"could not find db to delete with project id {self.project_id}")
+                RuntimeError(
+                    f"could not find db to delete with project id {self.project_id}"
+                )
             )
         del manager.current[self.project_id]
         del ProjectDB._path2dbc[self.file_path]
@@ -130,7 +171,9 @@ class ProjectDB(ManageableDB):
                 ),
                 reraise=True,
             )
-        logger.info(f"History db for project id {self.project_id} has been deleted.")
+        logger.info(
+            f"History db for project id {self.project_id} has been deleted."
+        )
 
     @classmethod
     def items(cls):
@@ -142,7 +185,9 @@ class ProjectDB(ManageableDB):
             return manager.current[project_id]
         return ProjectDB(project_id)
 
-    def _execute(self, query, *args, fetch: FetchType = FetchType.ALL, **kwargs):
+    def _execute(
+        self, query, *args, fetch: FetchType = FetchType.ALL, **kwargs
+    ):
         cur = self.connection.cursor()
         try:
             result = cur.execute(query, args)
@@ -173,7 +218,9 @@ class ProjectDB(ManageableDB):
         return table_names
 
     def fetch_db_version(self, default=None):
-        if not self._inited_tables[VERSION_TABLE_NAME]:  # create if there is no version table
+        if not self._inited_tables[
+            VERSION_TABLE_NAME
+        ]:  # create if there is no version table
             sql_query = f"CREATE TABLE IF NOT EXISTS {VERSION_TABLE_NAME} ( {VERSION_TABLE_NAME} TEXT NON NULL );"
             self._execute(sql_query)
             self._inited_tables[VERSION_TABLE_NAME] = True
@@ -190,11 +237,15 @@ class ProjectDB(ManageableDB):
         return _version[0]
 
     def fetch_db_project_id(self, default=None):
-        if not self._inited_tables[PROJECT_ID_TABLE_NAME]:  # create if there is no project id table
+        if not self._inited_tables[
+            PROJECT_ID_TABLE_NAME
+        ]:  # create if there is no project id table
             sql_query = f"CREATE TABLE IF NOT EXISTS {PROJECT_ID_TABLE_NAME} ( {PROJECT_ID_TABLE_NAME} TEXT NON NULL );"
             self._execute(sql_query)
             self._inited_tables[PROJECT_ID_TABLE_NAME] = True
-        sql_query = f"SELECT {PROJECT_ID_TABLE_NAME} FROM {PROJECT_ID_TABLE_NAME}"
+        sql_query = (
+            f"SELECT {PROJECT_ID_TABLE_NAME} FROM {PROJECT_ID_TABLE_NAME}"
+        )
         _projectid, _ = self._query(sql_query, fetch=FetchType.ONE)
         if _projectid is None:
             if default is None:
@@ -217,25 +268,35 @@ class ProjectDB(ManageableDB):
     _run_id_fetch_lock = Lock()
 
     def fetch_id_of_run_id(self, run_id: str, timestamp: str = None):
-        if not self._inited_tables[RUN_IDS_TABLE_NAME]:  # create if there is no version table
+        if not self._inited_tables[
+            RUN_IDS_TABLE_NAME
+        ]:  # create if there is no version table
             sql_query = f"CREATE TABLE IF NOT EXISTS {RUN_IDS_TABLE_NAME} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {RUN_ID_COLUMN_NAME} TEXT NON NULL, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {METADATA_COLUMN_NAME} TEXT, CONSTRAINT run_id_unique UNIQUE ({RUN_ID_COLUMN_NAME}));"
             self._execute(sql_query)
             self._inited_tables[RUN_IDS_TABLE_NAME] = True
         with self._run_id_fetch_lock:
             id_of_run_id = self.get_id_of_run_id(run_id)
             if id_of_run_id is None:
-                timestamp = timestamp or datetime.now().strftime(DATETIME_FORMAT)
+                timestamp = timestamp or datetime.now().strftime(
+                    DATETIME_FORMAT
+                )
                 sql_query = f"INSERT INTO {RUN_IDS_TABLE_NAME}({RUN_ID_COLUMN_NAME}, {TIMESTAMP_COLUMN_NAME})   VALUES (?, ?)"
                 _, lastrowid = self._execute(sql_query, run_id, timestamp)
                 return lastrowid
         return id_of_run_id
 
-    def fetch_metadata_of_run_id(self, run_id: str, metadata: Union[dict, str] = None):
+    def fetch_metadata_of_run_id(
+        self, run_id: str, metadata: Union[dict, str] = None
+    ):
         id_of_run_id = self.get_id_of_run_id(run_id)
         if id_of_run_id is None:
             return None
         if metadata:  # if update name
-            metadata = json.dumps(metadata) if isinstance(metadata, dict) else metadata
+            metadata = (
+                json.dumps(metadata)
+                if isinstance(metadata, dict)
+                else metadata
+            )
             sql_query = f"UPDATE {RUN_IDS_TABLE_NAME} SET {METADATA_COLUMN_NAME} = ? WHERE {ID_COLUMN_NAME} = ?"
             _, _ = self._execute(sql_query, metadata, id_of_run_id)
         # get name
@@ -270,7 +331,9 @@ class ProjectDB(ManageableDB):
         return result
 
     def delete_run_id(self, run_id: str):
-        sql_query = f"DELETE FROM {RUN_IDS_TABLE_NAME} where {RUN_ID_COLUMN_NAME} = ?"
+        sql_query = (
+            f"DELETE FROM {RUN_IDS_TABLE_NAME} where {RUN_ID_COLUMN_NAME} = ?"
+        )
         _, _ = self._execute(sql_query, run_id)
 
     def get_series_of_table(self, table_name, run_id=None):
@@ -304,7 +367,9 @@ class ProjectDB(ManageableDB):
             sql_query = f"DELETE FROM {table_name} WHERE {ID_COLUMN_NAME} < {max_id_to_del[0]} AND {RUN_ID_COLUMN_NAME} = {run_id}"
             if series is not None:
                 sql_query += f" AND {SERIES_COLUMN_NAME} = '{series}'"
-            self._query(sql_query)  # delete rows with smaller id and specific run id
+            self._query(
+                sql_query
+            )  # delete rows with smaller id and specific run id
 
     def write_json(
         self,
@@ -319,7 +384,9 @@ class ProjectDB(ManageableDB):
             json_data = json.loads(json_data)
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
-        if not self._inited_tables[table_name]:  # create if there is no version table
+        if not self._inited_tables[
+            table_name
+        ]:  # create if there is no version table
             sql_query = f"CREATE TABLE IF NOT EXISTS {table_name} ( {ID_COLUMN_NAME} INTEGER PRIMARY KEY AUTOINCREMENT, {TIMESTAMP_COLUMN_NAME} TEXT NON NULL, {SERIES_COLUMN_NAME} TEXT, {RUN_ID_COLUMN_NAME} INTEGER, {JSON_COLUMN_NAME} TEXT NON NULL, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}) ON DELETE CASCADE);"
             self._execute(sql_query)
             sql_query = f"CREATE INDEX IF NOT EXISTS series_and_runid_index ON {table_name} ({SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME})"
@@ -329,7 +396,9 @@ class ProjectDB(ManageableDB):
         sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME}, {JSON_COLUMN_NAME}) VALUES (?, ?, ?, ?)"
         if isinstance(json_data, dict):
             json_data = json.dumps(json_data)
-        _, lastrowid = self._execute(sql_query, timestamp, series, run_id, json_data)
+        _, lastrowid = self._execute(
+            sql_query, timestamp, series, run_id, json_data
+        )
         self.do_limit_num_row_for(
             table_name=table_name,
             run_id=run_id,
@@ -338,11 +407,15 @@ class ProjectDB(ManageableDB):
         )
         return lastrowid
 
-    def read_json(self, table_name: str, condition: ProjectDbQueryCondition = None):
+    def read_json(
+        self, table_name: str, condition: ProjectDbQueryCondition = None
+    ):
         if not self.table_exist(table_name):
             return []
         if condition and isinstance(condition.run_id, str):
-            condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
+            condition.run_id = self.get_id_of_run_id(
+                condition.run_id
+            )  # convert run id
         cond_str, cond_vars = condition.dumpt() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME, TIMESTAMP_COLUMN_NAME,SERIES_COLUMN_NAME, JSON_COLUMN_NAME))} FROM {table_name} {cond_str}"
         result, _ = self._query(sql_query, *cond_vars, fetch=FetchType.ALL)
@@ -364,7 +437,9 @@ class ProjectDB(ManageableDB):
             json_data = json.loads(json_data)
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id)
-        if not self._inited_tables[STATUS_TABLE_NAME]:  # create if there is no version table
+        if not self._inited_tables[
+            STATUS_TABLE_NAME
+        ]:  # create if there is no version table
             sql_query = f"CREATE TABLE IF NOT EXISTS {STATUS_TABLE_NAME} ({ID_COLUMN_NAME} INTEGER PRIMARY KEY,{RUN_ID_COLUMN_NAME} INTEGER NON NULL, {SERIES_COLUMN_NAME} TEXT NON NULL, {JSON_COLUMN_NAME} TEXT NON NULL, UNIQUE({RUN_ID_COLUMN_NAME}, {SERIES_COLUMN_NAME}) ON CONFLICT REPLACE, FOREIGN KEY({RUN_ID_COLUMN_NAME}) REFERENCES {RUN_IDS_TABLE_NAME}({ID_COLUMN_NAME}) ON DELETE CASCADE);"
             self._execute(sql_query)
             self._inited_tables[STATUS_TABLE_NAME] = True
@@ -382,7 +457,9 @@ class ProjectDB(ManageableDB):
             condition.run_id = self.get_id_of_run_id(run_id)
         cond_str, cond_vars = condition.dumpt()
         sql_query = f"SELECT {', '.join((RUN_ID_COLUMN_NAME, SERIES_COLUMN_NAME, METADATA_COLUMN_NAME))} FROM {STATUS_TABLE_NAME} {cond_str}"
-        query_result, _ = self._query(sql_query, *cond_vars, fetch=FetchType.ALL)
+        query_result, _ = self._query(
+            sql_query, *cond_vars, fetch=FetchType.ALL
+        )
         result = {}
         for id_of_runid, series_name, value in query_result:
             run_id = self.get_run_id_of_id(id_of_runid)
@@ -402,7 +479,9 @@ class ProjectDB(ManageableDB):
         num_row_limit=-1,
     ):
         meta_data = meta_data or {}
-        meta_data = meta_data if isinstance(meta_data, dict) else json.loads(meta_data)
+        meta_data = (
+            meta_data if isinstance(meta_data, dict) else json.loads(meta_data)
+        )
         if run_id:
             run_id = self.fetch_id_of_run_id(run_id, timestamp=timestamp)
         if isinstance(blob_data, bytes):
@@ -418,7 +497,9 @@ class ProjectDB(ManageableDB):
             self._inited_tables[table_name] = True
 
         sql_query = f"INSERT INTO {table_name}({TIMESTAMP_COLUMN_NAME}, {SERIES_COLUMN_NAME}, {RUN_ID_COLUMN_NAME}, {METADATA_COLUMN_NAME}, {BLOB_COLUMN_NAME}) VALUES (?, ?, ?, ?, ?)"
-        _, lastrowid = self._execute(sql_query, timestamp, series, run_id, meta_data, blob_data)
+        _, lastrowid = self._execute(
+            sql_query, timestamp, series, run_id, meta_data, blob_data
+        )
         self.do_limit_num_row_for(
             table_name=table_name,
             run_id=run_id,
@@ -436,7 +517,9 @@ class ProjectDB(ManageableDB):
         if not self.table_exist(table_name):
             return []
         if condition and isinstance(condition.run_id, str):
-            condition.run_id = self.get_id_of_run_id(condition.run_id)  # convert run id
+            condition.run_id = self.get_id_of_run_id(
+                condition.run_id
+            )  # convert run id
         cond_str, cond_vars = condition.dumpt() if condition else ""
         sql_query = f"SELECT {', '.join((ID_COLUMN_NAME,TIMESTAMP_COLUMN_NAME, METADATA_COLUMN_NAME, *((BLOB_COLUMN_NAME,) if not meta_only else ())))} FROM {table_name} {cond_str}"
         result, _ = self._query(sql_query, *cond_vars, fetch=FetchType.ALL)
@@ -456,7 +539,7 @@ class ProjectDB(ManageableDB):
     @classmethod
     def get_db_list(cls):
         history_file_loader = ResourceLoader(
-            folder=DB_PROJECT_FILE_FOLDER,
+            folder=_CHECK_GET_PROJECT_FILE_FOLDER(),
             file_types=[DB_PROJECT_FILE_TYPE_NAME],
             force_rescan=True,
         )
@@ -471,14 +554,3 @@ class ProjectDB(ManageableDB):
             cls.get_db_list()  # scan for possible file changes
         conn = ProjectDB.of_project_id(project_id=project_id)
         return conn
-
-
-# === SCAN FOR DB FILES ===
-
-if not os.path.exists(DB_PROJECT_FILE_FOLDER):
-    # create history root dir
-    logger.info(f"history file directory not exist, trying to create at {DB_PROJECT_FILE_FOLDER}")
-    os.makedirs(DB_PROJECT_FILE_FOLDER)
-# check if is dir
-assert os.path.isdir(DB_PROJECT_FILE_FOLDER), f"{DB_PROJECT_FILE_FOLDER} is not a directory."
-logger.info(f"using history file folder: {DB_PROJECT_FILE_FOLDER}")
