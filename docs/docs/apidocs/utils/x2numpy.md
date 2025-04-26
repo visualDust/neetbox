@@ -1,5 +1,6 @@
 ---
 title: x2numpy
+sidebar_position: 3
 ---
 
 ## TOC

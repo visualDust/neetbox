@@ -17,7 +17,11 @@ export default function AppFooter(): React.JSX.Element {
       <Divider margin="10px" />
       <Logo withGlow={true} withLink={true} styles={{ width: "50px" }} />
       <Typography.Text type="tertiary" style={{ fontSize: 14 }}>
-        © 2023 - {new Date().getFullYear()} Neet Design. All rights reserved.
+        © 2023 - {new Date().getFullYear()} NEETBOX with ❤️,{" "}
+        <a href="https://www.550w.host" target="_blank" rel="noopener noreferrer">
+          550W.HOST
+        </a>{" "}
+        all right reserved
       </Typography.Text>
     </Layout.Footer>
   );

@@ -1,5 +1,6 @@
 ---
 title: _file
+sidebar_position: 3
 ---
 
 ## TOC
@@ -13,6 +14,8 @@ title: _file
 
 ```python
 class FileLogWriter:
+    PATH2WRITER = {}
+    file_writer = None
 ```
 
 

@@ -1,5 +1,6 @@
 ---
 title: _logger
+sidebar_position: 3
 ---
 
 ## TOC
@@ -32,6 +33,11 @@ DEFAULT_LOGGER = Logger(None)
 
 ```python
 class LogLevel(Enum):
+    ALL = 4
+    DEBUG = 3
+    INFO = 2
+    WARNING = 1
+    ERROR = 0
 ```
 
 
@@ -69,6 +75,7 @@ def __ge__(self, other):
 
 ```python
 class Logger:
+    _IDENTITY2LOGGER = {}
 ```
 
 
@@ -89,7 +96,7 @@ create a new logger
 **Parameters:**
 
 - **name_alias** ([str](https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str)) (default to `None`): the name alias of the logger. Defaults to None.
-- **style** (Optional[LogStyle]) (default to `LogStyle()`): logger's default log style. Defaults to LogStyle\(\).
+- **style** ([Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[LogStyle](-formatting#🅲-logstyle)]) (default to `LogStyle()`): logger's default log style. Defaults to LogStyle\(\).
 - **log_level** ([LogLevel](-logger#🅲-loglevel)) (default to `LogLevel.INFO`): log level. Defaults to LogLevel.INFO.
 - **skip_writers_names** ([list](https://docs.python.org/3/library/stdtypes.html#lists)) (default to `[]`): names of writers to be skipped. Defaults to \[\].
 ### 🅼 \_\_new\_\_
@@ -100,26 +107,31 @@ def __new__(cls, name_alias: str = None, *args, **kwargs) -> "Logger":
 ### 🅼 style
 
 ```python
+@property
 def style(self):
 ```
 ### 🅼 style
 
 ```python
+@style.setter
 def style(self, style: LogStyle):
 ```
 ### 🅼 log\_level
 
 ```python
+@property
 def log_level(self):
 ```
 ### 🅼 log\_level
 
 ```python
+@log_level.setter
 def log_level(self, level: Union[LogLevel, str]):
 ```
 ### 🅼 set\_global\_log\_level
 
 ```python
+@classmethod
 def set_global_log_level(cls, level: Union[LogLevel, str]):
 ```
 ### 🅼 writer

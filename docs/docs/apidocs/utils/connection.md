@@ -1,5 +1,6 @@
 ---
 title: connection
+sidebar_position: 3
 ---
 
 ## TOC
@@ -34,6 +35,7 @@ def _clean_websocket_on_exit():
 
 ```python
 class WebsocketClient:
+    instances = {}
 ```
 
 
@@ -58,6 +60,7 @@ def connect(self, reconnect=1):
 ### 🅼 is\_connected
 
 ```python
+@property
 def is_connected(self) -> bool:
 ```
 ### 🅼 send

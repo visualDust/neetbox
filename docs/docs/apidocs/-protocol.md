@@ -1,5 +1,6 @@
 ---
 title: _protocol
+sidebar_position: 3
 ---
 
 ## TOC
@@ -45,8 +46,10 @@ title: _protocol
   - 🅰 [ID\_COLUMN\_NAME](#🅰-id_column_name) - === TABLE NAMES ===
   - 🅰 [TIMESTAMP\_COLUMN\_NAME](#🅰-timestamp_column_name) - === TABLE NAMES ===
   - 🅰 [NAME\_COLUMN\_NAME](#🅰-name_column_name) - === TABLE NAMES ===
+  - 🅰 [SERIES\_COLUMN\_NAME](#🅰-series_column_name) - === TABLE NAMES ===
   - 🅰 [RUN\_ID\_COLUMN\_NAME](#🅰-run_id_column_name) - === TABLE NAMES ===
   - 🅰 [JSON\_COLUMN\_NAME](#🅰-json_column_name) - === TABLE NAMES ===
+  - 🅰 [METADATA\_COLUMN\_NAME](#🅰-metadata_column_name) - === TABLE NAMES ===
   - 🅰 [BLOB\_COLUMN\_NAME](#🅰-blob_column_name) - === TABLE NAMES ===
   - 🅰 [PROJECT\_ID\_TABLE\_NAME](#🅰-project_id_table_name)
   - 🅰 [VERSION\_TABLE\_NAME](#🅰-version_table_name)
@@ -304,6 +307,12 @@ TIMESTAMP_COLUMN_NAME = TIMESTAMP_KEY #=== TABLE NAMES ===
 NAME_COLUMN_NAME = SERIES_KEY #=== TABLE NAMES ===
 ```
 
+## 🅰 SERIES\_COLUMN\_NAME
+
+```python
+SERIES_COLUMN_NAME = SERIES_KEY #=== TABLE NAMES ===
+```
+
 ## 🅰 RUN\_ID\_COLUMN\_NAME
 
 ```python
@@ -314,6 +323,12 @@ RUN_ID_COLUMN_NAME = RUN_ID_KEY #=== TABLE NAMES ===
 
 ```python
 JSON_COLUMN_NAME = METADATA_KEY #=== TABLE NAMES ===
+```
+
+## 🅰 METADATA\_COLUMN\_NAME
+
+```python
+METADATA_COLUMN_NAME = METADATA_KEY #=== TABLE NAMES ===
 ```
 
 ## 🅰 BLOB\_COLUMN\_NAME
@@ -384,6 +399,12 @@ def get_timestamp(datetime=None):
 
 ```python
 class IdentityType(str, Enum):
+    WEB = """web"""
+    CLI = """cli"""
+    SERVER = """server"""
+    SELF = """self"""
+    OTHERS = """another"""
+    BOTH = """both"""
 ```
 
 
@@ -395,13 +416,25 @@ def __repr__(self) -> str:
 ## 🅲 EventMsg
 
 ```python
+@dataclass
 class EventMsg:
+    project_id: str = None
+    run_id: str = None
+    event_type: str = None
+    series: str = None
+    payload: Any = None
+    event_id: int = -1
+    identity_type: str = None
+    timestamp: str = get_timestamp()
+    history_len: int = -1
+    id: int = None
 ```
 
 
 ### 🅼 json
 
 ```python
+@property
 def json(self):
 ```
 ### 🅼 dumps
@@ -412,10 +445,12 @@ def dumps(self):
 ### 🅼 loads
 
 ```python
+@classmethod
 def loads(cls, src):
 ```
 ### 🅼 merge
 
 ```python
+@classmethod
 def merge(cls, x: Union["EventMsg", dict], y: Union["EventMsg", dict]):
 ```

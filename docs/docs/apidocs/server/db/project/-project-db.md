@@ -1,5 +1,6 @@
 ---
 title: _project_db
+sidebar_position: 3
 ---
 
 ## TOC
@@ -50,6 +51,12 @@ check if the db path is valid. if not, create it
 
 ```python
 class ProjectDB(ManageableDB):
+    _path2dbc = {}
+    project_id: str = None
+    file_path: str = None
+    connection: sqlite3.Connection = None
+    _inited_tables: collections.defaultdict = None
+    _run_id_fetch_lock = Lock()
 ```
 
 
@@ -68,6 +75,7 @@ def __repr__(self):
 ### 🅼 size
 
 ```python
+@property
 def size(self):
 ```
 
@@ -91,11 +99,13 @@ delete related files of db
 ### 🅼 items
 
 ```python
+@classmethod
 def items(cls):
 ```
 ### 🅼 of\_project\_id
 
 ```python
+@classmethod
 def of_project_id(cls, project_id):
 ```
 ### 🅼 \_execute
@@ -227,15 +237,18 @@ def read_blob(
 ### 🅼 load\_db\_of\_path
 
 ```python
+@classmethod
 def load_db_of_path(cls, path):
 ```
 ### 🅼 get\_db\_list
 
 ```python
+@classmethod
 def get_db_list(cls):
 ```
 ### 🅼 get\_db\_of\_id
 
 ```python
+@classmethod
 def get_db_of_id(cls, project_id, rescan: bool = True):
 ```

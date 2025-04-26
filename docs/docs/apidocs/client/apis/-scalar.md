@@ -1,5 +1,6 @@
 ---
 title: _scalar
+sidebar_position: 3
 ---
 
 ## TOC
@@ -20,5 +21,5 @@ send a scalar to frontend display
 **Parameters:**
 
 - **name** ([str](https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str)): name of the image, used in frontend display
-- **x** (Union[int, float]): x
-- **y** (Union[int, float]): y
+- **x** ([Union](https://docs.python.org/3/library/typing.html#typing.Union)[[int](https://docs.python.org/3/library/stdtypes.html#numeric-types-int-float-complex), [float](https://docs.python.org/3/library/stdtypes.html#numeric-types-int-float-complex)]): x
+- **y** ([Union](https://docs.python.org/3/library/typing.html#typing.Union)[[int](https://docs.python.org/3/library/stdtypes.html#numeric-types-int-float-complex), [float](https://docs.python.org/3/library/stdtypes.html#numeric-types-int-float-complex)]): y

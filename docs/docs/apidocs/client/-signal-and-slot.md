@@ -1,5 +1,6 @@
 ---
 title: _signal_and_slot
+sidebar_position: 3
 ---
 
 ## TOC
@@ -148,7 +149,12 @@ def _update_thread():
 ## 🅲 \_WatchConfig
 
 ```python
+@dataclass
 class _WatchConfig(dict):
+    name: str = None
+    interval: Decimal = None
+    initiative: bool = None
+    channel: str = _DEFAULT_CHANNEL
 ```
 ## 🅲 \_WatchedFun
 

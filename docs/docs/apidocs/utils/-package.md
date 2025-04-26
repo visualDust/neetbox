@@ -1,5 +1,6 @@
 ---
 title: _package
+sidebar_position: 3
 ---
 
 ## TOC

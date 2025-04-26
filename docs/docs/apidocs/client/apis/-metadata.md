@@ -1,5 +1,6 @@
 ---
 title: _metadata
+sidebar_position: 3
 ---
 
 ## TOC

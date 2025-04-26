@@ -1,5 +1,6 @@
 ---
 title: hardware
+sidebar_position: 3
 ---
 
 ## TOC
@@ -30,11 +31,13 @@ hardware = Hardware() #watch updates in daemon
 ## 🅵 return\_default\_config
 
 ```python
+@export_default_config
 def return_default_config() -> dict:
 ```
 ## 🅵 load\_monit\_hardware
 
 ```python
+@on_workspace_loaded(name="hardware-monit")
 def load_monit_hardware():
 ```
 
@@ -60,6 +63,7 @@ def __str__(self) -> str:
 ### 🅼 json
 
 ```python
+@property
 def json(self):
 ```
 ## 🅲 CpuStatistics
@@ -77,6 +81,7 @@ def __init__(self, ctx_switches, interrupts, soft_interrupts, syscalls) -> None:
 ### 🅼 json
 
 ```python
+@property
 def json(self):
 ```
 ### 🅼 \_\_str\_\_
@@ -99,6 +104,7 @@ def __init__(self, total, available, used, free) -> None:
 ### 🅼 json
 
 ```python
+@property
 def json(self):
 ```
 ### 🅼 \_\_str\_\_
@@ -116,11 +122,13 @@ class NvGpuStatus(GPU):
 ### 🅼 parse
 
 ```python
+@classmethod
 def parse(cls, other: GPU):
 ```
 ### 🅼 json
 
 ```python
+@property
 def json(self):
 ```
 ### 🅼 \_\_str\_\_
@@ -132,6 +140,14 @@ def __str__(self) -> str:
 
 ```python
 class Hardware:
+    watch_thread: Thread = None
+    _do_watch: bool = True
+    _update_interval: float = 1.0
+    _cpus: List[CpuStatus] = None
+    _gpus: List[NvGpuStatus] = None
+    _cpu_statistics: CpuStatistics = None
+    _memory: MemoryStatus = None
+    _on_update_call_backs = []
 ```
 
 
@@ -143,31 +159,37 @@ def __init__(self) -> None:
 ### 🅼 cpus
 
 ```python
+@property
 def cpus(self):
 ```
 ### 🅼 cpu\_statistics
 
 ```python
+@property
 def cpu_statistics(self):
 ```
 ### 🅼 memory
 
 ```python
+@property
 def memory(self):
 ```
 ### 🅼 gpus
 
 ```python
+@property
 def gpus(self):
 ```
 ### 🅼 with\_gpu
 
 ```python
+@property
 def with_gpu(self):
 ```
 ### 🅼 json
 
 ```python
+@property
 def json(self):
 ```
 ### 🅼 add\_on\_update\_call\_back

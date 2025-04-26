@@ -1,5 +1,6 @@
 ---
 title: _client
+sidebar_position: 3
 ---
 
 ## TOC
@@ -45,6 +46,7 @@ def addr_of_api(api, http_root=None):
 ## 🅵 log\_writer\_ws
 
 ```python
+@LogWriters.register(name="ws")
 def log_writer_ws(log: RawLog):
 ```
 

@@ -1,5 +1,6 @@
 ---
 title: _manager
+sidebar_position: 3
 ---
 
 ## TOC
@@ -38,12 +39,16 @@ manager = DBConnectionManager()
 
 ```python
 class DBConnectionManager:
+    _POOL: Dict[ModuleNameType, Dict[DbIdType, ManageableDB]] = defaultdict(
+        dict
+    )
 ```
 
 
 ### 🅼 current
 
 ```python
+@property
 def current(self):
 ```
 ### 🅼 \_\_init\_\_

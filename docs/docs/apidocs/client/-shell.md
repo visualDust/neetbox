@@ -1,5 +1,6 @@
 ---
 title: _shell
+sidebar_position: 3
 ---
 
 ## TOC

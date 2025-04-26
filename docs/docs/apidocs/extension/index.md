@@ -1,5 +1,6 @@
 ---
 title: extension
+sidebar_position: 2
 ---
 
 ## TOC
@@ -36,6 +37,7 @@ def _scan_sub_modules():
 ## 🅵 \_init\_extensions
 
 ```python
+@on_config_loaded
 def _init_extensions():
 ```
 

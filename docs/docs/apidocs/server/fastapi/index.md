@@ -1,5 +1,6 @@
 ---
 title: fastapi
+sidebar_position: 2
 ---
 
 ## TOC
@@ -40,10 +41,12 @@ front_end_dist_path = os.path.join(
 ## 🅵 redirect\_to\_web
 
 ```python
+@serverapp.get("/")
 def redirect_to_web():
 ```
 ## 🅵 serve\_static\_root
 
 ```python
+@serverapp.get("/web/{path:path}")
 def serve_static_root(path: str):
 ```

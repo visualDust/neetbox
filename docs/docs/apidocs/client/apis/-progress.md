@@ -1,5 +1,6 @@
 ---
 title: _progress
+sidebar_position: 3
 ---
 
 ## TOC
@@ -13,6 +14,10 @@ title: _progress
 
 ```python
 class Progress:
+    total: int = None
+    done: int = None
+    iterator: enumerate = None
+    timestamp: str = None
 ```
 
 
@@ -26,7 +31,7 @@ Decorate an iterable object, returning an iterator. Neetbox will send progress t
 
 **Parameters:**
 
-- **input** (Union[int, enumerate, any]): Something to iterate or something to create enumeratable object.
+- **input** ([Union](https://docs.python.org/3/library/typing.html#typing.Union)[[int](https://docs.python.org/3/library/stdtypes.html#numeric-types-int-float-complex), enumerate, any]): Something to iterate or something to create enumeratable object.
 ### 🅼 \_\_enter\_\_
 
 ```python
@@ -45,6 +50,7 @@ def __iter__(self):
 ### 🅼 \_update
 
 ```python
+@classmethod
 def _update(
     cls,
     name: str,

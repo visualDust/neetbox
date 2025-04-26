@@ -1,5 +1,6 @@
 ---
 title: _image
+sidebar_position: 3
 ---
 
 ## TOC
@@ -51,7 +52,7 @@ send an image to frontend display
 
 **Parameters:**
 
-- **image** (Union[np.array, Image.Image, Tensor]): image from cv2 and PIL.Image as well as tensors are supported
+- **image** ([Union](https://docs.python.org/3/library/typing.html#typing.Union)[np.array, Image.Image, Tensor]): image from cv2 and PIL.Image as well as tensors are supported
 - **name** ([str](https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str)): name of the image, used in frontend display
 - **dataformats** ([str](https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str)): if you are passing a tensor as image, please indicate how to understand the tensor. For example, dataformats="NCWH" means the first axis of the tensor is Number of batches, the second axis is Channel, and the third axis is Width, and the fourth axis is Height.
 ## 🅵 add\_figure

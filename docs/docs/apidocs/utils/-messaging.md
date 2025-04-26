@@ -1,5 +1,6 @@
 ---
 title: _messaging
+sidebar_position: 3
 ---
 
 ## TOC
@@ -45,19 +46,28 @@ messaging = Messaging() #singleton
 ## 🅲 MessageListener
 
 ```python
+@dataclass
 class MessageListener:
+    creator: TracebackInfo = None
+    message_type: str = None
+    name: str = None
+    func: Callable = None
 ```
 
 
 ### 🅼 json
 
 ```python
+@property
 def json(self):
 ```
 ## 🅲 Messaging
 
 ```python
 class Messaging:
+    _listener_dicts: Dict[MessageType, Dict[NameType, MessageListener]] = (
+        defaultdict(dict)
+    )
 ```
 
 
@@ -74,5 +84,6 @@ def send(self, message_type: str, message: any = None):
 ### 🅼 json
 
 ```python
+@property
 def json(self):
 ```

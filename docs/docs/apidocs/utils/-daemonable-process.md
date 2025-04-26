@@ -1,5 +1,6 @@
 ---
 title: _daemonable_process
+sidebar_position: 3
 ---
 
 ## TOC
@@ -44,11 +45,13 @@ def __init__(
 ### 🅼 is\_daemon
 
 ```python
+@property
 def is_daemon(self):
 ```
 ### 🅼 mode
 
 ```python
+@property
 def mode(self):
 ```
 ### 🅼 start

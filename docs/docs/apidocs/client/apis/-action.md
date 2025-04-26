@@ -1,5 +1,6 @@
 ---
 title: _action
+sidebar_position: 3
 ---
 
 ## TOC
@@ -59,6 +60,8 @@ def eval_call(self, params: dict):
 
 ```python
 class ActionManager:
+    ACTION_POOL: Registry = Registry("__NEET_ACTIONS")
+    _is_initialized = False
 ```
 
 
@@ -94,7 +97,7 @@ register function as action visiable on frontend page
 
 **Parameters:**
 
-- **name** (Optional[str]) (default to `None(neetbox will use the function name when set to None)`): name of the action. Defaults to None\(neetbox will use the function name when set to None\).
+- **name** ([Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[str](https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str)]) (default to `None(neetbox will use the function name when set to None)`): name of the action. Defaults to None\(neetbox will use the function name when set to None\).
 - **description** ([str](https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str)) (default to `None(neetbox will use function docs as default when set to None)`): description of the action. Defaults to None\(neetbox will use function docs as default when set to None\).
 - **blocking** ([bool](https://docs.python.org/3/library/stdtypes.html#boolean-values)) (default to `False`): whether to run the action in a blocked query. Defaults to False.
 

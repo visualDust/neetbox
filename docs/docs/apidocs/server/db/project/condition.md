@@ -1,5 +1,6 @@
 ---
 title: condition
+sidebar_position: 3
 ---
 
 ## TOC
@@ -32,6 +33,7 @@ def __init__(
 ### 🅼 loads
 
 ```python
+@classmethod
 def loads(cls, json_data):
 ```
 ### 🅼 dumpt

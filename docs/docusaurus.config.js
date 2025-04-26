@@ -86,7 +86,7 @@ const config = {
         ],
       },
       footer: {
-        copyright: `Open socurce license MIT, ${new Date().getFullYear()}, NEETBOX all right reserved`,
+        copyright: `${new Date().getFullYear()} NEETBOX with ❤️, <a href="https://www.550w.host" target="_blank" rel="noopener noreferrer">550W.HOST</a> all right reserved`,
       },
       prism: {
         theme: lightCodeTheme,

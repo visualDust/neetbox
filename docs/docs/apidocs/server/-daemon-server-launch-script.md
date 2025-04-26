@@ -1,5 +1,6 @@
 ---
 title: _daemon_server_launch_script
+sidebar_position: 3
 ---
 
 ## TOC

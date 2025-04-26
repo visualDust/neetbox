@@ -1,5 +1,6 @@
 ---
 title: _stdout
+sidebar_position: 3
 ---
 
 ## TOC
@@ -51,5 +52,6 @@ supported_text_styles = ["bold", "italic", "blink", "dim"]
 ## 🅵 log\_write\_stdout
 
 ```python
+@LogWriters.register(name="stdout")
 def log_write_stdout(log: RawLog):
 ```

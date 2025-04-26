@@ -1,5 +1,6 @@
 ---
 title: platform
+sidebar_position: 3
 ---
 
 ## TOC
@@ -25,6 +26,7 @@ platform = PlatformInfo() #watch updates in daemon
 ## 🅵 load\_send\_platform\_info
 
 ```python
+@on_workspace_loaded(name="show-platform-information")
 def load_send_platform_info():
 ```
 
@@ -45,41 +47,49 @@ def __init__(self):
 ### 🅼 username
 
 ```python
+@property
 def username(self):
 ```
 ### 🅼 machine
 
 ```python
+@property
 def machine(self):
 ```
 ### 🅼 processor
 
 ```python
+@property
 def processor(self):
 ```
 ### 🅼 os\_name
 
 ```python
+@property
 def os_name(self):
 ```
 ### 🅼 os\_release
 
 ```python
+@property
 def os_release(self):
 ```
 ### 🅼 python\_version
 
 ```python
+@property
 def python_version(self):
 ```
 ### 🅼 python\_build
 
 ```python
+@property
 def python_build(self):
 ```
 ### 🅼 json
 
 ```python
+@property
 def json(self):
 ```
 ### 🅼 \_\_str\_\_

@@ -51,7 +51,8 @@ yarn build
 
 ## Acknowledgements
 
-This project usues [Asthestarsfalll/PyDocuSaurus](https://github.com/Asthestarsfalll/PyDocuSaurus) to generate the API reference.
+- This project uses [Maple Font](https://github.com/subframe7536/maple-font) in the frontend.
+- This project usues [PyDocuSaurus](https://github.com/Asthestarsfalll/PyDocuSaurus) to generate the API reference.
 
 ## Star History
 

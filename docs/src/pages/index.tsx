@@ -1,4 +1,4 @@
-import React from "react";
+import React, { JSX } from "react";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
 import { FeatureCard, FeatureList } from "../components/FeatureCards";
