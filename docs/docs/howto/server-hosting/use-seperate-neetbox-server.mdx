@@ -1,0 +1,41 @@
+---
+title: Use seperately hosted neetbox server
+sidebar_position: 7
+---
+
+
+Neetbox server app can be launched solely via neetbox command line interface (CLI).
+
+```bash
+neet serve --help
+```
+
+![cmd-neet-serve-help](./imgs/use-seperate-neetbox-server/cmd-neet-serve-help.png)
+
+## Run a neetbox server
+
+```bash
+neet serve
+```
+
+This command will start a neetbox server on the default port `20202`:
+
+![cmd-neet-serve](./imgs/use-seperate-neetbox-server/cmd-neet-serve.png)
+
+Assume this server's ip address is `<neetbox-server-ip>`, you can access the neetbox frontend server via `http://<neetbox-server-ip>:20202` in your browser.
+
+## Use the neetbox server in your project
+
+In each of your projects' config file, you can set the neetbox server address:
+
+```toml
+name = "your project name"
+...
+[client]
+enable = true
+host = "<neetbox-server-ip>"    # <- Modify this line
+port = 20202                    # <- Modify this line
+...
+```
+
+Then, when you run your project, it will connect to the neetbox server you just started.

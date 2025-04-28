@@ -1,8 +1,14 @@
 ---
-title: Hosting neetbox server
+title: Self-hosted neetbox server
 sidebar_position: 6
 ---
 
-Neetbox server app can be launched solely via neetbox command line interface (CLI).
+:::tip Do I need to host a neetbox server?
+If your project rest on the same server as the neetbox server, by default, when you run your project, neetbox will search for local neetbox server and connect to it. If there is no active neetbox server, it will start one silently in the background. That means **you don't need it** if you are using single computer.
 
+However, if you want to run the neetbox server separately from your project, or if you have multiple projects on multiple servers and you want to view all projects in the same web page, **you need to host a neetbox server**. In this case, please read the following sections.
+:::
 
+Refer to the following sections for more details about how to host a neetbox server:
+- [Run a seperate neetbox server and configure your project to connect to it](./use-seperate-neetbox-server.mdx)
+- [Managing history data](./manage-history-files.mdx)
