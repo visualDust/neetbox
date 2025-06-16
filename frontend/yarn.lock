@@ -611,39 +611,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-animation-react@npm:2.80.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-animation-react@npm:2.80.0"
+"@douyinfe/semi-animation-react@npm:2.81.0":
+  version: 2.81.0
+  resolution: "@douyinfe/semi-animation-react@npm:2.81.0"
   dependencies:
-    "@douyinfe/semi-animation": "npm:2.80.0"
-    "@douyinfe/semi-animation-styled": "npm:2.80.0"
+    "@douyinfe/semi-animation": "npm:2.81.0"
+    "@douyinfe/semi-animation-styled": "npm:2.81.0"
     classnames: "npm:^2.2.6"
-  checksum: 10c0/1f6bb79a87dbf27238c2a272540670abbba6d1a3b0c1d25c4cd1ee49a6cb9b75d23c91d8d04af69302cf626f94e72059b52bc2d6d70c5a7ba1932b59f68a6065
+  checksum: 10c0/b89eabb5346dba9ef9aef989892fcb8cc2194cb60883edb48ea7a2a6f9ea809c73a40ef61052e012c7659f158c78047e26fd1f4dc8827ce51bbc1f379d7289c9
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-animation-styled@npm:2.80.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-animation-styled@npm:2.80.0"
-  checksum: 10c0/0dfe848abee12cf6a9532ac4449e99e4c7be13a142d1688d9dedc1b0bfbe0b2051fb96d2cce831dac5df45140aac40b913fdc29a39bfaa24cdb7e05f060b0440
+"@douyinfe/semi-animation-styled@npm:2.81.0":
+  version: 2.81.0
+  resolution: "@douyinfe/semi-animation-styled@npm:2.81.0"
+  checksum: 10c0/4516bcc83933911ff7bca943f4fc7ae012a0f94099bf77065bc5daef404e61b42b899444b3085fa9bb049f96bf7929ddd047a286e43bd81e951a8bd4155dfadb
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-animation@npm:2.80.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-animation@npm:2.80.0"
+"@douyinfe/semi-animation@npm:2.81.0":
+  version: 2.81.0
+  resolution: "@douyinfe/semi-animation@npm:2.81.0"
   dependencies:
     bezier-easing: "npm:^2.1.0"
-  checksum: 10c0/0213a2cb1cdb9e6ae9d264546b9b35080ea7c1c61e8703cf9669c9668ec1c94ee0afcedeb98e976d9122a861f62b41161c62abd5d7e95082e3c735799df4a644
+  checksum: 10c0/fabc681294d433cd5a5d4a41833757ca88631cba6fb04c81f98121e34d525d39ba82070feb8e7633180b893ba018dfd9be55aa9e8e51b1a5affe818e0280a98a
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-foundation@npm:2.80.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-foundation@npm:2.80.0"
+"@douyinfe/semi-foundation@npm:2.81.0":
+  version: 2.81.0
+  resolution: "@douyinfe/semi-foundation@npm:2.81.0"
   dependencies:
-    "@douyinfe/semi-animation": "npm:2.80.0"
-    "@douyinfe/semi-json-viewer-core": "npm:2.80.0"
+    "@douyinfe/semi-animation": "npm:2.81.0"
+    "@douyinfe/semi-json-viewer-core": "npm:2.81.0"
     "@mdx-js/mdx": "npm:^3.0.1"
     async-validator: "npm:^3.5.0"
     classnames: "npm:^2.2.6"
@@ -656,42 +656,42 @@ __metadata:
     prismjs: "npm:^1.29.0"
     remark-gfm: "npm:^4.0.0"
     scroll-into-view-if-needed: "npm:^2.2.24"
-  checksum: 10c0/c7aabc633fb41fbad73205163e2925bbd302c19db7a0cbef4fce620572da5abda7b504b64be25de310aa097b30fb2a271e997786efef35d36e9a1d39e83a0bde
+  checksum: 10c0/c3e2d38094a73d2f761a489e2fa37edb080fe79e4c93bda6b300baabd33da91e9183c33cf38d5928d661ce5b55c30c3d01945d698a7f06fed5491f650c572365
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-icons@npm:2.80.0, @douyinfe/semi-icons@npm:^2.78.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-icons@npm:2.80.0"
+"@douyinfe/semi-icons@npm:2.81.0, @douyinfe/semi-icons@npm:^2.78.0":
+  version: 2.81.0
+  resolution: "@douyinfe/semi-icons@npm:2.81.0"
   dependencies:
     classnames: "npm:^2.2.6"
   peerDependencies:
     react: ">=16.0.0"
-  checksum: 10c0/c0093c362eee3a975d7c67b59f138187a61c01eb29d99b0dcd6cdad2bb6cfce79f0aace1af1424b01414c1d2735c094658578bbc951ba3b4546d3e0a094cc0ae
+  checksum: 10c0/ebad31d02f36cbe57ebfa37ed977f414a53868b93b806fc376daad42e7473911285a536dd49a8bf0fd86120a497f8362ce99f6d5c8f93458b93449b50f67c7f7
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-illustrations@npm:2.80.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-illustrations@npm:2.80.0"
+"@douyinfe/semi-illustrations@npm:2.81.0":
+  version: 2.81.0
+  resolution: "@douyinfe/semi-illustrations@npm:2.81.0"
   peerDependencies:
     react: ">=16.0.0"
-  checksum: 10c0/a58a76f1eab0bf1d93f812f286930e3d077b10f6a6a4da2ff7267848f26c14693ced3f5c53fccb259494c5d262ca2045de1c1fcb32f154465aff0c0f55dab875
+  checksum: 10c0/b8e49febaf397964eec216746635e2f3748a11963c6162c1e7cbef2623dffd03bebc0ca6994c68571c1cf745bc774964fb08f32d3ff285d9d3b4119e2bc1004e
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-json-viewer-core@npm:2.80.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-json-viewer-core@npm:2.80.0"
+"@douyinfe/semi-json-viewer-core@npm:2.81.0":
+  version: 2.81.0
+  resolution: "@douyinfe/semi-json-viewer-core@npm:2.81.0"
   dependencies:
     jsonc-parser: "npm:^3.3.1"
-  checksum: 10c0/3bfef6888cb939c3074898afd2927d0195b8dd4d0b427d289a21c754c5503336ce96d839d75ccb4a516031c12b19cf1443c432623a2c22f5d8c01ecc065aaa92
+  checksum: 10c0/dc5c37480284f8f61243d76c446150ae2b1b9c8245bbc788595bc49167b1288f913f38d4566763816da986e94a65dc5f4a7450e04da10d882b5310ceddcb2085
   languageName: node
   linkType: hard
 
 "@douyinfe/semi-rspack-plugin@npm:^2.78.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-rspack-plugin@npm:2.80.0"
+  version: 2.81.0
+  resolution: "@douyinfe/semi-rspack-plugin@npm:2.81.0"
   dependencies:
     "@babel/core": "npm:^7.15.4"
     css-loader: "npm:4.3.0"
@@ -700,30 +700,30 @@ __metadata:
     sass-loader: "npm:^10.1.1"
   peerDependencies:
     webpack: ^5
-  checksum: 10c0/fe5b49f0fd9a7b193154d96b2fd42233b904ffe8acfab61d01b9f739195710e4ceba20a20688d19c25b46387ed6ab305bbf2f2e47e6d02ac52859a4de95f0375
+  checksum: 10c0/cfcc40251818824d13714b0a395d55d04040a96c38045dec67e72d8b8c6867d83a9fc5854acaddad6e0582deaf571bb50e93874bb87cb2e127fb2615d454f32b
   languageName: node
   linkType: hard
 
-"@douyinfe/semi-theme-default@npm:2.80.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-theme-default@npm:2.80.0"
-  checksum: 10c0/7d6edaa4d1fed8745fc2087b49853fb4d8fd632c25ecb9d7acbe8d446c1af4c123624920ee7caae891174764ca3abef25f271c7f21114160f178e92d04055249
+"@douyinfe/semi-theme-default@npm:2.81.0":
+  version: 2.81.0
+  resolution: "@douyinfe/semi-theme-default@npm:2.81.0"
+  checksum: 10c0/a7e53d9623843c485b3bb91b92b85d610816e1ba8515f89195bc1ce710e9ccead3341a680abb94266434bc4b8913a2f44cc2ad7bdbf6e5afbaac1b3cee12558e
   languageName: node
   linkType: hard
 
 "@douyinfe/semi-ui@npm:^2.78.0":
-  version: 2.80.0
-  resolution: "@douyinfe/semi-ui@npm:2.80.0"
+  version: 2.81.0
+  resolution: "@douyinfe/semi-ui@npm:2.81.0"
   dependencies:
     "@dnd-kit/core": "npm:^6.0.8"
     "@dnd-kit/sortable": "npm:^7.0.2"
     "@dnd-kit/utilities": "npm:^3.2.1"
-    "@douyinfe/semi-animation": "npm:2.80.0"
-    "@douyinfe/semi-animation-react": "npm:2.80.0"
-    "@douyinfe/semi-foundation": "npm:2.80.0"
-    "@douyinfe/semi-icons": "npm:2.80.0"
-    "@douyinfe/semi-illustrations": "npm:2.80.0"
-    "@douyinfe/semi-theme-default": "npm:2.80.0"
+    "@douyinfe/semi-animation": "npm:2.81.0"
+    "@douyinfe/semi-animation-react": "npm:2.81.0"
+    "@douyinfe/semi-foundation": "npm:2.81.0"
+    "@douyinfe/semi-icons": "npm:2.81.0"
+    "@douyinfe/semi-illustrations": "npm:2.81.0"
+    "@douyinfe/semi-theme-default": "npm:2.81.0"
     async-validator: "npm:^3.5.0"
     classnames: "npm:^2.2.6"
     copy-text-to-clipboard: "npm:^2.1.1"
@@ -740,7 +740,7 @@ __metadata:
   peerDependencies:
     react: ">=16.0.0"
     react-dom: ">=16.0.0"
-  checksum: 10c0/281b3c8e749dba03aa879ba7e2818d70a8f8614ffe441c5a29578301cda2048a28d0b40d701a346ae568e3b35ccf4cf316a561cd4eccb105bc3bbc49dc64c894
+  checksum: 10c0/9bccad8c9b197acdd2acf53a1268545e3f04ddbd5d8fc4b00c22ed549f73164de92eef2df4a862eba67ae8bfd2399e383fc57ea0f6e301b2d7d5443f5fc3b8a8
   languageName: node
   linkType: hard
 
@@ -10116,8 +10116,8 @@ __metadata:
   linkType: hard
 
 "styled-components@npm:^6.1.16":
-  version: 6.1.18
-  resolution: "styled-components@npm:6.1.18"
+  version: 6.1.19
+  resolution: "styled-components@npm:6.1.19"
   dependencies:
     "@emotion/is-prop-valid": "npm:1.2.2"
     "@emotion/unitless": "npm:0.8.1"
@@ -10131,7 +10131,7 @@ __metadata:
   peerDependencies:
     react: ">= 16.8.0"
     react-dom: ">= 16.8.0"
-  checksum: 10c0/067778b8cf9aa24b23590d23210b0e7964c6469630e5ab821c68dac64af6e0c0270c972a836f60a8bbd9753770f0475f911fcd34eeba6bd003c233a79a391e6b
+  checksum: 10c0/8d20427a5debe54bfa3b55f79af2a3577551ed7f1d1cd34df986b73fd01ac519f9081b7737cc1f76e12fbc483fa50551e55be0bc984296e623cc6a2364697cd8
   languageName: node
   linkType: hard
 
