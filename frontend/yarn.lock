@@ -1176,12 +1176,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mermaid-js/parser@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "@mermaid-js/parser@npm:0.5.0"
+"@mermaid-js/parser@npm:^0.6.1":
+  version: 0.6.1
+  resolution: "@mermaid-js/parser@npm:0.6.1"
   dependencies:
     langium: "npm:3.3.1"
-  checksum: 10c0/af1c1cf6cfe808bf5f7c232a881e5f9d6778c2fc3997d8ea3da93f59097411d0e13f74649e2576488f82227bab58e47a49f4e77cb11cf4196176f3c4135c724d
+  checksum: 10c0/5f7cf90f8bae58f20fdc7eeb150ff027cb00c32787d1e9693d624a81848cd2a414427fbb78cf093b4c6160461ad9a34a7cb93904b213f5bcd31ea957fa494665
   languageName: node
   linkType: hard
 
@@ -2440,13 +2440,13 @@ __metadata:
   linkType: hard
 
 "@uiw/react-json-view@npm:^2.0.0-alpha.30":
-  version: 2.0.0-alpha.32
-  resolution: "@uiw/react-json-view@npm:2.0.0-alpha.32"
+  version: 2.0.0-alpha.33
+  resolution: "@uiw/react-json-view@npm:2.0.0-alpha.33"
   peerDependencies:
     "@babel/runtime": ">=7.10.0"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
-  checksum: 10c0/6b31ce3ae0e3c6ffee24cf2c358b97bf0082a7e790cffde16445ab2bd7f985efd50df2421e22999be591e10dfac07438cd9888612abe40a7d0ccee16885735fe
+  checksum: 10c0/89598137108d9c48dcaf8446920793eefc7dbe171021c7be9af6b8ce0ce8e9298a81ecebc4243e7a0e2419735fa959f3d4cfa205e1444d3eef7927410e946c82
   languageName: node
   linkType: hard
 
@@ -7841,12 +7841,12 @@ __metadata:
   linkType: hard
 
 "mermaid@npm:^11.6.0":
-  version: 11.7.0
-  resolution: "mermaid@npm:11.7.0"
+  version: 11.8.1
+  resolution: "mermaid@npm:11.8.1"
   dependencies:
     "@braintree/sanitize-url": "npm:^7.0.4"
     "@iconify/utils": "npm:^2.1.33"
-    "@mermaid-js/parser": "npm:^0.5.0"
+    "@mermaid-js/parser": "npm:^0.6.1"
     "@types/d3": "npm:^7.4.3"
     cytoscape: "npm:^3.29.3"
     cytoscape-cose-bilkent: "npm:^4.1.0"
@@ -7864,7 +7864,7 @@ __metadata:
     stylis: "npm:^4.3.6"
     ts-dedent: "npm:^2.2.0"
     uuid: "npm:^11.1.0"
-  checksum: 10c0/ab37f563b54d53c513d792a91aae54c6e2ed20f4d8606cdec993d60b8c50534ac6ab740408d710a655c6190341704cf133f0a7fb47e230c0c94b38cf08e07775
+  checksum: 10c0/7865be834d4a9afa96250dafb08b1d0737a3d4543292e357cfd8b9708dcdd2228ad302d9323b61460d97c4c9fec19248f6d6a86a0a3b3a50659bc3e1669ee496
   languageName: node
   linkType: hard
 
