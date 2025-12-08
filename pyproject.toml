@@ -46,7 +46,7 @@ numpy = "^2.2.4"
 sqlmodel = "^0.0.24"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
+pytest = "^9.0.0"
 black = "^24.0.0"
 isort = "^7.0.0"
 pre-commit = ">=3.4.0"
