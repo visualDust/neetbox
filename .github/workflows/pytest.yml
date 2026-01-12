@@ -1,0 +1,50 @@
+name: Run pytest
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths-ignore:
+      - "**.md"
+
+jobs:
+  Test:
+    strategy:
+      max-parallel: 6
+      matrix:
+        python-version: ["3.12"]
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Install Python 3.13
+        run: uv python install ${{ matrix.python-version }}
+
+      #----------------------------------------------
+      #              run test suite
+      #----------------------------------------------
+      - name: Run tests with pytest
+        run: |
+          source $VENV
+          cd tests/client
+          uv run neet version
+          uv run neet init
+          cd ../..
+          mkdir logs
+          LOGS_DIR=$(pwd)/logs
+          uv run neet serve &> $LOGS_DIR/server.log &
+          pytest --cov=./ --cov-report=xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+
+      - name: Server log
+        if: always()
+        run: cat logs/server.log
