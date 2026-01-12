@@ -1,19 +1,23 @@
-[tool.poetry]
+[build-system]
+requires = ["uv_build>=0.9.23,<0.10.0"]
+build-backend = "uv_build"
+
+[project]
 name = "neetbox"
 version = "0.6.2"
 description = "Logging/Debugging/Tracing/Managing/Facilitating long running python projects, especially a replacement of tensorboard for deep learning projects"
+requires-python = ">=3.10"
 license = "MIT"
-authors = ["VisualDust <gavin@gong.host>", "Lideming <me@yuuza.net>"]
-maintainers = [
-    "PaperCube <imzhy@hotmail.com>",
-    "PommesPeter <me@pommespeter.space>",
-    "PuQing <me@puqing.work>",
+authors = [
+    { name = "VisualDust", email = "gavin@gong.host" },
+    { name = "Lideming", email = "me@yuuza.net" },
 ]
-
-
+maintainers = [
+    { name = "PaperCube", email = "imzhy@hotmail.com" },
+    { name = "PommesPeter", email = "me@pommespeter.space" },
+    { name = "PuQing", email = "me@puqing.work" },
+]
 readme = "README.md"
-homepage = "https://neetbox.550w.host"
-repository = "https://github.com/visualDust/neetbox"
 keywords = ["computer vision", "tools", "logging"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -24,41 +28,52 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
-include = ["neetbox/frontend_dist/**/*"]
+dependencies = [
+    "click>=8.3.1",
+    "fastapi>=0.128.0",
+    "httpx>=0.28.1",
+    "numpy>=2.2.6",
+    "pip>=25.3",
+    "psutil>=7.2.1",
+    "pyfiglet>=1.0.4",
+    "pyjwt>=2.10.1",
+    "python-multipart>=0.0.21",
+    "rich>=14.2.0",
+    "setproctitle>=1.3.7",
+    "sqlmodel>=0.0.31",
+    "toml>=0.10.2",
+    "uvicorn>=0.40.0",
+    "vdtoys>=0.1.7",
+    "websocket-client>=1.9.0",
+    "websockets>=16.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10, <4.0"
-toml = ">0.10"
-setproctitle = ">=1.0"
-rich = ">=13"
-click = "^8.1.7"
-pyfiglet = "^1.0.2"
-httpx = "^0.27.0"
-websocket-client = "^1.6.4"
-psutil = "^7.0.0"
-fastapi = "^0.115.0"
-python-multipart = "^0.0.12"
-uvicorn = "^0.32.0"
-websockets = "^15.0.0"
-pyjwt = "^2.8.0"
-vdtoys = "^0.1.2"
-numpy = "^2.2.4"
-sqlmodel = "^0.0.24"
+[dependency-groups]
+dev = [
+    "black>=25.12.0",
+    "isort>=7.0.0",
+    "pillow>=12.1.0",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^9.0.0"
-black = "^25.0.0"
-isort = "^7.0.0"
-pre-commit = ">=3.4.0"
-pillow = "^12.0.0"
-pytest-cov = "^7.0.0"
+[project.urls]
+Homepage = "https://neetbox.550w.host"
+Repository = "https://github.com/visualDust/neetbox"
 
-[build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+[project.scripts]
+neet = "neetbox.cli.parse:main"
 
-[tool.poetry.scripts]
-neet = 'neetbox.cli.parse:main'
+[tool.uv.build-backend]
+source-exclude = ["neetbox/frontend_dist/**/*"]
+module-root = ""
 
 [tool.black]
 line-length = 100
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
