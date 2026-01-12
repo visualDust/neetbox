@@ -7,44 +7,67 @@ on:
       - "**.md"
 
 jobs:
-  Test:
+  test:
     strategy:
       max-parallel: 6
       matrix:
         python-version: ["3.12"]
         os: [ubuntu-latest, windows-latest]
+
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
+
     steps:
-      #----------------------------------------------
-      #       check-out repo and set-up python
-      #----------------------------------------------
+      # ---------------------------------------------
+      # Checkout
+      # ---------------------------------------------
       - name: Check out repository
         uses: actions/checkout@v6
+
+      # ---------------------------------------------
+      # Install uv + Python
+      # ---------------------------------------------
       - name: Install uv
         uses: astral-sh/setup-uv@v7
-      - name: Install Python 3.13
-        run: uv python install ${{ matrix.python-version }}
 
-      #----------------------------------------------
-      #              run test suite
-      #----------------------------------------------
+      - name: Install Python
+        run: |
+          uv python install ${{ matrix.python-version }}
+          uv python pin ${{ matrix.python-version }}
+
+      # ---------------------------------------------
+      # Sync dependencies (pyproject.toml)
+      # ---------------------------------------------
+      - name: Install dependencies
+        run: uv sync --dev
+
+      # ---------------------------------------------
+      # Run test suite
+      # ---------------------------------------------
       - name: Run tests with pytest
         run: |
-          source $VENV
           cd tests/client
+
           uv run neet version
           uv run neet init
+
           cd ../..
-          mkdir logs
-          LOGS_DIR=$(pwd)/logs
-          uv run neet serve &> $LOGS_DIR/server.log &
-          pytest --cov=./ --cov-report=xml
+          mkdir -p logs
+          LOGS_DIR="$(pwd)/logs"
+
+          uv run neet serve > "$LOGS_DIR/server.log" 2>&1 &
+          uv run pytest --cov=./ --cov-report=xml
+
+      # ---------------------------------------------
+      # Upload coverage
+      # ---------------------------------------------
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
 
+      # ---------------------------------------------
+      # Always show server log
+      # ---------------------------------------------
       - name: Server log
         if: always()
-        run: cat logs/server.log
+        run: |
+          echo "==== server.log ===="
+          cat logs/server.log || true
