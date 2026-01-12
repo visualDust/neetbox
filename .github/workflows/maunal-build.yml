@@ -38,6 +38,6 @@ jobs:
       - name: Build
         run: uv build
       - name: Publish
-        run: uv publish --index testpypi
-        with:
+        env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish --index testpypi
